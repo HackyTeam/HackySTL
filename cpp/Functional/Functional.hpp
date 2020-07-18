@@ -86,7 +86,13 @@ struct as_function< R(ArgTypes...) >
 };
 
 template< typename R, typename... ArgTypes >
-struct as_function< R(*)(ArgTypes...) > 
+struct as_function< R(&)(ArgTypes...) > 
+{
+    using type = R(ArgTypes...);
+};
+
+template< typename R, typename... ArgTypes >
+struct as_function< R(&)(ArgTypes...) noexcept > 
 {
     using type = R(ArgTypes...);
 };
@@ -101,9 +107,15 @@ template< typename Func > function(Func&&) -> function<typename as_function<Func
 
 namespace FuncTest
 {
+    static constexpr int func() noexcept
+    {
+        return 4;
+    }
+
     static void Test()
     {
-        function f = [](){return 4;};
+        //function f = [](){return 4;};
+        function f = func;
         //f.bind(4);
         printf("%d\n", f());
     }

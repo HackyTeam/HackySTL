@@ -20,7 +20,7 @@ private:
 public:
     function() = default;
 
-    template< typename Func, ResolvedType< !std::is_integral< Func >{}, _Useless > = _Useless() >
+    template< typename Func >
     constexpr function(Func&& function)
     {
         _func_impl = function;
@@ -36,7 +36,7 @@ public:
         _func_impl = other._func_impl;
     }
 
-    template< typename Func, typename std::enable_if< !std::is_integral< Func >{}, _Useless >::type = _Useless() >
+    template< typename Func >
     constexpr function& operator=(Func&& function)
     {
         _func_impl = function;
@@ -74,12 +74,37 @@ public:
     }
 };
 
+template< typename T >
+struct as_function
+    : public as_function< decltype(&T::operator()) >
+{};
+
+template< typename R, typename... ArgTypes >
+struct as_function< R(ArgTypes...) > 
+{
+    using type = R(ArgTypes...);
+};
+
+template< typename R, typename... ArgTypes >
+struct as_function< R(*)(ArgTypes...) > 
+{
+    using type = R(ArgTypes...);
+};
+
+template< typename U, typename R, typename... ArgTypes >
+struct as_function< R(U::*)(ArgTypes...) const > 
+{
+    using type = R(ArgTypes...);
+};
+
+template< typename Func > function(Func&&) -> function<typename as_function<Func>::type>;
+
 namespace FuncTest
 {
     static void Test()
     {
-        function<int()> f = [](){return 4;};
+        function f = [](){return 4;};
         //f.bind(4);
-        auto var = f();
+        printf("%d\n", f());
     }
 }

@@ -61,13 +61,7 @@ struct as_function< R(ArgTypes...) >
 };
 
 template< typename R, typename... ArgTypes >
-struct as_function< R(&)(ArgTypes...) > 
-{
-    using type = R(ArgTypes...);
-};
-
-template< typename R, typename... ArgTypes >
-struct as_function< R(&)(ArgTypes...) noexcept > 
+struct as_function< R(ArgTypes...) noexcept > 
 {
     using type = R(ArgTypes...);
 };

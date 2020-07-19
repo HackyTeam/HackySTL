@@ -4,6 +4,8 @@
 #include <utility>
 #include <stdexcept>
 
+#include "../InitializerList/InitializerList.hpp"
+
 template< typename T >
 class vector
 {
@@ -40,12 +42,14 @@ public:
         _data = new T[1];
     }
 
-    constexpr vector(std::initializer_list<T> arr)
+    template< typename L, typename... U >
+    constexpr vector(const L& value, const U&... values)
     {
-        _size = arr.size();
+        _size = 1 + sizeof...(U);
         _reserved_size = _size * 2;
+        T arr[] = {value, values...};
         _data = new T[_reserved_size];
-        std::copy(arr.begin(), arr.end(), begin());
+        std::copy(arr, arr + _size, begin());
     }
 
     constexpr vector(const vector& lhs)
@@ -236,6 +240,8 @@ public:
         return cbegin() + size();
     }
 };
+
+template< typename L, typename... U > vector(const L&, const U&...) -> vector<L>;
 
 namespace VecTest
 {

@@ -103,7 +103,7 @@ struct as_function< R(U::*)(ArgTypes...) const >
     using type = R(ArgTypes...);
 };
 
-template< typename Func > function(Func&&) -> function<typename as_function<Func>::type>;
+template< typename Func > function(Func&&) -> function< typename as_function<Func>::type >;
 
 namespace FuncTest
 {

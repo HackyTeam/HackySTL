@@ -4,6 +4,8 @@
 #include <utility>
 #include <stdexcept>
 
+#include "../InitializerList/InitializerList.hpp"
+
 template< typename T, size_t N >
 class stack_array
 {
@@ -19,7 +21,7 @@ public:
     template< typename L, typename... U >
     constexpr stack_array(const L& value, const U&... values)
     {
-        L arr[] = {value, values...};
+        T arr[] = {value, values...};
         std::copy(arr, arr + N, begin());
     }
 
@@ -39,7 +41,7 @@ public:
         return *this;
     }
 
-    constexpr stack_array& operator=(std::initializer_list<T>&& rhs)
+    constexpr stack_array& operator=(initializer_list<T>&& rhs)
     {
         if(rhs.size() != N)
         {
@@ -129,7 +131,7 @@ public:
     constexpr heap_array(const L& value, const U&... values)
     {
         _array = new T[N];
-        L arr[] = {value, values...};
+        T arr[] = {value, values...};
         std::copy(arr, arr + N, begin());
     }
 
@@ -150,7 +152,7 @@ public:
         return *this;
     }
 
-    constexpr heap_array& operator=(std::initializer_list<T>&& rhs)
+    constexpr heap_array& operator=(initializer_list<T>&& rhs)
     {
         if(rhs.size() != N)
         {

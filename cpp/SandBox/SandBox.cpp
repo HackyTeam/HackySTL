@@ -12,5 +12,7 @@ int main()
     RangeTest::Test();
     puts("");
     FuncTest::Test();
+    puts("");
+    InitListTest::Test();
     return 0;
 }

@@ -2,10 +2,12 @@
 #include "../Vector/Vector.hpp"
 #include "../Range/Range.hpp"
 #include "../Functional/Functional.hpp"
+#include "../IndexSequence/IndexSequence.hpp"
 
 int main()
 {
-    ArrTest::Test();
+    // these works
+    /*ArrTest::Test();
     puts("");
     VecTest::Test();
     puts("");
@@ -13,6 +15,7 @@ int main()
     puts("");
     FuncTest::Test();
     puts("");
-    InitListTest::Test();
+    InitListTest::Test();*/
+    ISeqTest::Test();
     return 0;
 }

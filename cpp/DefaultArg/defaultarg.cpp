@@ -20,6 +20,7 @@ static auto bopper = defaultcall_t(bop, 3, 4);
 static auto funcer = defaultcall_t(f);
 
 int main() {
+    std::tuple t = {1, 42.3, "ara"};
     std::cout << bopper(default_v, default_v) << std::endl;
     std::cout << bopper(default_v, 1) << std::endl;
     std::cout << bopper(2, default_v) << std::endl;

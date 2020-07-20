@@ -17,8 +17,8 @@ int main()
     FuncTest::Test();
     puts("");
     InitListTest::Test();*/
-    ISeqTest::Test();
-    puts("");
+    //ISeqTest::Test();
+    //puts("");
     TupTest::Test();
     return 0;
 }

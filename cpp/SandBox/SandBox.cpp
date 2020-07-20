@@ -3,6 +3,7 @@
 #include "../Range/Range.hpp"
 #include "../Functional/Functional.hpp"
 #include "../IndexSequence/IndexSequence.hpp"
+#include "../Tuple/Tuple.hpp"
 
 int main()
 {
@@ -17,5 +18,7 @@ int main()
     puts("");
     InitListTest::Test();*/
     ISeqTest::Test();
+    puts("");
+    TupTest::Test();
     return 0;
 }

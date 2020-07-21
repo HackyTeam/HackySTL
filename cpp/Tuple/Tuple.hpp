@@ -22,7 +22,10 @@ public:
     }
 };
 
-template< typename... T > tuple<T...> make_tuple(T&&... args);
+template< typename... T > static constexpr tuple<T...> make_tuple(T&&... args);
+
+template< typename Tuple1, typename Tuple2 >
+using is_same_tuple = std::is_same<Tuple1, Tuple2>;
 
 template< typename T, typename... Rest >
 class tuple<T, Rest...>
@@ -52,6 +55,12 @@ private:
             return get_helper<N - 1, tuple<Args...>>::get(data._rest);
         }
     };
+
+    template<size_t N, typename... U>
+    static constexpr auto _get(const tuple<U...>& tup) 
+    {
+        return get_helper<N, tuple<U...>>::get(tup);
+    }
 public:
     constexpr tuple(const T& first, const Rest& ... rest) 
         : _first{first}, _rest{rest...} {}
@@ -71,18 +80,19 @@ public:
     }
 
     template< typename... Args >
-    constexpr auto operator+(const tuple<Args...>& rhs)
+    constexpr auto operator+(const tuple<Args...>& rhs) 
     {
         auto _add = [&]< size_t... Ints1, size_t... Ints2>(
             index_sequence<Ints1...> int_seq1, 
             index_sequence<Ints2...> int_seq2
-        ) -> tuple<T, Rest..., Args...>
-        {
-            return make_tuple<T, Rest..., Args...>
-            (
-                (this->template get<Ints1>(), ...), 
-                (rhs.template get<Ints2>(), ...)
-            );
+        ) -> tuple<T, Rest..., Args...> {
+
+            [](auto... args)
+            {
+                static_assert(is_same_tuple<tuple<T, Rest..., Args...>, tuple<decltype(args)...>>{});
+            }(_get<Ints1>(*this)..., _get<Ints2>(rhs)...);
+
+            return make_tuple<T, Rest..., Args...>(_get<Ints1>(*this)..., _get<Ints2>(rhs)...);
         };
 
         return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
@@ -91,13 +101,13 @@ public:
     template<size_t N>
     constexpr auto get() 
     {
-        return get_helper<N, tuple<T, Rest...>>::get(*this);
+        return _get<N, T, Rest...>(*this);
     }
 
     template<size_t N>
     constexpr auto get() const
     {
-        return get_helper<N, tuple<T, Rest...>>::get(*this);
+        return _get<N, T, Rest...>(*this);
     }
 
     static constexpr size_t size()
@@ -110,23 +120,32 @@ template<class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
 template<class T1, class T2> tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
 template< typename... T >
-tuple<T...> make_tuple(T&&... args)
+static constexpr tuple<T...> make_tuple(T&&... args)
 {
     return {std::forward<T>(args)...};
 }
 
 template< typename... T >
-tuple<T...> tie(T&... args)
+static constexpr tuple<T...> tie(T&... args)
 {
     return {args...};
 }
 
 namespace TupTest
 {
+    template< typename... Args >
+    static void print(tuple<Args...> tup)
+    {
+        [&]<size_t... Ints>(index_sequence<Ints...>){
+            ((std::cout << tup.template get<Ints>() << '\n'), ...);
+        }(make_index_sequence<tup.size()>{});
+    }
+
     static void Test()
     {
         tuple t = {500, 'a', "more professional print"};
+        print(t);
         //auto t2 = t + make_tuple(1, -1, 'c');
-        printf("%s\n%zu\n", t.get<2>(), t.size());
+        print(t + make_tuple(1, -1, 'c'));
     }
 }

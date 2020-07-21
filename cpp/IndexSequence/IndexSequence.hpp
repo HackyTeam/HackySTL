@@ -37,11 +37,16 @@ using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
 namespace ISeqTest
 {
+    static void print(size_t S)
+    {
+        std::cout << S << ' ';
+    }
+
     template<typename T, T... ints>
     static void print_sequence(integer_sequence<T, ints...> int_seq)
     {
         std::cout << "The sequence of size " << int_seq.size() << ": ";
-        ((std::cout << ints << ' '), ...);
+        (print(ints), ...);
         std::cout << '\n';
     }
 

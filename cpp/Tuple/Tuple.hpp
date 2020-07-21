@@ -90,9 +90,11 @@ public:
             [](auto... args)
             {
                 static_assert(is_same_tuple<tuple<T, Rest..., Args...>, tuple<decltype(args)...>>{});
-            }(_get<Ints1>(*this)..., _get<Ints2>(rhs)...);
+            }(get<Ints1>()..., rhs.template get<Ints2>()...);
 
-            return make_tuple<T, Rest..., Args...>(_get<Ints1>(*this)..., _get<Ints2>(rhs)...);
+            return make_tuple<T, Rest..., Args...>(
+                get<Ints1>()..., rhs.template get<Ints2>()...
+            );
         };
 
         return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
@@ -129,6 +131,12 @@ template< typename... T >
 static constexpr tuple<T...> tie(T&... args)
 {
     return {args...};
+}
+
+template<typename... _Elements>
+constexpr tuple<_Elements&&...> forward_as_tuple(_Elements&&... __args)
+{ 
+    return tuple<_Elements&&...>(std::forward<_Elements>(__args)...);
 }
 
 namespace TupTest

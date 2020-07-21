@@ -23,6 +23,9 @@ struct index_sequence_helper<0, Next...>
     using type = integer_sequence<size_t, Next...>;
 };
 
+template <size_t... Next>
+using index_sequence = integer_sequence<size_t, Next...>;
+
 template <size_t N>
 using make_index_sequence = typename index_sequence_helper<N>::type;
 

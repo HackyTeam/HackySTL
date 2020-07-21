@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdio.h>
+#include "../IndexSequence/IndexSequence.hpp"
 #include <utility>
 
 using size_t = unsigned long int;
@@ -12,9 +12,8 @@ struct pair
     T2 second;
 };
 
-
 template < typename... T >
-class tuple_helper
+class tuple
 {
 public:
     static constexpr size_t size()
@@ -23,52 +22,82 @@ public:
     }
 };
 
+template< typename... T > tuple<T...> make_tuple(T&&... args);
+
 template< typename T, typename... Rest >
-class tuple_helper<T, Rest...>
+class tuple<T, Rest...>
 {   
 public:   
     T _first;
-    tuple_helper<Rest...> _rest;        
+    tuple<Rest...> _rest;        
 
 private:
     template< size_t N, typename U >
     struct get_helper {};
 
     template< typename U, typename... Args >
-    struct get_helper<0, tuple_helper<U, Args...>>
+    struct get_helper<0, tuple<U, Args...>>
     {
-        static constexpr U get(tuple_helper<U, Args...>& data)
+        static constexpr U get(const tuple<U, Args...>& data)
         {
             return data._first;
         }
     };
 
     template< size_t N, typename U, typename... Args >
-    struct get_helper<N, tuple_helper<U, Args...>>
+    struct get_helper<N, tuple<U, Args...>>
     {
-        static constexpr auto get(tuple_helper<U, Args...>& data)
+        static constexpr auto get(const tuple<U, Args...>& data)
         {
-            return get_helper<N - 1, tuple_helper<Args...>>::get(data._rest);
+            return get_helper<N - 1, tuple<Args...>>::get(data._rest);
         }
     };
 public:
-    constexpr tuple_helper(const T& first, const Rest& ... rest) 
-        : _first(first), _rest(rest...) {}
+    constexpr tuple(const T& first, const Rest& ... rest) 
+        : _first{first}, _rest{rest...} {}
 
-    constexpr tuple_helper(const tuple_helper& other)
+    constexpr tuple(T&& first, Rest&& ... rest) 
+        : _first{std::move(first)}, _rest{std::forward<Rest>(rest)...}
+    {}
+
+    constexpr tuple(const tuple& other)
         : _first{other._first}, _rest{other._rest}
     {}
 
-    constexpr tuple_helper(tuple_helper&& other)
+    constexpr tuple(tuple&& other)
     {
         _first = std::move(other._first);
         _rest = std::move(other._rest);
     }
-    
+
+    template< typename... Args >
+    constexpr auto operator+(const tuple<Args...>& rhs)
+    {
+        auto _add = [&]< size_t... Ints1, size_t... Ints2>(
+            index_sequence<Ints1...> int_seq1, 
+            index_sequence<Ints2...> int_seq2
+        ) -> tuple<T, Rest..., Args...>
+        {
+            return make_tuple<T, Rest..., Args...>
+            (
+                (this->template get<Ints1>(), ...), 
+                (rhs.template get<Ints2>(), ...)
+            );
+        };
+
+        return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
+    }
+
     template<size_t N>
     constexpr auto get() 
     {
-        return get_helper<N, tuple_helper<T, Rest...>>::get(*this);
+        return get_helper<N, tuple<T, Rest...>>::get(*this);
+    }
+
+    template<size_t N>
+    constexpr auto get() const
+    {
+        return get_helper<N, tuple<T, Rest...>>::get(*this);
     }
 
     static constexpr size_t size()
@@ -77,14 +106,17 @@ public:
     }
 };
 
-template<class... UTypes> tuple_helper(UTypes...) -> tuple_helper<UTypes...>;
-template<class T1, class T2> tuple_helper(pair<T1, T2>) -> tuple_helper<T1, T2>;
-
-template < typename... T>
-using tuple = tuple_helper<T...>;
+template<class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
+template<class T1, class T2> tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
 template< typename... T >
-tuple<T...> make_tuple(const T&... args)
+tuple<T...> make_tuple(T&&... args)
+{
+    return {std::forward<T>(args)...};
+}
+
+template< typename... T >
+tuple<T...> tie(T&... args)
 {
     return {args...};
 }
@@ -94,6 +126,7 @@ namespace TupTest
     static void Test()
     {
         tuple t = {500, 'a', "more professional print"};
-        printf("%s\n%d\n", t.get<2>(), t.size());
+        //auto t2 = t + make_tuple(1, -1, 'c');
+        printf("%s\n%zu\n", t.get<2>(), t.size());
     }
 }

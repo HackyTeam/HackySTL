@@ -13,10 +13,10 @@ int main()
     VecTest::Test();
     puts("");
     RangeTest::Test();
-    puts("");
-    FuncTest::Test();
-    puts("");
-    InitListTest::Test();*/
+    puts("");*/
+    //FuncTest::Test();
+    //puts("");
+    //InitListTest::Test();*/
     //ISeqTest::Test();
     //puts("");
     TupTest::Test();

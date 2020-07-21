@@ -62,21 +62,23 @@ private:
         return get_helper<N, tuple<U...>>::get(tup);
     }
 public:
-    constexpr tuple(const T& first, const Rest& ... rest) 
-        : _first{first}, _rest{rest...} {}
+    tuple() = default;
 
-    constexpr tuple(T&& first, Rest&& ... rest) 
-        : _first{std::move(first)}, _rest{std::forward<Rest>(rest)...}
+    constexpr tuple(const T& first, const Rest&... rest) 
+        : _first(first), _rest(rest...)
     {}
 
     constexpr tuple(const tuple& other)
         : _first{other._first}, _rest{other._rest}
     {}
 
-    constexpr tuple(tuple&& other)
+    template< typename... Args >
+    constexpr tuple& operator=(const tuple<Args...>& other)
     {
-        _first = std::move(other._first);
-        _rest = std::move(other._rest);
+        _first = other._first;
+        _rest = other._rest;
+
+        return *this;
     }
 
     template< typename... Args >
@@ -124,19 +126,24 @@ template<class T1, class T2> tuple(pair<T1, T2>) -> tuple<T1, T2>;
 template< typename... T >
 static constexpr tuple<T...> make_tuple(T&&... args)
 {
-    return {std::forward<T>(args)...};
+    return tuple<T...>(std::forward<T>(args)...);
 }
 
 template< typename... T >
 static constexpr tuple<T...> tie(T&... args)
 {
-    return {args...};
+    return tuple<T...>(args...);
 }
 
-template<typename... _Elements>
-constexpr tuple<_Elements&&...> forward_as_tuple(_Elements&&... __args)
-{ 
-    return tuple<_Elements&&...>(std::forward<_Elements>(__args)...);
+template< typename Func, typename...Args, size_t... Is >
+static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
+{
+    return func(args.template get<Is>()...);
+}
+template< typename Func, typename...Args >
+static constexpr auto apply(Func&& func, const tuple<Args...>& args)
+{
+  return apply_impl(std::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
 }
 
 namespace TupTest
@@ -153,7 +160,7 @@ namespace TupTest
     {
         tuple t = {500, 'a', "more professional print"};
         print(t);
-        //auto t2 = t + make_tuple(1, -1, 'c');
+        auto t2 = make_tuple(1, -1, 'c');
         print(t + make_tuple(1, -1, 'c'));
     }
 }

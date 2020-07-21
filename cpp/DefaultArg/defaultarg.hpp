@@ -2,7 +2,7 @@
 
 // Requires C++ 17
 
-#include <tuple>
+#include "../Tuple/Tuple.hpp"
 
 struct default_t {};
 constexpr default_t default_v{};
@@ -13,27 +13,27 @@ struct defaultcall_t;
 template <typename F, typename Result, typename... Args>
 struct defaultcall_t<Result(Args...), F>;
 
-template <std::size_t Id, typename F, typename Result, typename... Args, typename T>
+template <size_t Id, typename F, typename Result, typename... Args, typename T>
 constexpr auto default_cast(defaultcall_t<Result(Args...), F> const&, T&& x);
-template <std::size_t Id, typename F, typename Result, typename... Args>
+template <size_t Id, typename F, typename Result, typename... Args>
 constexpr auto default_cast(defaultcall_t<Result(Args...), F> const& c, default_t);
 
 template <typename F, typename Result, typename... Args>
 struct defaultcall_t<Result(Args...), F> {
-  std::tuple<Args...> default_args;
+  tuple<Args...> default_args;
   F func;
   constexpr defaultcall_t(F&& func, Args&&... args) : default_args(std::forward<Args>(args)...), func(std::forward<F>(func)) {}
   
   private:
-  template <typename... U, std::size_t... Seq>
-  constexpr Result operator()(std::index_sequence<Seq...>, U&&... args) const {
+  template <typename... U, size_t... Seq>
+  constexpr Result operator()(index_sequence<Seq...>, U&&... args) const {
     return func(default_cast<Seq, F, Result, Args...>(*this, std::forward<U>(args))...);
   }
 
   public:
   template <typename... U>
   constexpr Result operator()(U&&... args) const {
-    return operator()(std::index_sequence_for<Args...>(), std::forward<U>(args)...);
+    return operator()(index_sequence_for<Args...>(), std::forward<U>(args)...);
   }
 
 };
@@ -43,10 +43,10 @@ defaultcall_t<S, F> make_defaultcall(F&& func, Args&&... args) {
     return defaultcall_t<S, F>(std::forward<F>(func), std::forward<Args>(args)...);
 }
 
-template <std::size_t Id, typename F, typename Result, typename... Args, typename T>
+template <size_t Id, typename F, typename Result, typename... Args, typename T>
 constexpr auto default_cast(defaultcall_t<Result(Args...), F> const&, T&& x) {return std::forward<T>(x); }
-template <std::size_t Id, typename F, typename Result, typename... Args>
-constexpr auto default_cast(defaultcall_t<Result(Args...), F> const& c, default_t) {return std::get<Id>(c.default_args); }
+template <size_t Id, typename F, typename Result, typename... Args>
+constexpr auto default_cast(defaultcall_t<Result(Args...), F> const& c, default_t) {return c.default_args.template get<Id>(); }
 
 // STOLEN <begin>
 template< typename T >

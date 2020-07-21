@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tuple>
+#include "../Tuple/Tuple.hpp"
 #include <stdexcept>
 
 template< typename > class function;
@@ -13,7 +13,7 @@ private:
 
     struct _Useless {};
 
-    std::tuple< Args... > _func_args;
+    tuple< Args... > _func_args;
 
     template< bool Condition, typename Value >
     using ResolvedType = typename std::enable_if< Condition, Value >::type;
@@ -44,7 +44,7 @@ public:
 
     constexpr void bind(Args&&... arguments)
     {
-        _func_args = std::make_tuple(arguments...);
+        _func_args = make_tuple(arguments...);
     }
 
     constexpr Result operator()(Args&&... arguments)
@@ -65,12 +65,9 @@ public:
             throw std::runtime_error("Bad function");
         }
         
-        auto [_args] = std::apply(
-            [](auto&&... args) {
-                return std::forward_as_tuple(std::forward<decltype(args)>(args)...);
-            }, _func_args);
-
-        return _func_impl(_args);
+        return apply([&](auto&&... args){
+            return _func_impl(args...);
+        }, _func_args);
     }
 };
 
@@ -107,16 +104,16 @@ template< typename Func > function(Func&&) -> function< typename as_function<Fun
 
 namespace FuncTest
 {
-    static constexpr int func() noexcept
+    static constexpr int func(int a) noexcept
     {
-        return 4;
+        return a;
     }
 
     static void Test()
     {
         //function f = [](){return 4;};
         function f = func;
-        //f.bind(4);
+        f.bind(5);
         printf("%d\n", f());
     }
 }

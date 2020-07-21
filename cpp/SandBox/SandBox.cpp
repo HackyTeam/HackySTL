@@ -1,6 +1,6 @@
 #include "../Array/Array.hpp"
 #include "../Vector/Vector.hpp"
-#include "../Range/Range.hpp"
+//#include "../Range/Range.hpp"
 #include "../Functional/Functional.hpp"
 #include "../IndexSequence/IndexSequence.hpp"
 #include "../Tuple/Tuple.hpp"
@@ -17,8 +17,8 @@ int main()
     FuncTest::Test();
     puts("");
     InitListTest::Test();*/
-    //ISeqTest::Test();
-    //puts("");
+    ISeqTest::Test();
+    puts("");
     TupTest::Test();
     return 0;
 }

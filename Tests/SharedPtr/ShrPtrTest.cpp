@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../../cpp/SharedPtr/SharedPtr.hpp"
+#include "../cpp/SharedPtr/SharedPtr.hpp"
 
 using namespace hsd::non_atomic_types;
 

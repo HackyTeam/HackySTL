@@ -21,4 +21,12 @@ int main() {
     std::cout << va2.index() << std::endl;
     std::cout << va3.index() << std::endl;
     std::cout << va4.index() << std::endl;
+
+    std::cout << hsd::get<0>(va1) << std::endl;
+    try {
+        // This should throw -vvv
+        std::cout << hsd::get<float>(va1) << std::endl;
+    } catch (hsd::bad_variant_access& err) {
+        std::cerr << "Caught error: " << err.what() << std::endl;
+    }
 }

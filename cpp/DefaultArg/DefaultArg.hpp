@@ -4,6 +4,8 @@
 
 #include "../Tuple/Tuple.hpp"
 
+namespace hsd
+{
 struct default_t {};
 constexpr default_t default_v{};
 
@@ -49,6 +51,8 @@ template <size_t Id, typename F, typename Result, typename... Args>
 constexpr auto default_cast(defaultcall_t<Result(Args...), F> const& c, default_t) {return c.default_args.template get<Id>(); }
 
 // STOLEN <begin>
+namespace helper
+{
 template< typename T >
 struct as_function
     : public as_function< decltype(&T::operator()) >
@@ -71,12 +75,14 @@ struct as_function< R(U::*)(ArgTypes...) const >
 {
     using type = R(ArgTypes...);
 };
+}
 // STOLEN <end>
 
 template <typename F, typename... Args>
 defaultcall_t(F&&, Args&&...)
-  -> defaultcall_t<typename as_function<
+  -> defaultcall_t<typename helper::as_function<
       std::remove_pointer_t<
         std::remove_reference_t<F>
       >
     >::type, F>;
+}

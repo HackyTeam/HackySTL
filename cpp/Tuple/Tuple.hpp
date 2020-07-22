@@ -3,8 +3,8 @@
 #include "../IndexSequence/IndexSequence.hpp"
 #include <utility>
 
-using size_t = unsigned long int;
-
+namespace hsd
+{
 template< typename T1, typename T2 >
 struct pair
 {
@@ -145,22 +145,23 @@ static constexpr auto apply(Func&& func, const tuple<Args...>& args)
 {
   return apply_impl(std::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
 }
+}
 
 namespace TupTest
 {
     template< typename... Args >
-    static void print(tuple<Args...> tup)
+    static void print(hsd::tuple<Args...> tup)
     {
-        [&]<size_t... Ints>(index_sequence<Ints...>){
+        [&]<size_t... Ints>(hsd::index_sequence<Ints...>){
             ((std::cout << tup.template get<Ints>() << '\n'), ...);
-        }(make_index_sequence<tup.size()>{});
+        }(hsd::make_index_sequence<tup.size()>{});
     }
 
     static void Test()
     {
-        tuple t = {500, 'a', "more professional print"};
+        hsd::tuple t = {500, 'a', "more professional print"};
         print(t);
-        auto t2 = make_tuple(1, -1, 'c');
-        print(t + make_tuple(1, -1, 'c'));
+        auto t2 = hsd::make_tuple(1, -1, 'c');
+        print(t + hsd::make_tuple(1, -1, 'c'));
     }
 }

@@ -6,6 +6,8 @@
 
 #include "../InitializerList/InitializerList.hpp"
 
+namespace hsd
+{
 template< typename T, size_t N >
 class stack_array
 {
@@ -219,12 +221,13 @@ public:
 
 template< typename L, typename... U > stack_array(const L&, const U&...) -> stack_array<L, 1 + sizeof...(U)>;
 template< typename L, typename... U > heap_array(const L&, const U&...) -> heap_array<L, 1 + sizeof...(U)>;
+}
 
 namespace ArrTest
 {
     static void Test()
     {
-        stack_array sarr = {1, 2, 3, 4, 5};
+        hsd::stack_array sarr = {1, 2, 3, 4, 5};
 
         for(auto i : sarr)
         {
@@ -240,7 +243,7 @@ namespace ArrTest
         }
 
         puts("");
-        heap_array harr = {1, 2, 3, 4, 5};
+        hsd::heap_array harr = {1, 2, 3, 4, 5};
 
         for(auto i : harr)
         {

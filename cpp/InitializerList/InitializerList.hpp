@@ -1,5 +1,7 @@
 #pragma once
 
+namespace hsd
+{
 template< typename T >
 class initializer_list
 {
@@ -45,15 +47,16 @@ public:
         return begin() + size();
     }
 };
+}
 
 namespace InitListTest
 {
     template< typename T >
-    static void some(initializer_list<T> l) {}
+    static void some(hsd::initializer_list<T> l) {}
 
     static void Test()
     {
-        initializer_list t = {1, 2, 3, 4};
+        hsd::initializer_list t = {1, 2, 3, 4};
 
         some(t);
 

@@ -3,6 +3,8 @@
 #include "../Tuple/Tuple.hpp"
 #include <stdexcept>
 
+namespace hsd
+{
 template< typename > class function;
 
 template< typename Result, typename... Args >
@@ -71,6 +73,8 @@ public:
     }
 };
 
+namespace helper
+{
 template< typename T >
 struct as_function
     : public as_function< decltype(&T::operator()) >
@@ -99,8 +103,10 @@ struct as_function< R(U::*)(ArgTypes...) const >
 {
     using type = R(ArgTypes...);
 };
+}
 
-template< typename Func > function(Func&&) -> function< typename as_function<Func>::type >;
+template< typename Func > function(Func&&) -> function< typename helper::as_function<Func>::type >;
+}
 
 namespace FuncTest
 {
@@ -112,7 +118,7 @@ namespace FuncTest
     static void Test()
     {
         //function f = [](){return 4;};
-        function f = func;
+        hsd::function f = func;
         f.bind(5);
         printf("%d\n", f());
     }

@@ -4,6 +4,8 @@
 #include <utility>
 #include <stdexcept>
 
+namespace hsd
+{
 class RangeIterator
 {
 private:
@@ -115,12 +117,13 @@ public:
         return _end;
     }
 };
+}
 
 namespace RangeTest
 {
     static void Test()
     {
-        for(auto i : Range(0, 15))
+        for(auto i : hsd::Range(0, 15))
         {
             printf("%d\n", i);
         }

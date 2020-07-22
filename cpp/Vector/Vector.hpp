@@ -6,6 +6,8 @@
 
 #include "../InitializerList/InitializerList.hpp"
 
+namespace hsd
+{
 template< typename T >
 class vector
 {
@@ -242,12 +244,13 @@ public:
 };
 
 template< typename L, typename... U > vector(const L&, const U&...) -> vector<L>;
+}
 
 namespace VecTest
 {
     static void Test()
     {
-        vector e = {1, 2, 3, 4, 5, 6};
+        hsd::vector e = {1, 2, 3, 4, 5, 6};
 
         for (auto val : e)
         {

@@ -2,7 +2,6 @@
 
 #include "../IndexSequence/IndexSequence.hpp"
 #include "../Utility/Utility.hpp"
-#include <utility>
 
 namespace hsd
 {
@@ -120,7 +119,7 @@ namespace hsd
     template< typename... T >
     static constexpr tuple<T...> make_tuple(T&&... args)
     {
-        return tuple<T...>(std::forward<T>(args)...);
+        return tuple<T...>(hsd::forward<T>(args)...);
     }
 
     template< typename... T >
@@ -138,6 +137,6 @@ namespace hsd
     template< typename Func, typename...Args >
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
-      return apply_impl(std::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
+      return apply_impl(hsd::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
     }
 }

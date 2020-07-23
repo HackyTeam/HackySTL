@@ -30,32 +30,32 @@ namespace hsd
         {
             int i = 0;
 
-	        while(lhs[i] && rhs[i])
-	        {
-	        	if(lhs[i] < rhs[i])
-	        	{
-                    return -1;
-                }
-	        	else if(lhs[i] > rhs[i])
-	        	{
-                    return 1;
-                }
+	    while(lhs[i] && rhs[i])
+	    {
+	       	 if(lhs[i] < rhs[i])
+	         {
+                     return -1;
+                 }
+	         else if(lhs[i] > rhs[i])
+	         {
+                     return 1;
+                 }
 
-	        	i++;
-	        }
+	         i++;
+	     }
 
-	        if(lhs[i] < rhs[i])
-	        {
-                return -1;
-            }
-	        else if(lhs[i] > rhs[i])
-	        {
-                return 1;
-            }
-	        else
-	        {
-                return 0;
-            }
+	     if(lhs[i] < rhs[i])
+	     {
+                 return -1;
+             }
+	     else if(lhs[i] > rhs[i])
+	     {
+                 return 1;
+             }
+	     else
+	     {
+                 return 0;
+             }
         }
     public:
         type_info() = delete;

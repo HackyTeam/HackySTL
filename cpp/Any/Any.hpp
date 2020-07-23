@@ -5,6 +5,8 @@
 #include <exception>
 #include "../Utility/Utility.hpp"
 
+#include <any>
+
 namespace hsd
 {
     template<typename T>
@@ -112,28 +114,44 @@ namespace hsd
     private:
         void* _data = nullptr;
         bool _is_allocated = false;
-        type_info _id;
+        void(*_destroy)(void*) = nullptr;
+        type_info _id = typeid(void);
+
+        template<typename T>
+        static constexpr void destroy(void* data)
+        {
+            T* _val_ptr = reinterpret_cast<T*>(data);
+            _val_ptr->~T();
+            delete _val_ptr;
+        }
     public:
         any() = default;
 
         template<Copyable T>
         constexpr any(const T& other)
-            : _data{&other}, _id{typeid(T)}
-        {}
+        {
+            _data = &other;
+            _id = typeid(T);
+        }
 
         template<Copyable T>
         constexpr any(T&& other)
-            : _data{new T(other)}, _is_allocated{true}, _id{typeid(T)}
-        {}
-
-        constexpr any(const any& other)
-            : _data{other._data}, _id{other._id}
-        {}
-
-        constexpr any(any&& other)
-            : _data{other._data}, _id{other._id}
         {
-            other._data = nullptr;
+            _data = new T(other);
+            _destroy = destroy<T>;
+            _is_allocated = true;
+            _id = typeid(T);
+        }
+
+        any(const any& other)
+        {
+            _data = other._data;
+            _id = other._id;
+        }
+
+        any(any&& other)
+        {
+            swap(*this, other);
         }
 
         ~any()
@@ -151,10 +169,7 @@ namespace hsd
 
         any& operator=(any&& rhs)
         {
-            reset();
-            _data = rhs._data;
-            _id = rhs._id;
-            rhs._data = nullptr;
+            swap(*this, rhs);
             return *this;
         }
 
@@ -177,28 +192,24 @@ namespace hsd
             }
         }
 
-        type_info type()
+        const type_info& type()
         {
             return _id;
         }
 
-        constexpr void swap(any& other)
+        static constexpr void swap(any& lhs, any& rhs)
         {
-            hsd::swap(_data, other._data);
-            hsd::swap(_id, other._id);
-            hsd::swap(_is_allocated, other._is_allocated);
+            hsd::swap(lhs._data, rhs._data);
+            hsd::swap(lhs._id, rhs._id);
+            hsd::swap(lhs._destroy, rhs._destroy);
+            hsd::swap(lhs._is_allocated, rhs._is_allocated);
         }
 
         template< typename T, typename... Args >
-        constexpr void emplace(Args&&... args)
+        void emplace(Args&&... args)
         {
-            if(_is_allocated == true)
-            {
-                free(_data);
-            }
-
-            _is_allocated = true;
-            _data = nullptr;
+            reset();
+            _destroy = destroy<T>;
             _data = new T(forward<Args>(args)...);
             _id = typeid(T);
         }
@@ -210,11 +221,12 @@ namespace hsd
 
         void reset()
         {
-            if(_is_allocated == true)
+            if(_is_allocated == true && _destroy != nullptr)
             {
-                free(_data);
+                _destroy(_data);
             }
 
+            _destroy = nullptr;
             _data = nullptr;
             _id = typeid(void);
         }

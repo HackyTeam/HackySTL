@@ -50,6 +50,7 @@ namespace hsd
         first = second;
         second = _tmp;
     }
+    
     template<class InIt, class OutIt>
     OutIt copy(InIt first, InIt last, OutIt dest)
     {

@@ -5,11 +5,11 @@ int main()
 {
     // any type
     hsd::any a = 1;
-    std::cout << a.type().name() << ": " << a.cast<int>() << '\n';
+    //std::cout << a.type().name() << ": " << a.cast<int>() << '\n';
     a = 3.14;
-    std::cout << a.type().name() << ": " << a.cast<double>() << '\n';
+    //std::cout << a.type().name() << ": " << a.cast<double>() << '\n';
     a = true;
-    std::cout << a.type().name() << ": " << a.cast<bool>() << '\n';
+    //std::cout << a.type().name() << ": " << a.cast<bool>() << '\n';
  
     // bad cast
     try
@@ -26,7 +26,7 @@ int main()
     a = 1;
     if (a.has_value())
     {
-        std::cout << a.type().name() << '\n';
+        //std::cout << a.type().name() << '\n';
     }
  
     // reset

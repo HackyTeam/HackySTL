@@ -68,7 +68,7 @@ namespace hsd
             : _name{other.name()}
         {}
 
-        constexpr type_info& operator=(const std::type_info& rhs)
+        type_info& operator=(const std::type_info& rhs)
         {
             _name = rhs.name();
             return *this;
@@ -80,7 +80,7 @@ namespace hsd
             return *this;
         }
 
-        constexpr bool operator==(const std::type_info& rhs)
+        bool operator==(const std::type_info& rhs)
         {
             return ((_name == rhs.name()) || (_name[0] != '*' 
                         && strcmp(_name, rhs.name()) == 0));
@@ -92,7 +92,7 @@ namespace hsd
                         && strcmp(_name, rhs._name) == 0));
         }
 
-        constexpr bool operator!=(const std::type_info& rhs)
+        bool operator!=(const std::type_info& rhs)
         {
             return !operator==(rhs);
         }
@@ -119,17 +119,13 @@ namespace hsd
 
         template<Copyable T>
         constexpr any(const T& other)
-        {
-            _data = &other;
-            _id = typeid(T);
-        }
+            : _data{&other}, _id{typeid(T)}
+        {}
 
         template<Copyable T>
         constexpr any(T&& other)
-        {
-            _data = &other;
-            _id = typeid(T);
-        }
+            : _data{new T(other)}, _is_allocated{true}, _id{typeid(T)}
+        {}
 
         constexpr any(const any& other)
             : _data{other._data}, _id{other._id}
@@ -141,30 +137,34 @@ namespace hsd
             other.reset();
         }
 
-        constexpr ~any()
+        ~any()
         {
             reset();
         }
 
-        constexpr any& operator=(const any& rhs)
+        any& operator=(const any& rhs)
         {
+            reset();
             _data = rhs._data;
             _id = rhs._id;
             return *this;
         }
 
-        constexpr any& operator=(any&& rhs)
+        any& operator=(any&& rhs)
         {
+            reset();
             _data = rhs._data;
             _id = rhs._id;
-            rhs.reset();
+            rhs._data = nullptr;
             return *this;
         }
 
         template<class T>
         constexpr auto cast()
         {
-            if(_id != typeid(T))
+            typename std::remove_pointer<T>::type type;
+
+            if(_id != typeid(type))
             {
                 throw bad_any_cast();
             }
@@ -175,7 +175,7 @@ namespace hsd
             else
             {
                 return *reinterpret_cast<T*>(_data);
-            }*/
+            }
         }
 
         type_info type()
@@ -209,11 +209,11 @@ namespace hsd
             return _data != nullptr;
         }
 
-        constexpr void reset()
+        void reset()
         {
             if(_is_allocated == true)
             {
-                delete _data;
+                free(_data);
             }
 
             _data = nullptr;

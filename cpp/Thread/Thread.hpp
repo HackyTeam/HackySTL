@@ -49,8 +49,6 @@ struct thread {
 			hsd::tuple<std::decay_t<Args>...> args;
 
 			static void *enter_thread(void *arg) {
-				// hsd::move is broken! this fails with:
-				// error: invalid static_cast from 'const thread_data' to 'thread_data &&'
 				auto td = hsd::move(*reinterpret_cast<thread_data *>(arg));
 
 				// Tell our parent we are ready and copied the data

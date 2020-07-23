@@ -134,7 +134,7 @@ namespace hsd
         constexpr any(any&& other)
             : _data{other._data}, _id{other._id}
         {
-            other.reset();
+            other._data = nullptr;
         }
 
         ~any()
@@ -195,7 +195,7 @@ namespace hsd
         {
             if(_is_allocated == true)
             {
-                delete _data;
+                free(_data);
             }
 
             _is_allocated = true;

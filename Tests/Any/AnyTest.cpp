@@ -1,6 +1,14 @@
 #include <iostream>
 #include "../../cpp/Any/Any.hpp"
 
+struct S
+{
+    int a;
+    char b;
+    float c;
+    const char* d;
+};
+
 int main()
 {
     // any type
@@ -40,4 +48,6 @@ int main()
     a = 1;
     int* i = a.cast<int*>();
     std::cout << *i << "\n";
+
+    a.emplace<S>(1, 'c', 4.2f, "str");
 }

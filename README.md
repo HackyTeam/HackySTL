@@ -9,3 +9,7 @@ The Idea came from another [project](https://github.com/LegatAbyssWalker/amazing
 # Goal:
   To implement every single item from stdlib, you can however implement things that are not standard
   in a non-standard way, like: DefaultArg, `get` inside `tuple` or compile-time `for` loops
+  
+# Contributors:
+  DeKrain
+  qookie

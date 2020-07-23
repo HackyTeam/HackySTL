@@ -1,8 +1,8 @@
 #pragma once
 
-#include <utility>
 #include <stdexcept>
 
+#include "../Utility/Utility.hpp"
 #include "../InitializerList/InitializerList.hpp"
 
 namespace hsd
@@ -23,22 +23,22 @@ namespace hsd
         constexpr stack_array(const L& value, const U&... values)
         {
             T arr[] = {value, values...};
-            std::copy(arr, arr + N, begin());
+            hsd::copy(arr, arr + N, begin());
         }
 
         constexpr stack_array(T* data)
         {
-            std::copy(data, data + N, _array);
+            hsd::copy(data, data + N, _array);
         }
 
         constexpr stack_array(const stack_array& other)
         {
-            std::copy(other.begin(), other.end(), begin());
+            hsd::copy(other.begin(), other.end(), begin());
         }
 
         constexpr stack_array& operator=(const stack_array& rhs)
         {
-            std::copy(rhs.begin(), rhs.end(), begin());
+            hsd::copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
@@ -49,7 +49,7 @@ namespace hsd
                 throw std::out_of_range("");
             }
 
-            std::move(rhs.begin(), rhs.begin() + N, _array);
+            hsd::move(rhs.begin(), rhs.begin() + N, _array);
             return *this;
         }
 

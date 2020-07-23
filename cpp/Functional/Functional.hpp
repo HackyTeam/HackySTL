@@ -67,7 +67,7 @@ namespace hsd
                 throw std::runtime_error("Bad function");
             }
 
-            return apply([&](auto&&... args){
+            return hsd::apply([&](auto&&... args){
                 return _func_impl(args...);
             }, _func_args);
         }

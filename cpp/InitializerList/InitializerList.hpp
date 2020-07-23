@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Utility/Utility.hpp"
+
 namespace hsd
 {
     template< typename T >
@@ -18,14 +20,14 @@ namespace hsd
             _size = 1 + sizeof...(U);
             _data = new T[_size];
             T arr[] = {value, values...};
-            std::copy(arr, arr + _size, _data); 
+            hsd::copy(arr, arr + _size, _data); 
         }
 
         constexpr initializer_list(const initializer_list& other)
         {
             _size = other._size;
             _data = new T[_size];
-            std::copy(other._data, other._data + _size, _data); 
+            hsd::copy(other._data, other._data + _size, _data); 
         }
 
         constexpr ~initializer_list()

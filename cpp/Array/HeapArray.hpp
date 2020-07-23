@@ -1,8 +1,8 @@
 #pragma once
 
-#include <utility>
 #include <stdexcept>
 
+#include "../Utility/Utility.hpp"
 #include "../InitializerList/InitializerList.hpp"
 
 namespace hsd
@@ -25,7 +25,7 @@ namespace hsd
         constexpr heap_array(T* data)
         {
             _array = new T[N];
-            std::copy(data, data + N, _array);
+            hsd::copy(data, data + N, _array);
         }
 
         template< typename L, typename... U >
@@ -33,13 +33,13 @@ namespace hsd
         {
             _array = new T[N];
             T arr[] = {value, values...};
-            std::copy(arr, arr + N, begin());
+            hsd::copy(arr, arr + N, begin());
         }
 
         constexpr heap_array(const heap_array& other)
         {
             _array = new T[N];
-            std::copy(other.begin(), other.end(), begin());
+            hsd::copy(other.begin(), other.end(), begin());
         }
 
         constexpr ~heap_array()
@@ -49,7 +49,7 @@ namespace hsd
 
         constexpr heap_array& operator=(const heap_array& rhs)
         {
-            std::copy(rhs.begin(), rhs.end(), begin());
+            hsd::copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
@@ -60,7 +60,7 @@ namespace hsd
                 throw std::out_of_range("");
             }
 
-            std::move(rhs.begin(), rhs.begin() + N, _array);
+            hsd::move(rhs.begin(), rhs.begin() + N, _array);
             return *this;
         }
 

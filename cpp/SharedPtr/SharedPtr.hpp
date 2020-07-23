@@ -1,6 +1,6 @@
 #pragma once
 
-#include <utility>
+#include "../Utility/Utility.hpp"
 
 namespace hsd
 {
@@ -142,7 +142,7 @@ namespace hsd
                 __value._ptr = new _ptr_info;
                 __value._ptr->_value.~T();
                 new (&__value._ptr->_value) 
-                T(std::forward<Args>(args)...);
+                T(hsd::forward<Args>(args)...);
                 return __value;
             }
         };

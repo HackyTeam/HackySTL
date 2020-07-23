@@ -24,6 +24,16 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
+    template<class InIt, class OutIt>
+    OutIt move(InIt first, InIt last, OutIt dest)
+    {
+        while (first != last) 
+        {
+            *dest++ = hsd::move(*first++);
+        }
+        return dest;
+    }
+
     template <class T>
     static constexpr T&& forward(rev_ref_t<T>&& val)
     {
@@ -39,5 +49,28 @@ namespace hsd
         auto _tmp = first;
         first = second;
         second = _tmp;
+    }
+    template<class InIt, class OutIt>
+    OutIt copy(InIt first, InIt last, OutIt dest)
+    {
+        while (first != last) 
+        {
+            *dest++ = *first++;
+        }
+        return dest;
+    }
+
+    template<class InIt, class OutIt, class Pred>
+    OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
+    {
+        while (first != last) 
+        {
+            if (pred(*first))
+            { 
+                *dest++ = *first;
+            }
+            first++;
+        }
+        return dest;
     }
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <utility>
 #include <stdexcept>
 
+#include "../Utility/Utility.hpp"
 #include "../InitializerList/InitializerList.hpp"
 
 namespace hsd
@@ -20,7 +20,7 @@ namespace hsd
             _size = size;
             _reserved_size = size * 2;
             _data = new T[_reserved_size];
-            std::copy(data, data + size, begin());
+            hsd::copy(data, data + size, begin());
         }
     public:
         using iterator = T*;
@@ -50,13 +50,13 @@ namespace hsd
             _reserved_size = _size * 2;
             T arr[] = {value, values...};
             _data = new T[_reserved_size];
-            std::copy(arr, arr + _size, begin());
+            hsd::copy(arr, arr + _size, begin());
         }
     
         constexpr vector(const vector& lhs)
         {
             _data = new T[lhs._reserved_size];
-            std::copy(lhs.begin(), lhs.end(), begin());
+            hsd::copy(lhs.begin(), lhs.end(), begin());
             _reserved_size = lhs._reserved_size;
             _size = lhs._size;
         }
@@ -77,7 +77,7 @@ namespace hsd
             }
     
             _data = new T[lhs._reserved_size];
-            std::copy(lhs.begin(), lhs.end(), begin());
+            hsd::copy(lhs.begin(), lhs.end(), begin());
             _reserved_size = lhs._reserved_size;
             _size = lhs._size;
     
@@ -144,7 +144,7 @@ namespace hsd
             
             if(_data != nullptr)
             {
-                std::move(begin(), end(), buf);
+                hsd::move(begin(), end(), buf);
                 delete[] _data;
             }
     
@@ -170,14 +170,14 @@ namespace hsd
         {
             if(_reserved_size > _size)
             {
-                _data[_size] = std::move(val);
+                _data[_size] = hsd::move(val);
                 _size++;
                 return;
             }
             else
             {
                 reserve(_size * 2);
-                _data[_size] = std::move(val);
+                _data[_size] = hsd::move(val);
                 _size++;
             }
         }
@@ -188,7 +188,7 @@ namespace hsd
             if(_reserved_size > _size)
             {
                 _data[_size].~T();
-                new (&_data[_size]) T(std::forward<Args>(args)...);
+                new (&_data[_size]) T(hsd::forward<Args>(args)...);
                 _size++;
                 return;
             }
@@ -196,7 +196,7 @@ namespace hsd
             {
                 reserve(_size * 2);
                 _data[_size].~T();
-                new (&_data[_size]) T(std::forward<Args>(args)...);
+                new (&_data[_size]) T(hsd::forward<Args>(args)...);
                 _size++;
             }
         }

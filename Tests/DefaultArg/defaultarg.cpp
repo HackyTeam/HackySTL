@@ -5,8 +5,7 @@
 
 // Pls -O3
 
-int add(int a, int b) 
-{
+int add(int a, int b) {
     return a+b;
 }
 
@@ -20,8 +19,7 @@ hsd::defaultcall_t adder(&add, 3, 4);
 static auto bopper = hsd::defaultcall_t(bop, 3, 4);
 static auto funcer = hsd::defaultcall_t(f);
 
-int main() 
-{
+int main() {
     std::cout << bopper(hsd::default_v, hsd::default_v) << std::endl;
     std::cout << bopper(hsd::default_v, 1) << std::endl;
     std::cout << bopper(2, hsd::default_v) << std::endl;

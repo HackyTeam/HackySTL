@@ -34,7 +34,7 @@ int main()
     a = 1;
     if (a.has_value())
     {
-        //std::cout << a.type().name() << '\n';
+        std::cout << a.type().name() << '\n';
     }
  
     // reset

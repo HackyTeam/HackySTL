@@ -13,9 +13,9 @@ namespace hsd
     using rev_ref_t = typename std::remove_reference<T>::type;
 
     template<typename T>
-    static constexpr T&& move(const T& val)
+    static constexpr rev_ref_t<T>&& move(T&& val)
     {
-        return static_cast<T&&>(val);
+        return static_cast<rev_ref_t<T>&&>(val);
     }
 
     template <class T>

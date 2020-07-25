@@ -3,6 +3,7 @@
 // Requires C++ 17
 
 #include "../Tuple/Tuple.hpp"
+#include "../Functional/Functional.hpp"
 
 namespace hsd
 {
@@ -25,7 +26,7 @@ namespace hsd
         tuple<Args...> default_args;
         F func;
         constexpr defaultcall_t(F&& func, Args&&... args) 
-            : default_args(std::forward<Args>(args)...), func(hsd::forward<F>(func)) 
+            : default_args(hsd::forward<Args>(args)...), func(hsd::forward<F>(func)) 
         {}
 
         private:
@@ -57,36 +58,16 @@ namespace hsd
         return c.default_args.template get<Id>();
     }
 
-    // STOLEN <begin>
-    namespace helper
-    {
-        template< typename T >
-        struct as_function
-            : public as_function< decltype(&T::operator()) >
-        {};
+    template <typename F, typename... Args, 
+        typename Op = decltype(&hsd::rev_ref_t<F>::operator())>
+    defaultcall_t(F&&, Args&&...)
+        -> defaultcall_t<typename hsd::helper::as_function<Op>::type, F>;
 
-        template< typename R, typename... ArgTypes >
-        struct as_function< R(ArgTypes...) > {
-            using type = R(ArgTypes...);
-        };
+    template <typename Rez, typename... Args>
+    defaultcall_t(Rez(*)(Args...), Args&&...)
+        -> defaultcall_t<Rez(Args...), Rez(*)(Args...)>;
 
-        template< typename R, typename... ArgTypes >
-        struct as_function< R(ArgTypes...) noexcept > {
-            using type = R(ArgTypes...);
-        };
-
-        template< typename U, typename R, typename... ArgTypes >
-        struct as_function< R(U::*)(ArgTypes...) const > {
-            using type = R(ArgTypes...);
-    };
-    // STOLEN <end>
-}
-
-template <typename F, typename... Args>
-defaultcall_t(F&&, Args&&...)
-    -> defaultcall_t<typename helper::as_function<
-        std::remove_pointer_t<
-          std::remove_reference_t<F>
-        >
-      >::type, F>;
+    template <typename Rez, typename... Args>
+    defaultcall_t(Rez(&)(Args...), Args&&...)
+        -> defaultcall_t<Rez(Args...), Rez(&)(Args...)>;
 }

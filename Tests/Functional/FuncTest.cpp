@@ -8,8 +8,9 @@ static constexpr int func(int a) noexcept
 
 int main()
 {
-    //function f = [](){return 4;};
-    hsd::function f = func;
-    f.bind(5);
-    printf("%d\n", f());
+    int b = 5;
+    hsd::function f = func;  
+    auto f2 = f;
+    hsd::function f3 = hsd::bind(f, hsd::make_tuple(5));
+    printf("%d\n", f3());
 }

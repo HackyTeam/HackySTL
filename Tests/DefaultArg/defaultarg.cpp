@@ -1,6 +1,5 @@
 #include "../../cpp/DefaultArg/DefaultArg.hpp"
 
-#include <functional>
 #include <iostream>
 
 // Pls -O3
@@ -11,7 +10,7 @@ int add(int a, int b) {
 
 // see: "extern_impl.cpp"
 extern "C" int bop(int a, int b) noexcept;
-extern "C" std::function<int()> f;
+extern "C" hsd::function<int()> f;
 
 //static auto bopper = make_defaultcall<int(int, int)>(bop, 3, 4);
 //static auto funcer = make_defaultcall<int()>(f);

@@ -5,105 +5,182 @@
 
 namespace hsd
 {
+    using nullptr_t = decltype(nullptr);
     template< typename > class function;
 
     template< typename Result, typename... Args >
     class function< Result(Args...) > 
     {
     private:
-        Result(*_func_impl)(Args...) = nullptr;
+        struct callable_base
+        {
+            size_t _instances = 1;
+            virtual Result operator()(Args&&...) = 0;
+            virtual ~callable_base() {}
+        };
 
-        struct _Useless {};
+        template<typename Func>
+        struct callable : callable_base
+        {
+            Func _func;
+            callable(Func func)
+                : _func{func}
+            {}
 
-        tuple< Args... > _func_args;
+            virtual Result operator()(Args&&... args) override
+            {
+                return _func(hsd::forward<Args>(args)...);
+            }
+        };
+        
+        callable_base* _func_impl = nullptr;
+        template< typename Condition, typename Value >
+        using ResolvedType = typename std::enable_if< Condition::value, Value >::type;
 
-        template< bool Condition, typename Value >
-        using ResolvedType = typename std::enable_if< Condition, Value >::type;
+        constexpr void reset()
+        {
+            if(_func_impl != nullptr)
+            {
+                if(_func_impl->_instances == 1)
+                {
+                    delete _func_impl;
+                    _func_impl = nullptr;
+                }
+                else
+                    _func_impl->_instances--;
+            }
+        }
     public:
         function() = default;
 
-        template< typename Func >
-        constexpr function(Func&& function)
+        template< typename Func, 
+            typename = ResolvedType<std::__not_<std::is_same<Func, function>>, void>,
+            typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
+        constexpr function(Func);
+
+        constexpr function(const function&);
+
+        constexpr function(function&& other)
         {
-            _func_impl = function;
+            hsd::swap(_func_impl, other._func_impl);
         }
 
-        constexpr function(const function& other)
+        constexpr function(nullptr_t){}
+
+        constexpr ~function()
         {
-            _func_impl = other._func_impl;
+            reset();
         }
 
         constexpr function& operator=(const function& other)
         {
+            reset();
             _func_impl = other._func_impl;
+            if(_func_impl != nullptr)
+                _func_impl->instances++;
+            return *this;
         }
 
-        template< typename Func >
-        constexpr function& operator=(Func&& function)
+        constexpr function& operator=(function&& other)
         {
-            _func_impl = function;
+            hsd::swap(_func_impl, other._func_impl);
+            return *this;
         }
 
-        constexpr void bind(Args&&... arguments)
+        template<typename Func>
+        constexpr function& operator=(Func func)
         {
-            _func_args = make_tuple(arguments...);
+            if(static_cast<bool>(func))
+            {
+                reset();
+                _func_impl = new callable<Func>(func);
+            }
+            return *this;
         }
 
-        constexpr Result operator()(Args&&... arguments)
+        constexpr function& operator=(nullptr_t)
+        {
+            reset();
+        }
+
+        constexpr Result operator()(Args&&... args)
         {
             if(_func_impl == nullptr)
             {
                 throw std::runtime_error("Bad function");
             }
 
-            return _func_impl(arguments...);
-        }
-
-        template< typename Value = Result >
-        constexpr ResolvedType< (sizeof...(Args) != 0), Value > operator()()
-        {
-            if(_func_impl == nullptr)
-            {
-                throw std::runtime_error("Bad function");
-            }
-
-            return hsd::apply([&](auto&&... args){
-                return _func_impl(args...);
-            }, _func_args);
+            return _func_impl->operator()(hsd::forward<Args>(args)...);
         }
     };
 
     namespace helper
     {
-        template< typename T >
-        struct as_function
-            : public as_function< decltype(&T::operator()) >
-        {};
-        
-        template< typename R, typename... ArgTypes >
-        struct as_function< R(ArgTypes...) > 
+        template<typename>
+        struct as_function {};
+
+        template<typename Res, typename Scope, bool Case, typename... Args>
+        struct as_function<Res(Scope::*)(Args...) noexcept(Case)>
         {
-            using type = R(ArgTypes...);
+            using type = Res(Args...);
         };
-        
-        template< typename R, typename... ArgTypes >
-        struct as_function< R(&)(ArgTypes...) > 
-        {
-            using type = R(ArgTypes...);
+
+        template<typename Res, typename Scope, bool Case, typename... Args>
+        struct as_function<Res(Scope::*)(Args...)& noexcept(Case)>
+        { 
+            using type = Res(Args...);
         };
-        
-        template< typename R, typename... ArgTypes >
-        struct as_function< R(&)(ArgTypes...) noexcept > 
-        {
-            using type = R(ArgTypes...);
+
+        template<typename Res, typename Scope, bool Case, typename... Args>
+        struct as_function<Res(Scope::*)(Args...) const noexcept(Case)>
+        { 
+            using type = Res(Args...);
         };
-        
-        template< typename U, typename R, typename... ArgTypes >
-        struct as_function< R(U::*)(ArgTypes...) const > 
-        {
-            using type = R(ArgTypes...);
+
+        template<typename Res, typename Scope, bool Case, typename... Args>
+        struct as_function<Res(Scope::*)(Args...) const& noexcept(Case)>
+        { 
+            using type = Res(Args...);
         };
     }
 
-    template< typename Func > function(Func&&) -> function< typename helper::as_function<Func>::type >;
+    template< typename Res, typename... Args >
+    constexpr function<Res(Args...)>::function(const function& other)
+    {
+        _func_impl = other._func_impl;
+        if(_func_impl != nullptr)
+            _func_impl->_instances++;
+    }
+
+    template< typename Res, typename... Args >
+    template< typename Func, typename, typename >
+    constexpr function<Res(Args...)>::function(Func func)
+    {
+        _func_impl = new callable<Func>(func);
+    }
+
+    template< typename Func, typename... Args >
+    static constexpr auto bind(Func func, Args&&... args)
+    {
+        return [&, func]{
+            hsd::function _internal_func = func;
+            return _internal_func(hsd::forward<Args>(args)...);
+        };
+    }
+
+    template< typename Func, typename... Args >
+    static constexpr auto bind(Func func, hsd::tuple<Args...> args)
+    {
+        return [&, func]{
+            return [&, func]<size_t... Ints>(hsd::index_sequence<Ints...>)
+            {
+                hsd::function _internal_func = func;
+                return _internal_func(hsd::forward<Args>(args.template get<Ints>())...);
+            }(hsd::make_index_sequence<args.size()>{});
+        };
+    }
+
+    template < class Rez, class... Args > function(Rez(*)(Args...)) -> function<Rez(Args...)>;
+    template< typename Func, typename Op = decltype(&Func::operator()) > 
+        function(Func) -> function<typename helper::as_function<Op>::type>;
 }

@@ -113,7 +113,6 @@ namespace hsd
     {
     private:
         void* _data = nullptr;
-        bool _is_allocated = false;
         void(*_destroy)(void*) = nullptr;
         type_info _id = typeid(void);
 
@@ -130,16 +129,16 @@ namespace hsd
         template<Copyable T>
         constexpr any(const T& other)
         {
-            _data = &other;
+            _data = new T(other);
+            _destroy = destroy<T>;
             _id = typeid(T);
         }
 
         template<Copyable T>
         constexpr any(T&& other)
         {
-            _data = new T(other);
+            _data = new T(hsd::move(other));
             _destroy = destroy<T>;
-            _is_allocated = true;
             _id = typeid(T);
         }
 
@@ -202,7 +201,6 @@ namespace hsd
             hsd::swap(lhs._data, rhs._data);
             hsd::swap(lhs._id, rhs._id);
             hsd::swap(lhs._destroy, rhs._destroy);
-            hsd::swap(lhs._is_allocated, rhs._is_allocated);
         }
 
         template< typename T, typename... Args >
@@ -221,10 +219,8 @@ namespace hsd
 
         void reset()
         {
-            if(_is_allocated == true && _destroy != nullptr)
-            {
+            if(_destroy != nullptr)
                 _destroy(_data);
-            }
 
             _destroy = nullptr;
             _data = nullptr;

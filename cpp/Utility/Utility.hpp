@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace hsd
 {
     template< typename T1, typename T2 >

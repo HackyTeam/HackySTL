@@ -4,7 +4,7 @@
 int main()
 {
     hsd::u8string str = "this is a test";
-    hsd::u8string str2 = str;
+    auto str2 = str;
     
     printf("%s\n", hsd::u8string::to_string(-4.12f).c_str());
     

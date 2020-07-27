@@ -435,6 +435,7 @@ namespace hsd
 		}
     };
 
+	using wcstring = hsd::cstring<wchar_t>;
 	using u8cstring = hsd::cstring<char>;
 	using u16cstring = hsd::cstring<char16_t>;
 	using u32cstring = hsd::cstring<char32_t>;

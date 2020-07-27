@@ -60,9 +60,10 @@ namespace hsd
         constexpr string(const string& other)
         {
             _size = other._size;
-            _reserved_size = _reserved_size;
-            _data = new CharT[_reserved_size];
+            _reserved_size = other._reserved_size;
+            _data = new CharT[_reserved_size + 1];
             _str_utils::copy(_data, other._data, _size);
+            _data[_size] = '\0';
         }
 
         constexpr string(string&& other)
@@ -85,6 +86,7 @@ namespace hsd
             _reserved_size = _size;
             _data = new CharT[_size + 1];
             _str_utils::copy(_data, rhs, _size);
+            _data[_size] = '\0';
             return *this;
         }
 
@@ -93,8 +95,9 @@ namespace hsd
             _reset();
             _size = rhs._size;
             _reserved_size = rhs._reserved_size;
-            _data = new CharT[rhs._reserved_size];
+            _data = new CharT[rhs._reserved_size + 1];
             _str_utils::copy(_data, rhs._data, _size);
+            _data[_size] = '\0';
             return *this;
         }
 
@@ -372,9 +375,7 @@ namespace hsd
         constexpr void clear()
         {
             if(_data != nullptr)
-            {
                 _reset();
-            }
     
             _data = new CharT[1];
             _data[0] = '\0';
@@ -448,6 +449,7 @@ namespace hsd
         }
     };
 
+    using wstring = hsd::string<wchar_t>;
     using u8string = hsd::string<char>;
     using u16string = hsd::string<char16_t>;
     using u32string = hsd::string<char32_t>;

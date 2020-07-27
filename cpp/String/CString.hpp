@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utility/Utility.hpp"
+#include <math.h>
 
 namespace hsd
 {
@@ -45,6 +46,7 @@ namespace hsd
         		if ((*str == *substr) && _compare(str, substr))
         			return str;
         	}
+
         	return nullptr;
         }
 
@@ -59,6 +61,19 @@ namespace hsd
         	return nullptr;
         }
 
+		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr)
+        {
+			const CharT* rez = nullptr;
+
+        	for(; *str != '\0'; str++)
+        	{
+        		if ((*str == *substr) && _compare(str, substr))
+        			rez = str;
+        	}
+
+        	return rez;
+        }
+
         static constexpr const CharT* find_rev(const CharT* str, CharT letter)
         {
         	const CharT* rez = nullptr;
@@ -70,6 +85,28 @@ namespace hsd
         	}
 
         	return rez;
+        }
+
+		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr, size_t pos)
+        {
+        	for(; pos != 0; pos--)
+        	{
+        		if ((str[pos] == *substr) && _compare(&str[pos], substr))
+        			return &str[pos];
+        	}
+
+        	return nullptr;
+        }
+
+        static constexpr const CharT* find_rev(const CharT* str, CharT letter, size_t pos)
+        {
+        	for(; pos != 0; pos--)
+        	{
+        		if(str[pos] == letter)
+        			return &str[pos];
+        	}
+
+        	return nullptr;
         }
 
         static constexpr size_t length(const CharT* str)
@@ -191,10 +228,16 @@ namespace hsd
 
 		static constexpr const CharT* to_string(float num)
 		{
+			size_t _len = 0;
 			int _round_num = static_cast<int>(num);
 			bool _negative = (_round_num < 0);
-			size_t _point_num = (num - _round_num) * 10000;
-			size_t _len = _num_len(_round_num) + 5;
+			size_t _point_num = fabs(num - _round_num) * 10000 + 1;
+			
+			if(_negative)
+				_len = _num_len(_round_num) + 6;
+			else
+				_len = _num_len(_round_num) + 5;
+
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
@@ -211,10 +254,16 @@ namespace hsd
 
 		static constexpr const CharT* to_string(double num)
 		{
+			size_t _len = 0;
 			int _round_num = static_cast<int>(num);
 			bool _negative = (_round_num < 0);
-			size_t _point_num = (num - _round_num) * 1000000 + 1;
-			size_t _len = _num_len(_round_num) + 7;
+			size_t _point_num = fabs(num - _round_num) * 1000000 + 1;
+			
+			if(_negative)
+				_len = _num_len(_round_num) + 8;
+			else
+				_len = _num_len(_round_num) + 7;
+			
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
@@ -226,6 +275,7 @@ namespace hsd
 			_buf[--_len] = '.';
 			const CharT* _round_buf = to_string(_round_num);
 			hsd::move(_round_buf, _round_buf + _len, _buf);
+			delete[] _round_buf;
 			return _buf;
 		}
 
@@ -294,7 +344,7 @@ namespace hsd
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
 
-		static constexpr int compare(const char* lhs, const char* rhs)
+		static constexpr int compare(const CharT* lhs, const CharT* rhs)
 		{
 			size_t _index = 0;
 
@@ -314,7 +364,7 @@ namespace hsd
 				return 0;
 		}
 
-		static constexpr int compare(const char* lhs, const char* rhs, int len)
+		static constexpr int compare(const CharT* lhs, const CharT* rhs, size_t len)
 		{
 			size_t _index = 0;
 
@@ -334,30 +384,33 @@ namespace hsd
 				return 0;
 		}
 
-		static constexpr char* copy(char* dest, const char* src, int len)
+		static constexpr CharT* copy(CharT* dest, const CharT* src, size_t len)
+		{
+			if (dest == nullptr)
+				return nullptr;
+
+			for(; *src && len != 0; len--, dest++, src++)
+			{
+				*dest = *src;
+			}
+			return dest;
+		}
+
+		static constexpr CharT* copy(CharT* dest, const CharT* src)
 		{
 			if (dest == nullptr)
 				return nullptr;
 
 			char* ptr = dest;
 
-			while (*src && len--)
+			for(; *src; dest++, src++)
 			{
 				*dest = *src;
-				dest++;
-				src++;
 			}
-
-			*dest = '\0';
 			return ptr;
 		}
 
-		static constexpr char* copy(char* dest, const char* src)
-		{
-			return copy(dest, src, length(src));
-		}
-
-		static constexpr char* add(char *dest, const char *src)
+		static constexpr CharT* add(CharT* dest, const CharT* src)
 		{
 		    size_t _index = length(dest);
 			size_t _index_helper = 0;
@@ -369,12 +422,12 @@ namespace hsd
 		    return dest;
 		}
 
-		static constexpr char* add(char *dest, const char *src, int len)
+		static constexpr CharT* add(CharT* dest, const CharT* src, size_t len)
 		{
-			size_t _index = length(dest);
+			size_t _index = len;
 			size_t _index_helper = 0;
 
-		    for (; _index_helper < len && src[_index_helper] != '\0'; _index_helper++)
+		    for (; src[_index_helper] != '\0'; _index_helper++)
 		        dest[_index + _index_helper] = src[_index_helper];
 
 			dest[_index + _index_helper] = '\0';
@@ -383,4 +436,6 @@ namespace hsd
     };
 
 	using u8cstring = hsd::cstring<char>;
+	using u16cstring = hsd::cstring<char16_t>;
+	using u32cstring = hsd::cstring<char32_t>;
 }

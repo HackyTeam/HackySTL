@@ -47,7 +47,7 @@ namespace hsd
         constexpr vector(const L& value, const U&... values)
         {
             _size = 1 + sizeof...(U);
-            _reserved_size = _size * 2;
+            _reserved_size = _size;
             T arr[] = {value, values...};
             _data = new T[_reserved_size];
             hsd::copy(arr, arr + _size, begin());
@@ -140,15 +140,15 @@ namespace hsd
         constexpr void reserve(size_t size)
         {
             _reserved_size = size;
-            T *buf = new T[size];
+            T *_buf = new T[size];
             
             if(_data != nullptr)
             {
-                hsd::move(begin(), end(), buf);
+                hsd::move(begin(), end(), _buf);
                 delete[] _data;
             }
     
-            _data = buf;
+            _data = _buf;
         }
         constexpr void push_back(const T& val)
         {
@@ -216,7 +216,7 @@ namespace hsd
             return _reserved_size;
         }
     
-        constexpr T* data()
+        constexpr iterator data()
         {
             return _data;
         }

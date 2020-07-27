@@ -36,6 +36,18 @@ namespace hsd
         return dest;
     }
 
+    template<typename T1>
+    constexpr T1 min(T1 first, T1 second)
+    {
+        return first < second ? first : second;
+    }
+
+    template<typename T1>
+    constexpr T1 max(T1 first, T1 second)
+    {
+        return first > second ? first : second;
+    }
+
     template <class T>
     static constexpr T&& forward(rev_ref_t<T>&& val)
     {

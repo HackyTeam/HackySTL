@@ -458,7 +458,7 @@ namespace hsd
             return cbegin() + size();
         }
     };
-
+    
     using wstring = hsd::string<wchar_t>;
     using u8string = hsd::string<char>;
     using u16string = hsd::string<char16_t>;

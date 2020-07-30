@@ -46,6 +46,7 @@ namespace hsd
             _reserved_size = _size;
             _data = new CharT[_size + 1];
             _str_utils::copy(_data, cstr, _size);
+            _data[_size] = '\0';
         }
 
         constexpr string(const CharT* cstr, size_t size)
@@ -116,8 +117,17 @@ namespace hsd
         {
             const CharT* _cstr_buf = _str_utils::to_string(val);
             string _str_buf = string(_cstr_buf);
-            delete[] _cstr_buf;
+            
+            if constexpr(!(std::is_same_v<T, CharT*> || std::is_same_v<T, const CharT*>))
+                delete[] _cstr_buf;
+            
             return _str_buf;
+        }
+
+        template<typename T>
+        static constexpr string<T>& to_string(string<T>& val)
+        {
+            return val;
         }
 
         constexpr string operator+(const string& rhs)

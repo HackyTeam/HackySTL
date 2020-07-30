@@ -27,7 +27,7 @@ namespace hsd
     }
 
     template<class InIt, class OutIt>
-    OutIt move(InIt first, InIt last, OutIt dest)
+    static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
         while (first != last) 
         {
@@ -37,13 +37,13 @@ namespace hsd
     }
 
     template<typename T1>
-    constexpr T1 min(T1 first, T1 second)
+    static constexpr T1 min(T1 first, T1 second)
     {
         return first < second ? first : second;
     }
 
     template<typename T1>
-    constexpr T1 max(T1 first, T1 second)
+    static constexpr T1 max(T1 first, T1 second)
     {
         return first > second ? first : second;
     }
@@ -66,9 +66,9 @@ namespace hsd
     }
     
     template<class InIt, class OutIt>
-    OutIt copy(InIt first, InIt last, OutIt dest)
+    static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
-        while (first != last) 
+        while(first != last) 
         {
             *dest++ = *first++;
         }
@@ -76,11 +76,11 @@ namespace hsd
     }
 
     template<class InIt, class OutIt, class Pred>
-    OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
+    static constexpr OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
     {
-        while (first != last) 
+        while(first != last) 
         {
-            if (pred(*first))
+            if(pred(*first))
             { 
                 *dest++ = *first;
             }

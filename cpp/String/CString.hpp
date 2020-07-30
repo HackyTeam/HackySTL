@@ -279,6 +279,24 @@ namespace hsd
 			return _buf;
 		}
 
+		static constexpr const CharT* to_string(CharT* str)
+		{
+			return str;
+		}
+
+		static constexpr const CharT* to_string(const CharT* str)
+		{
+			return str;
+		}
+
+		static constexpr const CharT* to_string(CharT letter)
+		{
+			CharT* _buf = new CharT[2];
+			_buf[0] = letter;
+			_buf[1] = '\0';
+			return _buf;
+		}
+
 		static constexpr int parse_i(const CharT* str)
 		{
 			int _num = 0;
@@ -332,7 +350,7 @@ namespace hsd
 		    }
 
 			if(*str == '\0')
-				return _round_num;
+				return _negative ? -_round_num : _round_num;
 
 		    for(str += 1; *str != '\0'; str++, _num_len++)
 		    {

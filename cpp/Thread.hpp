@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../Utility/Utility.hpp"
-#include "../Tuple/Tuple.hpp"
+#include "Utility.hpp"
+#include "Tuple.hpp"
+
 #include <type_traits> // std::decay_t
 #include <pthread.h>
 #include <cstdlib>

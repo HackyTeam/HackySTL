@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../cpp/Functional/Functional.hpp"
+#include "../../cpp/Functional.hpp"
 
 static constexpr int func(int a) noexcept
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../IndexSequence/IndexSequence.hpp"
-#include "../Utility/Utility.hpp"
+#include "IndexSequence.hpp"
+#include "Utility.hpp"
 
 namespace hsd
 {

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../../cpp/Thread/Thread.hpp"
+#include "../../cpp/Thread.hpp"
 
 void foo(int a, float b) {
 	std::cout << a << " " << b << std::endl;

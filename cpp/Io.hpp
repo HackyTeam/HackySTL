@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdexcept>
 
-#include "../String/SStream.hpp"
-#include "../Vector/Vector.hpp"
+#include "SStream.hpp"
+#include "Vector.hpp"
 
 namespace hsd
 {

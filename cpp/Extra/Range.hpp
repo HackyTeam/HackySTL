@@ -5,6 +5,7 @@ namespace hsd
     class RangeIterator
     {
     private:
+        using size_t = unsigned long int;
         size_t _val;
     public:
         RangeIterator() = default;
@@ -99,7 +100,9 @@ namespace hsd
     class Range
     {
     private:
+        using size_t = unsigned long int;
         RangeIterator _begin, _end;
+        
     public:
         constexpr Range(size_t first, size_t last)
             : _begin{first}, _end{last}

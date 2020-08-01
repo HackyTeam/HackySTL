@@ -2,8 +2,8 @@
 
 // Requires C++ 17
 
-#include "../Tuple/Tuple.hpp"
-#include "../Functional/Functional.hpp"
+#include "../Tuple.hpp"
+#include "../Functional.hpp"
 
 namespace hsd
 {

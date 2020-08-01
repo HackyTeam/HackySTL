@@ -1,4 +1,4 @@
-#include "../../../cpp/String/String.hpp"
+#include "../../../cpp/String.hpp"
 #include <stdio.h>
 
 int main()

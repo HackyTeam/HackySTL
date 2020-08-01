@@ -1,7 +1,7 @@
 #pragma once
 
 #include "String.hpp"
-#include "../Utility/Utility.hpp"
+#include "Utility.hpp"
 
 namespace hsd
 {

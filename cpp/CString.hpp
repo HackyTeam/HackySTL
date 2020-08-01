@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utility/Utility.hpp"
+#include "Utility.hpp"
 #include <math.h>
 
 namespace hsd

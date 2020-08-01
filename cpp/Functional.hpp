@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Tuple/Tuple.hpp"
+#include "Tuple.hpp"
 #include <stdexcept>
 
 namespace hsd

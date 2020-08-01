@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utility/Utility.hpp"
+#include "Utility.hpp"
 
 namespace hsd
 {
@@ -122,28 +122,28 @@ namespace hsd
 
             static constexpr shared_ptr make_shared()
             {
-                shared_ptr __value;
-                __value._ptr = new _ptr_info;
-                return __value;
+                shared_ptr _value_ptr;
+                _value_ptr._ptr = new _ptr_info;
+                return _value_ptr;
             }
 
             static constexpr shared_ptr make_shared(const T& val)
             {
-                shared_ptr __value;
-                __value._ptr = new _ptr_info;
-                __value._ptr->_value = val;
-                return __value;
+                shared_ptr _value_ptr;
+                _value_ptr._ptr = new _ptr_info;
+                _value_ptr._ptr->_value = val;
+                return _value_ptr;
             }
 
             template<typename... Args>
             static constexpr shared_ptr make_shared(Args&&... args)
             {
-                shared_ptr __value;
-                __value._ptr = new _ptr_info;
-                __value._ptr->_value.~T();
-                new (&__value._ptr->_value) 
+                shared_ptr _value_ptr;
+                _value_ptr._ptr = new _ptr_info;
+                _value_ptr._ptr->_value.~T();
+                new (&_value_ptr._ptr->_value) 
                 T(hsd::forward<Args>(args)...);
-                return __value;
+                return _value_ptr;
             }
         };
 

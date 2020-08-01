@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "../Utility/Utility.hpp"
-#include "../InitializerList/InitializerList.hpp"
+#include "Utility.hpp"
+#include "InitializerList.hpp"
 
 namespace hsd
 {

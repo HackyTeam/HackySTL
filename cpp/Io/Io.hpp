@@ -74,6 +74,7 @@ namespace hsd
     public:
         static hsd::u8sstream& read_line()
         {
+            _u8io_buf.reset_data();
             size_t _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
             getline(&_u8line_buf, &_io_buf_len, stdin);
@@ -82,12 +83,14 @@ namespace hsd
 
         static hsd::u8sstream& read()
         {
+            _u8io_buf.reset_data();
             scanf("%s", _u8io_buf.data());
             return _u8io_buf;
         }
 
         static hsd::wsstream& wread()
         {
+            _wio_buf.reset_data();
             scanf("%ls", _wio_buf.data());
             return _wio_buf;
         }
@@ -260,6 +263,7 @@ namespace hsd
 
         hsd::u8sstream& read_line()
         {
+            _u8io_buf.reset_data();
             size_t _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
             
@@ -271,12 +275,21 @@ namespace hsd
             { 
                 _u8io_buf.reset_data();
             }
+            else if(_u8line_buf[0] == '\n')
+            {
+                if(getline(&_u8line_buf, &_io_buf_len, _file_buf) == EOF)
+                { 
+                    _u8io_buf.reset_data();
+                }
+            }
             
             return _u8io_buf;
         }
 
         hsd::u8sstream& read()
         {
+            _u8io_buf.reset_data();
+
             if(only_write())
             {
                 throw std::runtime_error("Cannot read file. It is in write mode");
@@ -291,6 +304,8 @@ namespace hsd
 
         hsd::wsstream& wread()
         {
+            _wio_buf.reset_data();
+
             if(only_write())
             {
                 throw std::runtime_error("Cannot read file. It is in write mode");

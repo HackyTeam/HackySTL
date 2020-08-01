@@ -349,7 +349,7 @@ namespace hsd
 		        _round_num += *str - '0';
 		    }
 
-			if(*str == '\0')
+			if(*str == '\0' || !_is_number(*str))
 				return _negative ? -_round_num : _round_num;
 
 		    for(str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)

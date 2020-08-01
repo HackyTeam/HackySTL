@@ -9,5 +9,6 @@ int main()
     hsd::io::print("{}, {}, {}\n", x, y, z);
     auto file = hsd::file("test.txt", hsd::file::options::text::read);
     auto b = file.read().parse<int>();
+    auto e = file.read_line().to_string();
     hsd::io::print("{}\n", b);
 }

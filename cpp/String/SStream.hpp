@@ -68,7 +68,7 @@ namespace hsd
 		        _round_num += *str - '0';
 		    }
 
-			if(*str == '\0')
+			if(*str == '\0' || !_is_number(*str))
 			{	
 				return {
 					_negative ? -_round_num : 
@@ -184,6 +184,7 @@ namespace hsd
         void reset_data()
         {
             _data[0] = '\0';
+            _current_pos = 0;
         }
 
         size_t size()

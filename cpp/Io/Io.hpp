@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdexcept>
 
-#include "../String/String.hpp"
+#include "../String/SStream.hpp"
 #include "../Vector/Vector.hpp"
 
 namespace hsd
@@ -11,8 +11,8 @@ namespace hsd
     class bufferable
     {
     protected:
-        static inline hsd::u8string _u8io_buf{4096};
-        static inline hsd::wstring _wio_buf{4096};
+        static inline hsd::u8sstream _u8io_buf{4096};
+        static inline hsd::wsstream _wio_buf{4096};
     };
 
     class io : private bufferable
@@ -72,7 +72,7 @@ namespace hsd
             return _buf;
         }
     public:
-        static hsd::u8string& read_line()
+        static hsd::u8sstream& read_line()
         {
             size_t _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
@@ -80,13 +80,13 @@ namespace hsd
             return _u8io_buf;
         }
 
-        static hsd::u8string& read()
+        static hsd::u8sstream& read()
         {
             scanf("%s", _u8io_buf.data());
             return _u8io_buf;
         }
 
-        static hsd::wstring& wread()
+        static hsd::wsstream& wread()
         {
             scanf("%ls", _wio_buf.data());
             return _wio_buf;
@@ -258,7 +258,7 @@ namespace hsd
             fclose(_file_buf);
         }
 
-        hsd::u8string& read_line()
+        hsd::u8sstream& read_line()
         {
             size_t _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
@@ -269,13 +269,13 @@ namespace hsd
             }
             if(getline(&_u8line_buf, &_io_buf_len, _file_buf) == EOF)
             { 
-                _u8io_buf.clear();
+                _u8io_buf.reset_data();
             }
             
             return _u8io_buf;
         }
 
-        hsd::u8string& read()
+        hsd::u8sstream& read()
         {
             if(only_write())
             {
@@ -283,13 +283,13 @@ namespace hsd
             }
             if(fscanf(_file_buf, "%s", _u8io_buf.data()) == EOF)
             {
-                _u8io_buf.clear();
+                _u8io_buf.reset_data();
             }
             
             return _u8io_buf;
         }
 
-        hsd::wstring& wread()
+        hsd::wsstream& wread()
         {
             if(only_write())
             {
@@ -297,7 +297,7 @@ namespace hsd
             }
             if(fscanf(_file_buf, "%ls", _wio_buf.data()) == EOF)
             {
-                _wio_buf.clear();
+                _wio_buf.reset_data();
             }
 
             return _wio_buf;

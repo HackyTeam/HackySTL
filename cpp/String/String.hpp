@@ -362,26 +362,6 @@ namespace hsd
             return string(&_data[Pos], Count);
         }
 
-        template<typename T>
-        constexpr T parse()
-        {
-            if constexpr(std::is_integral_v<T>)
-            {
-                if constexpr(std::is_unsigned_v<T>)
-                {
-                    return _str_utils::parse_us(_data);
-                }
-                else
-                {
-                    return _str_utils::parse_i(_data);
-                }
-            }
-            else if(std::is_floating_point_v<T>)
-            {
-                return _str_utils::parse_f(_data);
-            }
-        }
-
         constexpr void clear()
         {
             if(_data != nullptr)

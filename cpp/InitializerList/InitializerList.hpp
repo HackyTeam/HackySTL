@@ -4,7 +4,7 @@
 
 namespace hsd
 {
-    template< typename T >
+    template<typename T>
     class initializer_list
     {
     private:
@@ -14,7 +14,7 @@ namespace hsd
     public:
         using const_iterator = const T*;
 
-        template< typename... U >
+        template<typename... U>
         constexpr initializer_list(const T& value, const U&... values)
         {
             _size = 1 + sizeof...(U);

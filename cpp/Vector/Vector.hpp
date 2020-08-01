@@ -7,7 +7,7 @@
 
 namespace hsd
 {
-    template< typename T >
+    template<typename T>
     class vector
     {
     private:

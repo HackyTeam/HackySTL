@@ -9,7 +9,7 @@ namespace hsd
     template< typename > class function;
 
     template< typename Result, typename... Args >
-    class function< Result(Args...) > 
+    class function<Result(Args...)> 
     {
     private:
         struct callable_base

@@ -352,7 +352,7 @@ namespace hsd
 			if(*str == '\0')
 				return _negative ? -_round_num : _round_num;
 
-		    for(str += 1; *str != '\0'; str++, _num_len++)
+		    for(str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)
 		    {
 		        _point_num *= 10;
 		        _point_num += *str - '0';

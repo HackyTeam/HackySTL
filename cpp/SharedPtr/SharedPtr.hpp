@@ -6,7 +6,7 @@ namespace hsd
 {
     namespace non_atomic_types
     {
-        template< typename T >
+        template<typename T>
         class shared_ptr
         {
         private:
@@ -146,5 +146,7 @@ namespace hsd
                 return __value;
             }
         };
+
+        template<typename T> class shared_ptr<T[]>;
     }
 }

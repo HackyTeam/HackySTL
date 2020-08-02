@@ -29,8 +29,15 @@ namespace hsd
     class unique_ptr
     {
     private:
-        remove_array_t<T>* _ptr = nullptr;
-        Deleter _deleter;
+        struct _storage : private Deleter
+        {
+            remove_array_t<T>* _ptr = nullptr;
+
+            constexpr Deleter& get_deleter()
+            {
+                return *this;
+            }
+        } _value;
 
     public:
         using pointer = T*;
@@ -45,24 +52,25 @@ namespace hsd
 
         template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
         constexpr unique_ptr(pointer ptr)
-            : _ptr{ptr}
-        {}
+        {
+            _value._ptr = ptr;
+        }
 
         template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
         constexpr unique_ptr(remove_array_pointer ptr)
-            : _ptr{ptr}
-        {}
+        {
+            _value._ptr = ptr;
+        }
 
         constexpr unique_ptr(unique_ptr&& other)
         {
-            _ptr = other._ptr;
-            _deleter = other._deleter;
-            other._ptr = nullptr;
+            _value = other._value;
+            other._value._ptr = nullptr;
         }
 
         constexpr ~unique_ptr()
         {
-            _deleter(_ptr);
+            _value.get_deleter()(_value._ptr);
         }
 
         constexpr unique_ptr& operator=(nullptr_t)
@@ -74,21 +82,24 @@ namespace hsd
         constexpr unique_ptr& operator=(unique_ptr&& rhs)
         {
             ~unique_ptr();
-            _ptr = rhs._ptr;
-            _deleter = rhs._deleter;
-            rhs._ptr = nullptr;
-            rhs._deleter = nullptr;
+            _value = rhs._value;
+            rhs._value._ptr = nullptr;
             return *this;
+        }
+
+        constexpr Deleter& get_deleter()
+        {
+            return _value.get_deleter();
         }
 
         constexpr remove_array_pointer get()
         {
-            return _ptr;
+            return _value._ptr;
         }
 
         constexpr remove_array_pointer get() const
         {
-            return _ptr;
+            return _value._ptr;
         }
 
         constexpr pointer operator->()

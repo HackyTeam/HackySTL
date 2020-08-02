@@ -32,6 +32,7 @@ namespace hsd
                     {
                         ptr._value = nullptr;
                         (*ptr._size)--;
+                        ptr._size = nullptr;
                     }
                 }
 
@@ -58,8 +59,15 @@ namespace hsd
         class shared_ptr
         {
         private:
-            shared_detail::ptr_info<T> _pointer;
-            Deleter _deleter;
+            struct _storage : private Deleter
+            {
+                shared_detail::ptr_info<T> _ptr;
+
+                constexpr Deleter& get_deleter()
+                {
+                    return *this;
+                }
+            } _value;
 
         public:
             using pointer = T*;
@@ -73,67 +81,66 @@ namespace hsd
             template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
             constexpr shared_ptr(pointer ptr)
             {
-                _pointer._value = ptr;
-                _pointer._size = new size_t(1);
+                _value._ptr._value = ptr;
+                _value._ptr._size = new size_t(1);
             }
 
             template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
             constexpr shared_ptr(remove_array_pointer ptr)
             {
-                _pointer._value = ptr;
-                _pointer._size = new size_t(1);
+                _value._ptr = ptr;
+                _value._ptr._size = new size_t(1);
             }
 
             constexpr shared_ptr(const shared_ptr& ptr)
             {
-                _pointer = ptr._pointer;
-                (*_pointer._size)++;
+                _value = ptr._value;
+                (*_value._ptr._size)++;
             }
 
             constexpr shared_ptr(shared_ptr&& ptr)
             {
-                _pointer = ptr._pointer;
-                ptr._pointer._size = nullptr;
-                ptr._pointer._value = nullptr;
+                _value = ptr._value;
+                ptr._value._ptr._size = nullptr;
+                ptr._value._ptr._value = nullptr;
             }
 
             constexpr ~shared_ptr()
             {
-                _deleter(_pointer);
+                _value.get_deleter()(_value._ptr);
             }
 
             constexpr shared_ptr& operator=(nullptr_t)
             {
-                _deleter(_pointer);
+                _value.get_deleter()(_value._ptr);
                 return *this;
             }
 
             constexpr shared_ptr& operator=(shared_ptr& lhs)
             {
-                _deleter(_pointer);
-
-                _pointer = lhs._pointer;
-                (*_pointer._size)++;
+                _value.get_deleter()(_value._ptr);
+                _value = lhs._value;
+                (*_value._ptr._size)++;
                 return *this;
             }
 
             constexpr shared_ptr& operator=(shared_ptr&& lhs)
             {
-                _deleter(_pointer);
-                _pointer = lhs._pointer;
-                lhs._pointer._size = nullptr;
-                lhs._pointer._value = nullptr;
+                _value.get_deleter()(_value._ptr);
+                _value = lhs._value;
+                lhs._value._ptr._size = nullptr;
+                lhs._value._ptr._value = nullptr;
                 return *this;
             }
 
             constexpr remove_array_pointer get()
             {
-                return _pointer._value;
+                return _value._ptr._value;
             }
 
             constexpr remove_array_pointer get() const
             {
-                return _pointer._value;
+                return _value._ptr._value;
             }
 
             constexpr pointer operator->()
@@ -158,7 +165,7 @@ namespace hsd
 
             constexpr size_t get_size()
             {
-                return *_pointer->_size;
+                return *_value._ptr_size;
             }
 
             constexpr bool is_unique()

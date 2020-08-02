@@ -6,147 +6,202 @@ namespace hsd
 {
     namespace non_atomic_types
     {
-        template<typename T>
+        namespace shared_detail
+        {
+            template<typename T>
+            struct ptr_info
+            {
+                remove_array_t<T>* _value = nullptr;
+                size_t* _size = nullptr;
+            };
+
+            template<typename T>
+            struct deleter
+            {
+                template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
+                void operator()(ptr_info<T>& ptr)
+                {
+                    if(*ptr._size == 1)
+                    {
+                        delete ptr._value;
+                        delete ptr._size;
+                        ptr._value = nullptr;
+                        ptr._size = nullptr; 
+                    }
+                    else
+                    {
+                        ptr._value = nullptr;
+                        (*ptr._size)--;
+                    }
+                }
+
+                template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
+                void operator()(ptr_info<T>& ptr)
+                {
+                    if(*ptr._size == 1)
+                    {
+                        delete[] ptr._value;
+                        delete ptr._size;
+                        ptr._value = nullptr;
+                        ptr._size = nullptr;
+                    }
+                    else
+                    {
+                        ptr._value = nullptr;
+                        (*ptr._size)--;
+                    }
+                }
+            };
+        } // namespace shared_detail
+
+        template< typename T, typename Deleter = shared_detail::deleter<T> >
         class shared_ptr
         {
         private:
-            using size_t = unsigned long int;
+            shared_detail::ptr_info<T> _pointer;
+            Deleter _deleter;
 
-            struct _ptr_info
-            {
-                T _value;
-                size_t _size = 1;
-            } *_ptr = nullptr;
-
-            constexpr void _destroy()
-            {
-                if(is_unique())
-                {
-                    delete _ptr;
-                }
-                else
-                {
-                    _ptr->_size--;
-                    _ptr = nullptr;
-                }
-            }
         public:
+            using pointer = T*;
+            using reference = T&;
+            using nullptr_t = decltype(nullptr);
+            using remove_array_pointer = remove_array_t<T>*;
+
             shared_ptr() = default;
+            constexpr shared_ptr(nullptr_t) {}
+
+            template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
+            constexpr shared_ptr(pointer ptr)
+            {
+                _pointer._value = ptr;
+                _pointer._size = new size_t(1);
+            }
+
+            template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
+            constexpr shared_ptr(remove_array_pointer ptr)
+            {
+                _pointer._value = ptr;
+                _pointer._size = new size_t(1);
+            }
 
             constexpr shared_ptr(const shared_ptr& ptr)
             {
-                _ptr = ptr._ptr;
-                _ptr->_size++;
+                _pointer = ptr._pointer;
+                (*_pointer._size)++;
             }
 
             constexpr shared_ptr(shared_ptr&& ptr)
             {
-                _ptr = ptr._ptr;
-                ptr._ptr = nullptr;
+                _pointer = ptr._pointer;
+                ptr._pointer._size = nullptr;
+                ptr._pointer._value = nullptr;
             }
 
             constexpr ~shared_ptr()
             {
-                if(is_unique())
-                {
-                    delete _ptr;
-                }
-                else
-                {
-                    _ptr->_size--;
-                    _ptr = nullptr;
-                }
+                _deleter(_pointer);
+            }
+
+            constexpr shared_ptr& operator=(nullptr_t)
+            {
+                _deleter(_pointer);
+                return *this;
             }
 
             constexpr shared_ptr& operator=(shared_ptr& lhs)
             {
-                if(_ptr != nullptr)
-                {    
-                    _destroy();
-                }
+                _deleter(_pointer);
 
-                _ptr = lhs._ptr;
-                _ptr->_size++;
+                _pointer = lhs._pointer;
+                (*_pointer._size)++;
                 return *this;
             }
 
             constexpr shared_ptr& operator=(shared_ptr&& lhs)
             {
-                if(_ptr != nullptr)
-                {
-                    _destroy();
-                }
-                _ptr = lhs._ptr;
+                _deleter(_pointer);
+                _pointer = lhs._pointer;
+                lhs._pointer._size = nullptr;
+                lhs._pointer._value = nullptr;
                 return *this;
             }
 
-            constexpr T* get()
+            constexpr remove_array_pointer get()
             {
-                return &_ptr->_value;
+                return _pointer._value;
             }
 
-            constexpr T* get() const
+            constexpr remove_array_pointer get() const
             {
-                return &_ptr->_value;
+                return _pointer._value;
             }
 
-            constexpr T* operator->()
-            {
-                return get();
-            }
-
-            constexpr T* operator->() const
+            constexpr pointer operator->()
             {
                 return get();
             }
 
-            constexpr T& operator*()
+            constexpr pointer operator->() const
+            {
+                return get();
+            }
+
+            constexpr reference operator*()
             {
                 return *get();
             }
 
-            constexpr T& operator*() const
+            constexpr reference operator*() const
             {
                 return *get();
             }
 
             constexpr size_t get_size()
             {
-                return _ptr->_size;
+                return *_pointer->_size;
             }
 
             constexpr bool is_unique()
             {
                 return get_size() == 1;
             }
-
-            static constexpr shared_ptr make_shared()
-            {
-                shared_ptr _value_ptr;
-                _value_ptr._ptr = new _ptr_info;
-                return _value_ptr;
-            }
-
-            static constexpr shared_ptr make_shared(const T& val)
-            {
-                shared_ptr _value_ptr;
-                _value_ptr._ptr = new _ptr_info;
-                _value_ptr._ptr->_value = val;
-                return _value_ptr;
-            }
-
-            template<typename... Args>
-            static constexpr shared_ptr make_shared(Args&&... args)
-            {
-                shared_ptr _value_ptr;
-                _value_ptr._ptr = new _ptr_info;
-                _value_ptr._ptr->_value.~T();
-                new (&_value_ptr._ptr->_value) 
-                T(hsd::forward<Args>(args)...);
-                return _value_ptr;
-            }
         };
 
-        template<typename T> class shared_ptr<T[]>;
+        template<typename T>
+        struct MakeShr
+        {
+            using single_object = shared_ptr<T>;
+        };
+
+        template<typename T>
+        struct MakeShr<T[]>
+        {
+            using array = shared_ptr<T[]>;
+        };
+
+        template<typename T, size_t N>
+        struct MakeShr<T[N]>
+        {
+            struct invalid_type {};  
+        };
+
+        template<typename T, typename... Args>
+        static constexpr typename MakeShr<T>::single_object 
+        make_shared(Args&&... args)
+        {
+            return shared_ptr<T>(new T(hsd::forward<Args>(args)...));
+        }
+
+        template<typename T>
+        static constexpr typename MakeShr<T>::array 
+        make_shared(size_t size)
+        {
+            using ptr_type = remove_array_t<T>;
+            return shared_ptr<T>(new ptr_type[size]());
+        }
+
+        template<typename T, typename... Args>
+        static constexpr typename MakeShr<T>::invalid_type 
+        make_shared(Args&&...) = delete;
     }
 }

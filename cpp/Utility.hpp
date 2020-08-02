@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <stddef.h>
 
 namespace hsd
 {
@@ -10,6 +11,27 @@ namespace hsd
         T1 fist;
         T2 second;
     };
+
+    template<typename T>
+    struct remove_array
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_array<T[]>
+    {
+        using type = T;
+    };
+
+    template<typename T, size_t N>
+    struct remove_array<T[N]>
+    {
+        using type = T;
+    };
+    
+    template<typename T>
+    using remove_array_t = typename remove_array<T>::type;
 
     template<typename T>
     using rev_ref_t = typename std::remove_reference<T>::type;

@@ -109,6 +109,7 @@ namespace hsd
     public:
 		using iterator = CharT*;
         using const_iterator = const CharT*;
+        sstream(const sstream& other) = delete;
 
         sstream(size_t size)
         {
@@ -117,8 +118,6 @@ namespace hsd
             _size = size;
 
         }
-
-        sstream(const sstream& other) = delete;
 
         ~sstream()
         {

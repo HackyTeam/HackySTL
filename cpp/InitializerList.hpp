@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Types.hpp"
 
 namespace hsd
 {
@@ -8,9 +9,9 @@ namespace hsd
     class initializer_list
     {
     private:
-        using size_t = unsigned long int;
         T* _data = nullptr;
         size_t _size = 0;
+
     public:
         using const_iterator = const T*;
 

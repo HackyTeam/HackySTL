@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Types.hpp"
 
 namespace hsd
 {

@@ -4,14 +4,13 @@
 #include <type_traits>
 #include <exception>
 
+#include "Types.hpp"
 #include "Utility.hpp"
 
 namespace hsd
 {
     template<typename T>
     concept Copyable = std::is_copy_constructible_v<T>;
-
-    using size_t = unsigned long int;
 
     struct bad_any_cast : public std::exception 
     {

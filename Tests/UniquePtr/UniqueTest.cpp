@@ -1,5 +1,4 @@
 #include "../../cpp/UniquePtr.hpp"
-#include <memory>
 
 int main()
 {

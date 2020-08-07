@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Types.hpp"
+
 #include <math.h>
 
 namespace hsd
-{
-	using size_t = unsigned long int;
-	
+{	
 	template<typename CharT>
     class cstring
     {

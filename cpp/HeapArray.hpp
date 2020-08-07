@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "Utility.hpp"
+#include "Types.hpp"
 #include "InitializerList.hpp"
 
 namespace hsd

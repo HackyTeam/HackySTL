@@ -67,8 +67,7 @@ struct thread {
 		pthread_create(&id_, &attr, thread_data::enter_thread, &td);
 
 		// Spinlock time
-		while (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE))
-			;
+		while (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE));
 	}
 
 	thread(const thread &) = delete;

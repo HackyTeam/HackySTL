@@ -10,9 +10,7 @@ namespace hsd
     class string
     {
     private:
-        using size_t = unsigned long int;
         using _str_utils = cstring<CharT>;
-
         CharT* _data = nullptr;
         size_t _size = 0;
         size_t _reserved_size = 1;

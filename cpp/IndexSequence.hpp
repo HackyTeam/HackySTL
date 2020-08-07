@@ -1,11 +1,10 @@
 #pragma once
 
 #include <type_traits>
+#include "Types.hpp"
 
 namespace hsd
-{
-    using size_t = unsigned long int;
-    
+{   
     template< typename T, T... Ints >
     struct integer_sequence
     {

@@ -3,6 +3,8 @@
 #include <type_traits>
 #include <stddef.h>
 
+#include "Types.hpp"
+
 namespace hsd
 {
     template< typename T1, typename T2 >

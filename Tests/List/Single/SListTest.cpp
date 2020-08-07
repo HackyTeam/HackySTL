@@ -1,4 +1,5 @@
 #include "../../../cpp/ForwardList.hpp"
+#include <stdio.h>
 
 struct S
 {

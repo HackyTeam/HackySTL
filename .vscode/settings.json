@@ -81,6 +81,7 @@
         "cstdbool": "cpp",
         "*.inc": "cpp",
         "*.rh": "cpp",
+        "forward_list": "cpp"
     },
     "cSpell.words": [
         "wprint",

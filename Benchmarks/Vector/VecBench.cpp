@@ -9,16 +9,19 @@ static void hsdVector(benchmark::State& state)
     {
         hsd::vector e = {1, 2, 3, 4, 5, 6};
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.pop_back();
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.pop_back();
         e.pop_back();
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.emplace_back(5);
         e.emplace_back(5);
@@ -27,7 +30,8 @@ static void hsdVector(benchmark::State& state)
         e.emplace_back(5);
         e.emplace_back(5);
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
     }
 }
 
@@ -37,16 +41,19 @@ static void stdVector(benchmark::State& state)
     {
         std::vector e = {1, 2, 3, 4, 5, 6};
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.pop_back();
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.pop_back();
         e.pop_back();
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
 
         e.emplace_back(5);
         e.emplace_back(5);
@@ -55,7 +62,8 @@ static void stdVector(benchmark::State& state)
         e.emplace_back(5);
         e.emplace_back(5);
 
-        for (auto val : e);
+        for (auto& val : e)
+            val++;
     }
 }
 

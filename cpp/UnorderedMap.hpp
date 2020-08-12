@@ -308,7 +308,7 @@ namespace hsd
             if(_val.second == nullptr)
             {
                 T _insert_val;
-                return _emplace(_val.first, hash_key, _insert_val).first->second;
+                return _emplace(_val.first, hsd::move(hash_key), hsd::move(_insert_val)).first->second;
             }
             else
                 return _val.second->second;

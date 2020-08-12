@@ -212,8 +212,9 @@ namespace hsd
         using iterator = list_detail::iterator<T>;
         iterator _head;
         iterator _tail;
-    public:
 
+    public:
+        using iterator;
         constexpr list() {}
 
         constexpr list(const list& other)
@@ -354,7 +355,7 @@ namespace hsd
             return _head;
         }
 
-        constexpr iterator end()
+        static constexpr iterator end()
         {
             return iterator(nullptr);
         }
@@ -364,7 +365,7 @@ namespace hsd
             return _head;
         }
 
-        constexpr const iterator cend() const
+        static constexpr const iterator cend() const
         {
             return iterator(nullptr);
         }

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "../Types.hpp"
+
 namespace hsd
 {
     class RangeIterator
     {
     private:
-        using size_t = unsigned long int;
         size_t _val;
+        
     public:
         RangeIterator() = default;
 
@@ -100,7 +102,6 @@ namespace hsd
     class Range
     {
     private:
-        using size_t = unsigned long int;
         RangeIterator _begin, _end;
         
     public:

@@ -32,7 +32,7 @@ namespace hsd
         struct get_helper {};
 
         template< typename U, typename... Args >
-        struct get_helper<0, tuple<U, Args...>>
+        struct get_helper< 0, tuple<U, Args...> >
         {
             static constexpr U get(const tuple<U, Args...>& data)
             {
@@ -41,7 +41,7 @@ namespace hsd
         };
 
         template< size_t N, typename U, typename... Args >
-        struct get_helper<N, tuple<U, Args...>>
+        struct get_helper< N, tuple<U, Args...> >
         {
             static constexpr auto get(const tuple<U, Args...>& data)
             {
@@ -49,7 +49,7 @@ namespace hsd
             }
         };
 
-        template<size_t N, typename... U>
+        template< size_t N, typename... U >
         static constexpr auto _get(const tuple<U...>& tup) 
         {
             return get_helper<N, tuple<U...>>::get(tup);
@@ -74,7 +74,7 @@ namespace hsd
             return *this;
         }
 
-        template< typename... Args >
+        template<typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
             auto _add = [&]< size_t... Ints1, size_t... Ints2>(

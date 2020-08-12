@@ -95,7 +95,6 @@ namespace hsd
     class sstream
     {
     private:
-        using size_t = unsigned long int;
         CharT* _data = nullptr;
         size_t _size = 0;
 		size_t _current_pos = 0;

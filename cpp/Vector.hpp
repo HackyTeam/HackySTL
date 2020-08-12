@@ -150,6 +150,22 @@ namespace hsd
     
             _data = _buf;
         }
+
+        constexpr void resize(size_t size)
+        {
+            _reserved_size = size;
+            T *_buf = new T[size];
+            
+            if(_data != nullptr)
+            {
+                hsd::move(begin(), end(), _buf);
+                delete[] _data;
+            }
+    
+            _size = size;
+            _data = _buf;
+        }
+
         constexpr void push_back(const T& val)
         {
             if(_reserved_size > _size)

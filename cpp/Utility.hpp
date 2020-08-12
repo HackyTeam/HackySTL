@@ -1,18 +1,11 @@
 #pragma once
 
 #include <type_traits>
-#include <stddef.h>
 
 #include "Types.hpp"
 
 namespace hsd
 {
-    template< typename T1, typename T2 >
-    struct pair
-    {
-        T1 fist;
-        T2 second;
-    };
 
     template<typename T>
     struct remove_array
@@ -34,6 +27,61 @@ namespace hsd
     
     template<typename T>
     using remove_array_t = typename remove_array<T>::type;
+
+    template<typename>
+    struct is_char_pointer 
+        : public std::false_type
+    {};
+
+    template<>
+    struct is_char_pointer<char[]> 
+        : public std::true_type
+    {};
+
+    template<size_t N>
+    struct is_char_pointer<char[N]> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<char*> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const char*> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const char* const> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<wchar_t[]> 
+        : public std::true_type
+    {};
+
+    template<size_t N>
+    struct is_char_pointer<wchar_t[N]> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<wchar_t*> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const wchar_t*> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const wchar_t* const> 
+        : public std::true_type
+    {};
 
     template<typename T>
     using rev_ref_t = typename std::remove_reference<T>::type;

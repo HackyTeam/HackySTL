@@ -30,9 +30,11 @@ namespace hsd
                 {
                     _value = hsd::move(val);
                 }
-            }*_iterator = nullptr;
-
+            };
+            
+            forward_list_impl *_iterator = nullptr;
             friend class forward_list<T>;
+
             constexpr iterator() {}
             constexpr iterator(hsd::nullptr_t) {}
 
@@ -177,14 +179,14 @@ namespace hsd
         using iterator = forward_list_detail::iterator<T>;
         iterator _head;
         iterator _tail;
+        
     public:
-
         constexpr forward_list() {}
 
         constexpr forward_list(const forward_list& other)
         {
-            for(auto _element : other)
-                push_back(_element);
+            for(auto _it = other.cbegin(); _it != other.cend(); _it++)
+                push_back(*_it);
         }
 
         constexpr ~forward_list()
@@ -195,10 +197,10 @@ namespace hsd
 
         constexpr forward_list& operator=(const forward_list& rhs)
         {
-            ~forward_list();
+            this->~forward_list();
             
-            for(auto _element : rhs)
-                push_back(_element);
+            for(auto _it = rhs.cbegin(); _it != rhs.cend(); _it++)
+                push_back(*_it);
             
             return *this;
         }

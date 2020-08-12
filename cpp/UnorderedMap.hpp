@@ -222,6 +222,7 @@ namespace hsd
     private:
         using iterator = unordered_map_detail::bucket< Key, T, Hasher >;
         using bucket = unordered_map_detail::bucket< Key, T, Hasher >;
+        using get_result = pair<Key, T>*;
         using hash_table = vector<bucket>;
 
         static constexpr float _limit_ratio = 0.75f;
@@ -231,7 +232,7 @@ namespace hsd
         hash_table _table;
         
 
-        constexpr pair<Key, T>* _get(const Key& hash_key)
+        constexpr pair<size_t, get_result> _get(const Key& hash_key)
         {
             auto _hash_result = Hasher::get_hash(hash_key);
             size_t _index = _hash_result % _table_size;
@@ -239,15 +240,42 @@ namespace hsd
             for(auto _it = _table[_index]; _it != end(); _it++)
             {
                 if(_hash_result == Hasher::get_hash(_it->first))
-                    return _it.get();
+                    return {_index, _it.get()};
             }
 
-            return nullptr;
+            return {_index ,nullptr};
+        }
+
+        constexpr void _reserve(size_t table_size)
+        {
+            hash_table _tmp = hsd::move(_table);
+            auto _tmp_node = _map_iter; 
+            _map_iter = nullptr;
+            _table_size = table_size;
+            _table.resize(_table_size);
+
+            for(auto _it = _tmp_node ; _it != end(); _it++)
+                emplace(hsd::move(_it->first), hsd::move(_it->second));
+
+            destroy_iter(_tmp_node);
         }
 
         constexpr void destroy_iter(iterator& iter)
         {
             for(; iter != end(); iter.pop_front());
+        }
+
+        template<typename... Args>
+        constexpr pair<iterator, bool> _emplace(size_t index, Args&&... args)
+        {
+            _size++;
+            _table[index].emplace_front(hsd::forward<Args>(args)...);
+            _map_iter.push_front(_table[index]);
+            
+            if(static_cast<float>(_size) / _table_size >= _limit_ratio)
+                _reserve(_table_size *= 2);
+
+            return {_map_iter, true};
         }
 
     public:
@@ -277,47 +305,23 @@ namespace hsd
         {
             auto _val = _get(hash_key);
 
-            if(_val == nullptr)
+            if(_val.second == nullptr)
             {
                 T _insert_val;
-                return emplace(hash_key, _insert_val).first->second;
+                return _emplace(_val.first, hash_key, _insert_val).first->second;
             }
             else
-                return _val->second;
-        }
-
-        constexpr void reserve(size_t table_size)
-        {
-            hash_table _tmp = hsd::move(_table);
-            auto _tmp_node = _map_iter; 
-            _map_iter = nullptr;
-            _table_size = table_size;
-            _table.resize(_table_size);
-
-            for(auto _it = _tmp_node ; _it != end(); _it++)
-                emplace(hsd::move(_it->first), hsd::move(_it->second));
-
-            destroy_iter(_tmp_node);
+                return _val.second->second;
         }
 
         template<typename... Args>
         constexpr pair<iterator, bool> emplace(Args&&... args)
         {
             auto _key = make_tuple(hsd::forward<Args>(args)...).template get<0>();
-            auto _index = Hasher::get_hash(_key) % _table_size;
-            pair<Key, T>* _res = _get(_key);
+            auto _res = _get(_key);
             
-            if(_res == nullptr)
-            {
-                _size++;
-                _table[_index].emplace_front(hsd::forward<Args>(args)...);
-                _map_iter.push_front(_table[_index]);
-                
-                if(static_cast<float>(_size) / _table_size >= _limit_ratio)
-                    reserve(_table_size *= 2);
-
-                return {_map_iter, true};
-            }
+            if(_res.second == nullptr)
+                return _emplace(_res.first, hsd::forward<Args>(args)...);
 
             iterator _it = _map_iter;
             _it.linear_search(_key);

@@ -16,9 +16,9 @@ static void hsdMap(benchmark::State& state)
         map["key6"] = 2;
         map["key7"] = 0;
         map["key8"] = 1;
-        map["key9"] = 2;
 
         for(auto _it : map);
+        benchmark::DoNotOptimize(map);
     }
 }
     
@@ -35,12 +35,11 @@ static void stdMap(benchmark::State& state)
         map["key6"] = 2;
         map["key7"] = 0;
         map["key8"] = 1;
-        map["key9"] = 2;
     
         for(auto _it : map);
+        benchmark::DoNotOptimize(map);
     }
 }
-
 
 BENCHMARK(hsdMap);
 

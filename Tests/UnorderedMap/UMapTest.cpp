@@ -12,8 +12,10 @@ int main()
     map["key6"] = 2;
     map["key7"] = 0;
     map["key8"] = 1;
+
+    map["key8"];
     map["key9"] = 2;
 
     for(auto _it : map)
-        printf("%s\n", _it.first);   
+        printf("%s\n", _it.first);
 }

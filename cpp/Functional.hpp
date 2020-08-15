@@ -180,7 +180,8 @@ namespace hsd
         };
     }
 
-    template < class Rez, class... Args > function(Rez(*)(Args...)) -> function<Rez(Args...)>;
+    template < typename Rez, typename... Args > 
+        function(Rez(*)(Args...)) -> function<Rez(Args...)>;
     template< typename Func, typename Op = decltype(&Func::operator()) > 
         function(Func) -> function<typename helper::as_function<Op>::type>;
 }

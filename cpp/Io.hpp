@@ -99,7 +99,9 @@ namespace hsd
         static void print(const char (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::u8string> _fmt_buf = _split(fmt, N - 1);
-            hsd::vector<hsd::u8string> _args_buf = {hsd::u8string::to_string(args)...};
+            hsd::vector<hsd::u8string> _args_buf = {
+                hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
+            };
             u8string _print_buf;
 
             if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
@@ -127,7 +129,9 @@ namespace hsd
         static void wprint(const wchar_t (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = _split(fmt, N - 1);
-            hsd::vector<hsd::wstring> _args_buf = {hsd::wstring::to_string(args)...};
+            hsd::vector<hsd::wstring> _args_buf = {
+                hsd::forward<hsd::wstring>(hsd::wstring::to_string(args))...
+            };
             wstring _print_buf;
 
             if(_args_buf.size() + 1 != _fmt_buf.size())
@@ -325,7 +329,9 @@ namespace hsd
                 throw std::runtime_error("Cannot write file. It is in read mode");
 
             hsd::vector<hsd::u8string> _fmt_buf = _split(fmt, N - 1);
-            hsd::vector<hsd::u8string> _args_buf = {hsd::u8string::to_string(args)...};
+            hsd::vector<hsd::u8string> _args_buf = {
+                hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
+            };
             u8string _print_buf;
 
             if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
@@ -356,7 +362,9 @@ namespace hsd
                 throw std::runtime_error("Cannot write file. It is in read mode");
 
             hsd::vector<hsd::wstring> _fmt_buf = _split(fmt, N - 1);
-            hsd::vector<hsd::wstring> _args_buf = {hsd::wstring::to_string(args)...};
+            hsd::vector<hsd::wstring> _args_buf = {
+                hsd::forward<hsd::wstring>(hsd::wstring::to_string(args))...
+            };
             wstring _print_buf;
 
             if(_args_buf.size() + 1 != _fmt_buf.size())

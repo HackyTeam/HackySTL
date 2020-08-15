@@ -117,23 +117,45 @@ namespace hsd {
             _compressed_pair_ab<_Ta, _Tb>>
         >;
 
+    template <size_t, typename _Base>
+    struct get_helper
+    {};
+    
+    template <typename _Base>
+    struct get_helper<0, _Base>
+    {
+        static constexpr auto& get(_Base* value)
+        {
+            return value->first();
+        }
+    };
+
+    template <typename _Base>
+    struct get_helper<1, _Base>
+    {
+        static constexpr auto& get(_Base* value)
+        {
+            return value->second();
+        }
+    };
+
     template <typename _Ta, typename _Tb>
     class compressed_pair : public _compressed_pair<_Ta, _Tb> {
         using _Base = _compressed_pair<_Ta, _Tb>;
+
     public:
         using _Base::_Base;
+        
         template <size_t _Idx>
-        constexpr auto& get() = delete;
-        template <>
-        constexpr auto& get<0>() {return this->first(); }
-        template <>
-        constexpr auto& get<1>() {return this->second(); }
+        constexpr auto& get()
+        {
+            return get_helper<_Idx, _Base>::get(this);
+        }
 
         template <size_t _Idx>
-        constexpr auto& get() const = delete;
-        template <>
-        constexpr auto& get<0>() const {return this->first(); }
-        template <>
-        constexpr auto& get<1>() const {return this->second(); }
+        constexpr auto& get() const
+        {
+            return get_helper<_Idx, _Base>::get(this);
+        }
     };
 }

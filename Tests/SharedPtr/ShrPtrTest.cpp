@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../../cpp/SharedPtr/SharedPtr.hpp"
+#include "../../cpp/SharedPtr.hpp"
 
 using namespace hsd::non_atomic_types;
 
@@ -27,7 +27,7 @@ static void print(shared_ptr<S> ptr)
 
 int main()
 {
-    shared_ptr elm = shared_ptr<S>::make_shared(12, 'c', 4.3f, "str");
+    shared_ptr elm = make_shared<S>(12, 'c', 4.3f, "str");
     auto elm2 = elm;
     print(elm);
     print(elm2);

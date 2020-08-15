@@ -1,4 +1,4 @@
-#include "../../cpp/Functional/Functional.hpp"
+#include "../../cpp/Functional.hpp"
 
 // Implementations for "defaultarg.cpp"
 static int func() noexcept {

@@ -80,6 +80,11 @@
         "stack": "cpp",
         "cstdbool": "cpp",
         "*.inc": "cpp",
-        "*.rh": "cpp"
-    }
+        "*.rh": "cpp",
+        "forward_list": "cpp"
+    },
+    "cSpell.words": [
+        "wprint",
+        "wsstream"
+    ]
 }

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../../cpp/Array/StackArray.hpp"
+#include "../../../cpp/StackArray.hpp"
 
 int main()
 {

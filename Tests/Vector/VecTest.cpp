@@ -1,5 +1,12 @@
 #include <stdio.h>
-#include "../../cpp/Vector/Vector.hpp"
+#include "../../cpp/Vector.hpp"
+
+struct S
+{
+    int a;
+    float b;
+    char c;
+};
 
 int main()
 {
@@ -17,4 +24,7 @@ int main()
     {
         printf("%d\n", val);
     }
+
+    hsd::vector<S> ls;
+    ls.emplace_back(12, 3.3f, 'a');
 }

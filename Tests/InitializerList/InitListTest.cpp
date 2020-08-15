@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../cpp/InitializerList/InitializerList.hpp"
+#include "../../cpp/InitializerList.hpp"
 
 template< typename T >
 static void some(hsd::initializer_list<T> l) {}

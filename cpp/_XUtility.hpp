@@ -1,16 +1,25 @@
 #pragma once
 /// \brief Utility helpers for the STL library
 
-namespace hsd {
+#include "Utility.hpp"
+
+namespace hsd 
+{
+    template<typename _Type>
+    static constexpr _Type* addressof(_Type& value)
+    {
+        return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
+    }
+
     template <typename _Type, typename... _Args>
-    inline void _construct_inplace(_Type& v, _Args&&... args) {
-        new (reinterpret_cast<void*>(
-               &const_cast<char&>(
-                   reinterpret_cast<const volatile char&>(v)))) _Type(static_cast<_Args&&>(args)...);
+    static constexpr void _construct_inplace(_Type& value, _Args&&... args) 
+    {
+        new (addressof(value)) _Type(hsd::forward<_Args>(args)...);
     }
 
     template <typename _Type>
-    inline void _destroy_inplace(_Type& v) {
+    static constexpr void _destroy_inplace(_Type& v) 
+    {
         v.~_Type();
     }
 }

@@ -52,9 +52,7 @@ int main() {
     hsd::variant<A, B> va2(5);
     hsd::variant<A, B> va3{A()};
     auto va4(va2);
-
-    //using ty1 = hsd::variant_alternative<0, decltype(va1)>;
-    //using ty2 = hsd::variant_alternative<1, decltype(va3)>;
+    
     std::cout << hsd::variant_size<decltype(va4)>::value << std::endl;
 
     std::cout << va1.index() << std::endl;
@@ -63,12 +61,12 @@ int main() {
     std::cout << va4.index() << std::endl;
 
     std::cout << va1.get<0>() << std::endl;
-    /*try {
-        // This should throw -vvv
+    try {
+        // This actually throws 
         std::cout << va1.get<float>() << std::endl;
     } catch (hsd::bad_variant_access& err) {
         std::cerr << "Caught error: " << err.what() << std::endl;
-    }*/
+    }
     if (auto* val = hsd::get_if<float>(&va1)) {
         std::cout << "Got value: " << *val << std::endl;
     } else {

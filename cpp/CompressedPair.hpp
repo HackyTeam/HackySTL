@@ -119,7 +119,9 @@ namespace hsd {
 
     template <size_t, typename _Base>
     struct get_helper
-    {};
+    {
+        static constexpr auto& get(_Base* value) = delete;
+    };
     
     template <typename _Base>
     struct get_helper<0, _Base>

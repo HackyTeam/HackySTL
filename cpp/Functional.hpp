@@ -5,8 +5,7 @@
 
 namespace hsd
 {
-    using nullptr_t = decltype(nullptr);
-    template< typename > class function;
+    template<typename> class function;
 
     template< typename Result, typename... Args >
     class function<Result(Args...)> 

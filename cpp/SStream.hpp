@@ -161,7 +161,7 @@ namespace hsd
 
         hsd::string<CharT> to_string()
         {
-            return hsd::string<CharT>(_data, _size);
+            return hsd::string<CharT>(_data);
         }
 
 		void pop_back()

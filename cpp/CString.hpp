@@ -25,6 +25,11 @@ namespace hsd
 		static constexpr size_t _num_len(T num)
 		{
 			size_t _len = 0;
+			
+			if(num == 0)
+			{
+				return 1;
+			}
 			while(num)
 			{
 				_len++;
@@ -201,6 +206,11 @@ namespace hsd
 			{
 				_buf = new CharT[_len + 1];
 				_buf[_len] = '\0';
+			}
+
+			if(num == 0)
+			{
+				_buf[--_len] = '0';
 			}
 
 			while(num)

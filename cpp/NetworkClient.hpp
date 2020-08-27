@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SStream.hpp"
 #include "_NetworkDetail.hpp"
 #include "Io.hpp"
 
@@ -55,7 +54,7 @@ namespace hsd
                     if(_protocol == protocol_type::ipv4)
                     {
                         _sock = ::socket(AF_INET, SOCK_STREAM, 0);
-                        _hintv4.sin_family = static_cast<int>(_protocol);
+                        _hintv4.sin_family = AF_INET;
                         _hintv4.sin_port = htons(port);
                         inet_pton(AF_INET, ip_addr, &_hintv4.sin_addr);
                         connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
@@ -63,19 +62,20 @@ namespace hsd
                     else
                     {
                         _sock = ::socket(AF_INET6, SOCK_STREAM, 0);
-                        _hintv6.sin6_family = static_cast<int>(_protocol);
+                        _hintv6.sin6_family = AF_INET6;
                         _hintv6.sin6_port = htons(port);
-                        inet_pton(AF_INET, ip_addr, &_hintv4.sin_addr);
-                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        inet_pton(AF_INET6, ip_addr, &_hintv4.sin_addr);
+                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                     }
                 }
             };
         } // namespace client_detail
 
-        class client : private io_detail::bufferable
+        class client
         {
         private:
             client_detail::socket _sock;
+            hsd::u8sstream _net_buf{4096};
 
         public:
             client() = default;
@@ -87,22 +87,22 @@ namespace hsd
             hsd::pair< hsd::u8string, received_state > receive()
             {
                 long _response = recv(_sock.get_sock(), 
-                    _u8io_buf.data(), _u8io_buf.size(), 0);
+                    _net_buf.data(), _net_buf.size(), 0);
 
                 if (_response == static_cast<long>(received_state::err))
                 {
                     hsd::io::err_print("Error in receiving\n");
-                    _u8io_buf.reset_data();
+                    _net_buf.reset_data();
                     return {"", received_state::err};
                 }
                 if (_response == static_cast<long>(received_state::disconnected))
                 {
                     hsd::io::err_print("Server down\n");
-                    _u8io_buf.reset_data();
+                    _net_buf.reset_data();
                     return {"", received_state::disconnected};
                 }
 
-                return {{_u8io_buf.data(), static_cast<size_t>(_response) - 1}, received_state::ok};
+                return {{_net_buf.data(), static_cast<size_t>(_response) - 1}, received_state::ok};
             }
 
             template< size_t N, typename... Args >

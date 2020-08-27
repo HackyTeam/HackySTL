@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SStream.hpp"
 #include "_NetworkDetail.hpp"
 #include "Io.hpp"
 
@@ -143,10 +142,11 @@ namespace hsd
             };
         } // namespace server_detail
 
-        class server : private io_detail::bufferable
+        class server
         {
         private:
             server_detail::socket2 _sock;
+            hsd::u8sstream _net_buf{4096};
 
         public:
             server() = default;
@@ -158,22 +158,22 @@ namespace hsd
             hsd::pair< hsd::u8string, received_state > receive()
             {
                 long _response = recv(_sock.get_sock(), 
-                    _u8io_buf.data(), _u8io_buf.size(), 0);
+                    _net_buf.data(), _net_buf.size(), 0);
 
                 if (_response == static_cast<long>(received_state::err))
                 {
                     hsd::io::err_print("Error in receiving\n");
-                    _u8io_buf.reset_data();
+                    _net_buf.reset_data();
                     return {"", received_state::err};
                 }
                 if (_response == static_cast<long>(received_state::disconnected))
                 {
                     hsd::io::err_print("Client disconnected\n");
-                    _u8io_buf.reset_data();
+                    _net_buf.reset_data();
                     return {"", received_state::disconnected};
                 }
 
-                return {{_u8io_buf.data(), static_cast<size_t>(_response) - 1}, received_state::ok};
+                return {{_net_buf.data(), static_cast<size_t>(_response) - 1}, received_state::ok};
             }
 
             template< size_t N, typename... Args >
@@ -203,7 +203,7 @@ namespace hsd
                     }
 
                     long _response = send(_sock.get_sock(), 
-                        _send_buf.data(), _send_buf.size() + 1, 0);
+                        _send_buf.data(), _send_buf.size(), 0);
 
                     if(_response == static_cast<long>(received_state::err))
                     {

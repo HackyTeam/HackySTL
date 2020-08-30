@@ -1,11 +1,18 @@
 #pragma once
 
-#include <typeinfo>
+// define HSD_ANY_ENABLE_TYPEINFO to enable type_info
+
+#ifdef HSD_ANY_ENABLE_TYPEINFO
+#   include <typeinfo>
+#endif
+
 #include <type_traits>
 #include <exception>
+#include <memory>
 
 #include "Types.hpp"
 #include "Utility.hpp"
+//#include "UniquePtr.hpp"
 
 namespace hsd
 {
@@ -21,6 +28,7 @@ namespace hsd
         }
     };
 
+    #if 0
     class type_info
     {
     private:
@@ -106,123 +114,127 @@ namespace hsd
             return _name;
         }
     };
+    #endif // disabled code
+
+    class _any_base {
+    public:
+        virtual ~_any_base() = default;
+        virtual std::unique_ptr<_any_base> clone() const = 0;
+
+        #ifdef HSD_ANY_ENABLE_TYPEINFO
+        virtual const std::type_info& get_typeinfo() const noexcept = 0;
+        #endif
+    };
+
+    template<Copyable T>
+    class _any_derived : public _any_base {
+        T _value;
+        friend class any;
+    public:
+        constexpr _any_derived(T value) : _value(move(value)) {}
+
+        std::unique_ptr<_any_base> clone() const override {
+            return std::make_unique<_any_derived>(_value);
+        }
+
+        #ifdef HSD_ANY_ENABLE_TYPEINFO
+        const std::type_info& get_typeinfo() const noexcept override {
+            return typeid(T);
+        }
+        #endif
+    };
 
     class any
     {
     private:
-        void* _data = nullptr;
-        void(*_destroy)(void*) = nullptr;
-        type_info _id = typeid(void);
-
-        template<typename T>
-        static constexpr void destroy(void* data)
-        {
-            T* _val_ptr = reinterpret_cast<T*>(data);
-            _val_ptr->~T();
-            delete _val_ptr;
-        }
+        std::unique_ptr<_any_base> _data;
     public:
-        any() = default;
+        constexpr any() noexcept = default;
 
         template<Copyable T>
-        constexpr any(const T& other)
+        constexpr any(T other)
         {
-            _data = new T(other);
-            _destroy = destroy<T>;
-            _id = typeid(T);
-        }
-
-        template<Copyable T>
-        constexpr any(T&& other)
-        {
-            _data = new T(hsd::move(other));
-            _destroy = destroy<T>;
-            _id = typeid(T);
+            _data = std::make_unique<_any_derived<T>>(move(other));
         }
 
         any(const any& other)
         {
-            _data = other._data;
-            _id = other._id;
+            _data = other._data->clone();
         }
 
         any(any&& other)
         {
-            swap(*this, other);
+            this->swap(other);
         }
 
-        ~any()
-        {
-            reset();
-        }
+        ~any() = default;
 
-        any& operator=(const any& rhs)
+        any& operator=(any rhs)
         {
-            reset();
-            _data = rhs._data;
-            _id = rhs._id;
-            return *this;
-        }
-
-        any& operator=(any&& rhs)
-        {
-            swap(*this, rhs);
+            this->swap(rhs);
             return *this;
         }
 
         template<class T>
-        constexpr auto cast()
+        constexpr decltype(auto) cast_to() const
         {
-            typename std::remove_pointer<T>::type type;
+            typedef typename std::remove_pointer<T>::type type;
 
-            if(_id != typeid(type))
+            if(auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
-                throw bad_any_cast();
-            }
-            if constexpr(std::is_pointer_v<T>)
-            {
-                return reinterpret_cast<T>(_data);
+                return static_cast<T>(p_base->_value);
             }
             else
             {
-                return *reinterpret_cast<T*>(_data);
+                throw bad_any_cast();
             }
         }
 
-        const type_info& type()
+        template<class T>
+        T* cast_if() const
         {
-            return _id;
+            if (auto* p_base = dynamic_cast<_any_derived<T>*>(_data.get()))
+                return &p_base->_value;
+            return nullptr;
         }
 
-        static constexpr void swap(any& lhs, any& rhs)
+        template<class T>
+        bool holds_type() const
         {
-            hsd::swap(lhs._data, rhs._data);
-            hsd::swap(lhs._id, rhs._id);
-            hsd::swap(lhs._destroy, rhs._destroy);
+            return dynamic_cast<_any_derived<T>*>(_data.get());
+        }
+
+        #ifdef HSD_ANY_ENABLE_TYPEINFO
+        const std::type_info& type() const noexcept
+        {
+            return _data ? _data->get_typeinfo() : typeid(void);
+        }
+        #endif
+
+        void swap(any& o) noexcept
+        {
+            std::swap(_data, o._data);
+        }
+
+        friend void swap(any& lhs, any& rhs) noexcept
+        {
+            lhs.swap(rhs);
         }
 
         template< typename T, typename... Args >
         void emplace(Args&&... args)
         {
-            reset();
-            _destroy = destroy<T>;
-            _data = new T(forward<Args>(args)...);
-            _id = typeid(T);
+            _data = std::make_unique<_any_derived<T>>(T(forward<Args>(args)...));
         }
 
-        constexpr bool has_value()
+        bool has_value() const
         {
             return _data != nullptr;
         }
 
-        void reset()
+        constexpr void reset()
         {
-            if(_destroy != nullptr)
-                _destroy(_data);
-
-            _destroy = nullptr;
             _data = nullptr;
-            _id = typeid(void);
         }
     };
 }

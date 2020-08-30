@@ -1,5 +1,6 @@
 #include <iostream>
 
+#define HSD_ANY_ENABLE_TYPEINFO
 #include "../../cpp/Any.hpp"
 
 struct S
@@ -18,11 +19,11 @@ int main()
 
     // any type
     hsd::any a = 1;
-    std::cout << a.cast_to<int>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<int>() << '\n';
     a = 3.14;
-    std::cout << a.cast_to<double>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<double>() << '\n';
     a = true;
-    std::cout << a.cast_to<bool>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<bool>() << '\n';
  
     // bad cast
     try
@@ -39,7 +40,7 @@ int main()
     a = 1;
     if (a.has_value())
     {
-        std::cout << "has value\n";
+        std::cout << a.type().name() << '\n';
     }
  
     // reset

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SStream.hpp"
 #include "Io.hpp"
 
 #ifdef __linux__

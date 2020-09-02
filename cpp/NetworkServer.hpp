@@ -1,0 +1,238 @@
+#pragma once
+
+#include "_NetworkDetail.hpp"
+#include "Io.hpp"
+
+#ifdef __linux__
+
+namespace hsd
+{
+    namespace tcp
+    {
+        namespace server_detail
+        {
+            class socket
+            {
+            private:
+                int _listening = 0;
+                sockaddr_in6 _hintv6;
+                sockaddr_in _hintv4;
+                protocol_type _protocol;
+
+            public:
+                socket()
+                {
+                    switch_to(protocol_type::ipv4, 54000, "0.0.0.0");
+                }
+
+                socket(protocol_type protocol, uint16_t port, const char* ip_addr)
+                {
+                    switch_to(protocol, port, ip_addr);
+                }
+
+                ~socket()
+                {
+                    close();
+                }
+
+                void close()
+                {
+                    ::close(_listening);
+                }
+
+                int get_listener()
+                {
+                    return _listening;
+                }
+
+                void switch_to(protocol_type protocol, uint16_t port, const char* ip_addr)
+                {
+                    close();
+                    _protocol = protocol;
+
+                    if(_protocol == protocol_type::ipv4)
+                    {
+                        _listening = ::socket(AF_INET, SOCK_STREAM, 0);
+                        _hintv4.sin_family = AF_INET;
+                        _hintv4.sin_port = htons(port);
+                        inet_pton(AF_INET, ip_addr, &_hintv4.sin_addr);
+                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        listen(_listening, SOMAXCONN);
+                    }
+                    else
+                    {
+                        _listening = ::socket(AF_INET6, SOCK_STREAM, 0);
+                        _hintv6.sin6_family = AF_INET6;
+                        _hintv6.sin6_port = htons(port);
+                        inet_pton(AF_INET6, ip_addr, &_hintv4.sin_addr);
+                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        listen(_listening, SOMAXCONN);
+                    }
+                }
+            };
+
+            class socket2
+            {
+            private:
+                socket _sock;
+                int _socket2_sock = 0;
+                sockaddr_in _socket2v4;
+                sockaddr_in6 _socket2v6;
+                socklen_t _size = 0;
+                u8string _host{1024};
+                u8string _service{31};
+
+            public:
+                socket2()
+                {
+                    switch_to(protocol_type::ipv4, 54000, "0.0.0.0");
+                }
+
+                socket2(protocol_type protocol, uint16_t port, const char* ip_addr)
+                {
+                    switch_to(protocol, port, ip_addr);
+                }
+
+                ~socket2()
+                {
+                    close();
+                }
+
+                void close()
+                {
+                    ::close(_socket2_sock);
+                }
+
+                int get_sock()
+                {
+                    return _socket2_sock;
+                }
+
+                void switch_to(protocol_type protocol, uint16_t port, const char* ip_addr)
+                {
+                    _sock.switch_to(protocol, port, ip_addr);
+                    memset(_host.data(), '\0', NI_MAXHOST);
+                    memset(_service.data(), '\0', NI_MAXSERV);
+
+                    if(protocol == protocol_type::ipv4)
+                    {
+                        _size = sizeof(_socket2v4);
+                        _socket2_sock = accept(_sock.get_listener(), (sockaddr*)&_socket2v4, &_size);
+
+                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v4), sizeof(_socket2v4), 
+                            _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
+                        {
+                            io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v4.sin_port));
+                        }
+                        else
+                        {
+                            inet_ntop(AF_INET, &_socket2v4.sin_addr, _host.data(), NI_MAXHOST);
+                            hsd::io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v4.sin_port));
+                        }
+                    }
+                    else
+                    {
+                        _size = sizeof(_socket2v6);
+                        _socket2_sock = accept(_sock.get_listener(), (sockaddr*)&_socket2v6, &_size);
+
+                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v6), sizeof(_socket2v6), 
+                                _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
+                        {
+                            io::print("{} connected on port {}\n", ip_addr, _service.data());
+                        }
+                        else
+                        {
+                            inet_ntop(AF_INET6, &_socket2v6.sin6_addr, _host.data(), NI_MAXHOST);
+                            hsd::io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v6.sin6_port));
+                        }
+                    }
+
+                    _sock.close();
+                }
+            };
+        } // namespace server_detail
+
+        class server
+        {
+        private:
+            server_detail::socket2 _sock;
+            hsd::u8sstream _net_buf{4095};
+
+            void _clear_buf()
+            {
+                memset(_net_buf.data(), '\0', 4096);
+            }
+
+        public:
+            server() = default;
+            ~server() = default;
+
+            server(protocol_type protocol, uint16_t port, const char* ip_addr)
+                : _sock{protocol, port, ip_addr}
+            {}
+
+            hsd::pair< hsd::u8sstream&, received_state > receive()
+            {
+                _clear_buf();
+                long _response = recv(_sock.get_sock(), 
+                    _net_buf.data(), 4096, 0);
+
+                if (_response == static_cast<long>(received_state::err))
+                {
+                    hsd::io::err_print("Error in receiving\n");
+                    _clear_buf();
+                    return {_net_buf, received_state::err};
+                }
+                if (_response == static_cast<long>(received_state::disconnected))
+                {
+                    hsd::io::err_print("Client disconnected\n");
+                    _clear_buf();
+                    return {_net_buf, received_state::disconnected};
+                }
+
+                return {_net_buf, received_state::ok};
+            }
+
+            template< size_t N, typename... Args >
+            received_state respond(const char (&fmt)[N], Args&&... args)
+            {
+                hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
+                hsd::vector<hsd::u8string> _args_buf = {
+                    hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
+                };
+                hsd::u8string _send_buf;
+
+                if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+                {
+                    throw std::runtime_error("Arguments don\'t match");
+                }
+                else
+                {
+                    size_t index = 0;
+
+                    for(; index < _args_buf.size(); index++)
+                    {
+                        _send_buf += _fmt_buf[index] + _args_buf[index];
+                    }
+                    if(_fmt_buf.size() != _args_buf.size())
+                    {
+                        _send_buf += _fmt_buf[index];
+                    }
+
+                    long _response = send(_sock.get_sock(), 
+                        _send_buf.data(), _send_buf.size(), 0);
+
+                    if(_response == static_cast<long>(received_state::err))
+                    {
+                        hsd::io::err_print("Error in sending\n");
+                        return received_state::err;
+                    }
+                }
+
+                return received_state::ok;
+            }
+        };
+    } // namespace tcp
+} // namespace hsd
+
+#endif

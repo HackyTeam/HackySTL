@@ -154,6 +154,42 @@ namespace hsd
             return _buf;
         }
 
+        constexpr string& operator+=(const string& rhs)
+        {
+            if(_reserved_size <= _size + rhs._size)
+            {
+                string _buf(_size + rhs._size);
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs._data, _size);
+                operator=(hsd::move(_buf));
+                return *this;
+            }
+            else
+            {
+                _str_utils::add(_data, rhs._data, _size);
+                return *this;
+            }
+        }
+
+        constexpr string& operator+=(const CharT* rhs)
+        {
+            size_t _rhs_len = _str_utils::length(rhs);
+
+            if(_reserved_size <= _size + _rhs_len)
+            {
+                string _buf(_size + _rhs_len);
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs, _size);
+                operator=(hsd::move(_buf));
+                return *this;
+            }
+            else
+            {
+                _str_utils::add(_data, rhs, _size);
+                return *this;
+            }
+        }
+
         constexpr CharT& operator[](size_t index)
         {
             return _data[index];
@@ -187,10 +223,8 @@ namespace hsd
 
         constexpr bool operator>(const string& rhs)
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                hsd::min(_size, rhs._size)
-            ) == 1;
+            return _str_utils::compare(_data, rhs._data, 
+                hsd::min(_size, rhs._size)) == 1;
         }
 
         constexpr bool operator>=(const string& rhs)

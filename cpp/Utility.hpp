@@ -6,7 +6,6 @@
 
 namespace hsd
 {
-
     template<typename T>
     struct remove_array
     {
@@ -108,6 +107,12 @@ namespace hsd
         return dest;
     }
 
+    template<typename _Type>
+    static constexpr _Type* addressof(_Type& value)
+    {
+        return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
+    }
+
     template<typename T1>
     static constexpr T1 min(T1 first, T1 second)
     {
@@ -137,7 +142,7 @@ namespace hsd
         second = _tmp;
     }
     
-    template<class InIt, class OutIt>
+    template< typename InIt, typename OutIt >
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
         while(first != last) 
@@ -147,7 +152,13 @@ namespace hsd
         return dest;
     }
 
-    template<class InIt, class OutIt, class Pred>
+    template< typename InIt, typename ValueType >
+    static constexpr void set(InIt first, InIt last, ValueType value)
+    {
+        for(; first != last; *first++ = value);
+    }
+
+    template< typename InIt, typename OutIt, typename Pred >
     static constexpr OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
     {
         while(first != last) 

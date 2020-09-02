@@ -5,12 +5,6 @@
 
 namespace hsd 
 {
-    template<typename _Type>
-    static constexpr _Type* addressof(_Type& value)
-    {
-        return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
-    }
-
     template <typename _Type, typename... _Args>
     static constexpr void _construct_inplace(_Type& value, _Args&&... args) 
     {

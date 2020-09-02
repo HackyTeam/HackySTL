@@ -80,7 +80,8 @@ namespace hsd
             _u8io_buf.reset_data();
             size_t _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
-            getline(&_u8line_buf, &_io_buf_len, stdin);
+            long _len = getline(&_u8line_buf, &_io_buf_len, stdin);
+            _u8line_buf[_len - 1] = '\0';
             return _u8io_buf;
         }
 

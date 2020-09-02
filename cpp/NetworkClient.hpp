@@ -19,14 +19,27 @@ namespace hsd
                 protocol_type _protocol;
 
             public:
-                socket()
+                socket(protocol_type protocol = protocol_type::ipv4, 
+                    uint16_t port = 54000, const char* ip_addr = "127.0.0.1")
                 {
-                    switch_to(protocol_type::ipv4, 54000, "127.0.0.1");
-                }
+                    _protocol = protocol;
 
-                socket(protocol_type protocol, uint16_t port, const char* ip_addr)
-                {
-                    switch_to(protocol, port, ip_addr);
+                    if(_protocol == protocol_type::ipv4)
+                    {
+                        _sock = ::socket(AF_INET, SOCK_STREAM, 0);
+                        _hintv4.sin_family = AF_INET;
+                        _hintv4.sin_port = htons(port);
+                        inet_pton(AF_INET, ip_addr, &_hintv4.sin_addr);
+                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                    }
+                    else
+                    {
+                        _sock = ::socket(AF_INET6, SOCK_STREAM, 0);
+                        _hintv6.sin6_family = AF_INET6;
+                        _hintv6.sin6_port = htons(port);
+                        inet_pton(AF_INET6, ip_addr, &_hintv6.sin6_addr);
+                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                    }
                 }
 
                 ~socket()
@@ -52,10 +65,6 @@ namespace hsd
                     if(_protocol == protocol_type::ipv4)
                     {
                         _sock = ::socket(AF_INET, SOCK_STREAM, 0);
-
-                        if(_sock == -1)
-                            hsd::io::err_print("There is a problem with socks\n");
-
                         _hintv4.sin_family = AF_INET;
                         _hintv4.sin_port = htons(port);
                         inet_pton(AF_INET, ip_addr, &_hintv4.sin_addr);
@@ -64,10 +73,6 @@ namespace hsd
                     else
                     {
                         _sock = ::socket(AF_INET6, SOCK_STREAM, 0);
-
-                        if(_sock == -1)
-                            hsd::io::err_print("There is a problem with socks\n");
-
                         _hintv6.sin6_family = AF_INET6;
                         _hintv6.sin6_port = htons(port);
                         inet_pton(AF_INET6, ip_addr, &_hintv6.sin6_addr);
@@ -107,6 +112,12 @@ namespace hsd
                     hsd::io::err_print("Error in receiving\n");
                     _clear_buf();
                     return {_net_buf, received_state::err};
+                }
+                if (_response == static_cast<long>(received_state::disconnected))
+                {
+                    hsd::io::err_print("Server down\n");
+                    _clear_buf();
+                    return {_net_buf, received_state::disconnected};
                 }
 
                 return {_net_buf, received_state::ok};

@@ -24,13 +24,9 @@ namespace hsd
                 ptr = nullptr;
             }
         };
-    } // namespace unique_detail
 
-    template< typename T, typename Deleter = unique_detail::deleter<T> >
-    class unique_ptr
-    {
-    private:
-        struct _storage : private Deleter
+        template<typename T, typename Deleter>
+        struct storage : private Deleter
         {
             remove_array_t<T>* _ptr = nullptr;
 
@@ -38,13 +34,33 @@ namespace hsd
             {
                 return *this;
             }
-        } _value;
+        };
+
+    } // namespace unique_detail
+
+    template< typename T, typename Deleter = unique_detail::deleter<T> >
+    class unique_ptr
+    {
+    private:
+        unique_detail::storage<T, Deleter> _value;
+
+        template<typename U, typename Del>
+        friend class unique_ptr;
+
+        constexpr void _delete()
+        {
+            _value.get_deleter()(_value._ptr);
+        }
 
     public:
-        using pointer = T*;
-        using reference = T&;
-        using nullptr_t = decltype(nullptr);
-        using remove_array_pointer = remove_array_t<T>*;
+        template<typename U>
+        using pointer = U*;
+        
+        template<typename U>
+        using reference = U&;
+        
+        template<typename U>
+        using remove_array_pointer = remove_array_t<U>*;
         
         unique_ptr() = default;
         constexpr unique_ptr(nullptr_t) {}
@@ -52,38 +68,66 @@ namespace hsd
         unique_ptr(const unique_ptr&) = delete;
 
         template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
-        constexpr unique_ptr(pointer ptr)
+        constexpr unique_ptr(pointer<T> ptr)
         {
             _value._ptr = ptr;
         }
 
         template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
-        constexpr unique_ptr(remove_array_pointer ptr)
+        constexpr unique_ptr(remove_array_pointer<T> ptr)
         {
             _value._ptr = ptr;
         }
 
         constexpr unique_ptr(unique_ptr&& other)
         {
-            _value = other._value;
+            _value._ptr = other._value._ptr;
+            other._value._ptr = nullptr;
+        }
+
+        template< typename U, std::enable_if_t<!std::is_array_v<U> && std::is_base_of_v<T, U>, int> = 0 >
+        constexpr unique_ptr(pointer<U> ptr)
+        {
+            _value._ptr = ptr;
+        }
+
+        template< typename U, std::enable_if_t<std::is_array_v<U> && std::is_base_of_v<T, U>, int> = 0 >
+        constexpr unique_ptr(remove_array_pointer<U> ptr)
+        {
+            _value._ptr = ptr;
+        }
+
+        template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+        constexpr unique_ptr(unique_ptr<U>&& other)
+        {
+            _value._ptr = other._value._ptr;
             other._value._ptr = nullptr;
         }
 
         constexpr ~unique_ptr()
         {
-            _value.get_deleter()(_value._ptr);
+            _delete();
         }
 
         constexpr unique_ptr& operator=(nullptr_t)
         {
-            ~unique_ptr();
+            _delete();
             return *this;
         }
 
         constexpr unique_ptr& operator=(unique_ptr&& rhs)
         {
-            ~unique_ptr();
-            _value = rhs._value;
+            _delete();
+            _value._ptr = rhs._value._ptr;
+            rhs._value._ptr = nullptr;
+            return *this;
+        }
+
+        template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+        constexpr unique_ptr& operator=(unique_ptr<U>&& rhs)
+        {
+            _delete();
+            _value._ptr = rhs._value._ptr;
             rhs._value._ptr = nullptr;
             return *this;
         }
@@ -93,32 +137,37 @@ namespace hsd
             return _value.get_deleter();
         }
 
-        constexpr remove_array_pointer get()
+        constexpr remove_array_pointer<T> get()
         {
             return _value._ptr;
         }
 
-        constexpr remove_array_pointer get() const
+        constexpr remove_array_pointer<T> get() const
         {
             return _value._ptr;
         }
 
-        constexpr pointer operator->()
+        constexpr bool operator!=(nullptr_t) const
+        {
+            return _value._ptr != nullptr;
+        }
+
+        constexpr pointer<T> operator->()
         {
             return get();
         }
 
-        constexpr pointer operator->() const
+        constexpr pointer<T> operator->() const
         {
             return get();
         }
 
-        constexpr reference operator*()
+        constexpr reference<T> operator*()
         {
             return *get();
         }
 
-        constexpr reference operator*() const
+        constexpr reference<T> operator*() const
         {
             return *get();
         }

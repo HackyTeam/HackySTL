@@ -137,9 +137,9 @@ namespace hsd
     template<typename T1>
     static constexpr void swap(T1& first, T1& second)
     {
-        auto _tmp = first;
-        first = second;
-        second = _tmp;
+        auto _tmp = hsd::move(first);
+        first = hsd::move(second);
+        second = hsd::move(_tmp);
     }
     
     template< typename InIt, typename OutIt >

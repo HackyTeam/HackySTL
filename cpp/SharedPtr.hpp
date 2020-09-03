@@ -53,13 +53,9 @@ namespace hsd
                     }
                 }
             };
-        } // namespace shared_detail
 
-        template< typename T, typename Deleter = shared_detail::deleter<T> >
-        class shared_ptr
-        {
-        private:
-            struct _storage : private Deleter
+            template<typename T, typename Deleter>
+            struct storage : private Deleter
             {
                 shared_detail::ptr_info<T> _ptr;
 
@@ -67,26 +63,45 @@ namespace hsd
                 {
                     return *this;
                 }
-            } _value;
+            };
+        } // namespace shared_detail
+
+        template< typename T, typename Deleter = shared_detail::deleter<T> >
+        class shared_ptr
+        {
+        private:
+            shared_detail::storage<T, Deleter> _value;
+
+            template<typename U, typename Del>
+            friend class shared_ptr;
+
+            constexpr void _delete()
+            {
+                _value.get_deleter()(_value._ptr);
+            }
 
         public:
-            using pointer = T*;
-            using reference = T&;
-            using nullptr_t = decltype(nullptr);
-            using remove_array_pointer = remove_array_t<T>*;
+            template<typename U>
+            using pointer = U*;
+
+            template<typename U>
+            using reference = U&;
+
+            template<typename U>
+            using remove_array_pointer = remove_array_t<U>*;
 
             shared_ptr() = default;
             constexpr shared_ptr(nullptr_t) {}
 
             template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
-            constexpr shared_ptr(pointer ptr)
+            constexpr shared_ptr(pointer<U> ptr)
             {
                 _value._ptr._value = ptr;
                 _value._ptr._size = new size_t(1);
             }
 
             template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
-            constexpr shared_ptr(remove_array_pointer ptr)
+            constexpr shared_ptr(remove_array_pointer<U> ptr)
             {
                 _value._ptr = ptr;
                 _value._ptr._size = new size_t(1);
@@ -105,20 +120,35 @@ namespace hsd
                 ptr._value._ptr._value = nullptr;
             }
 
+            template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+            constexpr shared_ptr(const shared_ptr<U>& ptr)
+            {
+                _value = ptr._value;
+                (*_value._ptr._size)++;
+            }
+
+            template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+            constexpr shared_ptr(shared_ptr<U>&& ptr)
+            {
+                _value = ptr._value;
+                ptr._value._ptr._size = nullptr;
+                ptr._value._ptr._value = nullptr;
+            }
+
             constexpr ~shared_ptr()
             {
-                _value.get_deleter()(_value._ptr);
+                _delete();
             }
 
             constexpr shared_ptr& operator=(nullptr_t)
             {
-                _value.get_deleter()(_value._ptr);
+                _delete();
                 return *this;
             }
 
             constexpr shared_ptr& operator=(shared_ptr& lhs)
             {
-                _value.get_deleter()(_value._ptr);
+                _delete();
                 _value = lhs._value;
                 (*_value._ptr._size)++;
                 return *this;
@@ -126,39 +156,58 @@ namespace hsd
 
             constexpr shared_ptr& operator=(shared_ptr&& lhs)
             {
-                _value.get_deleter()(_value._ptr);
+                _delete();
                 _value = lhs._value;
                 lhs._value._ptr._size = nullptr;
                 lhs._value._ptr._value = nullptr;
                 return *this;
             }
 
-            constexpr remove_array_pointer get()
+            template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+            constexpr shared_ptr& operator=(shared_ptr<U>& lhs)
+            {
+                _delete();
+                _value = lhs._value;
+                (*_value._ptr._size)++;
+                return *this;
+            }
+
+            template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+            constexpr shared_ptr& operator=(shared_ptr<U>&& lhs)
+            {
+                _delete();
+                _value = lhs._value;
+                lhs._value._ptr._size = nullptr;
+                lhs._value._ptr._value = nullptr;
+                return *this;
+            }
+
+            constexpr remove_array_pointer<T> get()
             {
                 return _value._ptr._value;
             }
 
-            constexpr remove_array_pointer get() const
+            constexpr remove_array_pointer<T> get() const
             {
                 return _value._ptr._value;
             }
 
-            constexpr pointer operator->()
+            constexpr pointer<T> operator->()
             {
                 return get();
             }
 
-            constexpr pointer operator->() const
+            constexpr pointer<T> operator->() const
             {
                 return get();
             }
 
-            constexpr reference operator*()
+            constexpr reference<T> operator*()
             {
                 return *get();
             }
 
-            constexpr reference operator*() const
+            constexpr reference<T> operator*() const
             {
                 return *get();
             }

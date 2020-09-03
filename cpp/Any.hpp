@@ -27,7 +27,8 @@ namespace hsd
         }
     };
 
-    class _any_base {
+    class _any_base 
+    {
     public:
         virtual ~_any_base() = default;
         virtual hsd::unique_ptr<_any_base> clone() const = 0;

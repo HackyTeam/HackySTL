@@ -58,7 +58,7 @@ namespace hsd
         
         template<typename U>
         using reference = U&;
-        
+
         template<typename U>
         using remove_array_pointer = remove_array_t<U>*;
         
@@ -68,13 +68,13 @@ namespace hsd
         unique_ptr(const unique_ptr&) = delete;
 
         template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
-        constexpr unique_ptr(pointer<T> ptr)
+        constexpr unique_ptr(pointer<U> ptr)
         {
             _value._ptr = ptr;
         }
 
         template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
-        constexpr unique_ptr(remove_array_pointer<T> ptr)
+        constexpr unique_ptr(remove_array_pointer<U> ptr)
         {
             _value._ptr = ptr;
         }
@@ -83,18 +83,6 @@ namespace hsd
         {
             _value._ptr = other._value._ptr;
             other._value._ptr = nullptr;
-        }
-
-        template< typename U, std::enable_if_t<!std::is_array_v<U> && std::is_base_of_v<T, U>, int> = 0 >
-        constexpr unique_ptr(pointer<U> ptr)
-        {
-            _value._ptr = ptr;
-        }
-
-        template< typename U, std::enable_if_t<std::is_array_v<U> && std::is_base_of_v<T, U>, int> = 0 >
-        constexpr unique_ptr(remove_array_pointer<U> ptr)
-        {
-            _value._ptr = ptr;
         }
 
         template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >

@@ -13,19 +13,13 @@
 
 namespace hsd
 {
-    namespace tcp
+    namespace net
     {
         enum class received_state
         {
             err = -1,
             disconnected,
             ok
-        };
-
-        enum class network_type
-        {
-            server,
-            client
         };
 
         enum class protocol_type
@@ -46,7 +40,7 @@ namespace hsd
             static constexpr size_t rdm = SOCK_RDM;
             static constexpr size_t seq_packet = SOCK_SEQPACKET;
         };
-    } // namespace tcp
+    } // namespace net
 } // namespace hsd
 
 #endif

@@ -87,7 +87,11 @@ namespace hsd
 
         public:
             server() = default;
-            ~server() = default;
+            
+            ~server()
+            {
+                respond("");
+            }
 
             server(net::protocol_type protocol, uint16_t port, const char* ip_addr)
                 : _sock{protocol, port, ip_addr}, _protocol{protocol}

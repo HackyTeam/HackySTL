@@ -13,7 +13,9 @@ int main()
             continue;
 
         auto [buf, code] = client.receive();
-        hsd::io::print("SERVER> {}", buf.data());
+        
+        if(code == hsd::net::received_state::ok)
+            hsd::io::print("SERVER> {}", buf.data());
         
         if(code != hsd::net::received_state::ok)
             break;

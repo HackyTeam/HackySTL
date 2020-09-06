@@ -417,6 +417,8 @@ namespace hsd
         }
 
     public:
+        using const_iterator = const iterator;
+
         constexpr unordered_map()
         {
             _table.resize(_table_size);
@@ -487,17 +489,37 @@ namespace hsd
             return _map_iter;
         }
 
+        constexpr iterator begin() const
+        {
+            return _map_iter;
+        }
+
         constexpr iterator end()
         {
             return {nullptr};
         }
 
-        constexpr const iterator cbegin() const
+        constexpr iterator end() const
+        {
+            return {nullptr};
+        }
+
+        constexpr const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const iterator cend() const
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cend()
+        {
+            return end();
+        }
+
+        constexpr const_iterator cend() const
         {
             return end();
         }

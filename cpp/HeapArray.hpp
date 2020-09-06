@@ -69,8 +69,23 @@ namespace hsd
         {
             return _array[index];
         }
+        
+        constexpr T& operator[](size_t index) const
+        {
+            return _array[index];
+        }
 
         constexpr T& at(size_t index)
+        {
+            if(index >= N)
+            {
+                throw std::out_of_range("");
+            }
+
+            return _array[index];
+        }
+
+        constexpr T& at(size_t index) const
         {
             if(index >= N)
             {
@@ -103,7 +118,17 @@ namespace hsd
             return data();
         }
 
+        constexpr iterator begin() const
+        {
+            return data();
+        }
+
         constexpr iterator end()
+        {
+            return begin() + size();
+        }
+
+        constexpr iterator end() const
         {
             return begin() + size();
         }
@@ -113,7 +138,17 @@ namespace hsd
             return begin();
         }
 
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
         constexpr const_iterator cend()
+        {
+            return end();
+        }
+
+        constexpr const_iterator cend() const
         {
             return end();
         }

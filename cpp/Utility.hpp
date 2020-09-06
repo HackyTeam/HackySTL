@@ -152,6 +152,16 @@ namespace hsd
         return dest;
     }
 
+    template< typename InIt, typename OutIt >
+    static constexpr OutIt copy_n(InIt first, size_t n, OutIt dest)
+    {
+        for(int _index = 0; _index != n; _index++) 
+        {
+            *dest++ = *first++;
+        }
+        return dest;
+    }
+
     template< typename InIt, typename ValueType >
     static constexpr void set(InIt first, InIt last, ValueType value)
     {

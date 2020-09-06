@@ -209,12 +209,12 @@ namespace hsd
     class list
     {
     private:
-        using iterator = list_detail::iterator<T>;
-        iterator _head;
-        iterator _tail;
+        list_detail::iterator<T> _head;
+        list_detail::iterator<T> _tail;
 
     public:
-        using iterator;
+        using iterator = list_detail::iterator<T>;
+        using const_iterator = const iterator;
         constexpr list() {}
 
         constexpr list(const list& other)
@@ -355,19 +355,39 @@ namespace hsd
             return _head;
         }
 
-        static constexpr iterator end()
-        {
-            return iterator(nullptr);
-        }
-
-        constexpr const iterator cbegin() const
+        constexpr iterator begin() const
         {
             return _head;
         }
 
-        static constexpr const iterator cend() const
+        constexpr iterator end()
         {
             return iterator(nullptr);
+        }
+
+        constexpr iterator end() const
+        {
+            return iterator(nullptr);
+        }
+
+        constexpr const_iterator cbegin()
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cend()
+        {
+            return end();
+        }
+
+        constexpr const_iterator cend() const
+        {
+            return end();
         }
     };
 } // namespace hsd

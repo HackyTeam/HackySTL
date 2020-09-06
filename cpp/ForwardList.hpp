@@ -176,11 +176,12 @@ namespace hsd
     class forward_list
     {
     private:
-        using iterator = forward_list_detail::iterator<T>;
-        iterator _head;
-        iterator _tail;
+        forward_list_detail::iterator<T> _head;
+        forward_list_detail::iterator<T> _tail;
         
     public:
+        using iterator = forward_list_detail::iterator<T>;
+        using const_iterator = const iterator;
         constexpr forward_list() {}
 
         constexpr forward_list(const forward_list& other)
@@ -313,19 +314,39 @@ namespace hsd
             return _head;
         }
 
+        constexpr iterator begin() const
+        {
+            return _head;
+        }
+
         constexpr iterator end()
         {
             return iterator(nullptr);
         }
 
-        constexpr const iterator cbegin() const
-        {
-            return _head;
-        }
-
-        constexpr const iterator cend() const
+        constexpr iterator end() const
         {
             return iterator(nullptr);
+        }
+
+        constexpr const_iterator cbegin()
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cend()
+        {
+            return end();
+        }
+
+        constexpr const_iterator cend() const
+        {
+            return end();
         }
     };
 } // namespace hsd

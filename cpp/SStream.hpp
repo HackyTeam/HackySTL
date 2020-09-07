@@ -199,48 +199,43 @@ namespace hsd
         {
             return _data;
         }
-
+    
         iterator begin()
         {
             return data();
         }
-    
-        constexpr iterator begin()
+
+        iterator begin() const
         {
             return data();
         }
 
-        constexpr iterator begin() const
-        {
-            return data();
-        }
-
-        constexpr iterator end()
+        iterator end()
         {
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        iterator end() const
         {
             return begin() + size();
         }
 
-        constexpr const_iterator cbegin()
+        const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        const_iterator cend() const
         {
             return end();
         }

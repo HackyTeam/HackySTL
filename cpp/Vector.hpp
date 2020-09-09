@@ -128,6 +128,26 @@ namespace hsd
     
             return _data[index];
         }
+        
+        constexpr T& front()
+        {
+            return *begin();
+        }
+
+        constexpr T& front() const
+        {
+            return *begin();
+        }
+
+        constexpr T& back()
+        {
+            return *(begin() + size() - 1);
+        }
+
+        constexpr T& back() const
+        {
+            return *(begin() + size() - 1);
+        }
     
         template< size_t U, size_t L >
         constexpr auto gen_range()
@@ -241,13 +261,28 @@ namespace hsd
         {
             return _size;
         }
+
+        constexpr size_t size() const
+        {
+            return _size;
+        }
     
         constexpr size_t capacity()
         {
             return _reserved_size;
         }
+
+        constexpr size_t capacity() const
+        {
+            return _reserved_size;
+        }
     
         constexpr iterator data()
+        {
+            return _data;
+        }
+
+        constexpr iterator data() const
         {
             return _data;
         }

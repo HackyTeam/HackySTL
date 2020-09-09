@@ -96,7 +96,17 @@ namespace hsd
             return N;
         }
 
+        constexpr size_t size() const
+        {
+            return N;
+        }
+
         constexpr iterator data()
+        {
+            return _array;
+        }
+
+        constexpr iterator data() const
         {
             return _array;
         }

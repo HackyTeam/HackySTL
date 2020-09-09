@@ -190,7 +190,17 @@ namespace hsd
             return _size;
         }
 
+        size_t size() const
+        {
+            return _size;
+        }
+
         iterator data()
+        {
+            return _data;
+        }
+
+        iterator data() const
         {
             return _data;
         }

@@ -1,13 +1,32 @@
-#include "../../cpp/Io.hpp"
 #include "../../cpp/Logging.hpp"
+#include "../../cpp/Io.hpp"
 
-void log(const char* message)
+#include <stdexcept>
+
+static hsd::logger stack;
+
+void test(const char* msg, size_t N = 0, hsd::logger& log = stack.add())
 {
-    hsd::logger location = hsd::logger::current();
-    hsd::io::print("info: {}:{} {}\n", location.file_name(), location.line(), message);
+    if(N == 33)
+    {   
+        throw std::runtime_error(msg);
+    }
+
+    test(msg, N + 1);
 }
- 
+
 int main()
 {
-    log("Hello world!");
+    try
+    {
+        test("hello");
+    }
+    catch(std::exception& e)
+    {
+        for(auto& info : stack)
+        {
+            hsd::io::print("info: {}:{} Function: {}\n", 
+                info.file_name(), info.line(), info.function_name());
+        }
+    }
 }

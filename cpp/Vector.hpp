@@ -112,9 +112,7 @@ namespace hsd
         constexpr T& at(size_t index)
         {
             if(index >= _size)
-            {
                 throw std::out_of_range("");
-            }
     
             return _data[index];
         }
@@ -122,10 +120,8 @@ namespace hsd
         constexpr T& at(size_t index) const
         {
             if(index >= _size)
-            {
                 throw std::out_of_range("");
-            }
-    
+
             return _data[index];
         }
         

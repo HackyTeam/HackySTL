@@ -1,114 +1,88 @@
 #pragma once
 
-#include "Types.hpp"
-#include "Vector.hpp"
+#include "Io.hpp"
 
 namespace hsd
 {
-    namespace logger_detail
-    {
-        class source_location
-        {
-        private:
-            const char* _file_name = "unknown";
-            const char* _func = "unknown";
-            size_t _line = 0;
-        
-        public:
-            constexpr source_location() {}
-
-            constexpr source_location(const char* file_name, const char* func, size_t line)
-                : _file_name{file_name}, _func{func}, _line{line}
-            {}
-
-            constexpr const char* file_name()
-            {
-                return _file_name;
-            }
-
-            constexpr const char* function_name()
-            {
-                return _func;
-            }
-
-            constexpr size_t line()
-            {
-                return _line;
-            }
-        };
-    } // namespace logger_detail
-    
-    class logger
+    class source_location
     {
     private:
-        hsd::vector<logger_detail::source_location> _stack;
-        logger* _ptr = nullptr;
-        using stack_iterator = hsd::vector<logger_detail::source_location>::iterator;
-
+        const char* _file_name = "unknown";
+        const char* _func = "unknown";
+        size_t _line = 0;
+    
     public:
-        constexpr logger() {}
-
-        constexpr logger(logger& log)
-            : _ptr{&log}
+        constexpr source_location() {}
+        
+        constexpr source_location(const char* file_name, const char* func, size_t line)
+            : _file_name{file_name}, _func{func}, _line{line}
         {}
-
-        constexpr ~logger()
+        
+        constexpr const char* file_name()
         {
-            if(_ptr != nullptr)
-                _ptr->_stack.pop_back();
-        }
-
-        constexpr logger& add(const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), size_t line = __builtin_LINE())
-        {
-            if(_ptr != nullptr) {
-                _ptr->add(file_name, func, line);
-            }
-            else {
-                _stack.emplace_back(file_name, func, line);
-            }
-
-            return *this;
+            return _file_name;
         }
         
-        constexpr logger_detail::source_location get()
+        constexpr const char* function_name()
         {
-            if(_ptr != nullptr)
-                return _ptr->get();
+            return _func;
+        }
+        
+        constexpr size_t line()
+        {
+            return _line;
+        }
+    };
     
+    class stack_trace
+    {
+    private:
+        static inline hsd::vector<source_location> _stack;
+
+    public:
+        using stack_iterator = hsd::vector<source_location>::iterator;
+
+        static constexpr void add(const char* file_name, const char* func, size_t line)
+        {
+            _stack.emplace_back(file_name, func, line);
+        }
+
+        static constexpr void remove()
+        {
+            _stack.pop_back();
+        }
+        
+        static constexpr source_location get()
+        {
             return _stack.back();
         }
 
-        constexpr stack_iterator begin()
+        static constexpr stack_iterator begin()
         {
-            if(_ptr != nullptr)
-                return _ptr->begin();
-
             return _stack.begin();
         }
 
-        constexpr stack_iterator begin() const
+        static constexpr stack_iterator end()
         {
-            if(_ptr != nullptr)
-                return _ptr->begin();
-
-            return _stack.begin();
-        }
-
-        constexpr stack_iterator end()
-        {
-            if(_ptr != nullptr)
-                return _ptr->end();
-
             return _stack.end();
         }
+    };
 
-        constexpr stack_iterator end() const
+    #define HSD_PRINT_STACK()\
+        for(hsd::stack_trace::stack_iterator it = stack_trace::begin(); it != stack_trace::end(); it++)\
+            hsd::io::print("Info: {}:{} Function: {}\n", it->file_name(), it->line(), it->function_name())
+
+    #define HSD_STACKTRACE_FUNC(func, ...)\
+        hsd::stack_trace::add(__FILE__, __func__, __LINE__);\
+        func(__VA_ARGS__);\
+        hsd::stack_trace::remove()
+
+    class stack_trace_exception : public std::exception
+    {
+        virtual const char* what() const noexcept override
         {
-            if(_ptr != nullptr)
-                return _ptr->end();
-
-            return _stack.end();
+            HSD_PRINT_STACK();
+            return "The stack was unwined up there";
         }
     };
 } // namespace hsd

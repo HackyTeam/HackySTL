@@ -12,23 +12,24 @@ namespace hsd
         size_t _line = 0;
     
     public:
-        constexpr source_location() {}
-        
-        constexpr source_location(const char* file_name, const char* func, size_t line)
+        constexpr source_location(
+            const char* file_name = __builtin_FILE(), 
+            const char* func = __builtin_FUNCTION(), 
+            size_t line = __builtin_LINE()) noexcept
             : _file_name{file_name}, _func{func}, _line{line}
         {}
         
-        constexpr const char* file_name()
+        constexpr const char* file_name() noexcept
         {
             return _file_name;
         }
         
-        constexpr const char* function_name()
+        constexpr const char* function_name() noexcept
         {
             return _func;
         }
         
-        constexpr size_t line()
+        constexpr size_t line() noexcept
         {
             return _line;
         }
@@ -38,50 +39,68 @@ namespace hsd
     {
     private:
         static inline hsd::vector<source_location> _stack;
-
-    public:
+        static inline int _count = std::uncaught_exceptions();
         using stack_iterator = hsd::vector<source_location>::iterator;
 
-        static constexpr void add(const char* file_name, const char* func, size_t line)
-        {
-            _stack.emplace_back(file_name, func, line);
-        }
+    public:
 
-        static constexpr void remove()
+        stack_trace() noexcept {}
+        stack_trace(const stack_trace&) noexcept {}
+
+        ~stack_trace() noexcept
         {
+            if(_count != std::uncaught_exceptions())
+            {
+                hsd::io::err_print(
+                    "Info: {}:{} Function: {}\n", 
+                    get().file_name(), get().line(), 
+                    get().function_name()
+                );
+            }
+
             _stack.pop_back();
         }
+
+        stack_trace& add(
+            const char* file_name = __builtin_FILE(), 
+            const char* func = __builtin_FUNCTION(), 
+            size_t line = __builtin_LINE()) noexcept
+        {
+            _stack.emplace_back(file_name, func, line);
+            return *this;
+        }
         
-        static constexpr source_location get()
+        constexpr source_location get() noexcept
         {
             return _stack.back();
         }
 
-        static constexpr stack_iterator begin()
+        stack_iterator rbegin() noexcept
         {
-            return _stack.begin();
+            return _stack.end() - 1;
         }
 
-        static constexpr stack_iterator end()
+        stack_iterator rend() noexcept
         {
-            return _stack.end();
+            return _stack.begin() - 1;
         }
     };
 
-    #define HSD_PRINT_STACK()\
-        for(hsd::stack_trace::stack_iterator it = stack_trace::begin(); it != stack_trace::end(); it++)\
-            hsd::io::print("Info: {}:{} Function: {}\n", it->file_name(), it->line(), it->function_name())
-
-    #define HSD_STACKTRACE_FUNC(func, ...)\
-        hsd::stack_trace::add(__FILE__, __func__, __LINE__);\
-        func(__VA_ARGS__);\
-        hsd::stack_trace::remove()
+    static inline stack_trace exec_stack;
 
     class stack_trace_exception : public std::exception
     {
         virtual const char* what() const noexcept override
         {
-            HSD_PRINT_STACK();
+            for(auto it = exec_stack.rbegin(); it != exec_stack.rend(); it--)
+            {
+                hsd::io::err_print(
+                    "Info: {}:{} Function: {}\n", 
+                    it->file_name(), it->line(), 
+                    it->function_name()
+                );
+            }
+            
             return "The stack was unwined up there";
         }
     };

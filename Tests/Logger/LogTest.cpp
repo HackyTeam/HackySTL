@@ -1,14 +1,21 @@
 #include "../../cpp/Logging.hpp"
 
-void test(const char* msg, size_t N = 0)
+void test(const char* msg, size_t N, hsd::stack_trace tr = hsd::exec_stack.add())
 {
-    if(N == 33)
+    if(N == 0)
         throw hsd::stack_trace_exception();
 
-    HSD_STACKTRACE_FUNC(test, msg, N + 1);
+    test(msg, N - 1);
 }
 
 int main()
 {
-    HSD_STACKTRACE_FUNC(test, "hello");
+    try
+    {
+        test("hello", 32);   
+    }
+    catch(const std::exception& e)
+    {
+        hsd::io::err_print("{}\n", e.what());
+    }
 }

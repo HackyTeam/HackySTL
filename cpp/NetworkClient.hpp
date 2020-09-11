@@ -2,7 +2,7 @@
 
 #include "_NetworkDetail.hpp"
 
-#ifdef __linux__
+#ifdef HSD_PLATFORM_LINUX
 
 namespace hsd
 {

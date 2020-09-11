@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Io.hpp"
+#include "_Define.hpp"
 
-#ifdef __linux__
+#ifdef HSD_PLATFORM_LINUX
 
 #include <sys/types.h>
 #include <unistd.h>

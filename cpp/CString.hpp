@@ -3,8 +3,6 @@
 #include "Utility.hpp"
 #include "Types.hpp"
 
-#include <math.h>
-
 namespace hsd
 {	
 	template<typename CharT>
@@ -20,6 +18,15 @@ namespace hsd
         	}
         	return (*substr == '\0');
         }
+
+		template<typename T>
+		static constexpr size_t _modulus(T num)
+		{
+			if(num < 0)
+				return -num;
+
+			return num;
+		}
 
 		template<typename T>
 		static constexpr size_t _num_len(T num)
@@ -42,6 +49,9 @@ namespace hsd
 		{
 			return letter >= '0' && letter <= '9';
 		}
+
+		template<typename From, typename To>
+		using EnableConvertible = ResolvedType<std::is_convertible<From, To>, const CharT*>;
     public:
 
         static constexpr const CharT* find(const CharT* str, const CharT* substr)
@@ -158,7 +168,9 @@ namespace hsd
 	        if(size == 0)
 	        {
 				_end = length(str);
-				if(_end != 0){ _end--; }
+				
+				if(_end != 0)
+					_end--;
 			}
 			
 			_buf = new CharT[_end + 2];
@@ -222,6 +234,20 @@ namespace hsd
 			return _buf;
 		}
 
+		static constexpr const CharT* to_string(uint32_t num)
+		{
+			size_t _len = _num_len(num);
+			CharT* _buf = new CharT[_len + 1];
+			_buf[_len] = '\0';
+
+			for(; num != 0; num /= 10)
+			{
+				_buf[--_len] = '0' + (num % 10);
+			}
+
+			return _buf;
+		}
+
 		static constexpr const CharT* to_string(size_t num)
 		{
 			size_t _len = _num_len(num);
@@ -241,7 +267,7 @@ namespace hsd
 			size_t _len = 0;
 			int _round_num = static_cast<int>(num);
 			bool _negative = (_round_num < 0);
-			size_t _point_num = fabs(num - _round_num) * 10000 + 1;
+			size_t _point_num = _modulus(num - _round_num) * 10000 + 1;
 			
 			if(_negative)
 				_len = _num_len(_round_num) + 6;
@@ -267,7 +293,7 @@ namespace hsd
 			size_t _len = 0;
 			int _round_num = static_cast<int>(num);
 			bool _negative = (_round_num < 0);
-			size_t _point_num = fabs(num - _round_num) * 1000000 + 1;
+			size_t _point_num = _modulus(num - _round_num) * 1000000 + 1;
 			
 			if(_negative)
 				_len = _num_len(_round_num) + 8;
@@ -288,21 +314,24 @@ namespace hsd
 			delete[] _round_buf;
 			return _buf;
 		}
-
-		static constexpr const CharT* to_string(CharT* str)
+		
+		template<typename C>
+		static constexpr EnableConvertible<C, CharT> to_string(const C* str)
 		{
-			return str;
+			size_t _len = cstring<C>::length(str);
+			CharT* _buf = new CharT[_len + 1];
+
+			for (size_t _index = 0; _index <= _len; _index++)
+				_buf[_index] = static_cast<CharT>(str[_index]);
+
+			return _buf;
 		}
 
-		static constexpr const CharT* to_string(const CharT* str)
-		{
-			return str;
-		}
-
-		static constexpr const CharT* to_string(CharT letter)
+		template<typename C>
+		static constexpr EnableConvertible<C, CharT> to_string(C letter)
 		{
 			CharT* _buf = new CharT[2];
-			_buf[0] = letter;
+			_buf[0] = static_cast<CharT>(letter);
 			_buf[1] = '\0';
 			return _buf;
 		}

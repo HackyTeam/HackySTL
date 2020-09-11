@@ -155,7 +155,7 @@ namespace hsd
                     _print_buf += _fmt_buf[index];
                 }
                 for(auto _letter : _print_buf)
-                    printf("%lc", _letter);
+                    wprintf(L"%lc", _letter);
             }
         }
 
@@ -395,7 +395,7 @@ namespace hsd
                     _print_buf += _fmt_buf[index];
                 }
                 for(auto _letter : _print_buf)
-                    fprintf(_file_buf, "%lc", _letter);
+                    fwprintf(_file_buf, L"%lc", _letter);
             }
         }
     };

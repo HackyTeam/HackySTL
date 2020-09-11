@@ -33,8 +33,6 @@ namespace hsd
         };
         
         callable_base* _func_impl = nullptr;
-        template< typename Condition, typename Value >
-        using ResolvedType = typename std::enable_if< Condition::value, Value >::type;
 
         constexpr void reset()
         {

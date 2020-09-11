@@ -115,10 +115,7 @@ namespace hsd
         {
             const CharT* _cstr_buf = _str_utils::to_string(val);
             string _str_buf = string(_cstr_buf);
-            
-            if constexpr(!(std::is_same_v<T, CharT*> || std::is_same_v<T, const CharT*>))
-                delete[] _cstr_buf;
-            
+            delete[] _cstr_buf;
             return _str_buf;
         }
 

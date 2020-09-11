@@ -82,6 +82,9 @@ namespace hsd
         : public std::true_type
     {};
 
+    template< typename Condition, typename Value >
+    using ResolvedType = typename std::enable_if< Condition::value, Value >::type;
+
     template<typename T>
     using rev_ref_t = typename std::remove_reference<T>::type;
 

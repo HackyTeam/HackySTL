@@ -12,8 +12,8 @@ namespace hsd
     private:
         using _str_utils = cstring<CharT>;
         CharT* _data = nullptr;
-        size_t _size = 0;
-        size_t _reserved_size = 1;
+        usize _size = 0;
+        usize _reserved_size = 1;
 
         constexpr void _reset()
         {
@@ -22,7 +22,7 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
-        static constexpr size_t npos = -1;
+        static constexpr usize npos = -1;
 
         constexpr string()
         {
@@ -30,7 +30,7 @@ namespace hsd
             _data[0] = '\0';
         }
 
-        constexpr string(size_t size)
+        constexpr string(usize size)
         {
             _data = new CharT[size + 1];
             _data[size] = '\0';
@@ -47,7 +47,7 @@ namespace hsd
             _data[_size] = '\0';
         }
 
-        constexpr string(const CharT* cstr, size_t size)
+        constexpr string(const CharT* cstr, usize size)
         {
             _size = size;
             _reserved_size = _size;
@@ -135,7 +135,7 @@ namespace hsd
 
         constexpr string operator+(const CharT* rhs)
         {
-            size_t _rhs_len = _str_utils::length(rhs);
+            usize _rhs_len = _str_utils::length(rhs);
             string _buf(_size + _rhs_len);
             _str_utils::copy(_buf._data, _data, _size);
             _str_utils::add(_buf._data, rhs, _size);
@@ -144,7 +144,7 @@ namespace hsd
 
         constexpr friend string operator+(const CharT* lhs, const string& rhs)
         {
-            size_t _lhs_len = _str_utils::length(lhs);
+            usize _lhs_len = _str_utils::length(lhs);
             string _buf(rhs._size + _lhs_len);
             _str_utils::copy(_buf._data, lhs, _lhs_len);
             _str_utils::add(_buf._data, rhs._data, _lhs_len);
@@ -170,7 +170,7 @@ namespace hsd
 
         constexpr string& operator+=(const CharT* rhs)
         {
-            size_t _rhs_len = _str_utils::length(rhs);
+            usize _rhs_len = _str_utils::length(rhs);
 
             if(_reserved_size <= _size + _rhs_len)
             {
@@ -187,7 +187,7 @@ namespace hsd
             }
         }
 
-        constexpr CharT& operator[](size_t index)
+        constexpr CharT& operator[](usize index)
         {
             return _data[index];
         }
@@ -229,7 +229,7 @@ namespace hsd
             return operator>(rhs) && operator==(rhs);
         }
 
-        constexpr CharT& at(size_t index)
+        constexpr CharT& at(usize index)
         {
             if(index >= _size)
                 throw std::out_of_range("");
@@ -237,7 +237,7 @@ namespace hsd
             return _data[index];
         }
 
-        constexpr size_t find(const string& str, size_t pos = 0)
+        constexpr usize find(const string& str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -252,7 +252,7 @@ namespace hsd
             }
         }
 
-        constexpr size_t find(const CharT* str, size_t pos = 0)
+        constexpr usize find(const CharT* str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -267,7 +267,7 @@ namespace hsd
             }
         }
 
-        constexpr size_t find(CharT str, size_t pos = 0)
+        constexpr usize find(CharT str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -282,7 +282,7 @@ namespace hsd
             }
         }
 
-        constexpr size_t rfind(const string& str, size_t pos = npos)
+        constexpr usize rfind(const string& str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -308,7 +308,7 @@ namespace hsd
             }
         }
 
-        constexpr size_t rfind(const CharT* str, size_t pos = npos)
+        constexpr usize rfind(const CharT* str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -334,7 +334,7 @@ namespace hsd
             }
         }
 
-        constexpr size_t rfind(CharT str, size_t pos = npos)
+        constexpr usize rfind(CharT str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -370,17 +370,17 @@ namespace hsd
             return _data[_size - 1];
         }
 
-        constexpr size_t size()
+        constexpr usize size()
         {
             return _size;
         }
 
-        constexpr size_t capacity()
+        constexpr usize capacity()
         {
             return _reserved_size;
         }
 
-        template< size_t Pos, size_t Count >
+        template< usize Pos, usize Count >
         constexpr string gen_range()
         {
             if(Pos > _size || Pos + Count > _size)
@@ -402,7 +402,7 @@ namespace hsd
             _reserved_size = 1;
         }
     
-        constexpr void reserve(size_t size)
+        constexpr void reserve(usize size)
         {
             _reserved_size = size;
             CharT *_buf = new CharT[size + 1];

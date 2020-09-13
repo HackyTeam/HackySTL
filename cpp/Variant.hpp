@@ -23,11 +23,11 @@ namespace hsd
     }
 
     // class in_place_index
-    template <size_t _Idx>
+    template <usize _Idx>
     struct in_place_index_t
     {
     };
-    template <size_t _Idx>
+    template <usize _Idx>
     constexpr inline in_place_index_t<_Idx> in_place_index{};
 
     namespace _detail_variant
@@ -44,11 +44,11 @@ namespace hsd
         struct _value_holder<void> {};
 
         // class template variant_index
-        template <typename _Ty, size_t _Idx, typename _Tfirst, typename... _Trest>
+        template <typename _Ty, usize _Idx, typename _Tfirst, typename... _Trest>
         struct _variant_index_helper : _variant_index_helper<_Ty, _Idx + 1, _Trest...> {};
 
-        template <typename _Ty, size_t _Idx, typename... _Ts>
-        struct _variant_index_helper<_Ty, _Idx, _Ty, _Ts...> : std::integral_constant<size_t, _Idx> {};
+        template <typename _Ty, usize _Idx, typename... _Ts>
+        struct _variant_index_helper<_Ty, _Idx, _Ty, _Ts...> : std::integral_constant<usize, _Idx> {};
 
         template <typename _Ty, typename... _Ts>
         struct _variant_index : _variant_index_helper<_Ty, 0, _Ts...> {};
@@ -81,10 +81,10 @@ namespace hsd
     template <typename _Ty>
     struct variant_size;
 
-    template <size_t _Idx, typename _Ty>
+    template <usize _Idx, typename _Ty>
     struct variant_alternative;
 
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     using variant_alternative_t = typename variant_alternative<_Idx, _Ts...>::type;
 
     // class template variant
@@ -96,17 +96,17 @@ namespace hsd
 
     namespace _detail_variant
     {
-        template <typename _Ty, size_t _Idx>
+        template <typename _Ty, usize _Idx>
         struct index_tagged
         {
             using type = _Ty;
             using basic_type = std::remove_reference_t<_Ty>;
-            static constexpr size_t index = _Idx;
+            static constexpr usize index = _Idx;
             _Ty val;
         };
 
-        template <size_t _Val>
-        using index_constant = std::integral_constant<size_t, _Val>;
+        template <usize _Val>
+        using index_constant = std::integral_constant<usize, _Val>;
 
         template <typename _Stor>
         struct variant_storage_traits;
@@ -131,7 +131,7 @@ namespace hsd
             constexpr ~variant_storage() {}
 
             // Forwarding constructors
-            template <size_t _Idx, typename... _Ts>
+            template <usize _Idx, typename... _Ts>
             constexpr variant_storage(index_constant<_Idx>, _Ts &&... val)
                 : storage_rest(index_constant<_Idx - 1>(), forward<_Ts>(val)...)
             {
@@ -165,31 +165,31 @@ namespace hsd
                 return true;
             }
             // Out-of-place constructor
-            constexpr static void construct_copy(Storage &l, Storage const &r, size_t &li, size_t ri)
+            constexpr static void construct_copy(Storage &l, Storage const &r, usize &li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
                     _construct_inplace(val.val, get_impl<decltype(val)::index>(r));
                 });
             }
-            constexpr static void construct_move(Storage &l, Storage &&r, size_t &li, size_t ri)
+            constexpr static void construct_move(Storage &l, Storage &&r, usize &li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
                     _construct_inplace(val.val, move(get_mut_impl<decltype(val)::index>(r)));
                 });
             }
-            template <size_t _Idx, typename _Ty>
+            template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage &l, _Ty &&value)
             {
                 _construct_inplace(l, index_constant<_Idx>(), forward<_Ty>(value));
             }
             // Destructor
-            static void destroy(Storage &s, size_t id)
+            static void destroy(Storage &s, usize id)
             {
                 visit(s, id, [](auto val) {
                     _destroy_inplace(val.val);
                 });
             }
-            template <size_t _TheIdx>
+            template <usize _TheIdx>
             constexpr static auto &get_impl(Storage const &storage)
             {
                 if constexpr (_TheIdx == 0)
@@ -201,7 +201,7 @@ namespace hsd
                     return Storage::RestTraits::template get_impl<_TheIdx - 1>(storage.storage_rest);
                 }
             }
-            template <size_t _TheIdx>
+            template <usize _TheIdx>
             constexpr static auto &get_mut_impl(Storage &storage)
             {
                 if constexpr (_TheIdx == 0)
@@ -213,13 +213,13 @@ namespace hsd
                     return Storage::RestTraits::template get_mut_impl<_TheIdx - 1>(storage.storage_rest);
                 }
             }
-            constexpr static bool equals_impl(size_t id, Storage const &a, Storage const &b)
+            constexpr static bool equals_impl(usize id, Storage const &a, Storage const &b)
             {
                 return visit(const_cast<Storage &>(a), id, [&](auto const val) -> bool {
                     return val.val == get_impl<decltype(val)::index>(b);
                 });
             }
-            constexpr static void assign_copy(Storage &l, Storage const &r, size_t &il, size_t ir)
+            constexpr static void assign_copy(Storage &l, Storage const &r, usize &il, usize ir)
             {
                 if (il != ir)
                 {
@@ -233,7 +233,7 @@ namespace hsd
                     });
                 }
             }
-            constexpr static void assign_move(Storage &l, Storage &&r, size_t &il, size_t ir)
+            constexpr static void assign_move(Storage &l, Storage &&r, usize &il, usize ir)
             {
                 if (il != ir)
                 {
@@ -247,7 +247,7 @@ namespace hsd
                     });
                 }
             }
-            template <size_t _Idx, typename _Ty>
+            template <usize _Idx, typename _Ty>
             constexpr static void assign_fwd_current(Storage &l, _Ty &&value)
             {
                 if constexpr (_Idx == 0)
@@ -259,8 +259,8 @@ namespace hsd
                     Storage::RestTraits::template assign_fwd_current<_Idx - 1>(l.storage_rest, forward<_Ty>(value));
                 }
             }
-            template <size_t _Idx, typename _Ty>
-            constexpr static void assign_fwd(Storage &l, size_t &il, _Ty &&value)
+            template <usize _Idx, typename _Ty>
+            constexpr static void assign_fwd(Storage &l, usize &il, _Ty &&value)
             {
                 if (_Idx == il)
                 {
@@ -274,8 +274,8 @@ namespace hsd
                 }
             }
 
-            template <typename _Func, size_t _Idx = 0>
-            constexpr static auto visit(Storage &s, size_t id, _Func &&func, index_constant<_Idx> = index_constant<_Idx>())
+            template <typename _Func, usize _Idx = 0>
+            constexpr static auto visit(Storage &s, usize id, _Func &&func, index_constant<_Idx> = index_constant<_Idx>())
             {
                 if (id == 0)
                 {
@@ -297,7 +297,7 @@ namespace hsd
             template <typename _Tfirst, typename... _Trest>
             struct variant_base
             {
-                size_t _StoredIndex;
+                usize _StoredIndex;
                 variant_storage<_Tfirst, _Trest...> _Value;
                 using _StorageTraits = variant_storage_traits<variant_storage<_Tfirst, _Trest...>>;
                 constexpr variant_storage<_Tfirst, _Trest...> &_storage()
@@ -317,7 +317,7 @@ namespace hsd
                 constexpr variant_base &operator=(variant_base const &) = default;
                 constexpr variant_base &operator=(variant_base &&) = default;
 
-                template <size_t _Idx, typename... _Args>
+                template <usize _Idx, typename... _Args>
                 constexpr variant_base(in_place_index_t<_Idx>, _Args &&... args)
                     : _StoredIndex(_Idx), _Value(index_constant<_Idx>(), forward<_Args>(args)...) {}
 
@@ -446,7 +446,7 @@ namespace hsd
 
         template <typename _Tother,
                   typename = std::enable_if_t<!std::is_same_v<variant, std::decay_t<_Tother>>>,
-                  size_t _Idx = _detail_variant::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
+                  usize _Idx = _detail_variant::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
         constexpr variant(_Tother &&val)
             : _Base(in_place_index<_Idx>, forward<_Tother>(val)) {}
 
@@ -465,12 +465,12 @@ namespace hsd
             return *this;
         }
 
-        constexpr size_t index() const noexcept
+        constexpr usize index() const noexcept
         {
             return _Base::_StoredIndex;
         }
 
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr variant_alternative_t<_Idx, variant> &get()
         {
             if (index() != _Idx)
@@ -479,7 +479,7 @@ namespace hsd
             return _StorageTraits::template get_mut_impl<_Idx>(this->_storage());
         }
 
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr variant_alternative_t<_Idx, variant> const &get() const
         {
             if (index() != _Idx)
@@ -500,7 +500,7 @@ namespace hsd
             return get<_detail_variant::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
         }
 
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr variant_alternative_t<_Idx, variant> *get_if() noexcept
         {
             if (index() != _Idx)
@@ -509,7 +509,7 @@ namespace hsd
             return &_StorageTraits::template get_mut_impl<_Idx>(this->_storage());
         }
 
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr variant_alternative_t<_Idx, variant> const *get_if() const noexcept
         {
             if (index() != _Idx)
@@ -534,7 +534,7 @@ namespace hsd
         constexpr _Ty &emplace_one(_Ty &&value)
         {
             _destroy();
-            constexpr size_t _Idx = _detail_variant::_variant_index<std::remove_cv_t<std::remove_reference_t<_Ty>>, _Tfirst, _Trest...>::value;
+            constexpr usize _Idx = _detail_variant::_variant_index<std::remove_cv_t<std::remove_reference_t<_Ty>>, _Tfirst, _Trest...>::value;
             this->_StoredIndex = _Idx;
             _StorageTraits::construct_fwd<_Idx>(this->_storage(), std::forward<_Ty>(value));
         }
@@ -570,12 +570,12 @@ namespace hsd
 
     // class template variant_size
     template <typename... _Ts>
-    struct variant_size<variant<_Ts...>> : std::integral_constant<size_t, sizeof...(_Ts)> {};
+    struct variant_size<variant<_Ts...>> : std::integral_constant<usize, sizeof...(_Ts)> {};
 
     // class template variant_alternative
     namespace _detail_variant
     {
-        template <size_t _Idx, typename _Tfirst, typename... _Trest>
+        template <usize _Idx, typename _Tfirst, typename... _Trest>
         struct variant_alternative_helper : variant_alternative_helper<_Idx - 1, _Trest...>
         {
         };
@@ -587,18 +587,18 @@ namespace hsd
         };
     } // namespace _detail_variant
 
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     struct variant_alternative<_Idx, variant<_Ts...>> : _detail_variant::variant_alternative_helper<_Idx, _Ts...> {};
 
     //// Utility functions
     // function template get
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     constexpr variant_alternative_t<_Idx, variant<_Ts...>> &get(variant<_Ts...> &v)
     {
         return v.template get<_Idx>();
     }
 
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     constexpr variant_alternative_t<_Idx, variant<_Ts...>> const &get(variant<_Ts...> const &v)
     {
         return v.template get<_Idx>();
@@ -617,7 +617,7 @@ namespace hsd
     }
 
     // function template get_if
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     constexpr variant_alternative_t<_Idx, variant<_Ts...>> *get_if(variant<_Ts...> *v) noexcept
     {
         if (v == nullptr)
@@ -626,7 +626,7 @@ namespace hsd
         return v->template get_if<_Idx>();
     }
 
-    template <size_t _Idx, typename... _Ts>
+    template <usize _Idx, typename... _Ts>
     constexpr variant_alternative_t<_Idx, variant<_Ts...>> const *get_if(variant<_Ts...> const *v) noexcept
     {
         if (v == nullptr)

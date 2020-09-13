@@ -5,7 +5,7 @@ template<typename CharT>
 struct PseudoString
 {
     CharT* _cstr;
-    hsd::size_t _size;
+    hsd::usize _size;
 
     constexpr PseudoString(const CharT* cstr)
     {

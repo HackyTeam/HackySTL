@@ -14,9 +14,9 @@ namespace hsd
 		}
 
 		template<typename CharT>
-        static hsd::pair<int, const CharT*> _parse_i(const CharT* str)
+        static hsd::pair<i32, const CharT*> _parse_i(const CharT* str)
 		{
-			int _num = 0;
+			i32 _num = 0;
 			bool _negative = false;
 
 			for(; *str != '\0' && !_is_number(*str); str++);
@@ -32,9 +32,9 @@ namespace hsd
 		}
 
 		template<typename CharT>
-        static hsd::pair<size_t, const CharT*> _parse_us(const CharT* str)
+        static hsd::pair<usize, const CharT*> _parse_us(const CharT* str)
 		{
-			size_t _num = 0;
+			usize _num = 0;
 
 			for(; *str != '\0' && !_is_number(*str); str++);
 			for(; *str != '\0' && _is_number(*str); str++)
@@ -52,7 +52,7 @@ namespace hsd
 		    float _round_num = 0;
 			float _point_num = 0;
 			bool _negative = false;
-			size_t _num_len = 0;
+			usize _num_len = 0;
 
 			for(; *str != '\0' && !_is_number(*str); str++)
 			{
@@ -96,8 +96,8 @@ namespace hsd
     {
     private:
         CharT* _data = nullptr;
-        size_t _size = 0;
-		size_t _current_pos = 0;
+        usize _size = 0;
+		usize _current_pos = 0;
 
         template<typename T>
         void _parse(T& val)
@@ -110,7 +110,7 @@ namespace hsd
         using const_iterator = const CharT*;
         sstream(const sstream& other) = delete;
 
-        sstream(size_t size)
+        sstream(usize size)
         {
             _data = new CharT[size + 1];
             _data[size] = '\0';
@@ -185,12 +185,12 @@ namespace hsd
             _current_pos = 0;
         }
 
-        size_t size()
+        usize size()
         {
             return _size;
         }
 
-        size_t size() const
+        usize size() const
         {
             return _size;
         }

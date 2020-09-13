@@ -14,8 +14,8 @@ namespace hsd {
 
         template <typename _Ty>
         struct _is_empty : private _wrap_type<_Ty> {
-            int a;
-            inline static constexpr bool value = sizeof(int) == sizeof(_is_empty);
+            i32 a;
+            inline static constexpr bool value = sizeof(i32) == sizeof(_is_empty);
         };
 
         template <typename _Ty>
@@ -117,7 +117,7 @@ namespace hsd {
             _compressed_pair_ab<_Ta, _Tb>>
         >;
 
-    template <size_t, typename _Base>
+    template <usize, typename _Base>
     struct get_helper
     {
         static constexpr auto& get(_Base* value) = delete;
@@ -148,13 +148,13 @@ namespace hsd {
     public:
         using _Base::_Base;
         
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr auto& get()
         {
             return get_helper<_Idx, _Base>::get(this);
         }
 
-        template <size_t _Idx>
+        template <usize _Idx>
         constexpr auto& get() const
         {
             return get_helper<_Idx, _Base>::get(this);

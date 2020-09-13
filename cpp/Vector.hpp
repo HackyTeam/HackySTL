@@ -12,10 +12,10 @@ namespace hsd
     {
     private:
         T *_data = nullptr;
-        size_t _size = 0;
-        size_t _reserved_size = 1;
+        usize _size = 0;
+        usize _reserved_size = 1;
     
-        constexpr vector(T* data, size_t size)
+        constexpr vector(T* data, usize size)
         {
             _size = size;
             _reserved_size = size * 2;
@@ -31,7 +31,7 @@ namespace hsd
             delete[] _data;
         }
     
-        constexpr vector(size_t size)
+        constexpr vector(usize size)
         {
             _data = new T[size];
             _size = size;
@@ -99,17 +99,17 @@ namespace hsd
             return *this;
         }
     
-        constexpr T& operator[](size_t index)
+        constexpr T& operator[](usize index)
         {
             return _data[index];
         }
 
-        constexpr T& operator[](size_t index) const
+        constexpr T& operator[](usize index) const
         {
             return _data[index];
         }
     
-        constexpr T& at(size_t index)
+        constexpr T& at(usize index)
         {
             if(index >= _size)
                 throw std::out_of_range("");
@@ -117,7 +117,7 @@ namespace hsd
             return _data[index];
         }
 
-        constexpr T& at(size_t index) const
+        constexpr T& at(usize index) const
         {
             if(index >= _size)
                 throw std::out_of_range("");
@@ -145,7 +145,7 @@ namespace hsd
             return *(begin() + size() - 1);
         }
     
-        template< size_t U, size_t L >
+        template< usize U, usize L >
         constexpr auto gen_range()
         {
             if(U > _size || L > _size)
@@ -168,7 +168,7 @@ namespace hsd
             _reserved_size = 1;
         }
     
-        constexpr void reserve(size_t size)
+        constexpr void reserve(usize size)
         {
             _reserved_size = size;
             T *_buf = new T[size];
@@ -182,7 +182,7 @@ namespace hsd
             _data = _buf;
         }
 
-        constexpr void resize(size_t size)
+        constexpr void resize(usize size)
         {
             _reserved_size = size;
             T *_buf = new T[size];
@@ -253,22 +253,22 @@ namespace hsd
             _data[--_size].~T();
         }
     
-        constexpr size_t size()
+        constexpr usize size()
         {
             return _size;
         }
 
-        constexpr size_t size() const
+        constexpr usize size() const
         {
             return _size;
         }
     
-        constexpr size_t capacity()
+        constexpr usize capacity()
         {
             return _reserved_size;
         }
 
-        constexpr size_t capacity() const
+        constexpr usize capacity() const
         {
             return _reserved_size;
         }

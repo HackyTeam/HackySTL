@@ -31,15 +31,15 @@ namespace hsd
 
         struct socket_type
         {
-            static constexpr size_t stream = SOCK_STREAM;
-            static constexpr size_t clo_exec = SOCK_CLOEXEC;
-            static constexpr size_t dccp = SOCK_DCCP;
-            static constexpr size_t dgram = SOCK_DGRAM;
-            static constexpr size_t no_block = SOCK_NONBLOCK;
-            static constexpr size_t packet = SOCK_PACKET;
-            static constexpr size_t raw = SOCK_RAW;
-            static constexpr size_t rdm = SOCK_RDM;
-            static constexpr size_t seq_packet = SOCK_SEQPACKET;
+            static constexpr usize stream = SOCK_STREAM;
+            static constexpr usize clo_exec = SOCK_CLOEXEC;
+            static constexpr usize dccp = SOCK_DCCP;
+            static constexpr usize dgram = SOCK_DGRAM;
+            static constexpr usize no_block = SOCK_NONBLOCK;
+            static constexpr usize packet = SOCK_PACKET;
+            static constexpr usize raw = SOCK_RAW;
+            static constexpr usize rdm = SOCK_RDM;
+            static constexpr usize seq_packet = SOCK_SEQPACKET;
         };
     } // namespace net
 } // namespace hsd

@@ -36,7 +36,7 @@ namespace hsd
             friend class forward_list<T>;
 
             constexpr iterator() {}
-            constexpr iterator(hsd::nullptr_t) {}
+            constexpr iterator(hsd::null) {}
 
             constexpr iterator(const iterator& other)
             {
@@ -131,7 +131,7 @@ namespace hsd
                 return *this;
             }
 
-            constexpr iterator operator++(int)
+            constexpr iterator operator++(i32)
             {
                 iterator tmp = *this;
                 operator++();

@@ -13,12 +13,12 @@ namespace hsd
             hash_t offset_basis = 0;
             hash_t prime = 0;
 
-            if constexpr(sizeof(hash_t) == sizeof(uint64_t))
+            if constexpr(sizeof(hash_t) == sizeof(u64))
             {
                 offset_basis = 14'695'981'039'346'656'037u;
                 prime = 1'099'511'628'211u;
             }
-            else if constexpr(sizeof(hash_t) == sizeof(uint32_t)) 
+            else if constexpr(sizeof(hash_t) == sizeof(u32)) 
             {
                 offset_basis = 2'166'136'261u;
                 prime = 16'777'619u;

@@ -29,7 +29,7 @@ namespace hsd
 
         public:
             constexpr bucket() {}
-            constexpr bucket(hsd::nullptr_t) {}
+            constexpr bucket(hsd::null) {}
 
             constexpr bucket(const bucket& other)
             {
@@ -215,7 +215,7 @@ namespace hsd
             friend class unordered_map< Key, T, Hasher >;
 
             constexpr iterator() {}
-            constexpr iterator(hsd::nullptr_t) {}
+            constexpr iterator(hsd::null) {}
 
             constexpr iterator(const iterator& other)
             {
@@ -345,15 +345,15 @@ namespace hsd
 
         static constexpr float _limit_ratio = 0.75f;
         iterator _map_iter = nullptr;
-        size_t _table_size = 10;
-        size_t _size = 0;
+        usize _table_size = 10;
+        usize _size = 0;
         hash_table _table;
         
 
-        constexpr pair<size_t, bucket> _get(const Key& hash_key)
+        constexpr pair<usize, bucket> _get(const Key& hash_key)
         {
             auto _hash_result = Hasher::get_hash(hash_key);
-            size_t _index = _hash_result % _table_size;
+            usize _index = _hash_result % _table_size;
 
             for(auto _it = _table[_index]; _it != nullptr; _it.increment())
             {
@@ -370,7 +370,7 @@ namespace hsd
             _table[_res_index].push_front(iter);
         }
 
-        constexpr void _reserve(size_t table_size)
+        constexpr void _reserve(usize table_size)
         {
             clear_table();
             _table_size = table_size;
@@ -396,7 +396,7 @@ namespace hsd
         }
 
         template<typename... Args>
-        constexpr pair<bucket, bool> _emplace(size_t index, Args&&... args)
+        constexpr pair<bucket, bool> _emplace(usize index, Args&&... args)
         {
             _size++;
             
@@ -404,7 +404,7 @@ namespace hsd
             {
                 _reserve(_table_size *= 2);
                 auto _key = make_tuple(hsd::forward<Args>(args)...).template get<0>();
-                size_t _new_index = Hasher::get_hash(_key) % _table_size;
+                usize _new_index = Hasher::get_hash(_key) % _table_size;
 
                 return _emplace(_new_index, hsd::forward<Args>(args)...);
             }
@@ -474,7 +474,7 @@ namespace hsd
             return {_res_iter, false};
         }
 
-        constexpr size_t size()
+        constexpr usize size()
         {
             return _size;
         }

@@ -2,8 +2,16 @@
 
 namespace hsd
 {
-    using size_t = unsigned long;
-    using uint64_t = unsigned long long;
-    using uint32_t = unsigned int;
-    using nullptr_t = decltype(nullptr);
+    using usize = unsigned long;
+    using u64 = unsigned long long;
+    using u32 = unsigned int;
+    using u16 = unsigned short;
+    using u8 = unsigned char;
+
+    using i64 = long long;
+    using i32 = int;
+    using i16 = short;
+    using i8 = char;
+    
+    using null = decltype(nullptr);
 } // namespace hsd

@@ -13,7 +13,7 @@ namespace hsd
     private:
         struct callable_base
         {
-            size_t _instances = 1;
+            usize _instances = 1;
             virtual Result operator()(Args&&...) = 0;
             virtual ~callable_base() {}
         };
@@ -73,8 +73,10 @@ namespace hsd
         {
             reset();
             _func_impl = other._func_impl;
+            
             if(_func_impl != nullptr)
                 _func_impl->instances++;
+            
             return *this;
         }
 
@@ -95,7 +97,7 @@ namespace hsd
             return *this;
         }
 
-        constexpr function& operator=(nullptr_t)
+        constexpr function& operator=(null)
         {
             reset();
         }
@@ -145,6 +147,7 @@ namespace hsd
     constexpr function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
+        
         if(_func_impl != nullptr)
             _func_impl->_instances++;
     }

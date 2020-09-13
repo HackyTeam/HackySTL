@@ -10,7 +10,7 @@ namespace hsd
     {
     private:
         T* _data = nullptr;
-        size_t _size = 0;
+        usize _size = 0;
 
     public:
         using const_iterator = const T*;
@@ -36,7 +36,7 @@ namespace hsd
             delete[] _data;
         }
 
-        constexpr size_t size()
+        constexpr usize size()
         {
             return _size;
         }

@@ -18,7 +18,7 @@ namespace hsd
         using type = T;
     };
 
-    template<typename T, size_t N>
+    template<typename T, usize N>
     struct remove_array<T[N]>
     {
         using type = T;
@@ -37,7 +37,7 @@ namespace hsd
         : public std::true_type
     {};
 
-    template<size_t N>
+    template<usize N>
     struct is_char_pointer<char[N]> 
         : public std::true_type
     {};
@@ -62,7 +62,7 @@ namespace hsd
         : public std::true_type
     {};
 
-    template<size_t N>
+    template<usize N>
     struct is_char_pointer<wchar_t[N]> 
         : public std::true_type
     {};
@@ -156,9 +156,9 @@ namespace hsd
     }
 
     template< typename InIt, typename OutIt >
-    static constexpr OutIt copy_n(InIt first, size_t n, OutIt dest)
+    static constexpr OutIt copy_n(InIt first, usize n, OutIt dest)
     {
-        for(int _index = 0; _index != n; _index++) 
+        for(usize _index = 0; _index != n; _index++) 
         {
             *dest++ = *first++;
         }

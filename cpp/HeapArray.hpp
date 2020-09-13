@@ -8,7 +8,7 @@
 
 namespace hsd
 {
-    template< typename T, size_t N >
+    template< typename T, usize N >
     class heap_array
     {
     private:
@@ -65,27 +65,17 @@ namespace hsd
             return *this;
         }
 
-        constexpr T& operator[](size_t index)
+        constexpr T& operator[](usize index)
         {
             return _array[index];
         }
         
-        constexpr T& operator[](size_t index) const
+        constexpr T& operator[](usize index) const
         {
             return _array[index];
         }
 
-        constexpr T& at(size_t index)
-        {
-            if(index >= N)
-            {
-                throw std::out_of_range("");
-            }
-
-            return _array[index];
-        }
-
-        constexpr T& at(size_t index) const
+        constexpr T& at(usize index)
         {
             if(index >= N)
             {
@@ -95,7 +85,17 @@ namespace hsd
             return _array[index];
         }
 
-        template< size_t U, size_t L >
+        constexpr T& at(usize index) const
+        {
+            if(index >= N)
+            {
+                throw std::out_of_range("");
+            }
+
+            return _array[index];
+        }
+
+        template< usize U, usize L >
         constexpr auto gen_range()
         {
             static_assert(L - U <= N, "Out of range\n");
@@ -103,12 +103,12 @@ namespace hsd
             return heap_array<T, L - U>(&_array[U]);
         }
 
-        constexpr size_t size()
+        constexpr usize size()
         {
             return N;
         }
 
-        constexpr size_t size() const
+        constexpr usize size() const
         {
             return N;
         }

@@ -63,7 +63,7 @@ namespace hsd
         using remove_array_pointer = remove_array_t<U>*;
         
         unique_ptr() = default;
-        constexpr unique_ptr(nullptr_t) {}
+        constexpr unique_ptr(null) {}
         unique_ptr(unique_ptr&) = delete;
         unique_ptr(const unique_ptr&) = delete;
 
@@ -97,7 +97,7 @@ namespace hsd
             _delete();
         }
 
-        constexpr unique_ptr& operator=(nullptr_t)
+        constexpr unique_ptr& operator=(null)
         {
             _delete();
             return *this;
@@ -135,7 +135,7 @@ namespace hsd
             return _value._ptr;
         }
 
-        constexpr bool operator!=(nullptr_t) const
+        constexpr bool operator!=(null) const
         {
             return _value._ptr != nullptr;
         }
@@ -173,7 +173,7 @@ namespace hsd
         using array = unique_ptr<T[]>;
     };
     
-    template<typename T, size_t N>
+    template<typename T, usize N>
     struct MakeUniq<T[N]>
     {
         struct invalid_type {};  
@@ -188,7 +188,7 @@ namespace hsd
 
     template<typename T>
     static constexpr typename MakeUniq<T>::array 
-    make_unique(size_t size)
+    make_unique(usize size)
     {
         using ptr_type = remove_array_t<T>;
         return unique_ptr<T>(new ptr_type[size]());

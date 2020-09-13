@@ -23,10 +23,10 @@ namespace hsd
 			}
 		private:
 	
-			uint64_t id_;
+			u64 id_;
 	
 			id(pthread_t pt) 
-				: id_{static_cast<uint64_t>(pt)} 
+				: id_{static_cast<u64>(pt)} 
 			{}
 		};
 	
@@ -53,11 +53,11 @@ namespace hsd
 				return hsd::forward<T>(t);
 			};
 	
-			int ready = 0;
+			hsd::i32 ready = 0;
 	
 			struct thread_data 
 			{
-				int* ready;
+				hsd::i32* ready;
 	
 				std::decay_t<F> func;
 				hsd::tuple<std::decay_t<Args>...> args;
@@ -117,7 +117,7 @@ namespace hsd
 			return id_;
 		}
 	
-		static unsigned int hardware_concurrency() 
+		static u32 hardware_concurrency() 
 		{
 			return 0;
 		}

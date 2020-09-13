@@ -17,7 +17,7 @@ namespace hsd
             static inline hsd::wsstream _wio_buf{4096};
         };
 
-        static hsd::vector< hsd::u8string > split(const char* str, size_t size)
+        static hsd::vector< hsd::u8string > split(const char* str, usize size)
         {
             hsd::vector<hsd::u8string> _buf;
             const char* _iter_f = str;
@@ -44,7 +44,7 @@ namespace hsd
             return _buf;
         }
 
-        static hsd::vector< hsd::wstring > split(const wchar_t* str, size_t size)
+        static hsd::vector< hsd::wstring > split(const wchar_t* str, usize size)
         {
             hsd::vector<hsd::wstring> _buf;
             const wchar_t* _iter_f = str;
@@ -78,7 +78,7 @@ namespace hsd
         static hsd::u8sstream& read_line()
         {
             _u8io_buf.reset_data();
-            size_t _io_buf_len = 4096;
+            usize _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
             long _len = getline(&_u8line_buf, &_io_buf_len, stdin);
             _u8line_buf[_len - 1] = '\0';
@@ -99,7 +99,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         static void print(const char (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
@@ -114,7 +114,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {
@@ -129,7 +129,7 @@ namespace hsd
             }
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         static void wprint(const wchar_t (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
@@ -144,7 +144,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {
@@ -159,7 +159,7 @@ namespace hsd
             }
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         static void err_print(const char (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
@@ -174,7 +174,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {
@@ -189,7 +189,7 @@ namespace hsd
             }
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         static void err_wprint(const wchar_t (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
@@ -204,7 +204,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {
@@ -279,7 +279,7 @@ namespace hsd
         hsd::u8sstream& read_line()
         {
             _u8io_buf.reset_data();
-            size_t _io_buf_len = 4096;
+            usize _io_buf_len = 4096;
             char* _u8line_buf = _u8io_buf.data();
             
             if(only_write())
@@ -333,7 +333,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         void print(const char (&fmt)[N], Args&&... args)
         {
             if(only_read())
@@ -351,7 +351,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {
@@ -366,7 +366,7 @@ namespace hsd
             }
         }
 
-        template< size_t N, typename... Args >
+        template< usize N, typename... Args >
         void wprint(const wchar_t (&fmt)[N], Args&&... args)
         {
             if(only_read())
@@ -384,7 +384,7 @@ namespace hsd
             }
             else
             {
-                size_t index = 0;
+                usize index = 0;
 
                 for(; index < _args_buf.size(); index++)
                 {

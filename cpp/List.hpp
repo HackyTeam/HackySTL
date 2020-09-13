@@ -35,7 +35,7 @@ namespace hsd
 
             friend class list<T>;
             constexpr iterator() {}
-            constexpr iterator(hsd::nullptr_t) {}
+            constexpr iterator(hsd::null) {}
 
             constexpr iterator(const iterator& other)
             {
@@ -157,14 +157,14 @@ namespace hsd
                 return *this;
             }
 
-            constexpr iterator operator++(int)
+            constexpr iterator operator++(i32)
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            constexpr iterator operator--(int)
+            constexpr iterator operator--(i32)
             {
                 iterator tmp = *this;
                 operator--();

@@ -9,13 +9,13 @@ namespace hsd
     private:
         const char* _file_name = "unknown";
         const char* _func = "unknown";
-        size_t _line = 0;
+        usize _line = 0;
     
     public:
         constexpr source_location(
             const char* file_name = __builtin_FILE(), 
             const char* func = __builtin_FUNCTION(), 
-            size_t line = __builtin_LINE()) noexcept
+            usize line = __builtin_LINE()) noexcept
             : _file_name{file_name}, _func{func}, _line{line}
         {}
         
@@ -29,7 +29,7 @@ namespace hsd
             return _func;
         }
         
-        constexpr size_t line() noexcept
+        constexpr usize line() noexcept
         {
             return _line;
         }
@@ -39,7 +39,7 @@ namespace hsd
     {
     private:
         static inline hsd::vector<source_location> _stack;
-        static inline int _count = std::uncaught_exceptions();
+        static inline i32 _count = std::uncaught_exceptions();
         using stack_iterator = hsd::vector<source_location>::iterator;
 
     public:
@@ -64,7 +64,7 @@ namespace hsd
         stack_trace& add(
             const char* file_name = __builtin_FILE(), 
             const char* func = __builtin_FUNCTION(), 
-            size_t line = __builtin_LINE()) noexcept
+            usize line = __builtin_LINE()) noexcept
         {
             _stack.emplace_back(file_name, func, line);
             return *this;

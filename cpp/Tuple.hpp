@@ -9,7 +9,7 @@ namespace hsd
     class tuple
     {
     public:
-        static constexpr size_t size()
+        static constexpr usize size()
         {
             return sizeof...(T);
         }
@@ -28,7 +28,7 @@ namespace hsd
         tuple<Rest...> _rest;        
 
     private:
-        template< size_t N, typename U >
+        template< usize N, typename U >
         struct get_helper {};
 
         template< typename U, typename... Args >
@@ -40,7 +40,7 @@ namespace hsd
             }
         };
 
-        template< size_t N, typename U, typename... Args >
+        template< usize N, typename U, typename... Args >
         struct get_helper< N, tuple<U, Args...> >
         {
             static constexpr auto get(const tuple<U, Args...>& data)
@@ -49,7 +49,7 @@ namespace hsd
             }
         };
 
-        template< size_t N, typename... U >
+        template< usize N, typename... U >
         static constexpr auto _get(const tuple<U...>& tup) 
         {
             return get_helper<N, tuple<U...>>::get(tup);
@@ -77,7 +77,7 @@ namespace hsd
         template<typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
-            auto _add = [&]< size_t... Ints1, size_t... Ints2>(
+            auto _add = [&]< usize... Ints1, usize... Ints2>(
                 index_sequence<Ints1...> int_seq1, 
                 index_sequence<Ints2...> int_seq2
             ) -> tuple<T, Rest..., Args...> {
@@ -95,19 +95,19 @@ namespace hsd
             return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
         }
 
-        template<size_t N>
+        template<usize N>
         constexpr auto get() 
         {
             return _get<N, T, Rest...>(*this);
         }
 
-        template<size_t N>
+        template<usize N>
         constexpr auto get() const
         {
             return _get<N, T, Rest...>(*this);
         }
 
-        static constexpr size_t size()
+        static constexpr usize size()
         {
             return 1 + sizeof...(Rest);
         }
@@ -128,7 +128,7 @@ namespace hsd
         return tuple<T...>(args...);
     }
 
-    template< typename Func, typename...Args, size_t... Is >
+    template< typename Func, typename...Args, usize... Is >
     static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         return func(args.template get<Is>()...);

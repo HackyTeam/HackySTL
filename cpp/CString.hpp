@@ -20,7 +20,7 @@ namespace hsd
         }
 
 		template<typename T>
-		static constexpr usize _modulus(T num)
+		static constexpr T _modulus(T num)
 		{
 			if(num < 0)
 				return -num;
@@ -200,6 +200,74 @@ namespace hsd
 	    	}
 	    }
 
+		static constexpr const CharT* to_string(i128 num)
+		{
+			bool _negative = (num < 0);
+			usize _len = _num_len(num);
+			CharT* _buf = nullptr;
+
+			if(_negative)
+			{
+				_len += 1;
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+				_buf[0] = '-';
+				num = -num;
+			}
+			else
+			{
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+			}
+
+			if(num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+
+			while(num)
+			{
+				_buf[--_len] = '0' + (num % 10);
+				num /= 10;
+			}
+
+			return _buf;
+		}
+
+		static constexpr const CharT* to_string(i64 num)
+		{
+			bool _negative = (num < 0);
+			usize _len = _num_len(num);
+			CharT* _buf = nullptr;
+
+			if(_negative)
+			{
+				_len += 1;
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+				_buf[0] = '-';
+				num = -num;
+			}
+			else
+			{
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+			}
+
+			if(num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+
+			while(num)
+			{
+				_buf[--_len] = '0' + (num % 10);
+				num /= 10;
+			}
+
+			return _buf;
+		}
+
 		static constexpr const CharT* to_string(i32 num)
 		{
 			bool _negative = (num < 0);
@@ -234,7 +302,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static constexpr const CharT* to_string(u32 num)
+		static constexpr const CharT* to_string(u128 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -262,33 +330,21 @@ namespace hsd
 			return _buf;
 		}
 
-		static constexpr const CharT* to_string(float num)
+		static constexpr const CharT* to_string(u32 num)
 		{
-			usize _len = 0;
-			i32 _round_num = static_cast<i32>(num);
-			bool _negative = (_round_num < 0);
-			usize _point_num = _modulus(num - _round_num) * 10000 + 1;
-			
-			if(_negative)
-				_len = _num_len(_round_num) + 6;
-			else
-				_len = _num_len(_round_num) + 5;
-
+			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
-			for(; _point_num != 0; _point_num /= 10)
+			for(; num != 0; num /= 10)
 			{
-				_buf[--_len] = '0' + (_point_num % 10);
+				_buf[--_len] = '0' + (num % 10);
 			}
-			
-			_buf[--_len] = '.';
-			const CharT* _round_buf = to_string(_round_num);
-			hsd::move(_round_buf, _round_buf + _len, _buf);
+
 			return _buf;
 		}
 
-		static constexpr const CharT* to_string(double num)
+		static constexpr const CharT* to_string(f128 num)
 		{
 			usize _len = 0;
 			i32 _round_num = static_cast<i32>(num);
@@ -300,6 +356,60 @@ namespace hsd
 			else
 				_len = _num_len(_round_num) + 7;
 			
+			CharT* _buf = new CharT[_len + 1];
+			_buf[_len] = '\0';
+
+			for(; _point_num != 0; _point_num /= 10)
+			{
+				_buf[--_len] = '0' + (_point_num % 10);
+			}
+			
+			_buf[--_len] = '.';
+			const CharT* _round_buf = to_string(_round_num);
+			hsd::move(_round_buf, _round_buf + _len, _buf);
+			delete[] _round_buf;
+			return _buf;
+		}
+
+		static constexpr const CharT* to_string(f64 num)
+		{
+			usize _len = 0;
+			i32 _round_num = static_cast<i32>(num);
+			bool _negative = (_round_num < 0);
+			usize _point_num = _modulus(num - _round_num) * 1000000 + 1;
+			
+			if(_negative)
+				_len = _num_len(_round_num) + 8;
+			else
+				_len = _num_len(_round_num) + 7;
+			
+			CharT* _buf = new CharT[_len + 1];
+			_buf[_len] = '\0';
+
+			for(; _point_num != 0; _point_num /= 10)
+			{
+				_buf[--_len] = '0' + (_point_num % 10);
+			}
+			
+			_buf[--_len] = '.';
+			const CharT* _round_buf = to_string(_round_num);
+			hsd::move(_round_buf, _round_buf + _len, _buf);
+			delete[] _round_buf;
+			return _buf;
+		}
+
+		static constexpr const CharT* to_string(f32 num)
+		{
+			usize _len = 0;
+			i32 _round_num = static_cast<i32>(num);
+			bool _negative = (_round_num < 0);
+			usize _point_num = _modulus(num - _round_num) * 10000 + 1;
+			
+			if(_negative)
+				_len = _num_len(_round_num) + 6;
+			else
+				_len = _num_len(_round_num) + 5;
+
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 

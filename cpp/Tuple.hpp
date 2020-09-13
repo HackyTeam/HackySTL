@@ -15,7 +15,7 @@ namespace hsd
         }
     };
 
-    template< typename... T > static constexpr tuple<T...> make_tuple(T&&... args);
+    template< typename... Args > static constexpr auto make_tuple(Args&&... args);
 
     template< typename Tuple1, typename Tuple2 >
     using is_same_tuple = std::is_same<Tuple1, Tuple2>;
@@ -82,10 +82,9 @@ namespace hsd
                 index_sequence<Ints2...> int_seq2
             ) -> tuple<T, Rest..., Args...> {
 
-                [](auto... args)
-                {
+                /*[](auto... args) {
                     static_assert(is_same_tuple<tuple<T, Rest..., Args...>, tuple<decltype(args)...>>{});
-                }(get<Ints1>()..., rhs.template get<Ints2>()...);
+                }(get<Ints1>()..., rhs.template get<Ints2>()...);*/
 
                 return make_tuple<T, Rest..., Args...>(
                     get<Ints1>()..., rhs.template get<Ints2>()...
@@ -113,19 +112,19 @@ namespace hsd
         }
     };
 
-    template<class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
-    template<class T1, class T2> tuple(pair<T1, T2>) -> tuple<T1, T2>;
+    template< typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
+    template< typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
-    template< typename... T >
-    static constexpr tuple<T...> make_tuple(T&&... args)
+    template< typename... Args >
+    static constexpr auto make_tuple(Args&&... args)
     {
-        return tuple<T...>(hsd::forward<T>(args)...);
+        return tuple<std::decay_t<Args>...>(hsd::forward<Args>(args)...);
     }
 
-    template< typename... T >
-    static constexpr tuple<T...> tie(T&... args)
+    template< typename... Args >
+    static constexpr auto tie(Args&... args)
     {
-        return tuple<T...>(args...);
+        return tuple<std::decay_t<Args>...>(args...);
     }
 
     template< typename Func, typename...Args, usize... Is >

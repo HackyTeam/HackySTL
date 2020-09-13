@@ -251,8 +251,8 @@ namespace hsd
         }
     };
     
-	using wsstream = hsd::sstream<wchar_t>;
+	using wsstream = hsd::sstream<wchar>;
     using u8sstream = hsd::sstream<char>;
-    using u16sstream = hsd::sstream<char16_t>;
-    using u32sstream = hsd::sstream<char32_t>;
+    using u16sstream = hsd::sstream<char16>;
+    using u32sstream = hsd::sstream<char32>;
 } // namespace hsd

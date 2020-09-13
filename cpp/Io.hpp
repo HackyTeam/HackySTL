@@ -44,7 +44,7 @@ namespace hsd
             return _buf;
         }
 
-        static hsd::vector< hsd::wstring > split(const wchar_t* str, usize size)
+        static hsd::vector< hsd::wstring > split(const wchar* str, usize size)
         {
             hsd::vector<hsd::wstring> _buf;
             const wchar_t* _iter_f = str;
@@ -95,7 +95,7 @@ namespace hsd
         static hsd::wsstream& wread()
         {
             _wio_buf.reset_data();
-            scanf("%ls", _wio_buf.data());
+            wscanf(L"%ls", _wio_buf.data());
             return _wio_buf;
         }
 
@@ -130,7 +130,7 @@ namespace hsd
         }
 
         template< usize N, typename... Args >
-        static void wprint(const wchar_t (&fmt)[N], Args&&... args)
+        static void wprint(const wchar (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
             hsd::vector<hsd::wstring> _args_buf = {
@@ -190,7 +190,7 @@ namespace hsd
         }
 
         template< usize N, typename... Args >
-        static void err_wprint(const wchar_t (&fmt)[N], Args&&... args)
+        static void err_wprint(const wchar (&fmt)[N], Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
             hsd::vector<hsd::wstring> _args_buf = {
@@ -325,7 +325,7 @@ namespace hsd
             {
                 throw std::runtime_error("Cannot read file. It is in write mode");
             }
-            if(fscanf(_file_buf, "%ls", _wio_buf.data()) == EOF)
+            if(fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
             {
                 _wio_buf.reset_data();
             }
@@ -367,7 +367,7 @@ namespace hsd
         }
 
         template< usize N, typename... Args >
-        void wprint(const wchar_t (&fmt)[N], Args&&... args)
+        void wprint(const wchar (&fmt)[N], Args&&... args)
         {
             if(only_read())
                 throw std::runtime_error("Cannot write file. It is in read mode");

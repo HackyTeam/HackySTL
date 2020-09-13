@@ -488,8 +488,8 @@ namespace hsd
         }
     };
     
-    using wstring = hsd::string<wchar_t>;
+    using wstring = hsd::string<wchar>;
     using u8string = hsd::string<char>;
-    using u16string = hsd::string<char16_t>;
-    using u32string = hsd::string<char32_t>;
+    using u16string = hsd::string<char16>;
+    using u32string = hsd::string<char32>;
 } // namespace hsd

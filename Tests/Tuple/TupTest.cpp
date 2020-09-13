@@ -16,5 +16,5 @@ int main()
     wprint(t);
     hsd::io::wprint(L"\n");
     auto t2 = hsd::make_tuple(1, -1, 'c');
-    wprint(t + t2 + hsd::make_tuple(L'ă', -1ul, L'ツ'));
+    wprint(t + t2 + hsd::make_tuple(L'ă', -1ul, L"ツă"));
 }

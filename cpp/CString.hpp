@@ -477,7 +477,7 @@ namespace hsd
 			return _num;
 		}
 
-		static constexpr float parse_f(const CharT* str)
+		static constexpr f32 parse_f(const CharT* str)
 		{
 		    float _round_num = 0;
 			float _point_num = 0;
@@ -602,8 +602,8 @@ namespace hsd
 		}
     };
 
-	using wcstring = hsd::cstring<wchar_t>;
+	using wcstring = hsd::cstring<wchar>;
 	using u8cstring = hsd::cstring<char>;
-	using u16cstring = hsd::cstring<char16_t>;
-	using u32cstring = hsd::cstring<char32_t>;
+	using u16cstring = hsd::cstring<char16>;
+	using u32cstring = hsd::cstring<char32>;
 }

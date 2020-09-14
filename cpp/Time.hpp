@@ -3,11 +3,9 @@
 #include "Types.hpp"
 #include "_Define.hpp"
 
-#ifdef HSD_PLATFORM_LINUX
+#include <time.h>
 
 namespace hsd
 {
     
 } // namespace hsd
-
-#endif

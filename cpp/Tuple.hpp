@@ -123,9 +123,9 @@ namespace hsd
     }
 
     template< typename... T >
-    static constexpr tuple<T...> tie(T&... args)
+    static constexpr tuple<T&...> tie(T&... args)
     {
-        return tuple<T...>(args...);
+        return tuple<T&...>(args...);
     }
 
     template< typename Func, typename...Args, size_t... Is >

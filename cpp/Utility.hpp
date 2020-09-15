@@ -98,6 +98,14 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
+    template <class T, class U = T>
+    static constexpr T exchange(T& target, U&& new_val) noexcept
+    {
+        T tmp = move(target);
+        target = forward<U>(new_val);
+        return tmp;
+    }
+
     template<class InIt, class OutIt>
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
@@ -109,13 +117,13 @@ namespace hsd
     }
 
     template<typename T1>
-    static constexpr T1 min(T1 first, T1 second)
+    static constexpr T1 min(T1 first, T1 second) noexcept
     {
         return first < second ? first : second;
     }
 
     template<typename T1>
-    static constexpr T1 max(T1 first, T1 second)
+    static constexpr T1 max(T1 first, T1 second) noexcept
     {
         return first > second ? first : second;
     }
@@ -130,13 +138,13 @@ namespace hsd
     }
 
     template<typename T1>
-    static constexpr void swap(T1& first, T1& second)
+    static constexpr void swap(T1& first, T1& second) noexcept
     {
-        auto _tmp = first;
-        first = second;
-        second = _tmp;
+        auto _tmp = move(first);
+        first = move(second);
+        second = move(_tmp);
     }
-    
+
     template<class InIt, class OutIt>
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {

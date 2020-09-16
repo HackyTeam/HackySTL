@@ -86,6 +86,7 @@
     "cSpell.words": [
         "clientv",
         "hintv",
+        "isize",
         "usize",
         "wprint",
         "wsstream"

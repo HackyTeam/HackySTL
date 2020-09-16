@@ -16,6 +16,6 @@ int main()
     wprint(t);
     hsd::io::wprint(L"\n");
     constexpr auto t2 = hsd::make_tuple(-1, (hsd::u64)-1, 'c');
-    constexpr auto t3 = t + t2 + hsd::make_tuple(L'ă', -1.32f, L"ツă");
+    constexpr auto t3 = t + t2 + hsd::make_tuple(L'ă', -1.32f, L"柴尻保存会");
     wprint(t3);
 }

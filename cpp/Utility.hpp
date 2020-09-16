@@ -1,106 +1,22 @@
 #pragma once
 
-#include <type_traits>
-
-#include "Types.hpp"
+#include "TypeTraits.hpp"
 
 namespace hsd
 {
-    template<typename T>
-    struct remove_array
-    {
-        using type = T;
-    };
-
-    template<typename T>
-    struct remove_array<T[]>
-    {
-        using type = T;
-    };
-
-    template<typename T, usize N>
-    struct remove_array<T[N]>
-    {
-        using type = T;
-    };
-    
-    template<typename T>
-    using remove_array_t = typename remove_array<T>::type;
-
-    template<typename>
-    struct is_char_pointer 
-        : public std::false_type
-    {};
-
-    template<>
-    struct is_char_pointer<char[]> 
-        : public std::true_type
-    {};
-
-    template<usize N>
-    struct is_char_pointer<char[N]> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<char*> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<const char*> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<const char* const> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<wchar_t[]> 
-        : public std::true_type
-    {};
-
-    template<usize N>
-    struct is_char_pointer<wchar_t[N]> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<wchar_t*> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<const wchar_t*> 
-        : public std::true_type
-    {};
-
-    template<>
-    struct is_char_pointer<const wchar_t* const> 
-        : public std::true_type
-    {};
-
-    template< typename Condition, typename Value >
-    using ResolvedType = typename std::enable_if< Condition::value, Value >::type;
-
-    template<typename T>
-    using rev_ref_t = typename std::remove_reference<T>::type;
-
     template<typename T>
     static constexpr rev_ref_t<T>&& move(T&& val)
     {
         return static_cast<rev_ref_t<T>&&>(val);
     }
 
-    template <class T>
+    template <typename T>
     static constexpr T&& forward(rev_ref_t<T>& val)
     {
         return static_cast<T&&>(val);
     }
 
-    template<class InIt, class OutIt>
+    template< typename InIt, typename OutIt >
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
         while (first != last) 
@@ -128,7 +44,7 @@ namespace hsd
         return first > second ? first : second;
     }
 
-    template <class T>
+    template <typename T>
     static constexpr T&& forward(rev_ref_t<T>&& val)
     {
         static_assert(!std::is_lvalue_reference<T>::value,
@@ -177,9 +93,8 @@ namespace hsd
         while(first != last) 
         {
             if(pred(*first))
-            { 
                 *dest++ = *first;
-            }
+                
             first++;
         }
         return dest;

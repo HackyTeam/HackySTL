@@ -135,25 +135,25 @@ namespace hsd
     template< typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
     template< typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
-    template< typename... Args >
+    template<typename... Args>
     static constexpr auto make_tuple(Args&&... args)
     {
         return tuple<std::decay_t<Args>...>(hsd::forward<Args>(args)...);
     }
 
-    template< typename... Args >
+    template<typename... Args>
     static constexpr auto tie(Args&... args)
     {
-        return tuple<std::decay_t<Args>...>(args...);
+        return tuple<std::decay_t<Args>&...>(args...);
     }
 
-    template< typename Func, typename...Args, usize... Is >
+    template< typename Func, typename... Args, usize... Is >
     static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         return func(args.template get<Is>()...);
     }
     
-    template< typename Func, typename...Args >
+    template< typename Func, typename... Args >
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
       return apply_impl(hsd::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);

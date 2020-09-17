@@ -33,13 +33,13 @@ namespace hsd
     }
 
     template<typename T1>
-    static constexpr T1 min(T1 first, T1 second)
+    static constexpr T1 min(T1 first, T1 second) noexcept
     {
         return first < second ? first : second;
     }
 
     template<typename T1>
-    static constexpr T1 max(T1 first, T1 second)
+    static constexpr T1 max(T1 first, T1 second) noexcept
     {
         return first > second ? first : second;
     }
@@ -54,7 +54,7 @@ namespace hsd
     }
 
     template<typename T1>
-    static constexpr void swap(T1& first, T1& second)
+    static constexpr void swap(T1& first, T1& second) noexcept
     {
         auto _tmp = hsd::move(first);
         first = hsd::move(second);

@@ -50,7 +50,7 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
 int main()
 {
     {
-        hsd::vector<int> e = {1, 2, 3, 4, 5, 6};
+        hsd::vector e = {1, 2, 3, 4, 5, 6};
 
         for (auto val : e)
         {

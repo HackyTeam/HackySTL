@@ -18,43 +18,43 @@ namespace hsd
         using iterator = T*;
         using const_iterator = const T*;
 
-        constexpr heap_array()
+        HSD_CONSTEXPR heap_array()
         {
             _array = new T[N];
         }
 
-        constexpr heap_array(T* data)
+        HSD_CONSTEXPR heap_array(T* data)
         {
             _array = new T[N];
             hsd::copy(data, data + N, _array);
         }
 
         template< typename L, typename... U >
-        constexpr heap_array(const L& value, const U&... values)
+        HSD_CONSTEXPR heap_array(const L& value, const U&... values)
         {
             _array = new T[N];
             T arr[] = {value, values...};
             hsd::copy(arr, arr + N, begin());
         }
 
-        constexpr heap_array(const heap_array& other)
+        HSD_CONSTEXPR heap_array(const heap_array& other)
         {
             _array = new T[N];
             hsd::copy(other.begin(), other.end(), begin());
         }
 
-        constexpr ~heap_array()
+        HSD_CONSTEXPR ~heap_array()
         {
             delete[] _array;
         }
 
-        constexpr heap_array& operator=(const heap_array& rhs)
+        HSD_CONSTEXPR heap_array& operator=(const heap_array& rhs)
         {
             hsd::copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
-        constexpr heap_array& operator=(initializer_list<T>&& rhs)
+        HSD_CONSTEXPR heap_array& operator=(initializer_list<T>&& rhs)
         {
             if(rhs.size() != N)
             {
@@ -65,17 +65,17 @@ namespace hsd
             return *this;
         }
 
-        constexpr T& operator[](usize index)
+        HSD_CONSTEXPR T& operator[](usize index)
         {
             return _array[index];
         }
         
-        constexpr T& operator[](usize index) const
+        HSD_CONSTEXPR T& operator[](usize index) const
         {
             return _array[index];
         }
 
-        constexpr T& at(usize index)
+        HSD_CONSTEXPR T& at(usize index)
         {
             if(index >= N)
             {
@@ -85,7 +85,7 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index) const
+        HSD_CONSTEXPR T& at(usize index) const
         {
             if(index >= N)
             {
@@ -96,69 +96,69 @@ namespace hsd
         }
 
         template< usize U, usize L >
-        constexpr auto gen_range()
+        HSD_CONSTEXPR auto gen_range()
         {
             static_assert(L - U <= N, "Out of range\n");
 
             return heap_array<T, L - U>(&_array[U]);
         }
 
-        constexpr usize size()
+        HSD_CONSTEXPR usize size()
         {
             return N;
         }
 
-        constexpr usize size() const
+        HSD_CONSTEXPR usize size() const
         {
             return N;
         }
 
-        constexpr iterator data()
+        HSD_CONSTEXPR iterator data()
         {
             return _array;
         }
 
-        constexpr iterator data() const
+        HSD_CONSTEXPR iterator data() const
         {
             return _array;
         }
 
-        constexpr iterator begin()
+        HSD_CONSTEXPR iterator begin()
         {
             return data();
         }
 
-        constexpr iterator begin() const
+        HSD_CONSTEXPR iterator begin() const
         {
             return data();
         }
 
-        constexpr iterator end()
+        HSD_CONSTEXPR iterator end()
         {
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        HSD_CONSTEXPR iterator end() const
         {
             return begin() + size();
         }
 
-        constexpr const_iterator cbegin()
+        HSD_CONSTEXPR const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        HSD_CONSTEXPR const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        HSD_CONSTEXPR const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        HSD_CONSTEXPR const_iterator cend() const
         {
             return end();
         }

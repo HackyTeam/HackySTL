@@ -45,7 +45,7 @@ namespace hsd
         friend class any;
 
     public:
-        constexpr _any_derived(T value) : _value(move(value)) {}
+        HSD_CONSTEXPR _any_derived(T value) : _value(move(value)) {}
 
         hsd::unique_ptr<_any_base> clone() const override 
         {
@@ -66,10 +66,10 @@ namespace hsd
         hsd::unique_ptr<_any_base> _data = nullptr;
 
     public:
-        constexpr any() noexcept = default;
+        HSD_CONSTEXPR any() noexcept = default;
 
         template<Copyable T>
-        constexpr any(T other)
+        HSD_CONSTEXPR any(T other)
         {
             _data = hsd::make_unique<_any_derived<T>>(move(other));
         }
@@ -93,7 +93,7 @@ namespace hsd
         }
 
         template<typename T>
-        constexpr auto cast_to() const
+        HSD_CONSTEXPR auto cast_to() const
         {
             typedef typename std::remove_pointer<T>::type type;
 
@@ -150,7 +150,7 @@ namespace hsd
             return _data != nullptr;
         }
 
-        constexpr void reset()
+        HSD_CONSTEXPR void reset()
         {
             _data = nullptr;
         }

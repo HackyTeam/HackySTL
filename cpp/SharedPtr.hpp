@@ -59,7 +59,7 @@ namespace hsd
             {
                 shared_detail::ptr_info<T> _ptr;
 
-                constexpr Deleter& get_deleter()
+                HSD_CONSTEXPR Deleter& get_deleter()
                 {
                     return *this;
                 }
@@ -75,7 +75,7 @@ namespace hsd
             template<typename U, typename Del>
             friend class shared_ptr;
 
-            constexpr void _delete()
+            HSD_CONSTEXPR void _delete()
             {
                 _value.get_deleter()(_value._ptr);
             }
@@ -91,29 +91,29 @@ namespace hsd
             using remove_array_pointer = remove_array_t<U>*;
 
             shared_ptr() = default;
-            constexpr shared_ptr(null) {}
+            HSD_CONSTEXPR shared_ptr(null) {}
 
             template< typename U = T, std::enable_if_t<!std::is_array_v<U>, i32> = 0 >
-            constexpr shared_ptr(pointer<U> ptr)
+            HSD_CONSTEXPR shared_ptr(pointer<U> ptr)
             {
                 _value._ptr._value = ptr;
                 _value._ptr._size = new usize(1);
             }
 
             template< typename U = T, std::enable_if_t<std::is_array_v<U>, i32> = 0 >
-            constexpr shared_ptr(remove_array_pointer<U> ptr)
+            HSD_CONSTEXPR shared_ptr(remove_array_pointer<U> ptr)
             {
                 _value._ptr = ptr;
                 _value._ptr._size = new usize(1);
             }
 
-            constexpr shared_ptr(const shared_ptr& ptr)
+            HSD_CONSTEXPR shared_ptr(const shared_ptr& ptr)
             {
                 _value = ptr._value;
                 (*_value._ptr._size)++;
             }
 
-            constexpr shared_ptr(shared_ptr&& ptr)
+            HSD_CONSTEXPR shared_ptr(shared_ptr&& ptr)
             {
                 _value = ptr._value;
                 ptr._value._ptr._size = nullptr;
@@ -121,32 +121,32 @@ namespace hsd
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            constexpr shared_ptr(const shared_ptr<U>& ptr)
+            HSD_CONSTEXPR shared_ptr(const shared_ptr<U>& ptr)
             {
                 _value = ptr._value;
                 (*_value._ptr._size)++;
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            constexpr shared_ptr(shared_ptr<U>&& ptr)
+            HSD_CONSTEXPR shared_ptr(shared_ptr<U>&& ptr)
             {
                 _value = ptr._value;
                 ptr._value._ptr._size = nullptr;
                 ptr._value._ptr._value = nullptr;
             }
 
-            constexpr ~shared_ptr()
+            HSD_CONSTEXPR ~shared_ptr()
             {
                 _delete();
             }
 
-            constexpr shared_ptr& operator=(null)
+            HSD_CONSTEXPR shared_ptr& operator=(null)
             {
                 _delete();
                 return *this;
             }
 
-            constexpr shared_ptr& operator=(shared_ptr& lhs)
+            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr& lhs)
             {
                 _delete();
                 _value = lhs._value;
@@ -154,7 +154,7 @@ namespace hsd
                 return *this;
             }
 
-            constexpr shared_ptr& operator=(shared_ptr&& lhs)
+            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr&& lhs)
             {
                 _delete();
                 _value = lhs._value;
@@ -164,7 +164,7 @@ namespace hsd
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            constexpr shared_ptr& operator=(shared_ptr<U>& lhs)
+            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U>& lhs)
             {
                 _delete();
                 _value = lhs._value;
@@ -173,7 +173,7 @@ namespace hsd
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            constexpr shared_ptr& operator=(shared_ptr<U>&& lhs)
+            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U>&& lhs)
             {
                 _delete();
                 _value = lhs._value;
@@ -182,42 +182,42 @@ namespace hsd
                 return *this;
             }
 
-            constexpr remove_array_pointer<T> get()
+            HSD_CONSTEXPR remove_array_pointer<T> get()
             {
                 return _value._ptr._value;
             }
 
-            constexpr remove_array_pointer<T> get() const
+            HSD_CONSTEXPR remove_array_pointer<T> get() const
             {
                 return _value._ptr._value;
             }
 
-            constexpr pointer<T> operator->()
+            HSD_CONSTEXPR pointer<T> operator->()
             {
                 return get();
             }
 
-            constexpr pointer<T> operator->() const
+            HSD_CONSTEXPR pointer<T> operator->() const
             {
                 return get();
             }
 
-            constexpr reference<T> operator*()
+            HSD_CONSTEXPR reference<T> operator*()
             {
                 return *get();
             }
 
-            constexpr reference<T> operator*() const
+            HSD_CONSTEXPR reference<T> operator*() const
             {
                 return *get();
             }
 
-            constexpr usize get_size()
+            HSD_CONSTEXPR usize get_size()
             {
                 return *_value._ptr_size;
             }
 
-            constexpr bool is_unique()
+            HSD_CONSTEXPR bool is_unique()
             {
                 return get_size() == 1;
             }
@@ -242,14 +242,14 @@ namespace hsd
         };
 
         template<typename T, typename... Args>
-        static constexpr typename MakeShr<T>::single_object 
+        static HSD_CONSTEXPR typename MakeShr<T>::single_object 
         make_shared(Args&&... args)
         {
             return shared_ptr<T>(new T(hsd::forward<Args>(args)...));
         }
 
         template<typename T>
-        static constexpr typename MakeShr<T>::array 
+        static HSD_CONSTEXPR typename MakeShr<T>::array 
         make_shared(usize size)
         {
             using ptr_type = remove_array_t<T>;
@@ -257,7 +257,7 @@ namespace hsd
         }
 
         template<typename T, typename... Args>
-        static constexpr typename MakeShr<T>::invalid_type 
+        static HSD_CONSTEXPR typename MakeShr<T>::invalid_type 
         make_shared(Args&&...) = delete;
     }
 }

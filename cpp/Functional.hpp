@@ -34,7 +34,7 @@ namespace hsd
         
         callable_base* _func_impl = nullptr;
 
-        constexpr void reset()
+        HSD_CONSTEXPR void reset()
         {
             if(_func_impl != nullptr)
             {
@@ -53,23 +53,23 @@ namespace hsd
         template< typename Func, 
             typename = ResolvedType<std::__not_<std::is_same<Func, function>>, void>,
             typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
-        constexpr function(Func);
+        HSD_CONSTEXPR function(Func);
 
-        constexpr function(const function&);
+        HSD_CONSTEXPR function(const function&);
 
-        constexpr function(function&& other)
+        HSD_CONSTEXPR function(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
         }
 
-        constexpr function(nullptr_t){}
+        HSD_CONSTEXPR function(nullptr_t){}
 
-        constexpr ~function()
+        HSD_CONSTEXPR ~function()
         {
             reset();
         }
 
-        constexpr function& operator=(const function& other)
+        HSD_CONSTEXPR function& operator=(const function& other)
         {
             reset();
             _func_impl = other._func_impl;
@@ -80,14 +80,14 @@ namespace hsd
             return *this;
         }
 
-        constexpr function& operator=(function&& other)
+        HSD_CONSTEXPR function& operator=(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
             return *this;
         }
 
         template<typename Func>
-        constexpr function& operator=(Func func)
+        HSD_CONSTEXPR function& operator=(Func func)
         {
             if(static_cast<bool>(func))
             {
@@ -97,12 +97,12 @@ namespace hsd
             return *this;
         }
 
-        constexpr function& operator=(null)
+        HSD_CONSTEXPR function& operator=(null)
         {
             reset();
         }
 
-        constexpr Result operator()(Args&&... args)
+        HSD_CONSTEXPR Result operator()(Args&&... args)
         {
             if(_func_impl == nullptr)
             {
@@ -144,7 +144,7 @@ namespace hsd
     }
 
     template< typename Res, typename... Args >
-    constexpr function<Res(Args...)>::function(const function& other)
+    HSD_CONSTEXPR function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
         
@@ -154,13 +154,13 @@ namespace hsd
 
     template< typename Res, typename... Args >
     template< typename Func, typename, typename >
-    constexpr function<Res(Args...)>::function(Func func)
+    HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
     {
         _func_impl = new callable<Func>(func);
     }
 
     template< typename Func, typename... Args >
-    static constexpr auto bind(Func func, Args&&... args)
+    static HSD_CONSTEXPR auto bind(Func func, Args&&... args)
     {
         return [&, func]{
             hsd::function _internal_func = func;
@@ -169,7 +169,7 @@ namespace hsd
     }
 
     template< typename Func, typename... Args >
-    static constexpr auto bind(Func func, hsd::tuple<Args...> args)
+    static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...> args)
     {
         return [&, func]{
             return [&, func]<size_t... Ints>(hsd::index_sequence<Ints...>)

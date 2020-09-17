@@ -20,29 +20,29 @@ namespace hsd
         stack_array() = default;
 
         template< typename L, typename... U >
-        constexpr stack_array(const L& value, const U&... values)
+        HSD_CONSTEXPR stack_array(const L& value, const U&... values)
         {
             T arr[] = {static_cast<T>(value), static_cast<T>(values)...};
             hsd::copy(arr, arr + N, begin());
         }
 
-        constexpr stack_array(T* data)
+        HSD_CONSTEXPR stack_array(T* data)
         {
             hsd::copy(data, data + N, _array);
         }
 
-        constexpr stack_array(const stack_array& other)
+        HSD_CONSTEXPR stack_array(const stack_array& other)
         {
             hsd::copy(other._array, other._array + N, _array);
         }
 
-        constexpr stack_array& operator=(const stack_array& rhs)
+        HSD_CONSTEXPR stack_array& operator=(const stack_array& rhs)
         {
             hsd::copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
-        constexpr stack_array& operator=(initializer_list<T>&& rhs)
+        HSD_CONSTEXPR stack_array& operator=(initializer_list<T>&& rhs)
         {
             if(rhs.size() != N)
             {
@@ -53,17 +53,17 @@ namespace hsd
             return *this;
         }
 
-        constexpr T& operator[](usize index)
+        HSD_CONSTEXPR T& operator[](usize index)
         {
             return _array[index];
         }
         
-        constexpr T& operator[](usize index) const
+        HSD_CONSTEXPR T& operator[](usize index) const
         {
             return _array[index];
         }
 
-        constexpr T& at(usize index)
+        HSD_CONSTEXPR T& at(usize index)
         {
             if(index >= N)
             {
@@ -73,7 +73,7 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index) const
+        HSD_CONSTEXPR T& at(usize index) const
         {
             if(index >= N)
             {
@@ -84,69 +84,69 @@ namespace hsd
         }
 
         template< usize U, usize L >
-        constexpr auto gen_range()
+        HSD_CONSTEXPR auto gen_range()
         {
             static_assert(L - U <= N, "Out of range\n");
 
             return stack_array<T, L - U>(&_array[U]);
         }
 
-        constexpr usize size()
+        HSD_CONSTEXPR usize size()
         {
             return N;
         }
 
-        constexpr usize size() const
+        HSD_CONSTEXPR usize size() const
         {
             return N;
         }
 
-        constexpr iterator data()
+        HSD_CONSTEXPR iterator data()
         {
             return _array;
         }
 
-        constexpr iterator data() const
+        HSD_CONSTEXPR iterator data() const
         {
             return _array;
         }
 
-        constexpr iterator begin()
+        HSD_CONSTEXPR iterator begin()
         {
             return data();
         }
 
-        constexpr iterator begin() const
+        HSD_CONSTEXPR iterator begin() const
         {
             return data();
         }
 
-        constexpr iterator end()
+        HSD_CONSTEXPR iterator end()
         {
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        HSD_CONSTEXPR iterator end() const
         {
             return begin() + size();
         }
 
-        constexpr const_iterator cbegin()
+        HSD_CONSTEXPR const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        HSD_CONSTEXPR const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        HSD_CONSTEXPR const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        HSD_CONSTEXPR const_iterator cend() const
         {
             return end();
         }

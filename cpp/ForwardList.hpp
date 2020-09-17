@@ -20,13 +20,13 @@ namespace hsd
                 T _value;
                 forward_list_impl* _next = nullptr;
 
-                constexpr forward_list_impl() {}
+                HSD_CONSTEXPR forward_list_impl() {}
 
-                constexpr forward_list_impl(const T& val)
+                HSD_CONSTEXPR forward_list_impl(const T& val)
                     : _value{val}
                 {}
 
-                constexpr forward_list_impl(T&& val)
+                HSD_CONSTEXPR forward_list_impl(T&& val)
                 {
                     _value = hsd::move(val);
                 }
@@ -35,49 +35,49 @@ namespace hsd
             forward_list_impl *_iterator = nullptr;
             friend class forward_list<T>;
 
-            constexpr iterator() {}
-            constexpr iterator(hsd::null) {}
+            HSD_CONSTEXPR iterator() {}
+            HSD_CONSTEXPR iterator(hsd::null) {}
 
-            constexpr iterator(const iterator& other)
+            HSD_CONSTEXPR iterator(const iterator& other)
             {
                 _iterator = other._iterator;
             }
 
-            constexpr iterator& operator=(const iterator& rhs)
+            HSD_CONSTEXPR iterator& operator=(const iterator& rhs)
             {
                 _iterator = rhs._iterator;
                 return *this;
             }
 
-            constexpr bool operator==(const iterator& rhs)
+            HSD_CONSTEXPR bool operator==(const iterator& rhs)
             {
                 return _iterator == rhs._iterator;
             }
 
-            constexpr T* get()
+            HSD_CONSTEXPR T* get()
             {
                 return &_iterator->_value;
             }
 
-            constexpr T* get() const
+            HSD_CONSTEXPR T* get() const
             {
                 return &_iterator->_value;
             }
 
-            constexpr void push_back(const T& value)
+            HSD_CONSTEXPR void push_back(const T& value)
             {
                 _iterator->_next = new forward_list_impl(value);
                 _iterator = _iterator->_next;
             }
 
-            constexpr void push_back(T&& value)
+            HSD_CONSTEXPR void push_back(T&& value)
             {
                 _iterator->_next = new forward_list_impl(hsd::move(value));
                 _iterator = _iterator->_next;
             }
 
             template<typename... Args>
-            constexpr void emplace_back(Args&&... args)
+            HSD_CONSTEXPR void emplace_back(Args&&... args)
             {
                 _iterator->_next = new forward_list_impl();
                 _iterator->_next->_value.~T();
@@ -85,14 +85,14 @@ namespace hsd
                 _iterator = _iterator->_next;
             }
 
-            constexpr void push_front(const T& value)
+            HSD_CONSTEXPR void push_front(const T& value)
             {
                 forward_list_impl* _element = new forward_list_impl(value);
                 _element->_next = _iterator;
                 _iterator = _element;
             }
 
-            constexpr void push_front(T&& value)
+            HSD_CONSTEXPR void push_front(T&& value)
             {
                 forward_list_impl* _element = new forward_list_impl(hsd::move(value));
                 _element->_next = _iterator;
@@ -100,7 +100,7 @@ namespace hsd
             }
 
             template<typename... Args>
-            constexpr void emplace_front(Args&&... args)
+            HSD_CONSTEXPR void emplace_front(Args&&... args)
             {
                 forward_list_impl* _element = new forward_list_impl();
                 _element->_next = _iterator;
@@ -109,7 +109,7 @@ namespace hsd
                 _iterator = _element;
             }
 
-            constexpr void pop_front()
+            HSD_CONSTEXPR void pop_front()
             {
                 forward_list_impl* _element = _iterator;
                 _iterator = _iterator->_next;
@@ -117,12 +117,12 @@ namespace hsd
             }
         public:
         
-            constexpr bool operator!=(const iterator& rhs)
+            HSD_CONSTEXPR bool operator!=(const iterator& rhs)
             {
                 return _iterator != rhs._iterator;
             }
 
-            constexpr iterator& operator++()
+            HSD_CONSTEXPR iterator& operator++()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -131,14 +131,14 @@ namespace hsd
                 return *this;
             }
 
-            constexpr iterator operator++(i32)
+            HSD_CONSTEXPR iterator operator++(i32)
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            constexpr T& operator*()
+            HSD_CONSTEXPR T& operator*()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -146,7 +146,7 @@ namespace hsd
                 return _iterator->_value;
             }
 
-            constexpr T& operator*() const
+            HSD_CONSTEXPR T& operator*() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -154,7 +154,7 @@ namespace hsd
                 return _iterator->_value;
             }
 
-            constexpr T* operator->()
+            HSD_CONSTEXPR T* operator->()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -162,7 +162,7 @@ namespace hsd
                 return get();
             }
 
-            constexpr T* operator->() const
+            HSD_CONSTEXPR T* operator->() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -182,21 +182,21 @@ namespace hsd
     public:
         using iterator = forward_list_detail::iterator<T>;
         using const_iterator = const iterator;
-        constexpr forward_list() {}
+        HSD_CONSTEXPR forward_list() {}
 
-        constexpr forward_list(const forward_list& other)
+        HSD_CONSTEXPR forward_list(const forward_list& other)
         {
             for(auto _it = other.cbegin(); _it != other.cend(); _it++)
                 push_back(*_it);
         }
 
-        constexpr ~forward_list()
+        HSD_CONSTEXPR ~forward_list()
         {
             for(; _head != end(); pop_front());
             pop_front();
         }
 
-        constexpr forward_list& operator=(const forward_list& rhs)
+        HSD_CONSTEXPR forward_list& operator=(const forward_list& rhs)
         {
             this->~forward_list();
             
@@ -206,7 +206,7 @@ namespace hsd
             return *this;
         }
 
-        constexpr forward_list& operator+(const forward_list& rhs)
+        HSD_CONSTEXPR forward_list& operator+(const forward_list& rhs)
         {
             for(auto _element : rhs)
                 push_back(_element);
@@ -214,7 +214,7 @@ namespace hsd
             return *this;
         }
 
-        constexpr void push_back(const T& value)
+        HSD_CONSTEXPR void push_back(const T& value)
         {
             if(_head == end())
             {
@@ -225,7 +225,7 @@ namespace hsd
                 _tail.push_back(value);
         }
 
-        constexpr void push_back(T&& value)
+        HSD_CONSTEXPR void push_back(T&& value)
         {
             if(_head == end())
             {
@@ -237,7 +237,7 @@ namespace hsd
         }
 
         template<typename... Args>
-        constexpr void emplace_back(Args&&... args)
+        HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
             if(_head == end())
             {
@@ -250,7 +250,7 @@ namespace hsd
                 _tail.emplace_back(hsd::forward<Args>(args)...);
         }
 
-        constexpr void push_front(const T& value)
+        HSD_CONSTEXPR void push_front(const T& value)
         {
             if(_head == end())
             {
@@ -261,7 +261,7 @@ namespace hsd
                 _head.push_front(value);
         }
 
-        constexpr void push_front(T&& value)
+        HSD_CONSTEXPR void push_front(T&& value)
         {
             if(_head == end())
             {
@@ -273,7 +273,7 @@ namespace hsd
         }
 
         template<typename... Args>
-        constexpr void emplace_front(Args&&... args)
+        HSD_CONSTEXPR void emplace_front(Args&&... args)
         {
             if(_head == end())
             {
@@ -286,7 +286,7 @@ namespace hsd
                 _head.emplace_front(hsd::forward<Args>(args)...);
         }
 
-        constexpr void pop_front()
+        HSD_CONSTEXPR void pop_front()
         {
             if(_head != end())
                 _head.pop_front();
@@ -294,57 +294,57 @@ namespace hsd
                 _tail = _head;
         }
 
-        constexpr bool empty()
+        HSD_CONSTEXPR bool empty()
         {
             return _head == end();
         }
 
-        constexpr T& front()
+        HSD_CONSTEXPR T& front()
         {
             return *_head.get();
         }
 
-        constexpr T& back()
+        HSD_CONSTEXPR T& back()
         {
             return *_tail.get();
         }
 
-        constexpr iterator begin()
+        HSD_CONSTEXPR iterator begin()
         {
             return _head;
         }
 
-        constexpr iterator begin() const
+        HSD_CONSTEXPR iterator begin() const
         {
             return _head;
         }
 
-        constexpr iterator end()
+        HSD_CONSTEXPR iterator end()
         {
             return iterator(nullptr);
         }
 
-        constexpr iterator end() const
+        HSD_CONSTEXPR iterator end() const
         {
             return iterator(nullptr);
         }
 
-        constexpr const_iterator cbegin()
+        HSD_CONSTEXPR const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        HSD_CONSTEXPR const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        HSD_CONSTEXPR const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        HSD_CONSTEXPR const_iterator cend() const
         {
             return end();
         }

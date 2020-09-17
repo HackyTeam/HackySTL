@@ -32,6 +32,8 @@ static void hsdVector(benchmark::State& state)
 
         for (auto& val : e)
             val++;
+
+        benchmark::DoNotOptimize(e.data());
     }
 }
 
@@ -64,6 +66,8 @@ static void stdVector(benchmark::State& state)
 
         for (auto& val : e)
             val++;
+
+        benchmark::DoNotOptimize(e.data());
     }
 }
 

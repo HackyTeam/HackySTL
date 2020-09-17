@@ -115,7 +115,6 @@ namespace hsd
             _data = new CharT[size + 1];
             _data[size] = '\0';
             _size = size;
-
         }
 
         ~sstream()

@@ -16,6 +16,14 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
+    template <class T, class U = T>
+    static constexpr T exchange(T& target, U&& new_val) noexcept
+    {
+        T tmp = move(target);
+        target = forward<U>(new_val);
+        return tmp;
+    }
+
     template< typename InIt, typename OutIt >
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {

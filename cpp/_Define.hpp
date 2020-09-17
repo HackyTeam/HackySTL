@@ -2,6 +2,12 @@
 
 namespace hsd 
 {
+	#ifndef HSD_NOT_SUPPORTS_CONSTEXPR
+	#define HSD_CONSTEXPR constexpr
+	#else
+	#define HSD_CONSTEXPR
+	#endif
+
 	#if defined(_WIN64) || defined(_WIN32) || defined(__WINDOWS__)
 		#define HSD_PLATFORM_WINDOWS
 

@@ -23,11 +23,11 @@ namespace hsd
 
                 HSD_CONSTEXPR list_impl() {}
 
-                HSD_CONSTEXPR list_impl(const T& val)
+                constexpr list_impl(const T& val)
                     : _value{val}
                 {}
 
-                HSD_CONSTEXPR list_impl(T&& val)
+                constexpr list_impl(T&& val)
                 {
                     _value = hsd::move(val);
                 }
@@ -35,30 +35,30 @@ namespace hsd
 
             friend class list<T>;
             HSD_CONSTEXPR iterator() {}
-            HSD_CONSTEXPR iterator(hsd::null) {}
+            constexpr iterator(hsd::null) {}
 
-            HSD_CONSTEXPR iterator(const iterator& other)
+            constexpr iterator(const iterator& other)
             {
                 _iterator = other._iterator;
             }
 
-            HSD_CONSTEXPR iterator& operator=(const iterator& rhs)
+            constexpr iterator& operator=(const iterator& rhs)
             {
                 _iterator = rhs._iterator;
                 return *this;
             }
 
-            HSD_CONSTEXPR bool operator==(const iterator& rhs)
+            constexpr bool operator==(const iterator& rhs)
             {
                 return _iterator == rhs._iterator;
             }
 
-            HSD_CONSTEXPR T* get()
+            constexpr T* get()
             {
                 return &_iterator->_value;
             }
 
-            HSD_CONSTEXPR T* get() const
+            constexpr T* get() const
             {
                 return &_iterator->_value;
             }
@@ -134,12 +134,12 @@ namespace hsd
             }
         public:
         
-            HSD_CONSTEXPR bool operator!=(const iterator& rhs)
+            constexpr bool operator!=(const iterator& rhs)
             {
                 return _iterator != rhs._iterator;
             }
 
-            HSD_CONSTEXPR iterator& operator++()
+            constexpr iterator& operator++()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -148,7 +148,7 @@ namespace hsd
                 return *this;
             }
 
-            HSD_CONSTEXPR iterator& operator--()
+            constexpr iterator& operator--()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -157,21 +157,21 @@ namespace hsd
                 return *this;
             }
 
-            HSD_CONSTEXPR iterator operator++(i32)
+            constexpr iterator operator++(i32)
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            HSD_CONSTEXPR iterator operator--(i32)
+            constexpr iterator operator--(i32)
             {
                 iterator tmp = *this;
                 operator--();
                 return tmp;
             }
 
-            HSD_CONSTEXPR T& operator*()
+            constexpr T& operator*()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -179,7 +179,7 @@ namespace hsd
                 return _iterator->_value;
             }
 
-            HSD_CONSTEXPR T& operator*() const
+            constexpr T& operator*() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -187,7 +187,7 @@ namespace hsd
                 return _iterator->_value;
             }
 
-            HSD_CONSTEXPR T* operator->()
+            constexpr T* operator->()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -195,7 +195,7 @@ namespace hsd
                 return get();
             }
 
-            HSD_CONSTEXPR T* operator->() const
+            constexpr T* operator->() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -335,57 +335,57 @@ namespace hsd
                 _tail = _head;
         }
 
-        HSD_CONSTEXPR bool empty()
+        constexpr bool empty()
         {
             return _head == end();
         }
 
-        HSD_CONSTEXPR T& front()
+        constexpr T& front()
         {
             return *_head.get();
         }
 
-        HSD_CONSTEXPR T& back()
+        constexpr T& back()
         {
             return *_tail.get();
         }
 
-        HSD_CONSTEXPR iterator begin()
+        constexpr iterator begin()
         {
             return _head;
         }
 
-        HSD_CONSTEXPR iterator begin() const
+        constexpr iterator begin() const
         {
             return _head;
         }
 
-        HSD_CONSTEXPR iterator end()
+        constexpr iterator end()
         {
-            return iterator(nullptr);
+            return {nullptr};
         }
 
-        HSD_CONSTEXPR iterator end() const
+        constexpr iterator end() const
         {
-            return iterator(nullptr);
+            return {nullptr};
         }
 
-        HSD_CONSTEXPR const_iterator cbegin()
-        {
-            return begin();
-        }
-
-        HSD_CONSTEXPR const_iterator cbegin() const
+        constexpr const_iterator cbegin()
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cend()
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cend()
         {
             return end();
         }
 
-        HSD_CONSTEXPR const_iterator cend() const
+        constexpr const_iterator cend() const
         {
             return end();
         }

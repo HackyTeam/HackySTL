@@ -48,13 +48,13 @@ namespace hsd
             delete[] _array;
         }
 
-        HSD_CONSTEXPR heap_array& operator=(const heap_array& rhs)
+        constexpr heap_array& operator=(const heap_array& rhs)
         {
             hsd::copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
-        HSD_CONSTEXPR heap_array& operator=(initializer_list<T>&& rhs)
+        constexpr heap_array& operator=(initializer_list<T>&& rhs)
         {
             if(rhs.size() != N)
             {
@@ -65,17 +65,17 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR T& operator[](usize index)
+        constexpr T& operator[](usize index)
         {
             return _array[index];
         }
         
-        HSD_CONSTEXPR T& operator[](usize index) const
+        constexpr T& operator[](usize index) const
         {
             return _array[index];
         }
 
-        HSD_CONSTEXPR T& at(usize index)
+        constexpr T& at(usize index)
         {
             if(index >= N)
             {
@@ -85,7 +85,7 @@ namespace hsd
             return _array[index];
         }
 
-        HSD_CONSTEXPR T& at(usize index) const
+        constexpr T& at(usize index) const
         {
             if(index >= N)
             {
@@ -103,47 +103,47 @@ namespace hsd
             return heap_array<T, L - U>(&_array[U]);
         }
 
-        HSD_CONSTEXPR usize size()
+        constexpr usize size()
         {
             return N;
         }
 
-        HSD_CONSTEXPR usize size() const
+        constexpr usize size() const
         {
             return N;
         }
 
-        HSD_CONSTEXPR iterator data()
+        constexpr iterator data()
         {
             return _array;
         }
 
-        HSD_CONSTEXPR iterator data() const
+        constexpr iterator data() const
         {
             return _array;
         }
 
-        HSD_CONSTEXPR iterator begin()
+        constexpr iterator begin()
         {
             return data();
         }
 
-        HSD_CONSTEXPR iterator begin() const
+        constexpr iterator begin() const
         {
             return data();
         }
 
-        HSD_CONSTEXPR iterator end()
+        constexpr iterator end()
         {
             return begin() + size();
         }
 
-        HSD_CONSTEXPR iterator end() const
+        constexpr iterator end() const
         {
             return begin() + size();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin()
+        constexpr const_iterator cbegin()
         {
             return begin();
         }

@@ -30,7 +30,7 @@ namespace hsd
         {
             remove_array_t<T>* _ptr = nullptr;
 
-            HSD_CONSTEXPR Deleter& get_deleter()
+            constexpr Deleter& get_deleter()
             {
                 return *this;
             }
@@ -63,30 +63,30 @@ namespace hsd
         using remove_array_pointer = remove_array_t<U>*;
         
         unique_ptr() = default;
-        HSD_CONSTEXPR unique_ptr(null) {}
+        constexpr unique_ptr(null) {}
         unique_ptr(unique_ptr&) = delete;
         unique_ptr(const unique_ptr&) = delete;
 
-        template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
-        HSD_CONSTEXPR unique_ptr(pointer<U> ptr)
+        template< typename U = T, enable_if<!std::is_array_v<U>, int>::type = 0 >
+        constexpr unique_ptr(pointer<U> ptr)
         {
             _value._ptr = ptr;
         }
 
-        template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
-        HSD_CONSTEXPR unique_ptr(remove_array_pointer<U> ptr)
+        template< typename U = T, enable_if<std::is_array_v<U>, int>::type = 0 >
+        constexpr unique_ptr(remove_array_pointer<U> ptr)
         {
             _value._ptr = ptr;
         }
 
-        HSD_CONSTEXPR unique_ptr(unique_ptr&& other)
+        constexpr unique_ptr(unique_ptr&& other)
         {
             _value._ptr = other._value._ptr;
             other._value._ptr = nullptr;
         }
 
-        template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
-        HSD_CONSTEXPR unique_ptr(unique_ptr<U>&& other)
+        template< typename U, enable_if<std::is_base_of_v<T, U>, int>::type = 0 >
+        constexpr unique_ptr(unique_ptr<U>&& other)
         {
             _value._ptr = other._value._ptr;
             other._value._ptr = nullptr;
@@ -111,7 +111,7 @@ namespace hsd
             return *this;
         }
 
-        template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0 >
+        template< typename U, enable_if<std::is_base_of_v<T, U>, int>::type = 0 >
         HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U>&& rhs)
         {
             _delete();
@@ -120,42 +120,42 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR Deleter& get_deleter()
+        constexpr Deleter& get_deleter()
         {
             return _value.get_deleter();
         }
 
-        HSD_CONSTEXPR remove_array_pointer<T> get()
+        constexpr remove_array_pointer<T> get()
         {
             return _value._ptr;
         }
 
-        HSD_CONSTEXPR remove_array_pointer<T> get() const
+        constexpr remove_array_pointer<T> get() const
         {
             return _value._ptr;
         }
 
-        HSD_CONSTEXPR bool operator!=(null) const
+        constexpr bool operator!=(null) const
         {
             return _value._ptr != nullptr;
         }
 
-        HSD_CONSTEXPR pointer<T> operator->()
+        constexpr pointer<T> operator->()
         {
             return get();
         }
 
-        HSD_CONSTEXPR pointer<T> operator->() const
+        constexpr pointer<T> operator->() const
         {
             return get();
         }
 
-        HSD_CONSTEXPR reference<T> operator*()
+        constexpr reference<T> operator*()
         {
             return *get();
         }
 
-        HSD_CONSTEXPR reference<T> operator*() const
+        constexpr reference<T> operator*() const
         {
             return *get();
         }

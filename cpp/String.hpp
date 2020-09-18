@@ -65,7 +65,7 @@ namespace hsd
             _data[_size] = '\0';
         }
 
-        HSD_CONSTEXPR string(string&& other)
+        constexpr string(string&& other)
         {
             _size = other._size;
             _reserved_size = other._reserved_size;
@@ -120,7 +120,7 @@ namespace hsd
         }
 
         template<typename T>
-        static HSD_CONSTEXPR string<T>& to_string(string<T>& val)
+        static constexpr string<T>& to_string(string<T>& val)
         {
             return val;
         }
@@ -187,12 +187,12 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR CharT& operator[](usize index)
+        constexpr CharT& operator[](usize index)
         {
             return _data[index];
         }
 
-        HSD_CONSTEXPR bool operator==(const string& rhs)
+        constexpr bool operator==(const string& rhs)
         {
             return _str_utils::compare(
                 _data, rhs._data, 
@@ -200,12 +200,12 @@ namespace hsd
             ) == 0;
         }
 
-        HSD_CONSTEXPR bool operator!=(const string& rhs)
+        constexpr bool operator!=(const string& rhs)
         {
             return !operator==(rhs);
         }
 
-        HSD_CONSTEXPR bool operator<(const string& rhs)
+        constexpr bool operator<(const string& rhs)
         {
             return _str_utils::compare(
                 _data, rhs._data, 
@@ -213,23 +213,23 @@ namespace hsd
             ) == -1;
         }
 
-        HSD_CONSTEXPR bool operator<=(const string& rhs)
+        constexpr bool operator<=(const string& rhs)
         {
             return operator<(rhs) && operator==(rhs);
         }
 
-        HSD_CONSTEXPR bool operator>(const string& rhs)
+        constexpr bool operator>(const string& rhs)
         {
             return _str_utils::compare(_data, rhs._data, 
                 hsd::min(_size, rhs._size)) == 1;
         }
 
-        HSD_CONSTEXPR bool operator>=(const string& rhs)
+        constexpr bool operator>=(const string& rhs)
         {
             return operator>(rhs) && operator==(rhs);
         }
 
-        HSD_CONSTEXPR CharT& at(usize index)
+        constexpr CharT& at(usize index)
         {
             if(index >= _size)
                 throw std::out_of_range("");
@@ -237,7 +237,7 @@ namespace hsd
             return _data[index];
         }
 
-        HSD_CONSTEXPR usize find(const string& str, usize pos = 0)
+        constexpr usize find(const string& str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -252,7 +252,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize find(const CharT* str, usize pos = 0)
+        constexpr usize find(const CharT* str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -267,7 +267,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize find(CharT str, usize pos = 0)
+        constexpr usize find(CharT str, usize pos = 0)
         {
             if(pos >= _size)
                 return npos;
@@ -282,7 +282,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize rfind(const string& str, usize pos = npos)
+        constexpr usize rfind(const string& str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -308,7 +308,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize rfind(const CharT* str, usize pos = npos)
+        constexpr usize rfind(const CharT* str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -334,7 +334,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize rfind(CharT str, usize pos = npos)
+        constexpr usize rfind(CharT str, usize pos = npos)
         {
             if(pos >= _size && pos != npos)
             {
@@ -360,22 +360,22 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR CharT& front()
+        constexpr CharT& front()
         {
             return _data[0];
         }
 
-        HSD_CONSTEXPR CharT& back()
+        constexpr CharT& back()
         {
             return _data[_size - 1];
         }
 
-        HSD_CONSTEXPR usize size()
+        constexpr usize size()
         {
             return _size;
         }
 
-        HSD_CONSTEXPR usize capacity()
+        constexpr usize capacity()
         {
             return _reserved_size;
         }
@@ -437,52 +437,52 @@ namespace hsd
             _data[--_size] = '\0';
         }
 
-        HSD_CONSTEXPR iterator data()
+        constexpr iterator data()
         {
             return _data;
         }
 
-        HSD_CONSTEXPR const_iterator c_str() const
+        constexpr const_iterator c_str() const
         {
             return _data;
         }
 
-        HSD_CONSTEXPR iterator begin()
+        constexpr iterator begin()
         {
             return data();
         }
 
-        HSD_CONSTEXPR iterator begin() const
+        constexpr iterator begin() const
         {
             return data();
         }
 
-        HSD_CONSTEXPR iterator end()
+        constexpr iterator end()
         {
             return begin() + size();
         }
 
-        HSD_CONSTEXPR iterator end() const
+        constexpr iterator end() const
         {
             return begin() + size();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin()
+        constexpr const_iterator cbegin()
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin() const
+        constexpr const_iterator cbegin() const
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cend()
+        constexpr const_iterator cend()
         {
             return end();
         }
 
-        HSD_CONSTEXPR const_iterator cend() const
+        constexpr const_iterator cend() const
         {
             return end();
         }

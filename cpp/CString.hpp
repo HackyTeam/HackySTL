@@ -11,7 +11,7 @@ namespace hsd
     class cstring
     {
     private:
-        static HSD_CONSTEXPR bool _compare(const CharT* str, const CharT* substr)
+        static constexpr bool _compare(const CharT* str, const CharT* substr)
         {
         	for(; *str && *substr; str++, substr++)
         	{
@@ -22,7 +22,7 @@ namespace hsd
         }
 
 		template<typename T>
-		static HSD_CONSTEXPR T _modulus(T num)
+		static constexpr T _modulus(T num)
 		{
 			if(num < 0)
 				return -num;
@@ -31,7 +31,7 @@ namespace hsd
 		}
 
 		template<typename T>
-		static HSD_CONSTEXPR usize _num_len(T num)
+		static constexpr usize _num_len(T num)
 		{
 			usize _len = 0;
 			
@@ -47,14 +47,14 @@ namespace hsd
 			return _len;
 		}
 
-		static HSD_CONSTEXPR bool _is_number(CharT letter)
+		static constexpr bool _is_number(CharT letter)
 		{
 			return letter >= '0' && letter <= '9';
 		}
 
     public:
 
-        static HSD_CONSTEXPR const CharT* find(const CharT* str, const CharT* substr)
+        static constexpr const CharT* find(const CharT* str, const CharT* substr)
         {
         	for(; *str != '\0'; str++)
         	{
@@ -65,7 +65,7 @@ namespace hsd
         	return nullptr;
         }
 
-        static HSD_CONSTEXPR const CharT* find(const CharT* str, CharT letter)
+        static constexpr const CharT* find(const CharT* str, CharT letter)
         {
         	for(; *str != '\0'; str++)
         	{
@@ -76,7 +76,7 @@ namespace hsd
         	return nullptr;
         }
 
-		static HSD_CONSTEXPR const CharT* find_rev(const CharT* str, const CharT* substr)
+		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr)
         {
 			const CharT* rez = nullptr;
 
@@ -89,7 +89,7 @@ namespace hsd
         	return rez;
         }
 
-        static HSD_CONSTEXPR const CharT* find_rev(const CharT* str, CharT letter)
+        static constexpr const CharT* find_rev(const CharT* str, CharT letter)
         {
         	const CharT* rez = nullptr;
 
@@ -102,7 +102,7 @@ namespace hsd
         	return rez;
         }
 
-		static HSD_CONSTEXPR const CharT* find_rev(const CharT* str, const CharT* substr, usize pos)
+		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr, usize pos)
         {
         	for(; pos != 0; pos--)
         	{
@@ -113,7 +113,7 @@ namespace hsd
         	return nullptr;
         }
 
-        static HSD_CONSTEXPR const CharT* find_rev(const CharT* str, CharT letter, usize pos)
+        static constexpr const CharT* find_rev(const CharT* str, CharT letter, usize pos)
         {
         	for(; pos != 0; pos--)
         	{
@@ -124,7 +124,7 @@ namespace hsd
         	return nullptr;
         }
 
-        static HSD_CONSTEXPR usize length(const CharT* str)
+        static constexpr usize length(const CharT* str)
         {
         	usize _iter;
 
@@ -133,7 +133,7 @@ namespace hsd
         	return _iter;
         }
 
-        static HSD_CONSTEXPR const CharT* upper(CharT* str)
+        static constexpr const CharT* upper(CharT* str)
         {
         	usize _iter;
 
@@ -146,7 +146,7 @@ namespace hsd
         	return str;
         }
 
-        static HSD_CONSTEXPR const CharT* lower(CharT* str)
+        static constexpr const CharT* lower(CharT* str)
         {
         	usize _iter;
 
@@ -184,7 +184,7 @@ namespace hsd
 	    	return _buf;
 	    }
 
-		static HSD_CONSTEXPR void reverse(CharT*& str, usize size = 0)
+		static constexpr void reverse(CharT*& str, usize size = 0)
 	    {
 	    	usize _begin = 0;
 	        usize _end = size - 1;
@@ -509,7 +509,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR i32 parse_i(const CharT* str)
+		static constexpr i32 parse_i(const CharT* str)
 		{
 			i32 _num = 0;
 			bool _negative = false;
@@ -526,7 +526,7 @@ namespace hsd
 			return _negative ? -_num : _num;
 		}
 
-		static HSD_CONSTEXPR usize parse_us(const CharT* str)
+		static constexpr usize parse_us(const CharT* str)
 		{
 			usize _num = 0;
 
@@ -540,7 +540,7 @@ namespace hsd
 			return _num;
 		}
 
-		static HSD_CONSTEXPR f32 parse_f(const CharT* str)
+		static constexpr f32 parse_f(const CharT* str)
 		{
 		    float _round_num = 0;
 			float _point_num = 0;
@@ -574,7 +574,7 @@ namespace hsd
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
 
-		static HSD_CONSTEXPR i32 compare(const CharT* lhs, const CharT* rhs)
+		static constexpr i32 compare(const CharT* lhs, const CharT* rhs)
 		{
 			usize _index = 0;
 
@@ -594,7 +594,7 @@ namespace hsd
 				return 0;
 		}
 
-		static HSD_CONSTEXPR i32 compare(const CharT* lhs, const CharT* rhs, usize len)
+		static constexpr i32 compare(const CharT* lhs, const CharT* rhs, usize len)
 		{
 			usize _index = 0;
 
@@ -614,7 +614,7 @@ namespace hsd
 				return 0;
 		}
 
-		static HSD_CONSTEXPR CharT* copy(CharT* dest, const CharT* src, usize len)
+		static constexpr CharT* copy(CharT* dest, const CharT* src, usize len)
 		{
 			if (dest == nullptr)
 				return nullptr;
@@ -626,7 +626,7 @@ namespace hsd
 			return dest;
 		}
 
-		static HSD_CONSTEXPR CharT* copy(CharT* dest, const CharT* src)
+		static constexpr CharT* copy(CharT* dest, const CharT* src)
 		{
 			if (dest == nullptr)
 				return nullptr;
@@ -640,7 +640,7 @@ namespace hsd
 			return ptr;
 		}
 
-		static HSD_CONSTEXPR CharT* add(CharT* dest, const CharT* src)
+		static constexpr CharT* add(CharT* dest, const CharT* src)
 		{
 		    usize _index = length(dest);
 			usize _index_helper = 0;
@@ -652,7 +652,7 @@ namespace hsd
 		    return dest;
 		}
 
-		static HSD_CONSTEXPR CharT* add(CharT* dest, const CharT* src, usize len)
+		static constexpr CharT* add(CharT* dest, const CharT* src, usize len)
 		{
 			usize _index = len;
 			usize _index_helper = 0;

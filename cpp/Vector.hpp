@@ -46,7 +46,7 @@ namespace hsd
                 new(&_data[_index]) T(rhs[_index]);
         }
 
-        HSD_CONSTEXPR vector(vector&& rhs) noexcept
+        constexpr vector(vector&& rhs) noexcept
         {
             swap(_data, rhs._data);
             swap(_size, rhs._size);
@@ -150,37 +150,37 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR T& operator[](usize index) noexcept
+        constexpr T& operator[](usize index) noexcept
         {
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR const T& operator[](usize index) const noexcept
+        constexpr const T& operator[](usize index) const noexcept
         {
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR T& front() noexcept
+        constexpr T& front() noexcept
         {
             return *begin();
         }
 
-        HSD_CONSTEXPR T& front() const noexcept
+        constexpr T& front() const noexcept
         {
             return *begin();
         }
 
-        HSD_CONSTEXPR T& back() noexcept
+        constexpr T& back() noexcept
         {
             return *(begin() + size() - 1);
         }
 
-        HSD_CONSTEXPR T& back() const noexcept
+        constexpr T& back() const noexcept
         {
             return *(begin() + size() - 1);
         }
 
-        HSD_CONSTEXPR T& at(usize index)
+        constexpr T& at(usize index)
         {
             if(index >= _size)
                 throw std::out_of_range("Accessed element out of range");
@@ -188,7 +188,7 @@ namespace hsd
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR const T& at(usize index) const
+        constexpr const T& at(usize index) const
         {
             if(index >= _size)
                 throw std::out_of_range("Accessed element out of range");
@@ -196,17 +196,17 @@ namespace hsd
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR T& at_unchecked(usize index) noexcept
+        constexpr T& at_unchecked(usize index) noexcept
         {
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR T& at_unchecked(usize index) const noexcept
+        constexpr T& at_unchecked(usize index) const noexcept
         {
             return reinterpret_cast<T&>(_data[index]);
         }
 
-        HSD_CONSTEXPR void clear() noexcept
+        constexpr void clear() noexcept
         {
             for (usize _index = _size; _index > 0; --_index)
                 at_unchecked(_index - 1).~T();
@@ -318,7 +318,7 @@ namespace hsd
             ++_size;
         }
 
-        HSD_CONSTEXPR void pop_back() noexcept
+        constexpr void pop_back() noexcept
         {
             if(_size < 0)
             {
@@ -327,37 +327,37 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR usize size() const
+        constexpr usize size() const
         {
             return _size;
         }
 
-        HSD_CONSTEXPR usize capacity() const
+        constexpr usize capacity() const
         {
             return _capacity;
         }
 
-        HSD_CONSTEXPR iterator data()
+        constexpr iterator data()
         {
             return reinterpret_cast<iterator>(_data);
         }
 
-        HSD_CONSTEXPR iterator begin()
+        constexpr iterator begin()
         {
             return data();
         }
 
-        HSD_CONSTEXPR iterator end()
+        constexpr iterator end()
         {
             return begin() + size();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin() const
+        constexpr const_iterator cbegin() const
         {
             return reinterpret_cast<const_iterator>(_data);
         }
 
-        HSD_CONSTEXPR const_iterator cend() const
+        constexpr const_iterator cend() const
         {
             return end();
         }

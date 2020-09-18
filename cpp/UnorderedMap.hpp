@@ -29,49 +29,49 @@ namespace hsd
 
         public:
             HSD_CONSTEXPR bucket() {}
-            HSD_CONSTEXPR bucket(hsd::null) {}
+            constexpr bucket(hsd::null) {}
 
-            HSD_CONSTEXPR bucket(const bucket& other)
+            constexpr bucket(const bucket& other)
             {
                 _bucket = other._bucket;
             }
 
-            HSD_CONSTEXPR bucket(bucket&& other)
+            constexpr bucket(bucket&& other)
             {
                 _bucket = other._bucket;
                 other._bucket = nullptr;
             }
 
-            HSD_CONSTEXPR bucket& operator=(const bucket& rhs)
+            constexpr bucket& operator=(const bucket& rhs)
             {
                 _bucket = rhs._bucket;
                 return *this;
             }
 
-            HSD_CONSTEXPR bucket& operator=(bucket&& rhs)
+            constexpr bucket& operator=(bucket&& rhs)
             {
                 _bucket = rhs._bucket;
                 rhs._bucket = nullptr;
                 return *this;
             }
 
-            HSD_CONSTEXPR bucket& operator=(nullptr_t)
+            constexpr bucket& operator=(nullptr_t)
             {
                 _bucket = nullptr;
                 return *this;
             }
 
-            HSD_CONSTEXPR friend bool operator!=(const bucket& lhs, const bucket& rhs)
+            constexpr friend bool operator!=(const bucket& lhs, const bucket& rhs)
             {
                 return lhs._bucket != rhs._bucket;
             }
 
-            HSD_CONSTEXPR friend bool operator==(const bucket& lhs, const bucket& rhs)
+            constexpr friend bool operator==(const bucket& lhs, const bucket& rhs)
             {
                 return lhs._bucket == rhs._bucket;
             }
 
-            HSD_CONSTEXPR pair<Key, T>* operator->()
+            constexpr pair<Key, T>* operator->()
             {
                 if(_bucket == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -79,7 +79,7 @@ namespace hsd
                 return get();
             }
 
-            HSD_CONSTEXPR pair<Key, T>* operator->() const
+            constexpr pair<Key, T>* operator->() const
             {
                 if(_bucket == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -87,7 +87,7 @@ namespace hsd
                 return get();
             }
 
-            HSD_CONSTEXPR void increment()
+            constexpr void increment()
             {
                 if(_bucket == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -95,12 +95,12 @@ namespace hsd
                 _bucket = _bucket->_next;
             }
 
-            HSD_CONSTEXPR pair<Key, T>* get()
+            constexpr pair<Key, T>* get()
             {
                 return _bucket->_value;
             }
 
-            HSD_CONSTEXPR  pair<Key, T>* get() const
+            constexpr pair<Key, T>* get() const
             {
                 return _bucket->_value;
             }
@@ -206,7 +206,7 @@ namespace hsd
 
                 HSD_CONSTEXPR iterator_impl() {}
 
-                HSD_CONSTEXPR iterator_impl(pair<Key, T>* value)
+                constexpr iterator_impl(pair<Key, T>* value)
                     : _value{value}
                 {}
             };
@@ -215,14 +215,14 @@ namespace hsd
             friend class unordered_map< Key, T, Hasher >;
 
             HSD_CONSTEXPR iterator() {}
-            HSD_CONSTEXPR iterator(hsd::null) {}
+            constexpr iterator(hsd::null) {}
 
-            HSD_CONSTEXPR iterator(const iterator& other)
+            constexpr iterator(const iterator& other)
             {
                 _iterator = other._iterator;
             }
 
-            HSD_CONSTEXPR iterator(iterator&& other)
+            constexpr iterator(iterator&& other)
             {
                 _iterator = other._iterator;
                 other._iterator = nullptr;
@@ -254,7 +254,7 @@ namespace hsd
                 delete _element;
             }
 
-            HSD_CONSTEXPR void linear_search(const Key& hash_key)
+            constexpr void linear_search(const Key& hash_key)
             {
                 auto _hash_res = Hasher::get_hash(hash_key);
 
@@ -263,28 +263,28 @@ namespace hsd
                         return;
             }
 
-            HSD_CONSTEXPR pair<Key, T>* get()
+            constexpr pair<Key, T>* get()
             {
                 return _iterator->_value;
             }
 
-            HSD_CONSTEXPR  pair<Key, T>* get() const
+            constexpr pair<Key, T>* get() const
             {
                 return _iterator->_value;
             }
 
         public:
-            HSD_CONSTEXPR friend bool operator!=(const iterator& lhs, const iterator& rhs)
+            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
             {
                 return lhs._iterator != rhs._iterator;
             }
 
-            HSD_CONSTEXPR friend bool operator==(const iterator& lhs, const iterator& rhs)
+            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
             {
                 return lhs._iterator == rhs._iterator;
             }
 
-            HSD_CONSTEXPR iterator& operator++()
+            constexpr iterator& operator++()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -293,14 +293,14 @@ namespace hsd
                 return *this;
             }
 
-            HSD_CONSTEXPR iterator operator++(int)
+            constexpr iterator operator++(int)
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            HSD_CONSTEXPR pair<Key, T>& operator*()
+            constexpr pair<Key, T>& operator*()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -308,7 +308,7 @@ namespace hsd
                 return *get();
             }
 
-            HSD_CONSTEXPR pair<Key, T>& operator*() const
+            constexpr pair<Key, T>& operator*() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -316,7 +316,7 @@ namespace hsd
                 return *get();
             }
 
-            HSD_CONSTEXPR pair<Key, T>* operator->()
+            constexpr pair<Key, T>* operator->()
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -324,7 +324,7 @@ namespace hsd
                 return get();
             }
 
-            HSD_CONSTEXPR pair<Key, T>* operator->() const
+            constexpr pair<Key, T>* operator->() const
             {
                 if(_iterator == nullptr)
                     throw std::runtime_error("Null pointer access denied");
@@ -343,14 +343,14 @@ namespace hsd
         using bucket = unordered_map_detail::bucket< Key, T, Hasher >;
         using hash_table = vector<bucket>;
 
-        static HSD_CONSTEXPR float _limit_ratio = 0.75f;
+        static constexpr float _limit_ratio = 0.75f;
         iterator _map_iter = nullptr;
         usize _table_size = 10;
         usize _size = 0;
         hash_table _table;
         
 
-        HSD_CONSTEXPR pair<usize, bucket> _get(const Key& hash_key)
+        constexpr pair<usize, bucket> _get(const Key& hash_key)
         {
             auto _hash_result = Hasher::get_hash(hash_key);
             usize _index = _hash_result % _table_size;
@@ -430,7 +430,7 @@ namespace hsd
             _map_iter.destroy();
         }
 
-        HSD_CONSTEXPR unordered_map(unordered_map&& map)
+        constexpr unordered_map(unordered_map&& map)
             : _table_size{map._table_size}, _size{map._size}, _table{hsd::move(map._table)}
         {}
 
@@ -474,52 +474,52 @@ namespace hsd
             return {_res_iter, false};
         }
 
-        HSD_CONSTEXPR usize size()
+        constexpr usize size()
         {
             return _size;
         }
 
-        HSD_CONSTEXPR bool empty()
+        constexpr bool empty()
         {
             return size() == 0;
         }
 
-        HSD_CONSTEXPR iterator begin()
+        constexpr iterator begin()
         {
             return _map_iter;
         }
 
-        HSD_CONSTEXPR iterator begin() const
+        constexpr iterator begin() const
         {
             return _map_iter;
         }
 
-        HSD_CONSTEXPR iterator end()
+        constexpr iterator end()
         {
             return {nullptr};
         }
 
-        HSD_CONSTEXPR iterator end() const
+        constexpr iterator end() const
         {
             return {nullptr};
         }
 
-        HSD_CONSTEXPR const_iterator cbegin()
+        constexpr const_iterator cbegin()
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin() const
+        constexpr const_iterator cbegin() const
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cend()
+        constexpr const_iterator cend()
         {
             return end();
         }
 
-        HSD_CONSTEXPR const_iterator cend() const
+        constexpr const_iterator cend() const
         {
             return end();
         }

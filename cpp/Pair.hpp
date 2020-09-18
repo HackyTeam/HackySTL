@@ -10,7 +10,7 @@ namespace hsd
         T1 first;
         T2 second;
 
-        HSD_CONSTEXPR bool operator==(const pair& rhs)
+        constexpr bool operator==(const pair& rhs)
         {
             return first == rhs.first && second == rhs.second;
         }

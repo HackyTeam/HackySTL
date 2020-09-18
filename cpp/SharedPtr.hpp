@@ -59,7 +59,7 @@ namespace hsd
             {
                 shared_detail::ptr_info<T> _ptr;
 
-                HSD_CONSTEXPR Deleter& get_deleter()
+                constexpr Deleter& get_deleter()
                 {
                     return *this;
                 }
@@ -107,13 +107,13 @@ namespace hsd
                 _value._ptr._size = new usize(1);
             }
 
-            HSD_CONSTEXPR shared_ptr(const shared_ptr& ptr)
+            constexpr shared_ptr(const shared_ptr& ptr)
             {
                 _value = ptr._value;
                 (*_value._ptr._size)++;
             }
 
-            HSD_CONSTEXPR shared_ptr(shared_ptr&& ptr)
+            constexpr shared_ptr(shared_ptr&& ptr)
             {
                 _value = ptr._value;
                 ptr._value._ptr._size = nullptr;
@@ -121,14 +121,14 @@ namespace hsd
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            HSD_CONSTEXPR shared_ptr(const shared_ptr<U>& ptr)
+            constexpr shared_ptr(const shared_ptr<U>& ptr)
             {
                 _value = ptr._value;
                 (*_value._ptr._size)++;
             }
 
             template< typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
-            HSD_CONSTEXPR shared_ptr(shared_ptr<U>&& ptr)
+            constexpr shared_ptr(shared_ptr<U>&& ptr)
             {
                 _value = ptr._value;
                 ptr._value._ptr._size = nullptr;
@@ -182,42 +182,42 @@ namespace hsd
                 return *this;
             }
 
-            HSD_CONSTEXPR remove_array_pointer<T> get()
+            constexpr remove_array_pointer<T> get()
             {
                 return _value._ptr._value;
             }
 
-            HSD_CONSTEXPR remove_array_pointer<T> get() const
+            constexpr remove_array_pointer<T> get() const
             {
                 return _value._ptr._value;
             }
 
-            HSD_CONSTEXPR pointer<T> operator->()
+            constexpr pointer<T> operator->()
             {
                 return get();
             }
 
-            HSD_CONSTEXPR pointer<T> operator->() const
+            constexpr pointer<T> operator->() const
             {
                 return get();
             }
 
-            HSD_CONSTEXPR reference<T> operator*()
+            constexpr reference<T> operator*()
             {
                 return *get();
             }
 
-            HSD_CONSTEXPR reference<T> operator*() const
+            constexpr reference<T> operator*() const
             {
                 return *get();
             }
 
-            HSD_CONSTEXPR usize get_size()
+            constexpr usize get_size()
             {
                 return *_value._ptr_size;
             }
 
-            HSD_CONSTEXPR bool is_unique()
+            constexpr bool is_unique()
             {
                 return get_size() == 1;
             }

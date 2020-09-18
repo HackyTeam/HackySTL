@@ -55,14 +55,14 @@ namespace hsd
             typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
         HSD_CONSTEXPR function(Func);
 
-        HSD_CONSTEXPR function(const function&);
+        constexpr function(const function&);
 
-        HSD_CONSTEXPR function(function&& other)
+        constexpr function(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
         }
 
-        HSD_CONSTEXPR function(nullptr_t){}
+        constexpr function(null) {}
 
         HSD_CONSTEXPR ~function()
         {
@@ -80,7 +80,7 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR function& operator=(function&& other)
+        constexpr function& operator=(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
             return *this;
@@ -102,7 +102,7 @@ namespace hsd
             reset();
         }
 
-        HSD_CONSTEXPR Result operator()(Args&&... args)
+        constexpr Result operator()(Args&&... args)
         {
             if(_func_impl == nullptr)
             {
@@ -144,7 +144,7 @@ namespace hsd
     }
 
     template< typename Res, typename... Args >
-    HSD_CONSTEXPR function<Res(Args...)>::function(const function& other)
+    constexpr function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
         

@@ -51,7 +51,7 @@ namespace hsd
         function() = default;
 
         template< typename Func, 
-            typename = ResolvedType<std::__not_<std::is_same<Func, function>>, void>,
+            typename = ResolvedType<negation<is_same<Func, function>>, void>,
             typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
         HSD_CONSTEXPR function(Func);
 

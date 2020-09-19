@@ -7,13 +7,13 @@
 
 namespace hsd
 {
-    template< typename Key, typename T, typename Hasher = fnv1a<uint64_t> > class unordered_map;
+    template< typename Key, typename T, typename Hasher = fnv1a<u64> > class unordered_map;
 
     namespace unordered_map_detail
     {
-        template< typename Key, typename T, typename Hasher = fnv1a<uint64_t> > class iterator;
+        template< typename Key, typename T, typename Hasher = fnv1a<u64> > class iterator;
 
-        template< typename Key, typename T, typename Hasher = fnv1a<uint64_t> >
+        template< typename Key, typename T, typename Hasher = fnv1a<u64> >
         class bucket
         {
         private:

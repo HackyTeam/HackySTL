@@ -172,7 +172,7 @@ namespace hsd
     static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...> args)
     {
         return [&, func]{
-            return [&, func]<size_t... Ints>(hsd::index_sequence<Ints...>)
+            return [&, func]<usize... Ints>(hsd::index_sequence<Ints...>)
             {
                 hsd::function _internal_func = func;
                 return _internal_func(hsd::forward<Args>(args.template get<Ints>())...);

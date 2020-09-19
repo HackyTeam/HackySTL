@@ -343,6 +343,41 @@ namespace hsd
 		}
 
 		template<typename Value>
+		static HSD_CONSTEXPR EnableIfSame< Value, i16, const CharT* > to_string(Value num)
+		{
+			bool _negative = (num < 0);
+			usize _len = _num_len(num);
+			CharT* _buf = nullptr;
+
+			if(_negative)
+			{
+				_len += 1;
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+				_buf[0] = '-';
+				num = -num;
+			}
+			else
+			{
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+			}
+
+			if(num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+
+			while(num)
+			{
+				_buf[--_len] = '0' + (num % 10);
+				num /= 10;
+			}
+
+			return _buf;
+		}
+
+		template<typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, usize, const CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -391,6 +426,21 @@ namespace hsd
 
 		template<typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, u32, const CharT* > to_string(Value num)
+		{
+			usize _len = _num_len(num);
+			CharT* _buf = new CharT[_len + 1];
+			_buf[_len] = '\0';
+
+			for(; num != 0; num /= 10)
+			{
+				_buf[--_len] = '0' + (num % 10);
+			}
+
+			return _buf;
+		}
+
+		template<typename Value>
+		static HSD_CONSTEXPR EnableIfSame< Value, u16, const CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];

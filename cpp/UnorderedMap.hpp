@@ -55,7 +55,7 @@ namespace hsd
                 return *this;
             }
 
-            constexpr bucket& operator=(nullptr_t)
+            constexpr bucket& operator=(null)
             {
                 _bucket = nullptr;
                 return *this;

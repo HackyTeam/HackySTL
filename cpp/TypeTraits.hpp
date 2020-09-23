@@ -306,9 +306,6 @@ namespace hsd
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;
 
     template<typename T>
-    using rev_ref_t = typename remove_reference<T>::type;
-
-    template<typename T>
     using remove_reference_t = typename remove_reference<T>::type;
 
     template< bool Cond, typename T = void >

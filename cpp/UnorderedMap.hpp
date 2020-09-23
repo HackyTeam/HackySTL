@@ -84,8 +84,8 @@ namespace hsd
 
     public:
         using reference_type = T&;
-        using iterator = vector<map_value_type>::iterator;
-        using const_iterator = vector<map_value_type>::const_iterator;
+        using iterator = typename vector<map_value_type>::iterator;
+        using const_iterator = typename vector<map_value_type>::const_iterator;
 
         HSD_CONSTEXPR ~unordered_map() = default;
 
@@ -153,7 +153,7 @@ namespace hsd
             }
             else
             {
-                _data.emplace_back(_data.size(), forward<NewKey>(key), forward<T>({forward<Args>(args)...}));
+                _data.emplace_back(_data.size(), move(key), move(T{forward<Args>(args)...}));
 
                 if(static_cast<f64>(_data.size()) / _buckets.size() >= _limit_ratio)
                     _replace();

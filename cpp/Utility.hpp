@@ -5,13 +5,13 @@
 namespace hsd
 {
     template<typename T>
-    static constexpr rev_ref_t<T>&& move(T&& val)
+    static constexpr remove_reference_t<T>&& move(T&& val)
     {
-        return static_cast<rev_ref_t<T>&&>(val);
+        return static_cast<remove_reference_t<T>&&>(val);
     }
 
     template <typename T>
-    static constexpr T&& forward(rev_ref_t<T>& val)
+    static constexpr T&& forward(remove_reference_t<T>& val)
     {
         return static_cast<T&&>(val);
     }
@@ -53,7 +53,7 @@ namespace hsd
     }
 
     template <typename T>
-    static constexpr T&& forward(rev_ref_t<T>&& val)
+    static constexpr T&& forward(remove_reference_t<T>&& val)
     {
         static_assert(!std::is_lvalue_reference<T>::value,
                       "Can not forward an rvalue as an lvalue.");

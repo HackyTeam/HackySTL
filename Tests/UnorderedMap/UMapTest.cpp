@@ -3,7 +3,7 @@
 
 int main()
 {
-    hsd::unordered_map<const char*, int> map;
+    hsd::unordered_map<const char*, hsd::i32> map;
     map["key"] = 0;
     map["key2"] = 1;
     map["key3"] = 2;
@@ -17,5 +17,5 @@ int main()
     map["key9"] = 2;
 
     for(auto _it : map)
-        printf("%d\n", _it->second);
+        printf("%s\n", _it->first);
 }

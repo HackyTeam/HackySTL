@@ -1,527 +1,185 @@
 #pragma once
 
-#include "Vector.hpp"
 #include "Pair.hpp"
+#include "Vector.hpp"
 #include "Hash.hpp"
-#include "Tuple.hpp"
 
 namespace hsd
 {
-    template< typename Key, typename T, typename Hasher = fnv1a<u64> > class unordered_map;
+    template< typename Key, typename T, typename Hasher = fnv1a<usize> >
+    class unordered_map;
 
-    namespace unordered_map_detail
+    namespace _detail
     {
-        template< typename Key, typename T, typename Hasher = fnv1a<u64> > class iterator;
-
-        template< typename Key, typename T, typename Hasher = fnv1a<u64> >
-        class bucket
+        template< typename Key, typename T, typename Hasher = fnv1a<usize> >
+        class map_value
         {
         private:
-            struct bucket_impl
-            {
-                pair<Key, T>* _value = nullptr;
-                bucket_impl* _next = nullptr;
-
-                HSD_CONSTEXPR bucket_impl() {}
-            };
-            
-            bucket_impl *_bucket = nullptr;
-
-        public:
-            HSD_CONSTEXPR bucket() {}
-            constexpr bucket(hsd::null) {}
-
-            constexpr bucket(const bucket& other)
-            {
-                _bucket = other._bucket;
-            }
-
-            constexpr bucket(bucket&& other)
-            {
-                _bucket = other._bucket;
-                other._bucket = nullptr;
-            }
-
-            constexpr bucket& operator=(const bucket& rhs)
-            {
-                _bucket = rhs._bucket;
-                return *this;
-            }
-
-            constexpr bucket& operator=(bucket&& rhs)
-            {
-                _bucket = rhs._bucket;
-                rhs._bucket = nullptr;
-                return *this;
-            }
-
-            constexpr bucket& operator=(null)
-            {
-                _bucket = nullptr;
-                return *this;
-            }
-
-            constexpr friend bool operator!=(const bucket& lhs, const bucket& rhs)
-            {
-                return lhs._bucket != rhs._bucket;
-            }
-
-            constexpr friend bool operator==(const bucket& lhs, const bucket& rhs)
-            {
-                return lhs._bucket == rhs._bucket;
-            }
-
-            constexpr pair<Key, T>* operator->()
-            {
-                if(_bucket == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return get();
-            }
-
-            constexpr pair<Key, T>* operator->() const
-            {
-                if(_bucket == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return get();
-            }
-
-            constexpr void increment()
-            {
-                if(_bucket == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                _bucket = _bucket->_next;
-            }
-
-            constexpr pair<Key, T>* get()
-            {
-                return _bucket->_value;
-            }
-
-            constexpr pair<Key, T>* get() const
-            {
-                return _bucket->_value;
-            }
-
-            HSD_CONSTEXPR void push_front(const pair<Key, T>& value)
-            {
-                if(_bucket == nullptr)
-                {
-                    _bucket = new bucket_impl;
-                    _bucket->_value = new pair<Key, T>(value);
-                }
-                else
-                {
-                    bucket_impl* _element = new bucket_impl;
-                    _element->_value = new pair<Key, T>(value);
-                    _element->_next = _bucket;
-                    _bucket = _element;
-                }
-            }
-
-            HSD_CONSTEXPR void push_front(pair<Key, T>&& value)
-            {
-                if(_bucket == nullptr)
-                {
-                    _bucket = new bucket_impl;
-                    _bucket->_value = new pair<Key, T>(hsd::move(value));
-                }
-                else
-                {
-                    bucket_impl* _element = new bucket_impl;
-                    _element->_value = new pair<Key, T>(hsd::move(value));
-                    _element->_next = _bucket;
-                    _bucket = _element;
-                }
-            }
-
-            HSD_CONSTEXPR void push_front(const iterator<Key, T, Hasher>& iter)
-            {
-                if(_bucket == nullptr)
-                {
-                    _bucket = new bucket_impl;
-                    _bucket->_value = iter.operator->();
-                }
-                else
-                {
-                    bucket_impl* _element = new bucket_impl;
-                    _element->_value = iter.operator->();
-                    _element->_next = _bucket;
-                    _bucket = _element;
-                }
-            }
-
-            template<typename... Args>
-            HSD_CONSTEXPR void emplace_front(Args&&... args)
-            {
-                if(_bucket == nullptr)
-                {
-                    _bucket = new bucket_impl();
-                    _bucket->_value = new pair<Key, T>(hsd::forward<Args>(args)...);
-                }
-                else
-                {
-                    bucket_impl* _element = new bucket_impl();
-                    _element->_next = _bucket;
-                    _element->_value = new pair<Key, T>(hsd::forward<Args>(args)...);
-                    _bucket = _element;
-                }
-            }
-
-            HSD_CONSTEXPR void destroy()
-            {
-                for(; _bucket != nullptr; pop_front());
-            }
-
-            HSD_CONSTEXPR void clear()
-            {
-                bucket_impl* _element;
-                while(_bucket != nullptr)
-                {
-                    _element = _bucket;
-                    _bucket = _bucket->_next;
-                    delete _element;
-                }
-            }
-
-            HSD_CONSTEXPR void pop_front()
-            {
-                bucket_impl* _element = _bucket;
-                _bucket = _bucket->_next;
-                delete _element->_value;
-                delete _element;
-            }
-        };
-
-        template< typename Key, typename T, typename Hasher >
-        class iterator
-        {
-        private:
-            struct iterator_impl
-            {
-                pair<Key, T>* _value = nullptr;
-                iterator_impl* _next = nullptr;
-
-                HSD_CONSTEXPR iterator_impl() {}
-
-                constexpr iterator_impl(pair<Key, T>* value)
-                    : _value{value}
-                {}
-            };
-            
-            iterator_impl *_iterator = nullptr;
+            usize _index = 0;
+            pair<Key, T> _data;
             friend class unordered_map< Key, T, Hasher >;
-
-            HSD_CONSTEXPR iterator() {}
-            constexpr iterator(hsd::null) {}
-
-            constexpr iterator(const iterator& other)
-            {
-                _iterator = other._iterator;
-            }
-
-            constexpr iterator(iterator&& other)
-            {
-                _iterator = other._iterator;
-                other._iterator = nullptr;
-            }
-
-            HSD_CONSTEXPR void push_front(const bucket<Key, T, Hasher>& bkt)
-            {
-                if(_iterator == nullptr)
-                {
-                    _iterator = new iterator_impl(bkt.get());
-                }
-                else
-                {
-                    iterator_impl* _element = new iterator_impl(bkt.get());
-                    _element->_next = _iterator;
-                    _iterator = _element;
-                }
-            }
-
-            HSD_CONSTEXPR void destroy()
-            {
-                for(; _iterator != nullptr; pop_front());
-            }
-
-            HSD_CONSTEXPR void pop_front()
-            {
-                iterator_impl* _element = _iterator;
-                _iterator = _iterator->_next;
-                delete _element;
-            }
-
-            constexpr void linear_search(const Key& hash_key)
-            {
-                auto _hash_res = Hasher::get_hash(hash_key);
-
-                for(; _iterator != nullptr; _iterator = _iterator->_next)
-                    if(_hash_res == Hasher::get_hash(_iterator->_value->first))
-                        return;
-            }
-
-            constexpr pair<Key, T>* get()
-            {
-                return _iterator->_value;
-            }
-
-            constexpr pair<Key, T>* get() const
-            {
-                return _iterator->_value;
-            }
-
+        
         public:
-            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
-            {
-                return lhs._iterator != rhs._iterator;
-            }
+            using value_type = T;
+            using reference_type = T&;
 
-            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
-            {
-                return lhs._iterator == rhs._iterator;
-            }
+            HSD_CONSTEXPR map_value(usize index, const Key& key, const value_type& val)
+                : _index{index}, _data{key, val}
+            {}
 
-            constexpr iterator& operator++()
-            {
-                if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+            HSD_CONSTEXPR map_value(usize index, Key&& key, value_type&& val)
+                : _index{index}, _data{move(key), move(val)}
+            {}
 
-                _iterator = _iterator->_next;
-                return *this;
-            }
-
-            constexpr iterator operator++(int)
-            {
-                iterator tmp = *this;
-                operator++();
-                return tmp;
-            }
-
-            constexpr pair<Key, T>& operator*()
-            {
-                if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return *get();
-            }
-
-            constexpr pair<Key, T>& operator*() const
-            {
-                if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return *get();
-            }
-
-            constexpr pair<Key, T>* operator->()
-            {
-                if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return get();
-            }
-
-            constexpr pair<Key, T>* operator->() const
-            {
-                if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
-
-                return get();
+            constexpr pair<Key, T>* operator->() noexcept 
+            { 
+                return &_data; 
             }
         };
-        
-    } // namespace unordered_map_detail
+    } // namespace _detail
     
+
     template< typename Key, typename T, typename Hasher >
     class unordered_map
     {
     private:
-        using iterator = unordered_map_detail::iterator< Key, T, Hasher >;
-        using bucket = unordered_map_detail::bucket< Key, T, Hasher >;
-        using hash_table = vector<bucket>;
+        using map_value_type = _detail::map_value< Key, T, Hasher >;
+        vector< vector<map_value_type*> > _buckets;
+        static constexpr f64 _limit_ratio = 0.75f;
+        vector<map_value_type> _data;
 
-        static constexpr float _limit_ratio = 0.75f;
-        iterator _map_iter = nullptr;
-        usize _table_size = 10;
-        usize _size = 0;
-        hash_table _table;
-        
-
-        constexpr pair<usize, bucket> _get(const Key& hash_key)
+        HSD_CONSTEXPR void _replace()
         {
-            auto _hash_result = Hasher::get_hash(hash_key);
-            usize _index = _hash_result % _table_size;
+            usize _new_size = _buckets.size() * 2;
+            _buckets.clear();
+            _buckets.resize(_new_size);
 
-            for(auto _it = _table[_index]; _it != nullptr; _it.increment())
+            for(auto& _val : _data)
             {
-                if(_hash_result == Hasher::get_hash(_it->first))
-                    return {_index, _it};
-            }
-
-            return {_index, nullptr};
-        }
-
-        HSD_CONSTEXPR void _replace(const iterator& iter)
-        {
-            auto _res_index = Hasher::get_hash(iter->first) % _table_size;
-            _table[_res_index].push_front(iter);
-        }
-
-        HSD_CONSTEXPR void _reserve(usize table_size)
-        {
-            clear_table();
-            _table_size = table_size;
-            _table.resize(_table_size);
-
-            for(auto _it = _map_iter ; _it != end(); _it++)
-                _replace(_it);
-        }
-
-        HSD_CONSTEXPR void destroy_table()
-        {
-            for(auto& _iter : _table)
-                _iter.destroy();
-        }
-
-        HSD_CONSTEXPR void clear_table()
-        {
-            for(auto& _iter : _table)
-            {
-                _iter.clear();
-                _iter = nullptr;
+                auto _hash_rez = Hasher::get_hash(_val._data.first);
+                usize _index = _hash_rez % _new_size;
+                _buckets[_index].emplace_back(&_val);
             }
         }
 
-        template<typename... Args>
-        HSD_CONSTEXPR pair<bucket, bool> _emplace(usize index, Args&&... args)
+        constexpr usize _get(const Key& key)
         {
-            _size++;
-            
-            if(static_cast<float>(_size) / _table_size > _limit_ratio)
-            {
-                _reserve(_table_size *= 2);
-                auto _key = make_tuple(hsd::forward<Args>(args)...).template get<0>();
-                usize _new_index = Hasher::get_hash(_key) % _table_size;
+            auto _key_hash = Hasher::get_hash(key);
+            usize _index = _key_hash % _buckets.size();
 
-                return _emplace(_new_index, hsd::forward<Args>(args)...);
-            }
-            else
+            for(auto* _val : _buckets[_index])
             {
-                _table[index].emplace_front(hsd::forward<Args>(args)...);
+                if(_val == nullptr)
+                {
+                    return -1;
+                }
+                else if(_key_hash == Hasher::get_hash(_val->_data.first))
+                {
+                    return _val->_index;
+                }
             }
 
-            return {_table[index], true};
+            return -1;
         }
 
     public:
-        using const_iterator = const iterator;
+        using reference_type = T&;
+        using iterator = vector<map_value_type>::iterator;
+        using const_iterator = vector<map_value_type>::const_iterator;
+
+        HSD_CONSTEXPR ~unordered_map() = default;
 
         HSD_CONSTEXPR unordered_map()
-        {
-            _table.resize(_table_size);
-        }
-        
-        HSD_CONSTEXPR ~unordered_map()
-        {
-            destroy_table();
-            _map_iter.destroy();
-        }
-
-        constexpr unordered_map(unordered_map&& map)
-            : _table_size{map._table_size}, _size{map._size}, _table{hsd::move(map._table)}
+            : _buckets(10)
         {}
 
-        HSD_CONSTEXPR unordered_map(const unordered_map& map)
-            : _table_size{map._table_size}, _size{map._size}, _table{map._table}
+        HSD_CONSTEXPR unordered_map(const unordered_map& other)
+            : _buckets{other._buckets.size()}, _data{other._data}
         {
-            for(auto _bucket : _table)
-                for(auto _it = _bucket; _it != end(); _it++)
-                    _map_iter.push_front(_it);
+            for(auto& _val : _data)
+            {
+                auto _hash_rez = Hasher::get_hash(_val._data.first);
+                usize _index = _hash_rez % _buckets.size();
+                _buckets[_index].emplace_back(&_val);
+            }
         }
 
-        HSD_CONSTEXPR T& operator[](const Key& hash_key)
-        {
-            auto _val = _get(hash_key);
+        HSD_CONSTEXPR unordered_map(unordered_map&& other)
+            : _buckets{move(other._buckets)}, _data{move(other._data)}
+        {}
 
-            if(_val.second == nullptr)
+        HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
+        {
+            return emplace(move(key)).first->_data.second;
+        }
+
+        HSD_CONSTEXPR reference_type operator[](const Key& key) const noexcept
+        {
+            return emplace(move(key)).first->_data.second;
+        }
+
+        HSD_CONSTEXPR reference_type at(const Key& key)
+        {
+            usize _data_index = _get(key);
+
+            if(_data_index == static_cast<usize>(-1))
             {
-                T _insert_val;
-                auto&& [_iter, _] = _emplace(_val.first, hsd::move(hash_key), hsd::move(_insert_val));
-                _map_iter.push_front(_iter);
-                return _iter->second;
+                throw std::out_of_range("");
+            }
+
+            return _data[_data_index]._data.second;
+        }
+
+        HSD_CONSTEXPR reference_type at(const Key& key) const
+        {
+            usize _data_index = _get(key);
+
+            if(_data_index == static_cast<usize>(-1))
+            {
+                throw std::out_of_range("");
+            }
+
+            return _data[_data_index]._data.second;
+        }
+
+        template< typename NewKey, typename... Args >
+        HSD_CONSTEXPR pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
+        {
+            usize _data_index = _get(key);
+
+            if(_data_index != static_cast<usize>(-1))
+            {
+                return {_data.begin() + _data_index, false};
             }
             else
-                return _val.second->second;
-        }
+            {
+                _data.emplace_back(_data.size(), forward<NewKey>(key), forward<T>({forward<Args>(args)...}));
 
-        template<typename... Args>
-        HSD_CONSTEXPR pair<bucket, bool> emplace(Args&&... args)
-        {
-            auto _key = make_tuple(hsd::forward<Args>(args)...).template get<0>();
-            auto&& [_res_index, _res_iter] = _get(_key);
-            
-            if(_res_iter == nullptr)
-            { 
-                auto&& [_iter, _] = _emplace(_res_index, hsd::forward<Args>(args)...);
-                _map_iter.push_front(_iter);
-                
-                return {_iter, true};
+                if(static_cast<f64>(_data.size()) / _buckets.size() >= _limit_ratio)
+                    _replace();
+
+                return {_data.end() - 1, true};
             }
-
-            return {_res_iter, false};
-        }
-
-        constexpr usize size()
-        {
-            return _size;
-        }
-
-        constexpr bool empty()
-        {
-            return size() == 0;
         }
 
         constexpr iterator begin()
         {
-            return _map_iter;
-        }
-
-        constexpr iterator begin() const
-        {
-            return _map_iter;
+            return _data.begin();
         }
 
         constexpr iterator end()
         {
-            return {nullptr};
-        }
-
-        constexpr iterator end() const
-        {
-            return {nullptr};
-        }
-
-        constexpr const_iterator cbegin()
-        {
-            return begin();
+            return _data.end();
         }
 
         constexpr const_iterator cbegin() const
         {
-            return begin();
-        }
-
-        constexpr const_iterator cend()
-        {
-            return end();
+            return _data.begin();
         }
 
         constexpr const_iterator cend() const
         {
-            return end();
+            return _data.end();
         }
     };
 } // namespace hsd

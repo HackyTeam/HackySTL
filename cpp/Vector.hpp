@@ -266,9 +266,9 @@ namespace hsd
                     _new_capacity += (_new_capacity + 1) / 2;
 
                 storage_type* _new_buf = new storage_type[_new_capacity];
-                usize _index;
+                usize _index = 0;
                 
-                for (usize _index = 0; _index < _size; ++_index)
+                for (; _index < _size; ++_index)
                 {
                     auto& _value = at_unchecked(_index);
                     new(&_new_buf[_index]) T(move(_value));

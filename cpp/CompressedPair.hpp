@@ -2,10 +2,13 @@
 
 #include "Utility.hpp"
 
-namespace hsd {
-    namespace _detail {
+namespace hsd
+{
+    namespace _detail
+    {
         template <typename _Ty>
-        struct _wrapper_for {
+        struct _wrapper_for
+        {
             _Ty value;
         };
 
@@ -13,62 +16,75 @@ namespace hsd {
         using _wrap_type = std::conditional_t<std::is_class_v<_Ty>, _Ty, _wrapper_for<_Ty>>;
 
         template <typename _Ty>
-        struct _is_empty : private _wrap_type<_Ty> {
+        struct _is_empty : private _wrap_type<_Ty>
+        {
             i32 a;
             inline static constexpr bool value = sizeof(i32) == sizeof(_is_empty);
         };
 
         template <typename _Ty>
         using is_empty = std::bool_constant<_is_empty<_Ty>::value>;
-    }
+    } // namespace _detail
 
     template <typename _Ta, typename _Tb>
-    class _compressed_pair_ab {
+    class _compressed_pair_ab
+    {
         _Ta a;
         _Tb b;
+
     public:
         template <typename _Aa, typename _Ab>
         _compressed_pair_ab(_Aa&& _a, _Ab&& _b)
             : a(forward<_Aa>(_a)), b(forward<_Ab>(_b)) {}
 
-        constexpr _Ta& first() {
+        constexpr _Ta& first()
+        {
             return a;
         }
-        constexpr _Ta const& first() const {
+        constexpr _Ta const& first() const
+        {
             return a;
         }
-        constexpr _Tb& second() {
+        constexpr _Tb& second()
+        {
             return b;
         }
-        constexpr _Tb const& second() const {
+        constexpr _Tb const& second() const
+        {
             return b;
         }
 
         constexpr _compressed_pair_ab() = default;
-        constexpr _compressed_pair_ab(_compressed_pair_ab const&) = default;
-        constexpr _compressed_pair_ab(_compressed_pair_ab&&) = default;
-        constexpr _compressed_pair_ab& operator=(_compressed_pair_ab const&) = default;
-        constexpr _compressed_pair_ab& operator=(_compressed_pair_ab&&) = default;
+        constexpr _compressed_pair_ab(_compressed_pair_ab const &) = default;
+        constexpr _compressed_pair_ab(_compressed_pair_ab &&) = default;
+        constexpr _compressed_pair_ab& operator=(_compressed_pair_ab const &) = default;
+        constexpr _compressed_pair_ab& operator=(_compressed_pair_ab &&) = default;
     };
 
     template <typename _Ta, typename _Tb>
-    class _compressed_pair_b : private _Ta {
+    class _compressed_pair_b : private _Ta
+    {
         _Tb b;
+
     public:
         template <typename _Aa, typename _Ab>
         _compressed_pair_b(_Aa&& _a, _Ab&& _b)
             : _Ta(forward<_Aa>(_a)), b(forward<_Ab>(_b)) {}
 
-        constexpr _Ta& first() {
+        constexpr _Ta& first()
+        {
             return *this;
         }
-        constexpr _Ta const& first() const {
+        constexpr _Ta const& first() const
+        {
             return *this;
         }
-        constexpr _Tb& second() {
+        constexpr _Tb& second()
+        {
             return b;
         }
-        constexpr _Tb const& second() const {
+        constexpr _Tb const& second() const
+        {
             return b;
         }
 
@@ -80,23 +96,29 @@ namespace hsd {
     };
 
     template <typename _Ta, typename _Tb>
-    class _compressed_pair_a : private _Tb {
+    class _compressed_pair_a : private _Tb
+    {
         _Ta a;
+
     public:
         template <typename _Aa, typename _Ab>
         _compressed_pair_a(_Aa&& _a, _Ab&& _b)
             : _Tb(forward<_Ab>(_b)), a(forward<_Aa>(_a)) {}
 
-        constexpr _Ta& first() {
+        constexpr _Ta& first()
+        {
             return a;
         }
-        constexpr _Ta const& first() const {
+        constexpr _Ta const& first() const
+        {
             return a;
         }
-        constexpr _Tb& second() {
+        constexpr _Tb& second()
+        {
             return *this;
         }
-        constexpr _Tb const& second() const {
+        constexpr _Tb const& second() const
+        {
             return *this;
         }
 
@@ -114,15 +136,14 @@ namespace hsd {
         std::conditional_t<
             _detail::_is_empty<_Tb>::value,
             _compressed_pair_a<_Ta, _Tb>,
-            _compressed_pair_ab<_Ta, _Tb>>
-        >;
+            _compressed_pair_ab<_Ta, _Tb>>>;
 
     template <usize, typename _Base>
     struct get_helper
     {
         static constexpr auto& get(_Base* value) = delete;
     };
-    
+
     template <typename _Base>
     struct get_helper<0, _Base>
     {
@@ -142,12 +163,13 @@ namespace hsd {
     };
 
     template <typename _Ta, typename _Tb>
-    class compressed_pair : public _compressed_pair<_Ta, _Tb> {
+    class compressed_pair : public _compressed_pair<_Ta, _Tb>
+    {
         using _Base = _compressed_pair<_Ta, _Tb>;
 
     public:
         using _Base::_Base;
-        
+
         template <usize _Idx>
         constexpr auto& get()
         {
@@ -160,4 +182,4 @@ namespace hsd {
             return get_helper<_Idx, _Base>::get(this);
         }
     };
-}
+} // namespace hsd

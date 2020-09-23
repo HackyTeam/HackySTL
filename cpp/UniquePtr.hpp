@@ -5,19 +5,19 @@
 
 namespace hsd
 {
-    namespace unique_detail
+    namespace _detail
     {
         template<typename T>
         struct deleter
         {
-            template< typename U = T, std::enable_if_t<!std::is_array_v<U>, int> = 0 >
+            template< typename U = T, disable_if<is_array<U>::value, int>::type = 0 >
             void operator()(remove_array_t<T>*& ptr)
             {
                 delete ptr;
                 ptr = nullptr;
             }
 
-            template< typename U = T, std::enable_if_t<std::is_array_v<U>, int> = 0 >
+            template< typename U = T, enable_if<is_array<U>::value, int>::type = 0 >
             void operator()(remove_array_t<T>*& ptr)
             {
                 delete[] ptr;
@@ -38,11 +38,11 @@ namespace hsd
 
     } // namespace unique_detail
 
-    template< typename T, typename Deleter = unique_detail::deleter<T> >
+    template< typename T, typename Deleter = _detail::deleter<T> >
     class unique_ptr
     {
     private:
-        unique_detail::storage<T, Deleter> _value;
+        _detail::storage<T, Deleter> _value;
 
         template<typename U, typename Del>
         friend class unique_ptr;
@@ -63,17 +63,17 @@ namespace hsd
         using remove_array_pointer = remove_array_t<U>*;
         
         unique_ptr() = default;
-        constexpr unique_ptr(null) {}
+        constexpr unique_ptr(NullType) {}
         unique_ptr(unique_ptr&) = delete;
         unique_ptr(const unique_ptr&) = delete;
 
-        template< typename U = T, enable_if<!std::is_array_v<U>, int>::type = 0 >
+        template< typename U = T, typename = disable_if_t<is_array<U>::value, int> >
         constexpr unique_ptr(pointer<U> ptr)
         {
             _value._ptr = ptr;
         }
 
-        template< typename U = T, enable_if<std::is_array_v<U>, int>::type = 0 >
+        template< typename U = T, typename = enable_if_t<is_array<U>::value, int> >
         constexpr unique_ptr(remove_array_pointer<U> ptr)
         {
             _value._ptr = ptr;
@@ -97,7 +97,7 @@ namespace hsd
             _delete();
         }
 
-        HSD_CONSTEXPR unique_ptr& operator=(null)
+        HSD_CONSTEXPR unique_ptr& operator=(NullType)
         {
             _delete();
             return *this;
@@ -111,7 +111,7 @@ namespace hsd
             return *this;
         }
 
-        template< typename U, enable_if<std::is_base_of_v<T, U>, int>::type = 0 >
+        template< typename U, typename = enable_if<std::is_base_of_v<T, U>, int> >
         HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U>&& rhs)
         {
             _delete();
@@ -135,7 +135,7 @@ namespace hsd
             return _value._ptr;
         }
 
-        constexpr bool operator!=(null) const
+        constexpr bool operator!=(NullType) const
         {
             return _value._ptr != nullptr;
         }

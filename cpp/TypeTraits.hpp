@@ -54,12 +54,32 @@ namespace hsd
         static constexpr bool value = !Cond::value;
     };
 
-    template<bool Cond>
+    template< bool Cond, typename IfTrue, typename IfFalse >
     struct conditional
     {
-        static constexpr bool value = Cond;
+        using type = IfTrue;
     };
     
+    template< typename IfTrue, typename IfFalse >
+    struct conditional< false, IfTrue, IfFalse >
+    {
+        using type = IfFalse;
+    };
+
+    template<typename>
+    struct is_array
+        : public false_type 
+    {};
+
+    template< typename T, usize size >
+    struct is_array<T[size]>
+        : public true_type 
+    {};
+
+    template<typename T>
+    struct is_array<T[]> 
+        : public true_type 
+    {};
 
     template< typename, typename >
     struct is_same 
@@ -273,12 +293,27 @@ namespace hsd
     template< typename Condition, typename Value >
     using ResolvedType = typename enable_if< Condition::value, Value >::type;
 
+    template< typename Condition, typename Value >
+    using UnResolvedType = typename disable_if< Condition::value, Value >::type;
+
     template< typename From, typename To, typename Result >
 	using EnableIfConvertible = ResolvedType< std::is_convertible<From, To>, Result >;
 
     template< typename First, typename Second, typename Result >
 	using EnableIfSame = ResolvedType< is_same<First, Second>, Result >;
 
+    template< bool Cond, typename IfTrue, typename IfFalse >
+    using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;
+
     template<typename T>
     using rev_ref_t = typename remove_reference<T>::type;
+
+    template<typename T>
+    using remove_reference_t = typename remove_reference<T>::type;
+
+    template< bool Cond, typename T = void >
+    using enable_if_t = typename enable_if<Cond, T>::type;
+
+    template< bool Cond, typename T = void >
+    using disable_if_t = typename disable_if<Cond, T>::type;
 } // namespace hsd

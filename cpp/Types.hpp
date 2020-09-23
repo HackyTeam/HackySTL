@@ -31,5 +31,5 @@ namespace hsd
     using f64 = double;
     using f32 = float;
     
-    using null = decltype(nullptr);
+    using NullType = decltype(nullptr);
 } // namespace hsd

@@ -17,5 +17,5 @@ int main()
     map["key9"] = 2;
 
     for(auto _it : map)
-        printf("%s\n", _it.first);
+        printf("%d\n", _it->second);
 }

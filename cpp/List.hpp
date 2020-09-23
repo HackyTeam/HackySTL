@@ -35,7 +35,7 @@ namespace hsd
 
             friend class list<T>;
             HSD_CONSTEXPR iterator() {}
-            constexpr iterator(hsd::null) {}
+            constexpr iterator(hsd::NullType) {}
 
             constexpr iterator(const iterator& other)
             {

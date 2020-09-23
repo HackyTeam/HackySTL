@@ -62,7 +62,7 @@ namespace hsd
             hsd::swap(_func_impl, other._func_impl);
         }
 
-        constexpr function(null) {}
+        constexpr function(NullType) {}
 
         HSD_CONSTEXPR ~function()
         {
@@ -97,7 +97,7 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR function& operator=(null)
+        HSD_CONSTEXPR function& operator=(NullType)
         {
             reset();
         }

@@ -95,7 +95,7 @@ namespace hsd
         template<typename T>
         HSD_CONSTEXPR auto cast_to() const
         {
-            typedef typename std::remove_pointer<T>::type type;
+            using type = typename std::remove_pointer<T>::type;
 
             if(auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
@@ -107,7 +107,7 @@ namespace hsd
             }
         }
 
-        template<class T>
+        template<typename T>
         T* cast_if() const
         {
             if (auto* p_base = dynamic_cast<_any_derived<T>*>(_data.get()))
@@ -116,7 +116,7 @@ namespace hsd
             return nullptr;
         }
 
-        template<class T>
+        template<typename T>
         bool holds_type() const
         {
             return dynamic_cast<_any_derived<T>*>(_data.get());
@@ -129,9 +129,9 @@ namespace hsd
         }
         #endif
 
-        void swap(any& o) noexcept
+        void swap(any& other) noexcept
         {
-            hsd::swap(_data, o._data);
+            hsd::swap(_data, other._data);
         }
 
         friend void swap(any& lhs, any& rhs) noexcept

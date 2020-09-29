@@ -119,7 +119,7 @@ namespace hsd
             hsd::pair< hsd::u8sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                long _response = 0;
+                isize _response = 0;
                 
                 if(_protocol == net::protocol_type::ipv4)
                 {
@@ -131,13 +131,13 @@ namespace hsd
                     _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
                         4096, 0, reinterpret_cast<sockaddr*>(&_hintv6), &_len);
                 }
-                if (_response == static_cast<long>(net::received_state::err))
+                if (_response == static_cast<isize>(net::received_state::err))
                 {
                     hsd::io::err_print("Error in receiving\n");
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
-                if (_response == static_cast<long>(net::received_state::disconnected))
+                if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
                     hsd::io::err_print("Server down\n");
                     _clear_buf();
@@ -173,7 +173,7 @@ namespace hsd
                         _send_buf += _fmt_buf[index];
                     }
 
-                    long _response = 0;
+                    isize _response = 0;
                     
                     if(_protocol == net::protocol_type::ipv4)
                     {
@@ -185,7 +185,7 @@ namespace hsd
                         _response = sendto(_sock.get_listening(), _send_buf.data(), 
                             _send_buf.size(), 0, _sock.get_hint(), _len);
                     }
-                    if(_response == static_cast<long>(net::received_state::err))
+                    if(_response == static_cast<isize>(net::received_state::err))
                     {
                         hsd::io::err_print("Error in sending\n");
                         return net::received_state::err;
@@ -295,16 +295,16 @@ namespace hsd
             hsd::pair< hsd::u8sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                long _response = recv(_sock.get_sock(), 
+                isize _response = recv(_sock.get_sock(), 
                     _net_buf.data(), 4096, 0);
 
-                if (_response == static_cast<long>(net::received_state::err))
+                if (_response == static_cast<isize>(net::received_state::err))
                 {
                     hsd::io::err_print("Error in receiving\n");
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
-                if (_response == static_cast<long>(net::received_state::disconnected))
+                if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
                     hsd::io::err_print("Server down\n");
                     _clear_buf();
@@ -340,10 +340,10 @@ namespace hsd
                         _send_buf += _fmt_buf[index];
                     }
 
-                    long _response = send(_sock.get_sock(), 
+                    isize _response = send(_sock.get_sock(), 
                         _send_buf.data(), _send_buf.size(), 0);
 
-                    if(_response == static_cast<long>(net::received_state::err))
+                    if(_response == static_cast<isize>(net::received_state::err))
                     {
                         hsd::io::err_print("Error in sending\n");
                         return net::received_state::err;

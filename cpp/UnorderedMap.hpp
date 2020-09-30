@@ -3,6 +3,7 @@
 #include "Pair.hpp"
 #include "Vector.hpp"
 #include "Hash.hpp"
+#include "Reference.hpp"
 
 namespace hsd
 {
@@ -31,20 +32,84 @@ namespace hsd
                 : _index{index}, _data{move(key), move(val)}
             {}
 
-            constexpr pair<Key, T>* operator->() noexcept 
+            constexpr pair<Key, T>& get() noexcept 
             { 
-                return &_data; 
+                return _data; 
+            }
+        };
+
+        template< typename Key, typename T, typename Hasher = fnv1a<usize> >
+        class iterator
+        {
+        private:
+            using value_type = map_value< Key, T, Hasher >;
+            value_type* _it;
+
+        public:
+            HSD_CONSTEXPR iterator(value_type* iter)
+                : _it{iter}
+            {}
+
+            constexpr iterator& operator=(const iterator& rhs)
+            {
+                _it = rhs._it;
+                return *this;
+            }
+
+            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+            {
+                return lhs._it == rhs._it;
+            }
+
+            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
+            {
+                return lhs._it != rhs._it;
+            }
+
+            constexpr iterator& operator++()
+            {
+                _it++;
+                return *this;
+            }
+
+            constexpr iterator& operator--()
+            {
+                _it--;
+                return *this;
+            }
+
+            constexpr iterator operator++(i32)
+            {
+                iterator tmp = *this;
+                operator++();
+                return tmp;
+            }
+
+            constexpr iterator operator--(i32)
+            {
+                iterator tmp = *this;
+                operator--();
+                return tmp;
+            }
+
+            constexpr pair<Key, T>& operator*()
+            {
+                return _it->get();
+            }
+
+            constexpr pair<Key, T>& operator*() const
+            {
+                return _it->get();
             }
         };
     } // namespace _detail
-    
 
     template< typename Key, typename T, typename Hasher >
     class unordered_map
     {
     private:
         using map_value_type = _detail::map_value< Key, T, Hasher >;
-        vector< vector<map_value_type*> > _buckets;
+        vector< vector<reference<map_value_type>> > _buckets;
         static constexpr f64 _limit_ratio = 0.75f;
         vector<map_value_type> _data;
 
@@ -54,11 +119,11 @@ namespace hsd
             _buckets.clear();
             _buckets.resize(_new_size);
 
-            for(auto& _val : _data)
+            for(map_value_type& _val : _data)
             {
                 auto _hash_rez = Hasher::get_hash(_val._data.first);
                 usize _index = _hash_rez % _new_size;
-                _buckets[_index].emplace_back(&_val);
+                _buckets[_index].emplace_back(_val);
             }
         }
 
@@ -67,15 +132,11 @@ namespace hsd
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
 
-            for(auto* _val : _buckets[_index])
+            for(map_value_type& _val : _buckets[_index])
             {
-                if(_val == nullptr)
+                if(_key_hash == Hasher::get_hash(_val._data.first))
                 {
-                    return -1;
-                }
-                else if(_key_hash == Hasher::get_hash(_val->_data.first))
-                {
-                    return _val->_index;
+                    return _val._index;
                 }
             }
 
@@ -84,7 +145,7 @@ namespace hsd
 
     public:
         using reference_type = T&;
-        using iterator = typename vector<map_value_type>::iterator;
+        using iterator = _detail::iterator< Key, T, Hasher >;
         using const_iterator = typename vector<map_value_type>::const_iterator;
 
         HSD_CONSTEXPR ~unordered_map() = default;
@@ -100,7 +161,7 @@ namespace hsd
             {
                 auto _hash_rez = Hasher::get_hash(_val._data.first);
                 usize _index = _hash_rez % _buckets.size();
-                _buckets[_index].emplace_back(&_val);
+                _buckets[_index].emplace_back(_val);
             }
         }
 
@@ -110,12 +171,12 @@ namespace hsd
 
         HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
         {
-            return emplace(move(key)).first->_data.second;
+            return (*emplace(move(key)).first).second;
         }
 
         HSD_CONSTEXPR reference_type operator[](const Key& key) const noexcept
         {
-            return emplace(move(key)).first->_data.second;
+            return (*emplace(move(key)).first).second;
         }
 
         HSD_CONSTEXPR reference_type at(const Key& key)

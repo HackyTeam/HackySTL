@@ -36,11 +36,8 @@ namespace hsd
                 if(_iter_s != nullptr && *(_iter_s + 1) != '}')
                     throw std::runtime_error("invalid character after \'{\'");
             }
-            if(*_iter_f != '\0')
-            {
-                _buf.emplace_back(_iter_f, (str + size) - _iter_f);
-            }
-
+            
+            _buf.emplace_back(_iter_f, (str + size) - _iter_f);
             return _buf;
         }
 

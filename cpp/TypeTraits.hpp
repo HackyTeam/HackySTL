@@ -299,8 +299,14 @@ namespace hsd
     template< typename From, typename To, typename Result >
 	using EnableIfConvertible = ResolvedType< std::is_convertible<From, To>, Result >;
 
+    template< typename From, typename To, typename Result >
+	using DisableIfConvertible = UnResolvedType< std::is_convertible<From, To>, Result >;
+
     template< typename First, typename Second, typename Result >
 	using EnableIfSame = ResolvedType< is_same<First, Second>, Result >;
+
+    template< typename First, typename Second, typename Result >
+	using DisableIfSame = ResolvedType< is_same<First, Second>, Result >;
 
     template< bool Cond, typename IfTrue, typename IfFalse >
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;

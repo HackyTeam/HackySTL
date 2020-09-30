@@ -18,7 +18,7 @@ static void hsdMap(benchmark::State& state)
         map["key8"] = 1;
 
         for(auto _it : map)
-            printf("%d\r", _it->second);
+            printf("%d\r", _it.second);
 
         benchmark::DoNotOptimize(map);
     }

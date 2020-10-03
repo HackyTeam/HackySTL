@@ -137,7 +137,7 @@ namespace hsd
         {
         	usize _iter;
 
-        	for(_iter = 0; str[_iter] != '\0'; _iter++);
+        	for(_iter = 0; str[_iter] != '\0'; _iter++)
         	{
         		if(str[_iter] >= 'a' && str[_iter] <= 'z')
         			str[_iter] -= 32;
@@ -150,7 +150,7 @@ namespace hsd
         {
         	usize _iter;
 
-        	for(_iter = 0; str[_iter] != '\0'; _iter++);
+        	for(_iter = 0; str[_iter] != '\0'; _iter++)
         	{
         		if(str[_iter] >= 'a' && str[_iter] <= 'z')
         			str[_iter] += 32;

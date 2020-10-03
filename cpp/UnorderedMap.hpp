@@ -43,63 +43,73 @@ namespace hsd
         {
         private:
             using value_type = map_value< Key, T, Hasher >;
-            value_type* _it;
+            map_value< Key, T, Hasher >* _it;
 
         public:
-            HSD_CONSTEXPR iterator(value_type* iter)
+            HSD_CONSTEXPR iterator(value_type* iter) noexcept
                 : _it{iter}
             {}
 
-            constexpr iterator& operator=(const iterator& rhs)
+            constexpr iterator& operator=(const iterator& rhs) noexcept
             {
                 _it = rhs._it;
                 return *this;
             }
 
-            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs) noexcept
             {
                 return lhs._it == rhs._it;
             }
 
-            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
+            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs) noexcept
             {
                 return lhs._it != rhs._it;
             }
 
-            constexpr iterator& operator++()
+            constexpr iterator& operator++() noexcept
             {
                 _it++;
                 return *this;
             }
 
-            constexpr iterator& operator--()
+            constexpr iterator& operator--() noexcept
             {
                 _it--;
                 return *this;
             }
 
-            constexpr iterator operator++(i32)
+            constexpr iterator operator++(i32) noexcept
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            constexpr iterator operator--(i32)
+            constexpr iterator operator--(i32) noexcept
             {
                 iterator tmp = *this;
                 operator--();
                 return tmp;
             }
 
-            constexpr pair<Key, T>& operator*()
+            constexpr pair<Key, T>& operator*() noexcept
             {
                 return _it->get();
             }
 
-            constexpr pair<Key, T>& operator*() const
+            constexpr pair<Key, T>& operator*() const noexcept
             {
                 return _it->get();
+            }
+
+            constexpr pair<Key, T>* operator->() noexcept
+            {
+                return &_it->get();
+            }
+
+            constexpr pair<Key, T>* operator->() const noexcept
+            {
+                return &_it->get();
             }
         };
     } // namespace _detail
@@ -109,7 +119,7 @@ namespace hsd
     {
     private:
         using map_value_type = _detail::map_value< Key, T, Hasher >;
-        vector< vector<reference<map_value_type>> > _buckets;
+        vector< vector< reference<map_value_type> > > _buckets;
         static constexpr f64 _limit_ratio = 0.75f;
         vector<map_value_type> _data;
 
@@ -171,12 +181,12 @@ namespace hsd
 
         HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
         {
-            return (*emplace(move(key)).first).second;
+            return emplace(move(key)).first->second;
         }
 
         HSD_CONSTEXPR reference_type operator[](const Key& key) const noexcept
         {
-            return (*emplace(move(key)).first).second;
+            return emplace(move(key)).first->second;
         }
 
         HSD_CONSTEXPR reference_type at(const Key& key)

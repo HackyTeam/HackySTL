@@ -169,14 +169,18 @@ namespace hsd
             return _new_clk;
         }
 
-        static clock elapsed_time()
+        clock elapsed_time()
         {
-            return clock{::clock()};
+            return clock{::clock() - _clk};
         }
 
-        static clock zero()
+        template < typename Func, typename... Args >
+        static void sleep_for(f32 seconds, Func&& handle, Args&&... args)
         {
-            return clock{0};
+            clock _clk;
+
+            while(_clk.elapsed_time().to_seconds() < seconds)
+                handle(forward<Args>(args)...);
         }
     };
 } // namespace hsd

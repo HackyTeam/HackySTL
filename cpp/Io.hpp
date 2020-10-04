@@ -118,8 +118,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter :  _print_buf)
-                    printf("%c", _letter);
+                
+                printf("%s", _print_buf.c_str());
             }
         }
 
@@ -148,8 +148,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter : _print_buf)
-                    wprintf(L"%lc", _letter);
+                
+                wprintf(L"%ls", _print_buf.c_str());
             }
         }
 
@@ -178,8 +178,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter :  _print_buf)
-                    fprintf(stderr, "%c", _letter);
+                
+                fprintf(stderr, "%s", _print_buf.c_str());
             }
         }
 
@@ -208,8 +208,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter : _print_buf)
-                    fprintf(stderr, "%c", _letter);
+                
+                fwprintf(stderr, L"%ls", _print_buf.c_str());
             }
         }
     };
@@ -355,8 +355,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter :  _print_buf)
-                    fprintf(_file_buf, "%c", _letter);
+                
+                fprintf(_file_buf, "%s", _print_buf.c_str());
             }
         }
 
@@ -388,8 +388,8 @@ namespace hsd
                 {
                     _print_buf += _fmt_buf[index];
                 }
-                for(auto _letter : _print_buf)
-                    fwprintf(_file_buf, L"%lc", _letter);
+                
+                fwprintf(_file_buf, L"%ls", _print_buf.c_str());
             }
         }
     };

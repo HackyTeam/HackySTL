@@ -4,9 +4,10 @@
 int main()
 {
     hsd::time t1;
-    hsd::io::print(
-        "Today we are in {}/{}/{} {}:{}", 
-        t1.month_day(), t1.month(), 
-        t1.year(), t1.hour(), t1.minute()
-    );
+    hsd::io::print("Today we are in {}", t1.to_text());
+
+    for(hsd::u32 i = 0; i < -1; i++);
+    t1.update();
+
+    hsd::io::print("Today we are in {}", t1.to_text());
 }

@@ -6,9 +6,16 @@
 int main()
 {
     hsd::clock c1;
-    hsd::io::print("Hello World\n");
-    hsd::io::print("hsd IO elapsed time: {}\n", c1.restart().to_microseconds());
+    const hsd::u32 iterations = 4000000;
+    
+    for(hsd::u32 i = 0; i < iterations; i++)
+        hsd::io::print("Hello World\r");
+
+    hsd::io::print("hsd IO elapsed time: {}ns\n", c1.restart().to_nanoseconds() / iterations);
     c1.restart();
-    std::cout << "Hello World\n";
-    hsd::io::print("std IO elapsed time: {}\n", c1.restart().to_microseconds());
+
+    for(hsd::u32 i = 0; i < iterations; i++)
+        std::cout << "Hello World\r";
+
+    hsd::io::print("std IO elapsed time: {}ns\n", c1.restart().to_nanoseconds() / iterations);
 }

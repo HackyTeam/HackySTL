@@ -4,45 +4,16 @@
 #include "_Define.hpp"
 
 #include <time.h>
-#include <ctime>
+#include <wchar.h>
 
 namespace hsd
-{
-    namespace _detail
-    {
-        struct time_value
-        {
-            u16 second;
-            u16 minute;
-            u16 hour;
-            u16 month_day;
-            u16 week_day;
-            u16 month;
-            const char* timezone;
-            u16 year_day;
-            usize year;
-
-            time_value(tm* time_val)
-            {
-                second = static_cast<u16>(time_val->tm_sec);
-                minute = static_cast<u16>(time_val->tm_min);
-                hour = static_cast<u16>(time_val->tm_hour);
-                month_day = static_cast<u16>(time_val->tm_mday);
-                week_day = static_cast<u16>(time_val->tm_wday);
-                month = static_cast<u16>(time_val->tm_mon);
-                year_day = static_cast<u16>(time_val->tm_yday);
-                year = static_cast<usize>(time_val->tm_year);
-                timezone = time_val->tm_zone;
-            }
-        };
-        
-    } // namespace _detail
-    
+{  
     class time
     {
     private:
+        using time_ptr = tm*;
         isize _epoch_time;
-        _detail::time_value _time;
+        time_ptr _time;
 
     public:
         time()
@@ -60,54 +31,59 @@ namespace hsd
 
         u16 second()
         {
-            return _time.second;
+            return _time->tm_sec;
         }
 
         u16 minute()
         {
-            return _time.minute;
+            return _time->tm_min;
         }
 
         u16 hour()
         {
-            return _time.hour;
+            return _time->tm_hour;
         }
 
         u16 month_day()
         {
-            return _time.month_day;
+            return _time->tm_mday;
         }
         
         u16 week_day()
         {
-            return _time.week_day;
+            return _time->tm_wday;
         }
 
         u16 month()
         {
-            return _time.month;
+            return _time->tm_mon;
         }
 
         const char* timezone()
         {
-            return _time.timezone;
+            return _time->tm_zone;
         }
 
         u16 year_day()
         {
-            return _time.year_day;
+            return _time->tm_yday;
         }
 
         usize year()
         {
-            return _time.year + 1900;
+            return _time->tm_year + 1900;
+        }
+
+        const char* to_text()
+        {
+            return asctime(_time);
         }
     };
 
     class clock
     {
     private:
-        i64 _clk{};
+        i64 _clk;
 
     public:
         clock(i64 clk = ::clock())

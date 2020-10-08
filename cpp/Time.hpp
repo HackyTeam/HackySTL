@@ -149,17 +149,17 @@ namespace hsd
 
         i64 to_microseconds()
         {
-            return _clk;
+            return to_seconds() * 1000000;
         }
 
         i32 to_miliseconds()
         {
-            return _clk / 1000;
+            return to_seconds() * 1000;
         }
 
         f32 to_seconds()
         {
-            return static_cast<f32>(_clk) / 1000000;
+            return static_cast<f32>(_clk) / CLOCKS_PER_SEC;
         }
 
         clock restart()

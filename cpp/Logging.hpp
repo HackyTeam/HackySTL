@@ -144,7 +144,7 @@ namespace hsd
                 hsd::io::print(
                     "Info: {}:{}\nFunction: {}, time taken: {}us\n", 
                     get().file_name(), get().line(), get().function_name(),
-                    get().elapsed_time().to_seconds()
+                    get().elapsed_time().to_microseconds()
                 );
             }
             _stack.pop_back();

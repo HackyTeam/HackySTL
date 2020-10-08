@@ -1,51 +1,91 @@
 #pragma once
 
 #include "Io.hpp"
+#include "Time.hpp"
 
 namespace hsd
 {
-    class source_location
+    namespace _detail
     {
-    private:
-        const char* _file_name = "unknown";
-        const char* _func = "unknown";
-        usize _line = 0;
-    
-    public:
-        constexpr source_location(
-            const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE()) noexcept
-            : _file_name{file_name}, _func{func}, _line{line}
-        {}
-        
-        constexpr const char* file_name() noexcept
+        class source_location
         {
-            return _file_name;
-        }
-        
-        constexpr const char* function_name() noexcept
+        private:
+            const char* _file_name = "unknown";
+            const char* _func = "unknown";
+            usize _line = 0;
+
+        public:
+            constexpr source_location(
+                const char* file_name = __builtin_FILE(), 
+                const char* func = __builtin_FUNCTION(), 
+                usize line = __builtin_LINE()) noexcept
+                : _file_name{file_name}, _func{func}, _line{line}
+            {}
+
+            constexpr const char* file_name() noexcept
+            {
+                return _file_name;
+            }
+
+            constexpr const char* function_name() noexcept
+            {
+                return _func;
+            }
+
+            constexpr usize line() noexcept
+            {
+                return _line;
+            }
+        };
+
+        class profiler_value
         {
-            return _func;
-        }
-        
-        constexpr usize line() noexcept
-        {
-            return _line;
-        }
-    };
+        private:
+            const char* _file_name = "unknown";
+            const char* _func = "unknown";
+            usize _line = 0;
+            clock _clk{};
+
+        public:
+            profiler_value(const char* file_name = __builtin_FILE(), 
+                const char* func = __builtin_FUNCTION(), 
+                usize line = __builtin_LINE()) noexcept
+                : _file_name{file_name}, _func{func}, _line{line}
+            {}
+
+            const char* file_name() noexcept
+            {
+                return _file_name;
+            }
+
+            const char* function_name() noexcept
+            {
+                return _func;
+            }
+
+            usize line() noexcept
+            {
+                return _line;
+            }
+
+            clock elapsed_time()
+            {
+                return _clk.elapsed_time();
+            }
+        };        
+    } // namespace _detail
     
     class stack_trace
     {
     private:
-        static inline hsd::vector<source_location> _stack;
         static inline i32 _count = std::uncaught_exceptions();
-        using stack_iterator = hsd::vector<source_location>::iterator;
+        static inline hsd::vector<_detail::source_location> _stack;
+        using stack_iterator = hsd::vector<_detail::source_location>::iterator;
 
     public:
 
-        stack_trace() noexcept {}
-        stack_trace(const stack_trace&) noexcept {}
+        stack_trace() noexcept = default;
+        stack_trace(const stack_trace&) noexcept = default;
 
         ~stack_trace() noexcept
         {
@@ -70,7 +110,7 @@ namespace hsd
             return *this;
         }
         
-        constexpr source_location get() noexcept
+        _detail::source_location& get() noexcept
         {
             return _stack.back();
         }
@@ -86,7 +126,58 @@ namespace hsd
         }
     };
 
+    class profiler
+    {
+    private:
+        using iterator = hsd::vector<_detail::profiler_value>::iterator;
+        static inline hsd::vector<_detail::profiler_value> _stack;
+
+    public:
+
+        profiler() noexcept = default;
+        profiler(const profiler&) noexcept = default;
+
+        ~profiler() noexcept
+        {
+            if(_stack.size() > 0)
+            {
+                hsd::io::print(
+                    "Info: {}:{}\nFunction: {}, time taken: {}us\n", 
+                    get().file_name(), get().line(), get().function_name(),
+                    get().elapsed_time().to_seconds()
+                );
+            }
+            _stack.pop_back();
+        }
+
+        profiler& add(
+            const char* file_name = __builtin_FILE(), 
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE()) noexcept
+        {
+            _stack.emplace_back(file_name, func, line);
+            return *this;
+        }
+        
+        _detail::profiler_value& get() noexcept
+        {
+            return _stack.back();
+        }
+
+        iterator rbegin() noexcept
+        {
+            return _stack.end() - 1;
+        }
+
+        iterator rend() noexcept
+        {
+            return _stack.begin() - 1;
+        }
+    };
+
     static inline stack_trace exec_stack;
+    static inline profiler profiler_stack;
+    using source_location = _detail::source_location;
 
     class stack_trace_exception : public std::exception
     {

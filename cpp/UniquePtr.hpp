@@ -11,14 +11,14 @@ namespace hsd
         struct deleter
         {
             template< typename U = T, disable_if<is_array<U>::value, int>::type = 0 >
-            void operator()(remove_array_t<T>*& ptr)
+            HSD_CONSTEXPR void operator()(remove_array_t<T>*& ptr)
             {
                 delete ptr;
                 ptr = nullptr;
             }
 
             template< typename U = T, enable_if<is_array<U>::value, int>::type = 0 >
-            void operator()(remove_array_t<T>*& ptr)
+            HSD_CONSTEXPR void operator()(remove_array_t<T>*& ptr)
             {
                 delete[] ptr;
                 ptr = nullptr;

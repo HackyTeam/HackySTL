@@ -320,7 +320,7 @@ namespace hsd
 
         constexpr void pop_back() noexcept
         {
-            if(_size < 0)
+            if(_size > 0)
             {
                 at_unchecked(_size - 1).~T();
                 _size--;

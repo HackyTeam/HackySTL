@@ -4,17 +4,17 @@
 template< typename... Args >
 static void wprint(hsd::tuple<Args...> tup)
 {
-    hsd::io::wprint(L"(");
+    hsd::io::wprint<L"(">();
     
     if constexpr(tup.size() != 0)
     {
         [&]<hsd::usize... Ints>(hsd::index_sequence<Ints...>) {
-            (hsd::io::wprint(L"{}, ", tup.template get<Ints>()), ...);
+            (hsd::io::wprint<L"{}, ">(tup.template get<Ints>()), ...);
         }(hsd::make_index_sequence<tup.size() - 1>{});
-        hsd::io::wprint(L"{}", tup.template get<tup.size() - 1>());
+        hsd::io::wprint<L"{}, ">(tup.template get<tup.size() - 1>());
     }
 
-    hsd::io::wprint(L")\n");
+    hsd::io::wprint<L")\n">();
 }
 
 int main()

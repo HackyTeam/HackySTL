@@ -133,13 +133,13 @@ namespace hsd
                 }
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
-                    hsd::io::err_print("Error in receiving\n");
+                    hsd::io::err_print<"Error in receiving\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
                 if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
-                    hsd::io::err_print("Server down\n");
+                    hsd::io::err_print<"Server down\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::disconnected};
                 }
@@ -187,7 +187,7 @@ namespace hsd
                     }
                     if(_response == static_cast<isize>(net::received_state::err))
                     {
-                        hsd::io::err_print("Error in sending\n");
+                        hsd::io::err_print<"Error in sending\n">();
                         return net::received_state::err;
                     }
                 }
@@ -300,13 +300,13 @@ namespace hsd
 
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
-                    hsd::io::err_print("Error in receiving\n");
+                    hsd::io::err_print<"Error in receiving\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
                 if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
-                    hsd::io::err_print("Server down\n");
+                    hsd::io::err_print<"Server down\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::disconnected};
                 }
@@ -345,7 +345,7 @@ namespace hsd
 
                     if(_response == static_cast<isize>(net::received_state::err))
                     {
-                        hsd::io::err_print("Error in sending\n");
+                        hsd::io::err_print<"Error in sending\n">();
                         return net::received_state::err;
                     }
                 }

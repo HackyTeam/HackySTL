@@ -6,7 +6,7 @@ int main()
 
     while(true)
     {
-        hsd::io::print("> ");
+        hsd::io::print<"> ">();
         auto state = client.respond("{}", hsd::io::read_line().to_string());
 
         if(state == hsd::net::received_state::err)
@@ -15,7 +15,7 @@ int main()
         auto [buf, code] = client.receive();
         
         if(code == hsd::net::received_state::ok)
-            hsd::io::print("SERVER> {}", buf.data());
+            hsd::io::print<"SERVER> {}">(buf.data());
         
         if(code != hsd::net::received_state::ok)
             break;

@@ -117,13 +117,13 @@ namespace hsd
                 }
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
-                    hsd::io::err_print("Error in receiving\n");
+                    hsd::io::err_print<"Error in receiving\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
                 if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
-                    hsd::io::err_print("Client disconnected\n");
+                    hsd::io::err_print<"Client disconnected\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::disconnected};
                 }
@@ -171,7 +171,7 @@ namespace hsd
                     }
                     if(_response == static_cast<isize>(net::received_state::err))
                     {
-                        hsd::io::err_print("Error in sending\n");
+                        hsd::io::err_print<"Error in sending\n">();
                         return net::received_state::err;
                     }
                 }
@@ -296,12 +296,12 @@ namespace hsd
                         if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v4), sizeof(_socket2v4), 
                             _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
-                            io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v4.sin_port));
+                            io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v4.sin_port));
                         }
                         else
                         {
                             inet_ntop(static_cast<i32>(protocol), &_socket2v4.sin_addr, _host.data(), NI_MAXHOST);
-                            hsd::io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v4.sin_port));
+                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v4.sin_port));
                         }
                     }
                     else
@@ -312,12 +312,12 @@ namespace hsd
                         if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v6), sizeof(_socket2v6), 
                                 _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
-                            io::print("{} connected on port {}\n", ip_addr, _service.data());
+                            io::print<"{} connected on port {}\n">(ip_addr, _service.data());
                         }
                         else
                         {
                             inet_ntop(static_cast<i32>(protocol), &_socket2v6.sin6_addr, _host.data(), NI_MAXHOST);
-                            hsd::io::print("{} connected on port {}\n", ip_addr, ntohs(_socket2v6.sin6_port));
+                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v6.sin6_port));
                         }
                     }
 
@@ -353,13 +353,13 @@ namespace hsd
 
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
-                    hsd::io::err_print("Error in receiving\n");
+                    hsd::io::err_print<"Error in receiving\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::err};
                 }
                 if (_response == static_cast<isize>(net::received_state::disconnected))
                 {
-                    hsd::io::err_print("Client disconnected\n");
+                    hsd::io::err_print<"Client disconnected\n">();
                     _clear_buf();
                     return {_net_buf, net::received_state::disconnected};
                 }
@@ -398,7 +398,7 @@ namespace hsd
 
                     if(_response == static_cast<isize>(net::received_state::err))
                     {
-                        hsd::io::err_print("Error in sending\n");
+                        hsd::io::err_print<"Error in sending\n">();
                         return net::received_state::err;
                     }
                 }

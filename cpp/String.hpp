@@ -22,7 +22,7 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
-        static HSD_CONSTEXPR usize npos = -1;
+        static constexpr isize npos = -1;
 
         HSD_CONSTEXPR string()
         {
@@ -383,7 +383,7 @@ namespace hsd
         template< usize Pos, usize Count >
         HSD_CONSTEXPR string gen_range()
         {
-            if(Pos > _size || Pos + Count > _size)
+            if(Pos + Count > _size)
             {    
                 throw std::out_of_range("");
             }

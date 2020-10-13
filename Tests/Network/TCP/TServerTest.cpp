@@ -10,7 +10,7 @@ int main()
         
         if(code == hsd::net::received_state::ok)
         {
-            hsd::io::print("CLIENT> {}\n", buf.data());
+            hsd::io::print<"CLIENT> {}\n">(buf.data());
             server.respond("Good\n");
         }
         

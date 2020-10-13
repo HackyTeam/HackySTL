@@ -16,7 +16,7 @@ namespace hsd
 
     template < typename T, T Prev, T... Next >
     struct make_integer_sequence_helper
-        : public hsd::conditional_t<Prev == 0, integer_sequence< T, Next... >, 
+        : hsd::conditional_t<Prev == 0, integer_sequence< T, Next... >, 
         make_integer_sequence_helper< T, Prev - 1, Prev - 1, Next... >>
     {};
 

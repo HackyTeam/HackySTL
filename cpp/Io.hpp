@@ -1,71 +1,9 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdexcept>
-
-#include "SStream.hpp"
-#include "Vector.hpp"
+#include "_IoDetail.hpp"
 
 namespace hsd
 {
-    namespace io_detail
-    {
-        class bufferable
-        {
-        protected:
-            static inline hsd::u8sstream _u8io_buf{4096};
-            static inline hsd::wsstream _wio_buf{4096};
-        };
-
-        static hsd::vector< hsd::u8string > split(const char* str, usize size)
-        {
-            hsd::vector<hsd::u8string> _buf;
-            const char* _iter_f = str;
-            const char* _iter_s = hsd::u8cstring::find(_iter_f, '{');
-
-            if(_iter_s != nullptr && *(_iter_s + 1) != '}')
-            {
-                throw std::runtime_error("invalid character after \'{\'");
-            }
-            while (_iter_s != nullptr && *_iter_s != '\0')
-            {
-                _buf.emplace_back(_iter_f, _iter_s - _iter_f);
-                _iter_f = _iter_s + 2;
-                _iter_s = u8cstring::find(_iter_f, '{');
-
-                if(_iter_s != nullptr && *(_iter_s + 1) != '}')
-                    throw std::runtime_error("invalid character after \'{\'");
-            }
-            
-            _buf.emplace_back(_iter_f, (str + size) - _iter_f);
-            return _buf;
-        }
-
-        static hsd::vector< hsd::wstring > split(const wchar* str, usize size)
-        {
-            hsd::vector<hsd::wstring> _buf;
-            const wchar_t* _iter_f = str;
-            const wchar_t* _iter_s = hsd::wcstring::find(_iter_f, '{');
-
-            if(_iter_s != nullptr && *(_iter_s + 1) != '}')
-            {
-                throw std::runtime_error("invalid character after \'{\'");
-            }
-            while (_iter_s != nullptr && *_iter_s != '\0')
-            {
-                _buf.emplace_back(_iter_f, _iter_s - _iter_f);
-                _iter_f = _iter_s + 2;
-                _iter_s = wcstring::find(_iter_f, '{');
-
-                if(_iter_s != nullptr && *(_iter_s + 1) != '}')
-                    throw std::runtime_error("invalid character after \'{\'");
-            }
-            
-            _buf.emplace_back(_iter_f, (str + size) - _iter_f);
-            return _buf;
-        }
-    }
-
     class io : private io_detail::bufferable
     {
     public:
@@ -93,123 +31,83 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< usize N, typename... Args >
-        static void print(const char (&fmt)[N], Args&&... args)
+        template< io_detail::format_literal fmt, typename... Args >
+        static void print(Args&&... args)
         {
-            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::u8string> _args_buf = {
-                hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-            };
-            u8string _print_buf;
+            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_print(_fmt_buf[Ints], print_args), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                printf("%s", _print_buf.c_str());
+                printf(_fmt_buf[sizeof...(Args)].c_str());
             }
         }
 
-        template< usize N, typename... Args >
-        static void wprint(const wchar (&fmt)[N], Args&&... args)
+        template< io_detail::wformat_literal fmt, typename... Args >
+        static void wprint(Args&&... args)
         {
-            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::wstring> _args_buf = {
-                hsd::forward<hsd::wstring>(hsd::wstring::to_string(args))...
-            };
-            wstring _print_buf;
+            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_wprint(_fmt_buf[Ints], print_args), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                wprintf(L"%ls", _print_buf.c_str());
+                wprintf(_fmt_buf[sizeof...(Args)].c_str());
             }
         }
 
-        template< usize N, typename... Args >
-        static void err_print(const char (&fmt)[N], Args&&... args)
+        template< io_detail::format_literal fmt, typename... Args >
+        static void err_print(Args&&... args)
         {
-            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::u8string> _args_buf = {
-                hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-            };
-            u8string _print_buf;
+            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_print(_fmt_buf[Ints], print_args, stderr), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                fprintf(stderr, "%s", _print_buf.c_str());
+                fprintf(stderr, _fmt_buf[sizeof...(Args)].c_str());
             }
         }
 
-        template< usize N, typename... Args >
-        static void err_wprint(const wchar (&fmt)[N], Args&&... args)
+        template< io_detail::wformat_literal fmt, typename... Args >
+        static void err_wprint(Args&&... args)
         {
-            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::wstring> _args_buf = {
-                hsd::forward<hsd::wstring>(hsd::wstring::to_string(args))...
-            };
-            wstring _print_buf;
+            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_wprint(_fmt_buf[Ints], print_args, stderr), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                fwprintf(stderr, L"%ls", _print_buf.c_str());
+                fwprintf(stderr, _fmt_buf[sizeof...(Args)].c_str());
             }
         }
     };
@@ -261,8 +159,7 @@ namespace hsd
             _file_buf = fopen(file_path, open_option);
             _file_mode = open_option;
             
-            if(_file_buf == nullptr)
-                throw std::runtime_error("File not found");
+            throw std::runtime_error("File not found");
         }
 
         ~file()
@@ -327,69 +224,49 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< usize N, typename... Args >
-        void print(const char (&fmt)[N], Args&&... args)
+        template< io_detail::format_literal fmt, typename... Args >
+        void print(Args&&... args)
         {
             if(only_read())
                 throw std::runtime_error("Cannot write file. It is in read mode");
 
-            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::u8string> _args_buf = {
-                hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-            };
-            u8string _print_buf;
+            hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf, this]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_print(_fmt_buf[Ints], print_args, _file_buf), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                fprintf(_file_buf, "%s", _print_buf.c_str());
+                fprintf(_file_buf, _fmt_buf[sizeof...(Args)].c_str());
             }
         }
 
-        template< usize N, typename... Args >
-        void wprint(const wchar (&fmt)[N], Args&&... args)
+        template< io_detail::wformat_literal fmt, typename... Args >
+        void wprint(Args&&... args)
         {
             if(only_read())
                 throw std::runtime_error("Cannot write file. It is in read mode");
 
-            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt, N - 1);
-            hsd::vector<hsd::wstring> _args_buf = {
-                hsd::forward<hsd::wstring>(hsd::wstring::to_string(args))...
-            };
-            wstring _print_buf;
+            hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
 
-            if(_args_buf.size() + 1 != _fmt_buf.size())
+            if(sizeof...(Args) + 1 != _fmt_buf.size())
             {
                 throw std::runtime_error("Arguments don\'t match");
             }
             else
             {
-                usize index = 0;
+                [&_fmt_buf, this]<usize... Ints>(hsd::index_sequence<Ints...>, auto&... print_args)
+                {
+                    (io_detail::_wprint(_fmt_buf[Ints], print_args, _file_buf), ...);
+                }(make_index_sequence<sizeof...(Args)>{}, args...);
 
-                for(; index < _args_buf.size(); index++)
-                {
-                    _print_buf += _fmt_buf[index] + _args_buf[index];
-                }
-                if(_fmt_buf.size() != _args_buf.size())
-                {
-                    _print_buf += _fmt_buf[index];
-                }
-                
-                fwprintf(_file_buf, L"%ls", _print_buf.c_str());
+                fwprintf(_file_buf, _fmt_buf[sizeof...(Args)].c_str());
             }
         }
     };

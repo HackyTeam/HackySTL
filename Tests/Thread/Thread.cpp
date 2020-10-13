@@ -3,7 +3,7 @@
 
 void foo(int a, float b) 
 {
-	hsd::io::print("{} {}\n", a, b);
+	hsd::io::print<"{} {}\n">(a, b);
 }
 
 int main() 

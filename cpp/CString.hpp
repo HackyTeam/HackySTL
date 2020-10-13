@@ -514,7 +514,7 @@ namespace hsd
 		static HSD_CONSTEXPR EnableIfSame< Value, f32, const CharT* > to_string(Value num)
 		{
 			usize _len = 0;
-			i32 _round_num = static_cast<i64>(num);
+			i64 _round_num = static_cast<i64>(num);
 			bool _negative = (_round_num < 0);
 			usize _point_num = _modulus(num - _round_num) * 10000 + 1;
 			

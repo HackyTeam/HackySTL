@@ -161,6 +161,31 @@ namespace hsd
     {};
 
     template<>
+    struct is_char_pointer<uchar[]> 
+        : public true_type
+    {};
+
+    template<usize N>
+    struct is_char_pointer<uchar[N]> 
+        : public std::true_type
+    {};
+
+    template<>
+    struct is_char_pointer<uchar*> 
+        : public true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const uchar*> 
+        : public true_type
+    {};
+
+    template<>
+    struct is_char_pointer<const uchar* const> 
+        : public true_type
+    {};
+
+    template<>
     struct is_char_pointer<wchar[]> 
         : public true_type
     {};

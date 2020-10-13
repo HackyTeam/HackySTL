@@ -91,8 +91,8 @@ namespace hsd
         {
             if(_count != std::uncaught_exceptions())
             {
-                hsd::io::err_print(
-                    "Info: {}:{} Function: {}\n", 
+                hsd::io::err_print<"Info: {}:{} Function: {}\n">
+                ( 
                     get().file_name(), get().line(), 
                     get().function_name()
                 );
@@ -141,8 +141,7 @@ namespace hsd
         {
             if(_stack.size() > 0)
             {
-                hsd::io::print(
-                    "Info: {}:{}\nFunction: {}, time taken: {}us\n", 
+                hsd::io::print<"Info: {}:{}\nFunction: {}, time taken: {}us\n">(
                     get().file_name(), get().line(), get().function_name(),
                     get().elapsed_time().to_microseconds()
                 );
@@ -185,8 +184,8 @@ namespace hsd
         {
             for(auto it = exec_stack.rbegin(); it != exec_stack.rend(); it--)
             {
-                hsd::io::err_print(
-                    "Info: {}:{} Function: {}\n", 
+                hsd::io::err_print<"Info: {}:{} Function: {}\n">
+                (
                     it->file_name(), it->line(), 
                     it->function_name()
                 );

@@ -9,14 +9,13 @@
 namespace hsd
 {
     // class monostate
-    struct monostate
-    {
-    };
+    struct monostate {};
 
     constexpr bool operator==(monostate, monostate) noexcept
     {
         return true;
     }
+
     constexpr bool operator<(monostate, monostate) noexcept
     {
         return false;
@@ -25,8 +24,8 @@ namespace hsd
     // class in_place_index
     template <usize _Idx>
     struct in_place_index_t
-    {
-    };
+    {};
+
     template <usize _Idx>
     constexpr inline in_place_index_t<_Idx> in_place_index{};
 
@@ -134,11 +133,12 @@ namespace hsd
             template <usize _Idx, typename... _Ts>
             constexpr variant_storage(index_constant<_Idx>, _Ts&&... val)
                 : storage_rest(index_constant<_Idx - 1>(), forward<_Ts>(val)...)
-            {
-            }
+            {}
+
             template <typename... _Ts>
             constexpr variant_storage(index_constant<0>, _Ts&&... val)
-                : value_first(forward<_Ts>(val)...) {}
+                : value_first(forward<_Ts>(val)...) 
+            {}
 
             variant_storage(variant_storage const&) = default;
             variant_storage(variant_storage&&) = default;
@@ -164,6 +164,7 @@ namespace hsd
             {
                 return true;
             }
+
             // Out-of-place constructor
             constexpr static void construct_copy(Storage& l, Storage const& r, usize& li, usize ri)
             {
@@ -171,17 +172,20 @@ namespace hsd
                     _construct_inplace(val.val, get_impl<decltype(val)::index>(r));
                 });
             }
+
             constexpr static void construct_move(Storage& l, Storage&& r, usize& li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
                     _construct_inplace(val.val, move(get_mut_impl<decltype(val)::index>(r)));
                 });
             }
+
             template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage& l, _Ty&& value)
             {
                 _construct_inplace(l, index_constant<_Idx>(), forward<_Ty>(value));
             }
+
             // Destructor
             static void destroy(Storage& s, usize id)
             {
@@ -189,6 +193,7 @@ namespace hsd
                     _destroy_inplace(val.val);
                 });
             }
+
             template <usize _TheIdx>
             constexpr static auto& get_impl(Storage const& storage)
             {
@@ -201,6 +206,7 @@ namespace hsd
                     return Storage::RestTraits::template get_impl<_TheIdx - 1>(storage.storage_rest);
                 }
             }
+
             template <usize _TheIdx>
             constexpr static auto& get_mut_impl(Storage& storage)
             {
@@ -213,12 +219,15 @@ namespace hsd
                     return Storage::RestTraits::template get_mut_impl<_TheIdx - 1>(storage.storage_rest);
                 }
             }
+
             constexpr static bool equals_impl(usize id, Storage const& a, Storage const& b)
             {
-                return visit(const_cast<Storage&>(a), id, [&](auto const val) -> bool {
+                return visit(const_cast<Storage&>(a), id, [&](auto const val) -> bool 
+                {
                     return val.val == get_impl<decltype(val)::index>(b);
                 });
             }
+
             constexpr static void assign_copy(Storage& l, Storage const& r, usize& il, usize ir)
             {
                 if (il != ir)
@@ -233,6 +242,7 @@ namespace hsd
                     });
                 }
             }
+
             constexpr static void assign_move(Storage& l, Storage&& r, usize& il, usize ir)
             {
                 if (il != ir)
@@ -247,6 +257,7 @@ namespace hsd
                     });
                 }
             }
+
             template <usize _Idx, typename _Ty>
             constexpr static void assign_fwd_current(Storage& l, _Ty&& value)
             {
@@ -259,6 +270,7 @@ namespace hsd
                     Storage::RestTraits::template assign_fwd_current<_Idx - 1>(l.storage_rest, forward<_Ty>(value));
                 }
             }
+
             template <usize _Idx, typename _Ty>
             constexpr static void assign_fwd(Storage& l, usize& il, _Ty&& value)
             {
@@ -319,20 +331,24 @@ namespace hsd
 
                 template <usize _Idx, typename... _Args>
                 constexpr variant_base(in_place_index_t<_Idx>, _Args&&... args)
-                    : _StoredIndex(_Idx), _Value(index_constant<_Idx>(), forward<_Args>(args)...) {}
+                    : _StoredIndex(_Idx), _Value(index_constant<_Idx>(), forward<_Args>(args)...) 
+                {}
 
                 constexpr static void _construct_copy(variant_base& l, variant_base const& r)
                 {
                     _StorageTraits::construct_copy(l._storage(), r._storage(), l._StoredIndex, r._StoredIndex);
                 }
+
                 constexpr static void _construct_move(variant_base& l, variant_base&& r)
                 {
                     _StorageTraits::construct_move(l._storage(), move(r._storage()), l._StoredIndex, r._StoredIndex);
                 }
+
                 constexpr static void _assign_copy(variant_base& l, variant_base const& r)
                 {
                     _StorageTraits::assign_copy(l._storage(), r._storage(), l._StoredIndex, r._StoredIndex);
                 }
+
                 constexpr static void _assign_move(variant_base& l, variant_base&& r)
                 {
                     _StorageTraits::assign_move(l._storage(), move(r._storage()), l._StoredIndex, r._StoredIndex);
@@ -345,10 +361,12 @@ namespace hsd
                 using _Base = variant_base<_Ts...>;
                 using _Base::_Base;
                 constexpr csmv_base() = default;
+
                 constexpr csmv_base(csmv_base&& other)
                 {
                     _Base::_construct_move(*this, move(other));
                 }
+
                 constexpr csmv_base(csmv_base const&) = default;
                 constexpr csmv_base& operator=(csmv_base&&) = default;
                 constexpr csmv_base& operator=(csmv_base const&) = default;
@@ -364,10 +382,12 @@ namespace hsd
                 using _Base::_Base;
                 constexpr cscp_base() = default;
                 constexpr cscp_base(cscp_base&&) = default;
+
                 constexpr cscp_base(cscp_base const& other)
                 {
                     _Base::_construct_copy(*this, other);
                 }
+
                 constexpr cscp_base& operator=(cscp_base&&) = default;
                 constexpr cscp_base& operator=(cscp_base const&) = default;
             };
@@ -383,11 +403,13 @@ namespace hsd
                 constexpr asmv_base() = default;
                 constexpr asmv_base(asmv_base&&) = default;
                 constexpr asmv_base(asmv_base const&) = default;
+
                 constexpr asmv_base& operator=(asmv_base&& rhs)
                 {
                     _Base::_assign_move(*this, move(rhs));
                     return *this;
                 }
+
                 constexpr asmv_base& operator=(asmv_base const&) = default;
             };
             template <typename... _Ts>
@@ -403,6 +425,7 @@ namespace hsd
                 constexpr ascp_base(ascp_base&&) = default;
                 constexpr ascp_base(ascp_base const&) = default;
                 constexpr ascp_base& operator=(ascp_base&& rhs) = default;
+
                 constexpr ascp_base& operator=(ascp_base const& rhs)
                 {
                     _Base::_assign_copy(*this, rhs);
@@ -427,6 +450,7 @@ namespace hsd
         {
             return _StorageTraits::visit(this->_storage(), this->_StoredIndex, forward<_Func>(func));
         }
+
         void _destroy()
         {
             _StorageTraits::destroy(this->_storage(), this->_StoredIndex);
@@ -448,7 +472,8 @@ namespace hsd
         template <typename _Tother, typename = enable_if_t<!is_same< variant, std::decay_t<_Tother> >::value >,
                   usize _Idx = _detail_variant::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
         constexpr variant(_Tother &&val)
-            : _Base(in_place_index<_Idx>, forward<_Tother>(val)) {}
+            : _Base(in_place_index<_Idx>, forward<_Tother>(val)) 
+        {}
 
         ~variant()
         {

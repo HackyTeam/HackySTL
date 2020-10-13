@@ -24,7 +24,7 @@ int main()
     }
     catch(const std::exception& e)
     {
-        hsd::io::err_print("{}\n\n", e.what());
+        hsd::io::err_print<"{}\n\n">(e.what());
     }
 
     test_profiler(32);

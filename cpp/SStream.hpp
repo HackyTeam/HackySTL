@@ -45,7 +45,7 @@ namespace hsd
             }
             else
             {
-                [&]<usize... Ints>(hsd::index_sequence<Ints...>)
+                [&]<usize... Ints>(index_sequence<Ints...>)
                 {
                     (sstream_detail::_parse(_data_set[Ints], args), ...);
                 }(make_index_sequence<sizeof...(Args)>{});
@@ -53,39 +53,18 @@ namespace hsd
 		}
 
         template<typename T>
-        T parse_custom()
-        {
-            T _value{};
-            auto _data_set = sstream_detail::split(_data, _size);
-            static_assert(
-                std::is_base_of<sstream_detail::readable, T>::value,
-                "You have to inherit from sstream_detail::readable"
-            );
-            
-            if constexpr(is_same<CharT, char>::value)
-            {
-                _value.read(_data_set);
-            }
-            else if constexpr(is_same<CharT, wchar>::value)
-            {
-                _value.wread(_data_set);
-            }
-
-            return _value;
-        }
-
-        template<typename T>
         T parse()
         {
             T _value{};
-            hsd::string<CharT> _str = move(to_string());
-            sstream_detail::_parse(_str, _value);
+            using sstream_detail::_parse;
+            string<CharT> _str = move(to_string());
+            _parse(_str, _value);
             return _value;
         }
 
-        hsd::string<CharT> to_string()
+        string<CharT> to_string()
         {
-            return hsd::string<CharT>(_data);
+            return string<CharT>(_data);
         }
 
 		void pop_back()
@@ -175,8 +154,8 @@ namespace hsd
         }
     };
     
-	using wsstream = hsd::sstream<wchar>;
-    using u8sstream = hsd::sstream<char>;
-    using u16sstream = hsd::sstream<char16>;
-    using u32sstream = hsd::sstream<char32>;
+	using wsstream = sstream<wchar>;
+    using u8sstream = sstream<char>;
+    using u16sstream = sstream<char16>;
+    using u32sstream = sstream<char32>;
 } // namespace hsd

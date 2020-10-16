@@ -9,12 +9,6 @@ namespace hsd
 {
     namespace sstream_detail
     {
-        struct readable
-        {
-            virtual void read(vector<u8string>&) = 0;
-            virtual void wread(vector<wstring>&) = 0;
-        };
-
         template<typename CharT>
         static vector< string<CharT> > split(const CharT* str, usize size)
         {

@@ -10,10 +10,11 @@ namespace hsd
         static hsd::u8sstream& read_line()
         {
             _u8io_buf.reset_data();
-            usize _io_buf_len = 4096;
-            char* _u8line_buf = _u8io_buf.data();
-            long _len = getline(&_u8line_buf, &_io_buf_len, stdin);
-            _u8line_buf[_len - 1] = '\0';
+            char* _str = fgets(_u8io_buf.data(), 4096, stdin);
+
+            if(_str == nullptr)
+                throw std::runtime_error("Input requierments not satisfied");
+
             return _u8io_buf;
         }
 
@@ -22,6 +23,17 @@ namespace hsd
             _u8io_buf.reset_data();
             scanf("%s", _u8io_buf.data());
             return _u8io_buf;
+        }
+
+        static hsd::wsstream& wread_line()
+        {
+            _wio_buf.reset_data();
+            wchar* _str = fgetws(_wio_buf.data(), 4096, stdin);
+
+            if(_str == nullptr)
+                throw std::runtime_error("Input requierments not satisfied");
+
+            return _wio_buf;
         }
 
         static hsd::wsstream& wread()
@@ -51,7 +63,7 @@ namespace hsd
             }
         }
 
-        template< io_detail::wformat_literal fmt, typename... Args >
+        template< io_detail::format_literal fmt, typename... Args >
         static void wprint(Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
@@ -91,7 +103,7 @@ namespace hsd
             }
         }
 
-        template< io_detail::wformat_literal fmt, typename... Args >
+        template< io_detail::format_literal fmt, typename... Args >
         static void err_wprint(Args&&... args)
         {
             hsd::vector<hsd::wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
@@ -115,7 +127,7 @@ namespace hsd
     class file : private io_detail::bufferable
     {
     private:
-        FILE* _file_buf;
+        FILE* _file_buf = nullptr;
         const char* _file_mode;
 
         bool only_write()
@@ -159,7 +171,8 @@ namespace hsd
             _file_buf = fopen(file_path, open_option);
             _file_mode = open_option;
             
-            throw std::runtime_error("File not found");
+            if(_file_buf == nullptr)
+                throw std::runtime_error("File not found");
         }
 
         ~file()
@@ -247,7 +260,7 @@ namespace hsd
             }
         }
 
-        template< io_detail::wformat_literal fmt, typename... Args >
+        template< io_detail::format_literal fmt, typename... Args >
         void wprint(Args&&... args)
         {
             if(only_read())

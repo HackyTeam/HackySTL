@@ -1,95 +1,9 @@
 #pragma once
 
-#include "String.hpp"
-#include "Pair.hpp"
+#include "_SStreamDetail.hpp"
 
 namespace hsd
 {
-    namespace sstream_detail
-    {
-		template<typename CharT>
-		static constexpr bool _is_number(CharT letter)
-		{
-			return letter >= '0' && letter <= '9';
-		}
-
-		template<typename CharT>
-        static hsd::pair<i32, const CharT*> _parse_i(const CharT* str)
-		{
-			i32 _num = 0;
-			bool _negative = false;
-
-			for(; *str != '\0' && !_is_number(*str); str++);
-			_negative = *(str - 1) == '-';
-			
-			for(; *str != '\0' && _is_number(*str); str++)
-			{
-				_num *= 10;
-				_num += *str - '0';
-			}
-			
-			return {_negative ? -_num : _num, str};
-		}
-
-		template<typename CharT>
-        static hsd::pair<usize, const CharT*> _parse_us(const CharT* str)
-		{
-			usize _num = 0;
-
-			for(; *str != '\0' && !_is_number(*str); str++);
-			for(; *str != '\0' && _is_number(*str); str++)
-			{
-				_num *= 10;
-				_num += *str - '0';
-			}
-
-			return {_num, str};
-		}
-
-		template<typename CharT>
-		static hsd::pair<float, const CharT*> _parse_f(const CharT* str)
-		{
-		    float _round_num = 0;
-			float _point_num = 0;
-			bool _negative = false;
-			usize _num_len = 0;
-
-			for(; *str != '\0' && !_is_number(*str); str++)
-			{
-				_negative = (*str == '-');
-			}
-
-			if(*str == '\0')
-				return {0.f, str};
-
-		    for(; *str != '\0' && *str != '.' && _is_number(*str); str++)
-		    {
-		        _round_num *= 10;
-		        _round_num += *str - '0';
-		    }
-
-			if(*str == '\0' || !_is_number(*str))
-			{	
-				return {
-					_negative ? -_round_num : 
-					_round_num, str
-				};
-			}
-
-		    for(str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)
-		    {
-		        _point_num *= 10;
-		        _point_num += *str - '0';
-		    }
-		    for(; _num_len != 0; _num_len--, _point_num *= 0.1);
-			
-			return {
-				_negative ? 
-				-(_round_num + _point_num) : 
-				_round_num + _point_num, str
-			};
-		}
-    } // namespace sstream_detail
     
     template<typename CharT>
     class sstream
@@ -98,12 +12,6 @@ namespace hsd
         CharT* _data = nullptr;
         usize _size = 0;
 		usize _current_pos = 0;
-
-        template<typename T>
-        void _parse(T& val)
-        {
-			val = parse<T>();
-        }
 
     public:
 		using iterator = CharT*;
@@ -125,37 +33,54 @@ namespace hsd
 		template<typename... Args>
 		void set_data(Args&... args)
 		{
-			(_parse(args), ...);
+            auto _data_set = sstream_detail::split(_data, _size);
+
+            if(sizeof...(Args) > _data_set.size())
+            {
+                throw std::runtime_error("Input too small");
+            }
+            else if(sizeof...(Args) < _data_set.size())
+            {
+                fprintf(stderr, "Warning");
+            }
+            else
+            {
+                [&]<usize... Ints>(hsd::index_sequence<Ints...>)
+                {
+                    (sstream_detail::_parse(_data_set[Ints], args), ...);
+                }(make_index_sequence<sizeof...(Args)>{});
+            }
 		}
+
+        template<typename T>
+        T parse_custom()
+        {
+            T _value{};
+            auto _data_set = sstream_detail::split(_data, _size);
+            static_assert(
+                std::is_base_of<sstream_detail::readable, T>::value,
+                "You have to inherit from sstream_detail::readable"
+            );
+            
+            if constexpr(is_same<CharT, char>::value)
+            {
+                _value.read(_data_set);
+            }
+            else if constexpr(is_same<CharT, wchar>::value)
+            {
+                _value.wread(_data_set);
+            }
+
+            return _value;
+        }
 
         template<typename T>
         T parse()
         {
-            if(_data == nullptr)
-            {
-                throw std::runtime_error("Cannot parse an empty stream");
-            }
-            if constexpr(std::is_integral_v<T>)
-            {
-                if constexpr(std::is_unsigned_v<T>)
-                {
-                    auto [_ret, _pos_ptr] = sstream_detail::_parse_us(&_data[_current_pos]);
-					_current_pos = _pos_ptr - _data;
-					return _ret;
-                }
-                else
-                {
-                    auto [_ret, _pos_ptr] = sstream_detail::_parse_i(&_data[_current_pos]);
-					_current_pos = _pos_ptr - _data;
-					return _ret;
-                }
-            }
-            else if constexpr(std::is_floating_point_v<T>)
-            {
-                auto [_ret, _pos_ptr] = sstream_detail::_parse_f(&_data[_current_pos]);
-				_current_pos = _pos_ptr - _data;
-				return _ret;
-            }
+            T _value{};
+            hsd::string<CharT> _str = move(to_string());
+            sstream_detail::_parse(_str, _value);
+            return _value;
         }
 
         hsd::string<CharT> to_string()

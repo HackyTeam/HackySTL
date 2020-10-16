@@ -89,14 +89,22 @@ namespace hsd
             return *this;
         }
 
+        template<typename RhsCharT>
+        HSD_CONSTEXPR string& operator=(const string<RhsCharT>& rhs)
+        {
+            _reset();
+            _size = rhs.size();
+            _reserved_size = _size;
+            _data = _str_utils::to_string(rhs.c_str(), _size);
+            return *this;
+        }
+
         HSD_CONSTEXPR string& operator=(const string& rhs)
         {
             _reset();
-            _size = rhs._size;
-            _reserved_size = rhs._reserved_size;
-            _data = new CharT[rhs._reserved_size + 1];
-            _str_utils::copy(_data, rhs._data, _size);
-            _data[_size] = '\0';
+            _size = rhs.size();
+            _reserved_size = _size;
+            _data = _str_utils::to_string(rhs._data, _size);
             return *this;
         }
 
@@ -370,12 +378,12 @@ namespace hsd
             return _data[_size - 1];
         }
 
-        constexpr usize size()
+        constexpr usize size() const
         {
             return _size;
         }
 
-        constexpr usize capacity()
+        constexpr usize capacity() const
         {
             return _reserved_size;
         }

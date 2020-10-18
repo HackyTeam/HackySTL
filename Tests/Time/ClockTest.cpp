@@ -7,9 +7,9 @@ int main()
 {
     hsd::clock c1;
     hsd::clock::sleep_for(3.5f, []{hsd::io::print<"\r">();});
-    c1.restart();
     const hsd::u32 iterations = 4000000;
-    
+    c1.restart();
+
     for(hsd::u32 i = 0; i < iterations; i++)
         hsd::io::print<"Hello World\r">();
 

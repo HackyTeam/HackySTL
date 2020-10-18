@@ -84,6 +84,7 @@
         "forward_list": "cpp"
     },
     "cSpell.words": [
+        "alignas",
         "clientv",
         "hintv",
         "isize",

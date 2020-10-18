@@ -9,7 +9,7 @@ namespace hsd
     {
         struct alignas(_Alignment) type 
         {
-            unsigned char _data[_Size];
+            uchar _data[_Size];
         };
     };
 }

@@ -70,7 +70,7 @@ namespace hsd
             return _array[index];
         }
         
-        constexpr T& operator[](usize index) const
+        constexpr const T& operator[](usize index) const
         {
             return _array[index];
         }
@@ -85,7 +85,7 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index) const
+        constexpr const T& at(usize index) const
         {
             if(index >= N)
             {

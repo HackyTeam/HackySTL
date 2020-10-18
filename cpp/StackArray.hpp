@@ -11,7 +11,7 @@ namespace hsd
     class stack_array
     {
     private:
-        T _array[N];
+        T _array[N]{};
         
     public:
         using iterator = T*;
@@ -58,7 +58,7 @@ namespace hsd
             return _array[index];
         }
         
-        constexpr T& operator[](usize index) const
+        constexpr const T& operator[](usize index) const
         {
             return _array[index];
         }

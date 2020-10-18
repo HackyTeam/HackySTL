@@ -57,88 +57,46 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< io_detail::format_literal fmt, typename... Args >
+        template< io_detail::string_literal fmt, typename... Args >
         static void print(Args&&... args)
         {
+            using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            vector<u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
+            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
 
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
+            [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
 
-                printf(_fmt_buf[sizeof...(Args)].c_str());
-            }
+            _print<_last>();
         }
 
-        template< io_detail::format_literal fmt, typename... Args >
-        static void wprint(Args&&... args)
-        {
-            using io_detail::_print;
-            vector<wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
-
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
-            {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
-
-                wprintf(_fmt_buf[sizeof...(Args)].c_str());
-            }
-        }
-
-        template< io_detail::format_literal fmt, typename... Args >
+        template< io_detail::string_literal fmt, typename... Args >
         static void err_print(Args&&... args)
         {
+            using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            vector<u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
+            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
 
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
+            [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args, stderr), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, stderr), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
 
-                fprintf(stderr, _fmt_buf[sizeof...(Args)].c_str());
-            }
-        }
-
-        template< io_detail::format_literal fmt, typename... Args >
-        static void err_wprint(Args&&... args)
-        {
-            using io_detail::_print;
-            vector<wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
-
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
-            {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args, stderr), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
-
-                fwprintf(stderr, _fmt_buf[sizeof...(Args)].c_str());
-            }
+            _print<_last>(stderr);
         }
     };
 
@@ -184,7 +142,7 @@ namespace hsd
             };
         };
 
-        file(const char* file_path, const char* open_option)
+        file(const char* file_path, const char* open_option = hsd::file::options::text::read)
         {
             _file_buf = fopen(file_path, open_option);
             _file_mode = open_option;
@@ -262,53 +220,28 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< io_detail::format_literal fmt, typename... Args >
+        template< io_detail::string_literal fmt, typename... Args >
         void print(Args&&... args)
         {
             if(only_read())
                 throw std::runtime_error("Cannot write file. It is in read mode");
 
+            using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            vector<u8string> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
+            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
 
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
+            [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf, this]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args, _file_buf), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, _file_buf), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
 
-                fprintf(_file_buf, _fmt_buf[sizeof...(Args)].c_str());
-            }
-        }
-
-        template< io_detail::format_literal fmt, typename... Args >
-        void wprint(Args&&... args)
-        {
-            if(only_read())
-                throw std::runtime_error("Cannot write file. It is in read mode");
-
-            using io_detail::_print;
-            vector<wstring> _fmt_buf = io_detail::split(fmt.data, fmt.size() - 1);
-
-            if(sizeof...(Args) + 1 != _fmt_buf.size())
-            {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                [&_fmt_buf, this]<usize... Ints>(index_sequence<Ints...>, auto&... print_args)
-                {
-                    (_print(_fmt_buf[Ints], print_args, _file_buf), ...);
-                }(make_index_sequence<sizeof...(Args)>{}, args...);
-
-                fwprintf(_file_buf, _fmt_buf[sizeof...(Args)].c_str());
-            }
+            _print<_last>(_file_buf);
         }
     };
-
 } // namespace hsd

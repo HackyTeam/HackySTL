@@ -63,26 +63,20 @@ namespace hsd
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
-            
-            if constexpr(_fmt_buf.second != sizeof...(Args) + 1)
+            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
+
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
+
+            [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-                constexpr io_detail::string_literal<char_type, _len + 1> _last{
-                    _fmt_buf.first[sizeof...(Args)].first, _len
-                };
-    
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                        _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
-    
-                _print<_last>();
-            }
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
+
+            _print<_last>();
         }
 
         template< io_detail::string_literal fmt, typename... Args >
@@ -91,26 +85,20 @@ namespace hsd
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
-            
-            if constexpr(_fmt_buf.second != sizeof...(Args) + 1)
-            {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-                constexpr io_detail::string_literal<char_type, _len + 1> _last{
-                    _fmt_buf.first[sizeof...(Args)].first, _len
-                };
+            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
 
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                        _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, stderr), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
 
-                _print<_last>(stderr);
-            }
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, stderr), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
+
+            _print<_last>(stderr);
         }
     };
 
@@ -243,26 +231,20 @@ namespace hsd
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
-            
-            if constexpr(_fmt_buf.second != sizeof...(Args) + 1)
-            {
-                throw std::runtime_error("Arguments don\'t match");
-            }
-            else
-            {
-                constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-                constexpr io_detail::string_literal<char_type, _len + 1> _last{
-                    _fmt_buf.first[sizeof...(Args)].first, _len
-                };
+            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
 
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                        _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, _file_buf), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
+            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+                _fmt_buf.first[sizeof...(Args)].first, _len
+            };
 
-                _print<_last>(_file_buf);
-            }
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, _file_buf), ...);
+            }(make_index_sequence<sizeof...(Args)>{});
+
+            _print<_last>(_file_buf);
         }
     };
 } // namespace hsd

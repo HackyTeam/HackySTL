@@ -76,7 +76,7 @@ namespace hsd
             }
 
             _buf[_index] = {_iter_f, static_cast<usize>(fmt.data + fmt.size() - _iter_f)};
-            return pair{_buf, _index + 1};
+            return pair{_buf, _index};
         }
 
         template<u8string_literal str>

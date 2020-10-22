@@ -7,6 +7,16 @@ namespace hsd
     class io : private io_detail::bufferable
     {
     public:
+        static void flush()
+        {
+            fflush(stdout);
+        }
+
+        static void err_flush()
+        {
+            fflush(stderr);
+        }
+
         static u8sstream& read_line()
         {
             do
@@ -156,6 +166,18 @@ namespace hsd
         ~file()
         {
             fclose(_file_buf);
+        }
+
+        void flush()
+        {
+            if(only_read())
+            {
+                fflush(_file_buf);
+            }
+            else
+            {
+                throw std::runtime_error("Cannot flush in write or read-write mode");
+            }
         }
 
         u8sstream& read_line()

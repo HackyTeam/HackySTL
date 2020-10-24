@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <initializer_list>
 
 #include "Utility.hpp"
 #include "Types.hpp"
@@ -219,29 +220,78 @@ namespace hsd
 
         HSD_CONSTEXPR list(const list& other)
         {
-            for(auto _element : other)
+            for(const auto& _element : other)
                 push_back(_element);
+        }
+
+        HSD_CONSTEXPR list(list&& other)
+        {
+            _head = other._head;
+            _tail = other._tail;
+            other._head = nullptr;
+            other._tail = nullptr;
+        }
+
+        HSD_CONSTEXPR list(const std::initializer_list<T>& other)
+        {
+            for(const auto& _element : other)
+                push_back(_element);
+        }
+
+        HSD_CONSTEXPR list(std::initializer_list<T>&& other)
+        {
+            for(auto&& _element : other)
+                push_back(move(_element));
         }
 
         HSD_CONSTEXPR ~list()
         {
-            for(; _head != end(); pop_front());
-            pop_front();
+            clear();
         }
 
         HSD_CONSTEXPR list& operator=(const list& rhs)
         {
-            ~list();
+            clear();
             
-            for(auto _element : rhs)
+            for(const auto& _element : rhs)
                 push_back(_element);
             
             return *this;
         }
 
+        HSD_CONSTEXPR list& operator=(list&& rhs)
+        {
+            _head = rhs._head;
+            _tail = rhs._tail;
+            rhs._head = nullptr;
+            rhs._tail = nullptr;
+            
+            return *this;
+        }
+
+        HSD_CONSTEXPR list& operator=(const std::initializer_list<T>& other)
+        {
+            clear();
+
+            for(const auto& _element : other)
+                push_back(_element);
+
+            return *this;
+        }
+
+        HSD_CONSTEXPR list& operator=(std::initializer_list<T>&& other)
+        {
+            clear;
+
+            for(auto&& _element : other)
+                push_back(move(_element));
+
+            return *this;
+        }
+
         HSD_CONSTEXPR list& operator+(const list& rhs)
         {
-            for(auto _element : rhs)
+            for(auto& _element : rhs)
                 push_back(_element);
 
             return *this;
@@ -333,6 +383,12 @@ namespace hsd
                 _head.pop_front();
             else
                 _tail = _head;
+        }
+
+        HSD_CONSTEXPR void clear()
+        {
+            for(; _head != end(); pop_front());
+                pop_front();
         }
 
         constexpr bool empty()

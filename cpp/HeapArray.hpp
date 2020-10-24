@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stdexcept>
+#include <initializer_list>
 
 #include "Utility.hpp"
 #include "Types.hpp"
-#include "InitializerList.hpp"
 
 namespace hsd
 {
@@ -54,7 +54,18 @@ namespace hsd
             return *this;
         }
 
-        constexpr heap_array& operator=(initializer_list<T>&& rhs)
+        constexpr heap_array& operator=(const std::initializer_list<T>& rhs)
+        {
+            if(rhs.size() != N)
+            {
+                throw std::out_of_range("");
+            }
+
+            hsd::copy(rhs.begin(), rhs.begin() + N, _array);
+            return *this;
+        }
+
+        constexpr heap_array& operator=(std::initializer_list<T>&& rhs)
         {
             if(rhs.size() != N)
             {

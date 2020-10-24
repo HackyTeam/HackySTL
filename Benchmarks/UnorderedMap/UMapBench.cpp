@@ -1,5 +1,6 @@
 #include "../../cpp/UnorderedMap.hpp"
 
+#include <iostream>
 #include <unordered_map>
 #include <benchmark/benchmark.h>
 
@@ -8,7 +9,7 @@ static void hsdMap(benchmark::State& state)
     for(auto _ : state)
     {
         hsd::unordered_map<const char*, int> map;
-        map["key"] = 0;
+        map["key1"] = 0;
         map["key2"] = 1;
         map["key3"] = 2;
         map["key4"] = 0;
@@ -18,7 +19,7 @@ static void hsdMap(benchmark::State& state)
         map["key8"] = 1;
 
         for(auto _it : map)
-            printf("%d\r", _it.second);
+            std::cout << _it.second << '\r';
 
         benchmark::DoNotOptimize(map);
     }
@@ -29,7 +30,7 @@ static void stdMap(benchmark::State& state)
     for(auto _ : state)
     {
         std::unordered_map<const char*, int> map;
-        map["key"] = 0;
+        map["key1"] = 0;
         map["key2"] = 1;
         map["key3"] = 2;
         map["key4"] = 0;
@@ -39,7 +40,7 @@ static void stdMap(benchmark::State& state)
         map["key8"] = 1;
     
         for(auto _it : map)
-            printf("%d\r", _it.second);
+            std::cout << _it.second << '\r';
 
         benchmark::DoNotOptimize(map);
     }

@@ -179,14 +179,65 @@ namespace hsd
             : _buckets{move(other._buckets)}, _data{move(other._data)}
         {}
 
+        HSD_CONSTEXPR unordered_map(const std::initializer_list<pair<Key, T>>& other)
+            : _buckets(10), _data(other.size())
+        {
+            for(auto& val : other)
+                emplace(val.first, val.second);
+        }
+
+        HSD_CONSTEXPR unordered_map(std::initializer_list<pair<Key, T>>&& other)
+            : _buckets(10), _data(other.size())
+        {
+            for(auto& val : other)
+                emplace(move(val.first), move(val.second));
+        }
+
+        HSD_CONSTEXPR unordered_map& operator=(unordered_map&& rhs)
+        {
+            _buckets = move(rhs._buckets);
+            _data = move(rhs._data);
+            return *this;
+        }
+
+        HSD_CONSTEXPR unordered_map& operator=(const unordered_map& rhs)
+        {
+            clear();
+
+            for(pair<Key, T>& val : rhs._data)
+                emplace(val.first, val.second);
+
+            return *this;
+        }
+
+        HSD_CONSTEXPR unordered_map& operator=(const std::initializer_list<pair<Key, T>>& rhs)
+        {
+            clear();
+
+            for(auto& val : rhs._data)
+                emplace(val.first, val.second);
+
+            return *this;
+        }
+
+        HSD_CONSTEXPR unordered_map& operator=(std::initializer_list<pair<Key, T>>&& rhs)
+        {
+            clear();
+
+            for(auto& val : rhs._data)
+                emplace(move(val.first), move(val.second));
+
+            return *this;
+        }
+
         HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
         {
-            return emplace(move(key)).first->second;
+            return emplace(key).first->second;
         }
 
         HSD_CONSTEXPR reference_type operator[](const Key& key) const noexcept
         {
-            return emplace(move(key)).first->second;
+            return emplace(key).first->second;
         }
 
         HSD_CONSTEXPR reference_type at(const Key& key)
@@ -214,6 +265,26 @@ namespace hsd
         }
 
         template< typename NewKey, typename... Args >
+        HSD_CONSTEXPR pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
+        {
+            usize _data_index = _get(key);
+
+            if(_data_index != static_cast<usize>(-1))
+            {
+                return {_data.begin() + _data_index, false};
+            }
+            else
+            {
+                _data.emplace_back(_data.size(), key, T{forward<Args>(args)...});
+
+                if(static_cast<f64>(_data.size()) / _buckets.size() >= _limit_ratio)
+                    _replace();
+
+                return {_data.end() - 1, true};
+            }
+        }
+
+        template< typename NewKey, typename... Args >
         HSD_CONSTEXPR pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
         {
             usize _data_index = _get(key);
@@ -231,6 +302,12 @@ namespace hsd
 
                 return {_data.end() - 1, true};
             }
+        }
+
+        HSD_CONSTEXPR void clear()
+        {
+            _data.clear();
+            _buckets.clear();
         }
 
         constexpr iterator begin()

@@ -186,23 +186,72 @@ namespace hsd
 
         HSD_CONSTEXPR forward_list(const forward_list& other)
         {
-            for(auto _it = other.cbegin(); _it != other.cend(); _it++)
-                push_back(*_it);
+            for(const auto& _element : other)
+                push_back(_element);
+        }
+
+        HSD_CONSTEXPR forward_list(forward_list&& other)
+        {
+            _head = other._head;
+            _tail = other._tail;
+            other._head = nullptr;
+            other._tail = nullptr;
+        }
+
+        HSD_CONSTEXPR forward_list(const std::initializer_list<T>& other)
+        {
+            for(const auto& _element : other)
+                push_back(_element);
+        }
+
+        HSD_CONSTEXPR forward_list(std::initializer_list<T>&& other)
+        {
+            for(auto&& _element : other)
+                push_back(move(_element));
         }
 
         HSD_CONSTEXPR ~forward_list()
         {
-            for(; _head != end(); pop_front());
-            pop_front();
+            clear();
         }
 
         HSD_CONSTEXPR forward_list& operator=(const forward_list& rhs)
         {
-            this->~forward_list();
+            clear();
             
-            for(auto _it = rhs.cbegin(); _it != rhs.cend(); _it++)
-                push_back(*_it);
+            for(const auto& _element : rhs)
+                push_back(_element);
             
+            return *this;
+        }
+
+        HSD_CONSTEXPR forward_list& operator=(forward_list&& rhs)
+        {
+            _head = rhs._head;
+            _tail = rhs._tail;
+            rhs._head = nullptr;
+            rhs._tail = nullptr;
+            
+            return *this;
+        }
+
+        HSD_CONSTEXPR forward_list& operator=(const std::initializer_list<T>& other)
+        {
+            clear();
+
+            for(const auto& _element : other)
+                push_back(_element);
+
+            return *this;
+        }
+
+        HSD_CONSTEXPR forward_list& operator=(std::initializer_list<T>&& other)
+        {
+            clear;
+
+            for(auto&& _element : other)
+                push_back(move(_element));
+
             return *this;
         }
 
@@ -292,6 +341,12 @@ namespace hsd
                 _head.pop_front();
             else
                 _tail = _head;
+        }
+
+        HSD_CONSTEXPR void clear()
+        {
+            for(; _head != end(); pop_front());
+                pop_front();
         }
 
         constexpr bool empty()

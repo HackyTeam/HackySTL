@@ -53,7 +53,17 @@ namespace hsd
             swap(_capacity, rhs._capacity);
         }
 
-        HSD_CONSTEXPR vector(std::initializer_list<T> list)
+        HSD_CONSTEXPR vector(const std::initializer_list<T>& list)
+            : _data(new storage_type[list.size()]),
+              _size(list.size()), _capacity(list.size())
+        {
+            auto _arr = list.begin();
+            
+            for (usize _index = 0; _index < _size; ++_index)
+                new(&_data[_index]) T(_arr[_index]);
+        }
+
+        HSD_CONSTEXPR vector(std::initializer_list<T>&& list)
             : _data(new storage_type[list.size()]),
               _size(list.size()), _capacity(list.size())
         {
@@ -100,16 +110,29 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR vector& operator=(std::initializer_list<T> list)
+        HSD_CONSTEXPR vector& operator=(vector&& rhs) noexcept
+        {
+            clear();
+            delete[] _data;
+
+            _data = exchange(rhs._data, nullptr);
+            _size = exchange(rhs._size, 0);
+            _capacity = exchange(rhs._capacity, 0);
+    
+            return *this;
+        }
+
+        HSD_CONSTEXPR vector& operator=(const std::initializer_list<T>& list)
         {
             auto _arr = list.begin();
+            
             if (_capacity < list.size())
             {
                 clear();
                 reserve(list.size());
                 
                 for (usize _index = 0; _index < list.size(); ++_index)
-                    new(&_data[_index]) T(move(_arr[_index]));
+                    new(&_data[_index]) T(_arr[_index]);
                 
                 _size = list.size();
             }
@@ -132,21 +155,50 @@ namespace hsd
                     for (; _index < list.size(); ++_index)
                         new(&_data[_index]) T(_arr[_index]);
                 }
+                
                 _size = list.size();
             }
 
             return *this;
         }
 
-        HSD_CONSTEXPR vector& operator=(vector&& rhs) noexcept
+        HSD_CONSTEXPR vector& operator=(std::initializer_list<T>&& list)
         {
-            clear();
-            delete[] _data;
+            auto _arr = list.begin();
+            
+            if (_capacity < list.size())
+            {
+                clear();
+                reserve(list.size());
+                
+                for (usize _index = 0; _index < list.size(); ++_index)
+                    new(&_data[_index]) T(move(_arr[_index]));
+                
+                _size = list.size();
+            }
+            else
+            {
+                usize _index;
+                usize min_size = _size > list.size() ? _size : list.size();
+                
+                for (_index = 0; _index < min_size; ++_index)
+                {
+                    _data[_index] = move(_arr[_index]);
+                }
+                if (_size > list.size())
+                {
+                    for (_index = _size; _index > list.size(); --_index)
+                        at_unchecked(_index - 1).~T();
+                }
+                else if (list.size() > _size)
+                {
+                    for (; _index < list.size(); ++_index)
+                        new(&_data[_index]) T(move(_arr[_index]));
+                }
 
-            _data = exchange(rhs._data, nullptr);
-            _size = exchange(rhs._size, 0);
-            _capacity = exchange(rhs._capacity, 0);
-    
+                _size = list.size();
+            }
+
             return *this;
         }
 
@@ -371,11 +423,12 @@ namespace hsd
         constexpr usize size = 1 + sizeof...(U);
         vector<L> vec;
         vec.reserve(size);
-        vec.emplace_back(forward<L>(first));
-        [&]<usize... _index>(hsd::index_sequence<_index...>, auto tup)
+        
+        [&vec]<usize... _index>(hsd::index_sequence<_index...>, auto&... args)
         {
-            (vec.emplace_back(forward<U>(tup.template get<_index>())), ...);
-        }(hsd::index_sequence_for<U...>(), tie(rest...));
+            (vec.emplace_back(forward<decltype(args)>(args)), ...);
+        }(hsd::make_index_sequence<size>{}, first, rest...);
+        
         return vec;
     }
 }

@@ -6,15 +6,15 @@
 
 namespace hsd
 {
-    struct true_type
+    template <typename T, T v>
+    struct literal_constant
     {
-        static constexpr bool value = true;
+        using type = T;
+        static constexpr T value = v;
     };
     
-    struct false_type
-    {
-        static constexpr bool value = false;
-    };
+    using false_type = literal_constant<bool, false>;
+    using true_type = literal_constant<bool, true>;
 
     template<bool, typename>
     struct enable_if

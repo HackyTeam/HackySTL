@@ -47,7 +47,7 @@ namespace hsd
         struct _variant_index_helper : _variant_index_helper<_Ty, _Idx + 1, _Trest...> {};
 
         template <typename _Ty, usize _Idx, typename... _Ts>
-        struct _variant_index_helper<_Ty, _Idx, _Ty, _Ts...> : std::integral_constant<usize, _Idx> {};
+        struct _variant_index_helper<_Ty, _Idx, _Ty, _Ts...> : literal_constant<usize, _Idx> {};
 
         template <typename _Ty, typename... _Ts>
         struct _variant_index : _variant_index_helper<_Ty, 0, _Ts...> {};
@@ -105,7 +105,7 @@ namespace hsd
         };
 
         template <usize _Val>
-        using index_constant = std::integral_constant<usize, _Val>;
+        using index_constant = literal_constant<usize, _Val>;
 
         template <typename _Stor>
         struct variant_storage_traits;
@@ -596,7 +596,7 @@ namespace hsd
     // class template variant_size
     template <typename... _Ts>
     struct variant_size<variant<_Ts...>>
-        : std::integral_constant<usize, sizeof...(_Ts)>
+        : literal_constant<usize, sizeof...(_Ts)>
     {};
 
     // class template variant_alternative

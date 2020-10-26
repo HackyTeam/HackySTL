@@ -10,7 +10,7 @@ namespace hsd
     struct default_t {};
     constexpr default_t default_v{};
 
-    template<typename S, typename F>
+    template <typename S, typename F>
     struct defaultcall_t;
 
     template <typename F, typename Result, typename... Args>
@@ -43,7 +43,7 @@ namespace hsd
 
     };  
 
-    template<typename S, typename F, typename... Args>
+    template <typename S, typename F, typename... Args>
     defaultcall_t<S, F> make_defaultcall(F&& func, Args&&... args){
         return defaultcall_t<S, F>(hsd::forward<F>(func), hsd::forward<Args>(args)...);
     }

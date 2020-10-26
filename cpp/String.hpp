@@ -6,7 +6,7 @@
 
 namespace hsd
 {
-    template<typename CharT>
+    template <typename CharT>
     class string
     {
     private:
@@ -89,7 +89,7 @@ namespace hsd
             return *this;
         }
 
-        template<typename RhsCharT>
+        template <typename RhsCharT>
         HSD_CONSTEXPR string& operator=(const string<RhsCharT>& rhs)
         {
             _reset();
@@ -118,7 +118,7 @@ namespace hsd
             return *this;
         }
 
-        template<typename T>
+        template <typename T>
         static HSD_CONSTEXPR string to_string(T val)
         {
             const CharT* _cstr_buf = _str_utils::to_string(val);
@@ -127,7 +127,7 @@ namespace hsd
             return _str_buf;
         }
 
-        template<typename T>
+        template <typename T>
         static constexpr string<T>& to_string(string<T>& val)
         {
             return val;
@@ -388,7 +388,7 @@ namespace hsd
             return _reserved_size;
         }
 
-        template< usize Pos, usize Count >
+        template < usize Pos, usize Count >
         HSD_CONSTEXPR string gen_range()
         {
             if(Pos + Count > _size)

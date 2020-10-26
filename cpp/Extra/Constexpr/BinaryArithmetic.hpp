@@ -2,10 +2,12 @@
 
 #include "BooleanLogic.hpp"
 
-namespace hsd {
+namespace hsd 
+{
     // Complex operations
     template <Bit S, Bit C>
-    struct sum_carry_pair {
+    struct sum_carry_pair 
+    {
         using sum = S;
         using carry = C;
     };
@@ -14,7 +16,8 @@ namespace hsd {
     using half_adder = sum_carry_pair<op_and<A, B>, op_xor<A, B>>;
 
     template <Bit A, Bit B, Bit C>
-    struct _full_adder {
+    struct _full_adder 
+    {
         using partial1 = half_adder<A, B>;
         using partial2 = half_adder<typename partial1::sum, C>;
         using partial3 = half_adder<typename partial1::carry, typename partial2::carry>;
@@ -26,7 +29,8 @@ namespace hsd {
     using full_adder = typename _full_adder<A, B, C>::type;
 
     template <typename F, typename R>
-    struct cons_pair {
+    struct cons_pair 
+    {
         using first = F;
         using rest = R;
     };
@@ -46,7 +50,8 @@ namespace hsd {
     concept Number = is_number<T>::value;
 
     // Gamma operations
-    namespace natural {
+    namespace natural 
+    {
         using zero = nil;
         using one = cons_pair<bit::one, nil>;
         using two = cons_pair<bit::zero, cons_pair<bit::one, nil> >;
@@ -55,21 +60,40 @@ namespace hsd {
     }
 
     template <Number A, Number B, Bit C>
-    struct _ripple_adder {
+    struct _ripple_adder 
+    {
         // General case
         using partial = full_adder<typename A::first, typename B::first, C>;
 
-        using type = cons_pair<typename partial::sum, typename _ripple_adder<typename A::rest, typename B::rest, typename partial::carry>::type>;
+        using type = cons_pair<
+            typename partial::sum, 
+            typename _ripple_adder<
+                typename A::rest, 
+                typename B::rest, 
+                typename partial::carry
+            >::type>;
     };
 
-    template <> struct _ripple_adder<nil, nil, bit::zero> { using type = nil; };
-    template <> struct _ripple_adder<nil, nil, bit::one> { using type = cons_pair<bit::one, nil>; };
+    template <> 
+    struct _ripple_adder<nil, nil, bit::zero> 
+    { 
+        using type = nil; 
+    };
+
+    template <> 
+    struct _ripple_adder<nil, nil, bit::one> 
+    { 
+        using type = cons_pair<bit::one, nil>; 
+    };
 
     template <Bit F, Number R, Bit C>
-    struct _ripple_adder<cons_pair<F, R>, nil, C> {
+    struct _ripple_adder<cons_pair<F, R>, nil, C> 
+    {
         using partial = half_adder<F, C>;
-
-        using type = cons_pair<typename partial::sum, typename _ripple_adder<R, nil, typename partial::carry>::type>;
+        using type = cons_pair<
+            typename partial::sum, 
+            typename _ripple_adder<R, nil, 
+            typename partial::carry>::type>;
     };
 
     template <Bit F, Number R, Bit C>

@@ -5,7 +5,7 @@
 namespace hsd
 {
     
-    template<typename CharT>
+    template <typename CharT>
     class sstream
     {
     private:
@@ -30,7 +30,7 @@ namespace hsd
             delete[] _data;
         }
 
-		template<typename... Args>
+		template <typename... Args>
 		void set_data(Args&... args)
 		{
             auto _data_set = sstream_detail::split(_data, _size);
@@ -52,7 +52,7 @@ namespace hsd
             }
 		}
 
-        template<typename T>
+        template <typename T>
         T parse()
         {
             T _value{};

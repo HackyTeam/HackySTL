@@ -5,9 +5,9 @@
 
 namespace hsd
 {
-    template<typename> class function;
+    template <typename> class function;
 
-    template< typename Result, typename... Args >
+    template < typename Result, typename... Args >
     class function<Result(Args...)> 
     {
     private:
@@ -18,7 +18,7 @@ namespace hsd
             virtual ~callable_base() {}
         };
 
-        template<typename Func>
+        template <typename Func>
         struct callable : callable_base
         {
             Func _func;
@@ -50,7 +50,7 @@ namespace hsd
     public:
         function() = default;
 
-        template< typename Func, 
+        template < typename Func, 
             typename = ResolvedType<negation<is_same<Func, function>>, void>,
             typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
         HSD_CONSTEXPR function(Func);
@@ -86,7 +86,7 @@ namespace hsd
             return *this;
         }
 
-        template<typename Func>
+        template <typename Func>
         HSD_CONSTEXPR function& operator=(Func func)
         {
             if(static_cast<bool>(func))
@@ -115,35 +115,35 @@ namespace hsd
 
     namespace helper
     {
-        template<typename>
+        template <typename>
         struct as_function {};
 
-        template<typename Res, typename Scope, bool Case, typename... Args>
+        template <typename Res, typename Scope, bool Case, typename... Args>
         struct as_function<Res(Scope::*)(Args...) noexcept(Case)>
         {
             using type = Res(Args...);
         };
 
-        template<typename Res, typename Scope, bool Case, typename... Args>
+        template <typename Res, typename Scope, bool Case, typename... Args>
         struct as_function<Res(Scope::*)(Args...)& noexcept(Case)>
         { 
             using type = Res(Args...);
         };
 
-        template<typename Res, typename Scope, bool Case, typename... Args>
+        template <typename Res, typename Scope, bool Case, typename... Args>
         struct as_function<Res(Scope::*)(Args...) const noexcept(Case)>
         { 
             using type = Res(Args...);
         };
 
-        template<typename Res, typename Scope, bool Case, typename... Args>
+        template <typename Res, typename Scope, bool Case, typename... Args>
         struct as_function<Res(Scope::*)(Args...) const& noexcept(Case)>
         { 
             using type = Res(Args...);
         };
     }
 
-    template< typename Res, typename... Args >
+    template < typename Res, typename... Args >
     constexpr function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
@@ -152,14 +152,14 @@ namespace hsd
             _func_impl->_instances++;
     }
 
-    template< typename Res, typename... Args >
-    template< typename Func, typename, typename >
+    template < typename Res, typename... Args >
+    template < typename Func, typename, typename >
     HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
     {
         _func_impl = new callable<Func>(func);
     }
 
-    template< typename Func, typename... Args >
+    template < typename Func, typename... Args >
     static HSD_CONSTEXPR auto bind(Func func, Args&&... args)
     {
         return [&, func]{
@@ -168,7 +168,7 @@ namespace hsd
         };
     }
 
-    template< typename Func, typename... Args >
+    template < typename Func, typename... Args >
     static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...> args)
     {
         return [&, func]{
@@ -182,6 +182,6 @@ namespace hsd
 
     template < typename Rez, typename... Args > 
         function(Rez(*)(Args...)) -> function<Rez(Args...)>;
-    template< typename Func, typename Op = decltype(&Func::operator()) > 
+    template < typename Func, typename Op = decltype(&Func::operator()) > 
         function(Func) -> function<typename helper::as_function<Op>::type>;
 }

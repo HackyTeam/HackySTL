@@ -8,7 +8,7 @@
 
 namespace hsd
 {
-    template< typename T, usize N >
+    template < typename T, usize N >
     class heap_array
     {
     private:
@@ -29,7 +29,7 @@ namespace hsd
             hsd::copy(data, data + N, _array);
         }
 
-        template< typename L, typename... U >
+        template < typename L, typename... U >
         HSD_CONSTEXPR heap_array(const L& value, const U&... values)
         {
             _array = new T[N];
@@ -106,7 +106,7 @@ namespace hsd
             return _array[index];
         }
 
-        template< usize U, usize L >
+        template < usize U, usize L >
         HSD_CONSTEXPR auto gen_range()
         {
             static_assert(L - U <= N, "Out of range\n");
@@ -175,5 +175,5 @@ namespace hsd
         }
     };
 
-    template< typename L, typename... U > heap_array(const L&, const U&...) -> heap_array<L, 1 + sizeof...(U)>;
+    template < typename L, typename... U > heap_array(const L&, const U&...) -> heap_array<L, 1 + sizeof...(U)>;
 }

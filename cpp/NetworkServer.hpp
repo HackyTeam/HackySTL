@@ -367,7 +367,7 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template< usize N, typename... Args >
+            template < usize N, typename... Args >
             net::received_state respond(const char (&fmt)[N], Args&&... args)
             {
                 hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);

@@ -47,7 +47,7 @@ namespace hsd
 			pthread_attr_t attr;
 			pthread_attr_init(&attr);
 	
-			auto decay_copy = []<typename T>(T&& t) -> std::decay_t<T>
+			auto decay_copy = []<typename T>(T&& t) -> decay_t<T>
 			{
 				return hsd::forward<T>(t);
 			};
@@ -59,7 +59,7 @@ namespace hsd
 				hsd::i32* ready;
 	
 				std::decay_t<F> func;
-				hsd::tuple<std::decay_t<Args>...> args;
+				hsd::tuple<decay_t<Args>...> args;
 	
 				static void* enter_thread(void* arg) 
 				{

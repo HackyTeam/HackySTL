@@ -9,7 +9,7 @@ namespace hsd
 {
     namespace sstream_detail
     {
-        template<typename CharT>
+        template <typename CharT>
         static vector< string<CharT> > split(const CharT* str, usize size)
         {
             vector< string<CharT> > _buf;
@@ -27,160 +27,160 @@ namespace hsd
             return _buf;
         }
 
-		template<typename CharT>
+		template <typename CharT>
         void _parse(string<CharT>&, auto&);
     
-        template<>
+        template <>
         void _parse<char>(u8string& str, char& val)
         {
             sscanf(str.c_str(), "%c", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, uchar& val)
         {
             sscanf(str.c_str(), "%c", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, i16& val)
         {
             sscanf(str.c_str(), "%hd", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, u16& val)
         {
             sscanf(str.c_str(), "%hu", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, i32& val)
         {
             sscanf(str.c_str(), "%d", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, u32& val)
         {
             sscanf(str.c_str(), "%u", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, i64& val)
         {
             sscanf(str.c_str(), "%lld", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, u64& val)
         {
             sscanf(str.c_str(), "%llu", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, f32& val)
         {
             sscanf(str.c_str(), "%f", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, f64& val)
         {
             sscanf(str.c_str(), "%lf", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, f128& val)
         {
             sscanf(str.c_str(), "%Lf", &val);
         }
 
-        template<>
+        template <>
         void _parse<char>(u8string& str, u8string& val)
         {
             val = move(str);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, char& val)
         {
             swscanf(str.c_str(), L"%c", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, uchar& val)
         {
             swscanf(str.c_str(), L"%c", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, wchar& val)
         {
             swscanf(str.c_str(), L"%lc", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, i16& val)
         {
             swscanf(str.c_str(), L"%hd", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, u16& val)
         {
             swscanf(str.c_str(), L"%hu", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, i32& val)
         {
             swscanf(str.c_str(), L"%d", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, u32& val)
         {
             swscanf(str.c_str(), L"%u", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, i64& val)
         {
             swscanf(str.c_str(), L"%lld", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, u64& val)
         {
             swscanf(str.c_str(), L"%llu", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, f32& val)
         {
             swscanf(str.c_str(), L"%f", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, f64& val)
         {
             swscanf(str.c_str(), L"%lf", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, f128& val)
         {
             swscanf(str.c_str(), L"%Lf", &val);
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, u8string& val)
         {
             val = str;
         }
 
-        template<>
+        template <>
         void _parse<wchar>(wstring& str, wstring& val)
         {
             val = move(str);

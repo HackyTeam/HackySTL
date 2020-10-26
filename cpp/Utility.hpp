@@ -4,7 +4,10 @@
 
 namespace hsd
 {
-    template<typename T>
+    #define HSD_ENABLE_IF(...) enable_if_t<(__VA_ARGS__), i32> = 0
+    #define HSD_DISABLE_IF(...) disable_if_t<(__VA_ARGS__), i32> = 0
+
+    template <typename T>
     static constexpr remove_reference_t<T>&& move(T&& val)
     {
         return static_cast<remove_reference_t<T>&&>(val);
@@ -24,7 +27,7 @@ namespace hsd
         return tmp;
     }
 
-    template< typename InIt, typename OutIt >
+    template < typename InIt, typename OutIt >
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
         while (first != last) 
@@ -34,19 +37,19 @@ namespace hsd
         return dest;
     }
 
-    template<typename _Type>
+    template <typename _Type>
     static constexpr _Type* addressof(_Type& value)
     {
         return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
     }
 
-    template<typename T1>
+    template <typename T1>
     static constexpr T1 min(T1 first, T1 second) noexcept
     {
         return first < second ? first : second;
     }
 
-    template<typename T1>
+    template <typename T1>
     static constexpr T1 max(T1 first, T1 second) noexcept
     {
         return first > second ? first : second;
@@ -61,7 +64,7 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
-    template<typename T1>
+    template <typename T1>
     static constexpr void swap(T1& first, T1& second) noexcept
     {
         auto _tmp = hsd::move(first);
@@ -69,7 +72,7 @@ namespace hsd
         second = hsd::move(_tmp);
     }
     
-    template< typename InIt, typename OutIt >
+    template < typename InIt, typename OutIt >
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
         while(first != last) 
@@ -79,7 +82,7 @@ namespace hsd
         return dest;
     }
 
-    template< typename InIt, typename OutIt >
+    template < typename InIt, typename OutIt >
     static constexpr OutIt copy_n(InIt first, usize n, OutIt dest)
     {
         for(usize _index = 0; _index != n; _index++) 
@@ -89,13 +92,13 @@ namespace hsd
         return dest;
     }
 
-    template< typename InIt, typename ValueType >
+    template < typename InIt, typename ValueType >
     static constexpr void set(InIt first, InIt last, ValueType value)
     {
         for(; first != last; *first++ = value);
     }
 
-    template< typename InIt, typename OutIt, typename Pred >
+    template < typename InIt, typename OutIt, typename Pred >
     static constexpr OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
     {
         while(first != last) 

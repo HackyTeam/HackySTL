@@ -24,6 +24,8 @@ namespace hsd
             using value_type = T;
             using reference_type = T&;
 
+            HSD_CONSTEXPR map_value() = default;
+
             HSD_CONSTEXPR map_value(usize index, const Key& key, const value_type& val)
                 : _index{index}, _data{key, val}
             {}
@@ -180,14 +182,14 @@ namespace hsd
         {}
 
         HSD_CONSTEXPR unordered_map(const std::initializer_list<pair<Key, T>>& other)
-            : _buckets(10), _data(other.size())
+            : _buckets(10)
         {
             for(auto& val : other)
                 emplace(val.first, val.second);
         }
 
         HSD_CONSTEXPR unordered_map(std::initializer_list<pair<Key, T>>&& other)
-            : _buckets(10), _data(other.size())
+            : _buckets(10)
         {
             for(auto& val : other)
                 emplace(move(val.first), move(val.second));
@@ -330,4 +332,12 @@ namespace hsd
             return _data.end();
         }
     };
+
+    template< typename Key, typename T >
+    unordered_map(const std::initializer_list<pair<Key, T>>& other) 
+        -> unordered_map< Key, T, fnv1a<usize> >;
+
+    template< typename Key, typename T >
+    unordered_map(std::initializer_list<pair<Key, T>>&& other) 
+        -> unordered_map< Key, T, fnv1a<usize> >;
 } // namespace hsd

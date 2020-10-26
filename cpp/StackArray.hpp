@@ -7,7 +7,7 @@
 
 namespace hsd
 {
-    template< typename T, usize N >
+    template < typename T, usize N >
     class stack_array
     {
     private:
@@ -19,14 +19,14 @@ namespace hsd
 
         stack_array() = default;
 
-        template< typename L, typename... U >
+        template < typename L, typename... U >
         constexpr stack_array(const L& value, const U&... values)
         {
             T arr[] = {static_cast<T>(value), static_cast<T>(values)...};
             hsd::copy(arr, arr + N, begin());
         }
 
-        template< typename L, typename... U >
+        template < typename L, typename... U >
         constexpr stack_array(L&& value, U&&... values)
         {
             T arr[] = {move(static_cast<T>(value)), move(static_cast<T>(values))...};
@@ -101,7 +101,7 @@ namespace hsd
             return _array[index];
         }
 
-        template< usize U, usize L >
+        template < usize U, usize L >
         constexpr auto gen_range()
         {
             static_assert(L - U <= N, "Out of range\n");
@@ -170,6 +170,6 @@ namespace hsd
         }
     };
 
-    template< typename L, typename... U > stack_array(const L&, const U&...) -> stack_array<L, 1 + sizeof...(U)>;
-    template< typename L, typename... U > stack_array(L&&, U&&...) -> stack_array<L, 1 + sizeof...(U)>;
+    template < typename L, typename... U > stack_array(const L&, const U&...) -> stack_array<L, 1 + sizeof...(U)>;
+    template < typename L, typename... U > stack_array(L&&, U&&...) -> stack_array<L, 1 + sizeof...(U)>;
 }

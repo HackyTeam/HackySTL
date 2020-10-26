@@ -7,7 +7,7 @@ namespace hsd
     using usize = unsigned long;
     using isize = long;
 
-    #if defined(HSD_COMPILER_GCC) //| defined(HSD_COMPILER_CLANG)
+    #ifdef HSD_COMPILER_GCC
     using u128 = __uint128_t;
     using i128 = __int128_t;
     #endif

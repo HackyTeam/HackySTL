@@ -67,7 +67,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< io_detail::string_literal fmt, typename... Args >
+        template < io_detail::string_literal fmt, typename... Args >
         static void print(Args&&... args)
         {
             using char_type = decltype(fmt)::char_type;
@@ -89,7 +89,7 @@ namespace hsd
             _print<_last>();
         }
 
-        template< io_detail::string_literal fmt, typename... Args >
+        template < io_detail::string_literal fmt, typename... Args >
         static void err_print(Args&&... args)
         {
             using char_type = decltype(fmt)::char_type;
@@ -244,7 +244,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        template< io_detail::string_literal fmt, typename... Args >
+        template < io_detail::string_literal fmt, typename... Args >
         void print(Args&&... args)
         {
             if(only_read())

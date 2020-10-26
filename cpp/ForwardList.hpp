@@ -7,11 +7,11 @@
 
 namespace hsd
 {
-    template<typename T> class forward_list;
+    template <typename T> class forward_list;
 
     namespace forward_list_detail
     {
-        template<typename T>
+        template <typename T>
         class iterator
         {
         private:
@@ -76,7 +76,7 @@ namespace hsd
                 _iterator = _iterator->_next;
             }
 
-            template<typename... Args>
+            template <typename... Args>
             HSD_CONSTEXPR void emplace_back(Args&&... args)
             {
                 _iterator->_next = new forward_list_impl();
@@ -99,7 +99,7 @@ namespace hsd
                 _iterator = _element;
             }
 
-            template<typename... Args>
+            template <typename... Args>
             HSD_CONSTEXPR void emplace_front(Args&&... args)
             {
                 forward_list_impl* _element = new forward_list_impl();
@@ -172,7 +172,7 @@ namespace hsd
         };
     } // namespace forward_list_detail
 
-    template<typename T>
+    template <typename T>
     class forward_list
     {
     private:
@@ -285,7 +285,7 @@ namespace hsd
                 _tail.push_back(hsd::move(value));
         }
 
-        template<typename... Args>
+        template <typename... Args>
         HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
             if(_head == end())
@@ -321,7 +321,7 @@ namespace hsd
                 _head.push_front(hsd::move(value));
         }
 
-        template<typename... Args>
+        template <typename... Args>
         HSD_CONSTEXPR void emplace_front(Args&&... args)
         {
             if(_head == end())

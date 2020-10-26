@@ -15,7 +15,7 @@
 
 namespace hsd
 {
-    template<typename T>
+    template <typename T>
     concept Copyable = std::is_copy_constructible_v<T>;
 
     struct bad_any_cast : public std::exception 
@@ -38,7 +38,7 @@ namespace hsd
         #endif
     };
 
-    template<Copyable T>
+    template <Copyable T>
     class _any_derived : public _any_base 
     {
         T _value;
@@ -68,7 +68,7 @@ namespace hsd
     public:
         HSD_CONSTEXPR any() noexcept = default;
 
-        template<Copyable T>
+        template <Copyable T>
         HSD_CONSTEXPR any(T other)
         {
             _data = hsd::make_unique<_any_derived<T>>(move(other));
@@ -92,7 +92,7 @@ namespace hsd
             return *this;
         }
 
-        template<typename T>
+        template <typename T>
         HSD_CONSTEXPR auto cast_to() const
         {
             using type = typename std::remove_pointer<T>::type;
@@ -107,7 +107,7 @@ namespace hsd
             }
         }
 
-        template<typename T>
+        template <typename T>
         T* cast_if() const
         {
             if (auto* p_base = dynamic_cast<_any_derived<T>*>(_data.get()))
@@ -116,7 +116,7 @@ namespace hsd
             return nullptr;
         }
 
-        template<typename T>
+        template <typename T>
         bool holds_type() const
         {
             return dynamic_cast<_any_derived<T>*>(_data.get());
@@ -139,7 +139,7 @@ namespace hsd
             lhs.swap(rhs);
         }
 
-        template< typename T, typename... Args >
+        template < typename T, typename... Args >
         void emplace(Args&&... args)
         {
             _data = hsd::make_unique<_any_derived<T>>(T(forward<Args>(args)...));

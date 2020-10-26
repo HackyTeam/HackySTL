@@ -7,7 +7,7 @@ namespace hsd
     template <typename HashType>
     struct fnv1a
     {
-        template<typename T>
+        template <typename T>
         static constexpr ResolvedType< is_char_pointer<T>, HashType > get_hash(T begin)
         {
             HashType offset_basis = 0;
@@ -35,7 +35,7 @@ namespace hsd
             return hash;
         }
 
-        template<typename T>
+        template <typename T>
         static constexpr ResolvedType< std::is_integral<T>, HashType > get_hash(T number)
         {
             return static_cast<HashType>(number);

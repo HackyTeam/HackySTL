@@ -15,12 +15,12 @@ namespace hsd
         }
     };
 
-    template< typename... Args > static constexpr auto make_tuple(Args&&... args);
+    template < typename... Args > static constexpr auto make_tuple(Args&&... args);
 
-    template< typename Tuple1, typename Tuple2 >
+    template < typename Tuple1, typename Tuple2 >
     using is_same_tuple = std::is_same<Tuple1, Tuple2>;
 
-    template< typename T, typename... Rest >
+    template < typename T, typename... Rest >
     class tuple<T, Rest...>
     {   
     public:   
@@ -28,10 +28,10 @@ namespace hsd
         tuple<Rest...> _rest;        
 
     private:
-        template< usize N, typename U >
+        template < usize N, typename U >
         struct get_helper {};
 
-        template< typename U, typename... Args >
+        template < typename U, typename... Args >
         struct get_helper< 0, tuple<U, Args...> >
         {
             static constexpr U get(const tuple<U, Args...>& data)
@@ -40,7 +40,7 @@ namespace hsd
             }
         };
 
-        template< usize N, typename U, typename... Args >
+        template < usize N, typename U, typename... Args >
         struct get_helper< N, tuple<U, Args...> >
         {
             static constexpr auto get(const tuple<U, Args...>& data)
@@ -49,7 +49,7 @@ namespace hsd
             }
         };
 
-        template< usize N, typename... U >
+        template < usize N, typename... U >
         static constexpr auto _get(const tuple<U...>& tup) 
         {
             return get_helper<N, tuple<U...>>::get(tup);
@@ -65,7 +65,7 @@ namespace hsd
             : _first{other._first}, _rest{other._rest}
         {}
 
-        template< typename... Args >
+        template < typename... Args >
         constexpr tuple& operator=(const tuple<Args...>& other)
         {
             _first = other._first;
@@ -74,7 +74,7 @@ namespace hsd
             return *this;
         }
 
-        template<typename... Args>
+        template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
             auto _add = [&]< usize... Ints1, usize... Ints2>(
@@ -94,7 +94,7 @@ namespace hsd
             return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
         }
 
-        template<typename... Args>
+        template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
             auto _add = [&]< usize... Ints1, usize... Ints2>(
@@ -114,13 +114,13 @@ namespace hsd
             return _add(index_sequence_for<T , Rest...>{}, index_sequence_for<Args...>{});
         }
 
-        template<usize N>
+        template <usize N>
         constexpr auto get() 
         {
             return _get<N, T, Rest...>(*this);
         }
 
-        template<usize N>
+        template <usize N>
         constexpr auto get() const
         {
             return _get<N, T, Rest...>(*this);
@@ -132,28 +132,28 @@ namespace hsd
         }
     };
 
-    template< typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
-    template< typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
+    template < typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
+    template < typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
-    template<typename... Args>
+    template <typename... Args>
     static constexpr auto make_tuple(Args&&... args)
     {
-        return tuple<std::decay_t<Args>...>(hsd::forward<Args>(args)...);
+        return tuple<decay_t<Args>...>(hsd::forward<Args>(args)...);
     }
 
-    template<typename... Args>
+    template <typename... Args>
     static constexpr auto tie(Args&... args)
     {
-        return tuple<std::decay_t<Args>&...>(args...);
+        return tuple<decay_t<Args>&...>(args...);
     }
 
-    template< typename Func, typename... Args, usize... Is >
+    template < typename Func, typename... Args, usize... Is >
     static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         return func(args.template get<Is>()...);
     }
     
-    template< typename Func, typename... Args >
+    template < typename Func, typename... Args >
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
       return apply_impl(hsd::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);

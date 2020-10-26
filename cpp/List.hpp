@@ -8,11 +8,11 @@
 
 namespace hsd
 {
-    template<typename T> class list;
+    template <typename T> class list;
 
     namespace list_detail
     {
-        template<typename T>
+        template <typename T>
         class iterator
         {
         private:
@@ -78,7 +78,7 @@ namespace hsd
                 _iterator = _iterator->_next;
             }
 
-            template<typename... Args>
+            template <typename... Args>
             HSD_CONSTEXPR void emplace_back(Args&&... args)
             {
                 _iterator->_next = new list_impl();
@@ -113,7 +113,7 @@ namespace hsd
                 _iterator = _iterator->_back;
             }
 
-            template<typename... Args>
+            template <typename... Args>
             HSD_CONSTEXPR void emplace_front(Args&&... args)
             {
                 _iterator->_back = new list_impl();
@@ -206,7 +206,7 @@ namespace hsd
         };
     } // namespace list_detail
 
-    template<typename T>
+    template <typename T>
     class list
     {
     private:
@@ -319,7 +319,7 @@ namespace hsd
                 _tail.push_back(hsd::move(value));
         }
 
-        template<typename... Args>
+        template <typename... Args>
         HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
             if(_head == end())
@@ -363,7 +363,7 @@ namespace hsd
                 _head.push_front(hsd::move(value));
         }
 
-        template<typename... Args>
+        template <typename... Args>
         HSD_CONSTEXPR void emplace_front(Args&&... args)
         {
             if(_head == end())

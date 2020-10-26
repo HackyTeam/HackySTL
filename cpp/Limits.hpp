@@ -6,19 +6,19 @@ namespace hsd
 {
     namespace _detail
     {
-        template<typename T>
+        template <typename T>
         constexpr bool is_signed_byte()
         {
             return static_cast<T>(-1) < 0;
         }
 
-        template<typename T, usize B>
+        template <typename T, usize B>
         constexpr usize digits_byte()
         {
             return B - is_signed_byte<T>();
         }
 
-        template<typename T, usize B>
+        template <typename T, usize B>
         constexpr T max_byte()
         {
             constexpr auto _lshf = static_cast<T>(1) << (digits_byte<T, B>() - 1);
@@ -31,7 +31,7 @@ namespace hsd
             return ~static_cast<T>(0);
         }
 
-        template<typename T, usize B>
+        template <typename T, usize B>
         constexpr T min_byte()
         {
             if constexpr(is_signed_byte<T>())
@@ -42,43 +42,43 @@ namespace hsd
             return 0;
         }
 
-        template<typename T, usize B>
+        template <typename T, usize B>
         constexpr usize digits10_byte()
         {
             return digits_byte<T, B>() * 643L / 2136;
         }
 
-        template<typename T>
+        template <typename T>
         constexpr bool is_signed()
         {
             return is_signed_byte<T>();
         }
 
-        template<typename T>
+        template <typename T>
         constexpr auto min()
         {
             return min_byte<T, sizeof(T) * 8>();
         }
 
-        template<typename T>
+        template <typename T>
         constexpr auto max()
         {
             return max_byte<T, sizeof(T) * 8>();
         }
 
-        template<typename T>
+        template <typename T>
         constexpr auto digits() 
         {
             return digits_byte<T, sizeof(T) * 8>();
         }
 
-        template<typename T>
+        template <typename T>
         constexpr auto digits10()
         {
             return digits10_byte<T, sizeof(T) * 8>();
         }
 
-        template<typename T>
+        template <typename T>
         constexpr T max_digits10(T value)
         {
             return 2 + value * 643L / 2136;
@@ -86,7 +86,7 @@ namespace hsd
     } // namespace _detail
     
 
-    template<typename T>
+    template <typename T>
     struct limits
     {
         static constexpr bool is_specialized = false;
@@ -98,7 +98,7 @@ namespace hsd
         static constexpr i32 max_digits10 = 0;
     }; 
 
-    template<>
+    template <>
     struct limits<f32>
     {
         static constexpr bool is_specialized = true;
@@ -110,7 +110,7 @@ namespace hsd
         static constexpr i32 max_digits10 = 9;
     };
 
-    template<>
+    template <>
     struct limits<f64>
     {
         static constexpr bool is_specialized = true;
@@ -122,7 +122,7 @@ namespace hsd
         static constexpr i32 max_digits10 = 15;
     };
 
-    template<>
+    template <>
     struct limits<f128>
     {
         static constexpr bool is_specialized = true;

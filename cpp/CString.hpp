@@ -4,10 +4,10 @@
 
 namespace hsd
 {	
-	template<typename C>
+	template <typename C>
 	concept IsChar = is_char<C>::value;
 
-	template<typename CharT>
+	template <typename CharT>
     class cstring
     {
     private:
@@ -21,7 +21,7 @@ namespace hsd
         	return (*substr == '\0');
         }
 
-		template<typename T>
+		template <typename T>
 		static constexpr T _modulus(T num)
 		{
 			if(num < 0)
@@ -30,7 +30,7 @@ namespace hsd
 			return num;
 		}
 
-		template<typename T>
+		template <typename T>
 		static constexpr usize _num_len(T num)
 		{
 			usize _len = 0;
@@ -200,7 +200,7 @@ namespace hsd
 	    	}
 	    }
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, isize, CharT* > to_string(Value num)
 		{
 			bool _negative = (num < 0);
@@ -236,7 +236,7 @@ namespace hsd
 		}
 
 		#if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, i128, CharT* > to_string(Value num)
 		{
 			bool _negative = (num < 0);
@@ -272,7 +272,7 @@ namespace hsd
 		}
 		#endif
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, i64, CharT* > to_string(Value num)
 		{
 			bool _negative = (num < 0);
@@ -307,7 +307,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, i32, CharT* > to_string(Value num)
 		{
 			bool _negative = (num < 0);
@@ -342,7 +342,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, i16, CharT* > to_string(Value num)
 		{
 			bool _negative = (num < 0);
@@ -377,7 +377,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, usize, CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -393,7 +393,7 @@ namespace hsd
 		}
 
 		#if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, u128, CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -409,7 +409,7 @@ namespace hsd
 		}
 		#endif
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, u64, CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -424,7 +424,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, u32, CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -439,7 +439,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, u16, CharT* > to_string(Value num)
 		{
 			usize _len = _num_len(num);
@@ -454,7 +454,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, f128, CharT* > to_string(Value num)
 		{
 			usize _len = 0;
@@ -482,7 +482,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, f64, CharT* > to_string(Value num)
 		{
 			usize _len = 0;
@@ -510,7 +510,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<typename Value>
+		template <typename Value>
 		static HSD_CONSTEXPR EnableIfSame< Value, f32, CharT* > to_string(Value num)
 		{
 			usize _len = 0;
@@ -538,7 +538,7 @@ namespace hsd
 			return _buf;
 		}
 		
-		template<IsChar C>
+		template <IsChar C>
 		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(const C* str)
 		{
 			usize _len = cstring<C>::length(str);
@@ -550,7 +550,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<IsChar C>
+		template <IsChar C>
 		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(const C* str, usize len)
 		{
 			CharT* _buf = new CharT[len + 1];
@@ -561,7 +561,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template<IsChar C>
+		template <IsChar C>
 		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(C letter)
 		{
 			CharT* _buf = new CharT[2];

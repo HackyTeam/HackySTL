@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IndexSequence.hpp"
+#include "IntegerSequence.hpp"
 #include "Pair.hpp"
 
 namespace hsd

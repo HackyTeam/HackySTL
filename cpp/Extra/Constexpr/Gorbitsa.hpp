@@ -3,8 +3,13 @@
 #include "../../Tuple.hpp"
 #include "../../StackArray.hpp"
 
+//
 // From https://github.com/managarm/frigg/blob/master/include/frg/array.hpp, lines 92-124
 //      s/frg::/std::/
+// Credits:
+// -DeKrain
+// -qookie
+//
 namespace hsd
 {
     namespace details 

@@ -1,9 +1,9 @@
-#include "../../cpp/Extra/Constexpr/Gorbista.hpp"
+#include "../../cpp/Extra/Constexpr/Gorbitsa.hpp"
 
 template <typename Str>
 consteval auto run() 
 {
-	return run_parser<Str, true, 0, 0>();
+	return hsd::run_parser<Str, true, 0, 0>();
 }
 
 int main()

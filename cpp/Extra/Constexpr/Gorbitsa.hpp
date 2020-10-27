@@ -1,51 +1,14 @@
 #pragma once
 
-#include "../../Tuple.hpp"
 #include "../../StackArray.hpp"
+#include "../../TypeTraits.hpp"
 
-//
-// From https://github.com/managarm/frigg/blob/master/include/frg/array.hpp, lines 92-124
-//      s/frg::/std::/
 // Credits:
 // -DeKrain
 // -qookie
 //
 namespace hsd
 {
-    namespace details 
-    {
-    	template<typename ...Ts>
-    	struct concat_size;
-
-    	template<typename ...Ts>
-    	inline constexpr usize concat_size_v = concat_size<Ts...>::value;
-
-    	template< typename T, typename ...Ts >
-    	struct concat_size<T, Ts...>
-    	    : literal_constant< usize, T::size() + concat_size_v<Ts...> > 
-        {};
-
-    	template<>
-    	struct concat_size<>
-    	    : literal_constant<usize, 0> 
-        {};
-
-    	template<typename X, usize N>
-    	constexpr void concat_insert(stack_array<X, N>&, usize) 
-        {}
-
-    	template<typename X, size_t N, typename T, typename... Ts>
-    	constexpr void concat_insert(stack_array<X, N>& res, usize at, const T& other, const Ts&... tail) 
-        {
-    		usize n = T::size();
-    
-            for(usize i = 0; i < n; ++i)
-    			res[at + i] = other[i];
-
-    		concat_insert(res, at + n, tail...);
-    	}
-    } // namespace details
-
     template < const char* s, size_t i, char f, char... ss >
     struct _str_to_arr
         : _str_to_arr< s, i + 1, s[i + 1], ss..., f > 

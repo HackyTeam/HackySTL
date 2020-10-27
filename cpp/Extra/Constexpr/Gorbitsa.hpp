@@ -10,12 +10,12 @@
 //
 namespace hsd
 {
-    template < const char* s, size_t i, char f, char... ss >
+    template < const char* s, usize i, char f, char... ss >
     struct _str_to_arr
         : _str_to_arr< s, i + 1, s[i + 1], ss..., f > 
     {};
 
-    template < const char* s, size_t i, char... ss >
+    template < const char* s, usize i, char... ss >
     struct _str_to_arr<s, i, 0, ss...> 
     {
         using type = integer_sequence<char, ss...>;
@@ -31,13 +31,13 @@ namespace hsd
 
     template < typename T, T... v >
     struct arr_size< integer_sequence<T, v...> >
-        : literal_constant<size_t, sizeof...(v)> 
+        : literal_constant<usize, sizeof...(v)> 
     {};
 
     template <typename T>
     static constexpr inline auto arr_size_v = arr_size<T>::value;
 
-    template <typename arr, size_t idx>
+    template <typename arr, usize idx>
     struct arr_elem;
 
     template < typename T, T a, T... b >
@@ -99,7 +99,7 @@ namespace hsd
         : _arr_replace< integer_sequence<T, vs...>, integer_sequence<T>, idx, nv > 
     {};
 
-    template < typename arr, size_t idx, auto nv >
+    template < typename arr, usize idx, auto nv >
     using arr_replace_t = typename arr_replace<arr, idx, nv>::type;
 
     template <typename arr>
@@ -150,7 +150,7 @@ namespace hsd
                 return run_impl<X ? PC + 2 : arr_elem_v<Ram, arg> * 2, X, Ram, Out, Prog>();
             if constexpr (op == 'i')
                 return run_impl<PC + 2, X, arr_replace_t<Ram, arg, (arr_elem_v<Ram, arg> + X) & 0xFF>, Out, Prog>();
-            if constexpr (op == 't')
+            if constexpr (op == 't') // output
                 return run_impl<PC + 2, X, Ram, arr_append_t<Out, arr_elem_v<Ram, arg>>, Prog>();
             if constexpr (op == 's')
                 return run_impl<PC + 2, X ^ arr_elem_v<Ram, arg>, Ram, Out, Prog>();

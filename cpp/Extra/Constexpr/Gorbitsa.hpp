@@ -2,6 +2,7 @@
 
 #include "../../StackArray.hpp"
 #include "../../TypeTraits.hpp"
+#include "../../IntegerSequence.hpp"
 
 // Credits:
 // -DeKrain

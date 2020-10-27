@@ -1,75 +1,17 @@
 #pragma once
 
 #include <stdexcept>
-#include <initializer_list>
 
 #include "Utility.hpp"
 
 namespace hsd
 {
     template < typename T, usize N >
-    class stack_array
+    struct stack_array
     {
-    private:
         T _array[N]{};
-        
-    public:
         using iterator = T*;
         using const_iterator = const T*;
-
-        stack_array() = default;
-
-        template < typename L, typename... U >
-        constexpr stack_array(const L& value, const U&... values)
-        {
-            T arr[] = {static_cast<T>(value), static_cast<T>(values)...};
-            hsd::copy(arr, arr + N, begin());
-        }
-
-        template < typename L, typename... U >
-        constexpr stack_array(L&& value, U&&... values)
-        {
-            T arr[] = {move(static_cast<T>(value)), move(static_cast<T>(values))...};
-            hsd::copy(arr, arr + N, begin());
-        }
-
-        constexpr stack_array(T* data)
-        {
-            hsd::copy(data, data + N, _array);
-        }
-
-        constexpr stack_array(const stack_array& other)
-        {
-            hsd::copy(other._array, other._array + N, _array);
-        }
-
-        constexpr stack_array& operator=(const stack_array& rhs)
-        {
-            hsd::copy(rhs.begin(), rhs.end(), begin());
-            return *this;
-        }
-
-        constexpr stack_array& operator=(const std::initializer_list<T>& rhs)
-        {
-            if(rhs.size() != N)
-            {
-                throw std::out_of_range("");
-            }
-
-            hsd::copy(rhs.begin(), rhs.begin() + N, _array);
-            return *this;
-        }
-
-        constexpr stack_array& operator=(std::initializer_list<T>&& rhs)
-        {
-            if(rhs.size() != N)
-            {
-                throw std::out_of_range("");
-            }
-
-            hsd::move(rhs.begin(), rhs.begin() + N, _array);
-            return *this;
-        }
 
         constexpr T& operator[](usize index)
         {
@@ -170,6 +112,5 @@ namespace hsd
         }
     };
 
-    template < typename L, typename... U > stack_array(const L&, const U&...) -> stack_array<L, 1 + sizeof...(U)>;
-    template < typename L, typename... U > stack_array(L&&, U&&...) -> stack_array<L, 1 + sizeof...(U)>;
+    template < typename L, typename... U > stack_array(L, U...) -> stack_array<L, 1 + sizeof...(U)>;
 }

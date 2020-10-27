@@ -32,9 +32,13 @@ namespace hsd
         template < typename L, typename... U >
         HSD_CONSTEXPR heap_array(const L& value, const U&... values)
         {
-            _array = new T[N];
-            T arr[] = {value, values...};
-            hsd::copy(arr, arr + N, begin());
+            _array = new T[N]{value, values...};
+        }
+
+        template < typename L, typename... U >
+        HSD_CONSTEXPR heap_array(L&& value, U&&... values)
+        {
+            _array = new T[N]{move(value), move(values)...};
         }
 
         HSD_CONSTEXPR heap_array(const heap_array& other)
@@ -175,5 +179,5 @@ namespace hsd
         }
     };
 
-    template < typename L, typename... U > heap_array(const L&, const U&...) -> heap_array<L, 1 + sizeof...(U)>;
+    template < typename L, typename... U > heap_array(L, U...) -> heap_array<L, 1 + sizeof...(U)>;
 }

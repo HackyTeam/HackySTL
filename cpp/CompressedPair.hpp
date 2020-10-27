@@ -13,7 +13,7 @@ namespace hsd
         };
 
         template <typename _Ty>
-        using _wrap_type = std::conditional_t<std::is_class_v<_Ty>, _Ty, _wrapper_for<_Ty>>;
+        using _wrap_type = conditional_t<std::is_class_v<_Ty>, _Ty, _wrapper_for<_Ty>>;
 
         template <typename _Ty>
         struct _is_empty : private _wrap_type<_Ty>
@@ -130,10 +130,10 @@ namespace hsd
     };
 
     template <typename _Ta, typename _Tb>
-    using _compressed_pair = std::conditional_t<
+    using _compressed_pair = conditional_t<
         _detail::_is_empty<_Ta>::value,
         _compressed_pair_b<_Ta, _Tb>,
-        std::conditional_t<
+        conditional_t<
             _detail::_is_empty<_Tb>::value,
             _compressed_pair_a<_Ta, _Tb>,
             _compressed_pair_ab<_Ta, _Tb>>>;

@@ -81,55 +81,6 @@ namespace hsd
         : public true_type 
     {};
 
-    template < typename, typename >
-    struct is_same 
-        : public false_type
-    {};
-    
-    template <typename T>
-    struct is_same<T, T>
-        : public true_type
-    {};
-
-    template <typename T>
-    struct remove_reference
-    {
-        using type = T;
-    };
-
-    template <typename T>
-    struct remove_reference<T&>
-    {
-        using type = T;
-    };
-
-    template <typename T>
-    struct remove_reference<T&&>
-    {
-        using type = T;
-    };
-
-    template <typename T>
-    struct remove_array
-    {
-        using type = T;
-    };
-
-    template <typename T>
-    struct remove_array<T[]>
-    {
-        using type = T;
-    };
-
-    template <typename T, usize N>
-    struct remove_array<T[N]>
-    {
-        using type = T;
-    };
-    
-    template <typename T>
-    using remove_array_t = typename remove_array<T>::type;
-
     template <typename>
     struct is_char_pointer 
         : public false_type
@@ -314,6 +265,52 @@ namespace hsd
     struct is_char<const char32> 
         : public true_type
     {};
+
+    template < typename, typename >
+    struct is_same 
+        : public false_type
+    {};
+    
+    template <typename T>
+    struct is_same<T, T>
+        : public true_type
+    {};
+
+    template <typename T>
+    struct remove_reference
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_reference<T&>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_reference<T&&>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_array
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_array<T[]>
+    {
+        using type = T;
+    };
+
+    template <typename T, usize N>
+    struct remove_array<T[N]>
+    {
+        using type = T;
+    };
 
     template <typename T> 
     struct remove_cv                   
@@ -751,6 +748,9 @@ namespace hsd
 
     template < bool Cond, typename IfTrue, typename IfFalse >
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;
+
+    template <typename T>
+    using remove_array_t = typename remove_array<T>::type;
 
     template <typename T>
     using remove_reference_t = typename remove_reference<T>::type;

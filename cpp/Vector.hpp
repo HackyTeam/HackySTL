@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 #include <cassert>
-#include <initializer_list>
 
 #include "Utility.hpp"
 #include "Tuple.hpp"
@@ -53,24 +52,22 @@ namespace hsd
             swap(_capacity, rhs._capacity);
         }
 
-        HSD_CONSTEXPR vector(const std::initializer_list<T>& list)
-            : _data(new storage_type[list.size()]),
-              _size(list.size()), _capacity(list.size())
-        {
-            auto _arr = list.begin();
-            
+        template <usize N>
+        HSD_CONSTEXPR vector(const T (&arr)[N])
+            : _data(new storage_type[N]),
+              _size(N), _capacity(N)
+        {   
             for (usize _index = 0; _index < _size; ++_index)
-                new(&_data[_index]) T(_arr[_index]);
+                new(&_data[_index]) T(arr[_index]);
         }
 
-        HSD_CONSTEXPR vector(std::initializer_list<T>&& list)
-            : _data(new storage_type[list.size()]),
-              _size(list.size()), _capacity(list.size())
-        {
-            auto _arr = list.begin();
-            
+        template <usize N>
+        HSD_CONSTEXPR vector(T (&&arr)[N])
+            : _data(new storage_type[N]),
+              _size(N), _capacity(N)
+        {   
             for (usize _index = 0; _index < _size; ++_index)
-                new(&_data[_index]) T(move(_arr[_index]));
+                new(&_data[_index]) T(move(arr[_index]));
         }
 
         HSD_CONSTEXPR vector& operator=(const vector& rhs)
@@ -122,81 +119,79 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR vector& operator=(const std::initializer_list<T>& list)
+        template <usize N>
+        HSD_CONSTEXPR vector& operator=(const T (&arr)[N])
         {
-            auto _arr = list.begin();
-            
-            if (_capacity < list.size())
+            if (_capacity < N)
             {
                 clear();
-                reserve(list.size());
+                reserve(N);
                 
-                for (usize _index = 0; _index < list.size(); ++_index)
-                    new(&_data[_index]) T(_arr[_index]);
+                for (usize _index = 0; _index < N; ++_index)
+                    new(&_data[_index]) T(arr[_index]);
                 
-                _size = list.size();
+                _size = N;
             }
             else
             {
                 usize _index;
-                usize min_size = _size > list.size() ? _size : list.size();
+                usize min_size = _size > N ? _size : N;
                 
                 for (_index = 0; _index < min_size; ++_index)
                 {
-                    _data[_index] = _arr[_index];
+                    _data[_index] = arr[_index];
                 }
-                if (_size > list.size())
+                if (_size > N)
                 {
-                    for (_index = _size; _index > list.size(); --_index)
+                    for (_index = _size; _index > N; --_index)
                         at_unchecked(_index - 1).~T();
                 }
-                else if (list.size() > _size)
+                else if (N > _size)
                 {
-                    for (; _index < list.size(); ++_index)
-                        new(&_data[_index]) T(_arr[_index]);
+                    for (; _index < N; ++_index)
+                        new(&_data[_index]) T(arr[_index]);
                 }
                 
-                _size = list.size();
+                _size = N;
             }
 
             return *this;
         }
 
-        HSD_CONSTEXPR vector& operator=(std::initializer_list<T>&& list)
+        template <usize N>
+        HSD_CONSTEXPR vector& operator=(T (&&arr)[N])
         {
-            auto _arr = list.begin();
-            
-            if (_capacity < list.size())
+            if (_capacity < N)
             {
                 clear();
-                reserve(list.size());
+                reserve(N);
                 
-                for (usize _index = 0; _index < list.size(); ++_index)
-                    new(&_data[_index]) T(move(_arr[_index]));
+                for (usize _index = 0; _index < N; ++_index)
+                    new(&_data[_index]) T(move(arr[_index]));
                 
-                _size = list.size();
+                _size = N;
             }
             else
             {
                 usize _index;
-                usize min_size = _size > list.size() ? _size : list.size();
+                usize min_size = _size > N ? _size : N;
                 
                 for (_index = 0; _index < min_size; ++_index)
                 {
-                    _data[_index] = move(_arr[_index]);
+                    _data[_index] = move(arr[_index]);
                 }
-                if (_size > list.size())
+                if (_size > N)
                 {
-                    for (_index = _size; _index > list.size(); --_index)
+                    for (_index = _size; _index > N; --_index)
                         at_unchecked(_index - 1).~T();
                 }
-                else if (list.size() > _size)
+                else if (N > _size)
                 {
-                    for (; _index < list.size(); ++_index)
-                        new(&_data[_index]) T(move(_arr[_index]));
+                    for (; _index < N; ++_index)
+                        new(&_data[_index]) T(move(arr[_index]));
                 }
 
-                _size = list.size();
+                _size = N;
             }
 
             return *this;
@@ -415,6 +410,9 @@ namespace hsd
         }
 
     };
+
+    template < typename T, usize N > vector(const T (&)[N]) -> vector<T>;
+    template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
 
     template< typename L, typename... U >
     requires (std::is_constructible_v<L, U> && ...)

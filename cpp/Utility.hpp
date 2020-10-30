@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TypeTraits.hpp"
+#include "IntegerSequence.hpp"
 
 namespace hsd
 {

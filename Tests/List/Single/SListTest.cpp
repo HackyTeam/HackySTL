@@ -19,7 +19,7 @@ int main()
         printf("%d\n", it.a);
     }
 
-    puts("");
+    puts("==========");
     ls.pop_front();
 
     for(auto it : ls)
@@ -27,7 +27,7 @@ int main()
         printf("%d\n", it.a);
     }
 
-    puts("");
+    puts("==========");
     ls.emplace_front(3, 23.22f, 'e');
 
     for(auto it : ls)

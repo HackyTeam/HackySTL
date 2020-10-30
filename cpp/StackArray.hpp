@@ -48,7 +48,10 @@ namespace hsd
         {
             static_assert(L - U <= N, "Out of range\n");
 
-            return stack_array<T, L - U>(&_array[U]);
+            return [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                return stack_array<T, L - U>{_array[Ints]...};
+            }(make_index_sequence<L - U>{});
         }
 
         constexpr usize size()

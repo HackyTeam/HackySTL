@@ -3,7 +3,7 @@
 
 int main()
 {
-    hsd::heap_array harr = {1, 2, 3, 4, 5};
+    hsd::heap_array harr = {{1, 2, 3, 4, 5}};
     
     for(auto i : harr)
     {

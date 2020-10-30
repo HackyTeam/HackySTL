@@ -47,18 +47,42 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
     return vec;
 }
 
+template <typename T>
+void test(hsd::vector<T>&&)
+{
+
+}
+
 int main()
 {
     {
-        hsd::vector e = {1, 2, 3, 4, 5, 6};
+        // for function type deduction
+        test(hsd::vector{{1, 2, 3, 4, 5, 6}});
+        // alternatively you can do
+        test<int>({{1, 2, 3, 4, 5, 6}});
+        // it does the same thing
+        test(hsd::make_vector(1, 2, 3, 4, 5, 6));
+    }
+
+    {
+        // you have to do this: {{...}}
+        hsd::vector e = {{1, 2, 3, 4, 5, 6}};
 
         for (auto val : e)
         {
             printf("%d\n", val);
         }
 
-    std::puts("==========");
+        std::puts("==========");
         auto e2 = gen_range(e, 2, 5);
+
+        for (auto val : e2)
+        {
+            std::printf("%d\n", val);
+        }
+
+        std::puts("==========");
+        e2 = {{12, 21, 123}};
 
         for (auto val : e2)
         {

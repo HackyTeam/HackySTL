@@ -14,7 +14,7 @@ struct test
     {}
 };
 
-template<hsd::io_detail::u8string_literal str>
+template<hsd::string_literal str>
 void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
@@ -29,7 +29,7 @@ void _print(test& t, FILE* ptr = stdout)
     }
 }
 
-template<hsd::io_detail::wstring_literal str>
+template<hsd::wstring_literal str>
 void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
@@ -45,16 +45,18 @@ void _print(test& t, FILE* ptr = stdout)
     }
 }
 
-void _parse(hsd::u8string& str, test& t)
+void _parse(hsd::pair<const char*, hsd::usize>& str, test& t)
 {
-    sscanf(str.c_str(), "%d%d%f", &t.a, &t.b, &t.d);
+    sscanf(str.first, "%d%d%f", &t.a, &t.b, &t.d);
 }
 
 int main()
 {
+    hsd::wsstream str{256};
     hsd::i32 x, z;
     hsd::f32 y;
     hsd::io::print<L"hello, {} and other words\n">(123.2);
+    str.write_data<L"hello, {} and other words\n">(123.2);
     
     hsd::io::err_print<L"{}\n">(test{});
     hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});

@@ -11,7 +11,7 @@ int main()
         if(code == hsd::net::received_state::ok)
         {
             hsd::io::print<"CLIENT> {}\n">(buf.data());
-            server.respond("Good\n");
+            server.respond<"Good\n">();
         }
         
         if(buf.to_string() == "exit")

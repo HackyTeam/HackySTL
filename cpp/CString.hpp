@@ -8,7 +8,7 @@ namespace hsd
 	concept IsChar = is_char<C>::value;
 
 	template <typename CharT>
-    class cstring
+    class basic_cstring
     {
     private:
         static constexpr bool _compare(const CharT* str, const CharT* substr)
@@ -541,7 +541,7 @@ namespace hsd
 		template <IsChar C>
 		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(const C* str)
 		{
-			usize _len = cstring<C>::length(str);
+			usize _len = basic_cstring<C>::length(str);
 			CharT* _buf = new CharT[_len + 1];
 
 			for (usize _index = 0; _index <= _len; _index++)
@@ -726,8 +726,9 @@ namespace hsd
 		}
     };
 
-	using wcstring = hsd::cstring<wchar>;
-	using u8cstring = hsd::cstring<char>;
-	using u16cstring = hsd::cstring<char16>;
-	using u32cstring = hsd::cstring<char32>;
+	using cstring = basic_cstring<char>;
+	using wcstring = basic_cstring<wchar>;
+	using u8cstring = basic_cstring<char8>;
+	using u16cstring = basic_cstring<char16>;
+	using u32cstring = basic_cstring<char32>;
 }

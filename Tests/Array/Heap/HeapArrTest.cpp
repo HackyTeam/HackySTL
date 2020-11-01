@@ -11,7 +11,7 @@ int main()
     }
 
     auto harr2 = harr.gen_range<0, 3>();
-    puts("");
+    puts("=======");
 
     for(auto i : harr2)
     {

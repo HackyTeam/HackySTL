@@ -78,7 +78,7 @@ namespace hsd
             sockaddr_in _hintv4{0};
             socklen_t _len = sizeof(sockaddr_in);
             net::protocol_type _protocol = net::protocol_type::ipv4;
-            hsd::u8sstream _net_buf{4095};
+            hsd::sstream _net_buf{4095};
 
             void _clear_buf()
             {
@@ -90,7 +90,7 @@ namespace hsd
             
             ~server()
             {
-                respond("");
+                respond<"">();
             }
 
             server(net::protocol_type protocol, uint16_t port, const char* ip_addr)
@@ -100,7 +100,7 @@ namespace hsd
                     _len = sizeof(sockaddr_in6);
             }
 
-            hsd::pair< hsd::u8sstream&, net::received_state > receive()
+            hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = 0;
@@ -131,49 +131,28 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template< usize N, typename... Args >
-            net::received_state respond(const char (&fmt)[N], Args&&... args)
+            template< string_literal fmt, typename... Args >
+            net::received_state respond(Args&&... args)
             {
-                hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-                hsd::vector<hsd::u8string> _args_buf = {
-                    hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-                };
-                hsd::u8string _send_buf;
+                _clear_buf();
+                _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+                isize _response = 0;
+
+                if(_protocol == net::protocol_type::ipv4)
                 {
-                    throw std::runtime_error("Arguments don\'t match");
+                    _response = sendto(_sock.get_listening(), _net_buf.data(), 
+                        _net_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv4), _len);
                 }
                 else
                 {
-                    usize index = 0;
-
-                    for(; index < _args_buf.size(); index++)
-                    {
-                        _send_buf += _fmt_buf[index] + _args_buf[index];
-                    }
-                    if(_fmt_buf.size() != _args_buf.size())
-                    {
-                        _send_buf += _fmt_buf[index];
-                    }
-
-                    isize _response = 0;
-
-                    if(_protocol == net::protocol_type::ipv4)
-                    {
-                        _response = sendto(_sock.get_listening(), _send_buf.data(), 
-                            _send_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv4), _len);
-                    }
-                    else
-                    {
-                        _response = sendto(_sock.get_listening(), _send_buf.data(), 
-                            _send_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv6), _len);
-                    }
-                    if(_response == static_cast<isize>(net::received_state::err))
-                    {
-                        hsd::io::err_print<"Error in sending\n">();
-                        return net::received_state::err;
-                    }
+                    _response = sendto(_sock.get_listening(), _net_buf.data(), 
+                        _net_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv6), _len);
+                }
+                if(_response == static_cast<isize>(net::received_state::err))
+                {
+                    hsd::io::err_print<"Error in sending\n">();
+                    return net::received_state::err;
                 }
 
                 return net::received_state::ok;
@@ -253,8 +232,8 @@ namespace hsd
                 sockaddr_in _socket2v4;
                 sockaddr_in6 _socket2v6;
                 socklen_t _size = 0;
-                u8string _host{1024};
-                u8string _service{31};
+                string _host{1024};
+                string _service{31};
 
             public:
                 socket2()
@@ -291,7 +270,7 @@ namespace hsd
                     if(protocol == net::protocol_type::ipv4)
                     {
                         _size = sizeof(_socket2v4);
-                        _socket2_sock = accept(_sock.get_listener(), (sockaddr*)&_socket2v4, &_size);
+                        _socket2_sock = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_socket2v4), &_size);
 
                         if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v4), sizeof(_socket2v4), 
                             _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
@@ -307,7 +286,7 @@ namespace hsd
                     else
                     {
                         _size = sizeof(_socket2v6);
-                        _socket2_sock = accept(_sock.get_listener(), (sockaddr*)&_socket2v6, &_size);
+                        _socket2_sock = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_socket2v6), &_size);
 
                         if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v6), sizeof(_socket2v6), 
                                 _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
@@ -330,7 +309,7 @@ namespace hsd
         {
         private:
             server_detail::socket2 _sock;
-            hsd::u8sstream _net_buf{4095};
+            hsd::sstream _net_buf{4095};
 
             void _clear_buf()
             {
@@ -345,7 +324,7 @@ namespace hsd
                 : _sock{protocol, port, ip_addr}
             {}
 
-            hsd::pair< hsd::u8sstream&, net::received_state > receive()
+            hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = recv(_sock.get_sock(), 
@@ -367,40 +346,19 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template < usize N, typename... Args >
-            net::received_state respond(const char (&fmt)[N], Args&&... args)
+            template < string_literal fmt, typename... Args >
+            net::received_state respond(Args&&... args)
             {
-                hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-                hsd::vector<hsd::u8string> _args_buf = {
-                    hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-                };
-                hsd::u8string _send_buf;
+                _clear_buf();
+                _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+                isize _response = send(_sock.get_sock(), 
+                    _net_buf.data(), _net_buf.size(), 0);
+
+                if(_response == static_cast<isize>(net::received_state::err))
                 {
-                    throw std::runtime_error("Arguments don\'t match");
-                }
-                else
-                {
-                    usize index = 0;
-
-                    for(; index < _args_buf.size(); index++)
-                    {
-                        _send_buf += _fmt_buf[index] + _args_buf[index];
-                    }
-                    if(_fmt_buf.size() != _args_buf.size())
-                    {
-                        _send_buf += _fmt_buf[index];
-                    }
-
-                    isize _response = send(_sock.get_sock(), 
-                        _send_buf.data(), _send_buf.size(), 0);
-
-                    if(_response == static_cast<isize>(net::received_state::err))
-                    {
-                        hsd::io::err_print<"Error in sending\n">();
-                        return net::received_state::err;
-                    }
+                    hsd::io::err_print<"Error in sending\n">();
+                    return net::received_state::err;
                 }
 
                 return net::received_state::ok;

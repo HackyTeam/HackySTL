@@ -55,8 +55,9 @@ namespace hsd
     using i16 = short;
     using i8 = char;
 
-    using uchar = unsigned char;
     using wchar = wchar_t;
+    using uchar = unsigned char;
+    using char8 = char8_t;
     using char16 = char16_t;
     using char32 = char32_t;
 

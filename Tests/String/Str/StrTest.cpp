@@ -3,10 +3,10 @@
 
 int main()
 {
-    hsd::u8string str = "this is a test";
+    hsd::string str = "this is a test";
     auto str2 = str;
     
-    printf("%s\n", hsd::u8string::to_string(-4.12f).c_str());
+    printf("%s\n", hsd::string::to_string(-4.12f).c_str());
     
     printf("%s\n", (",\nno it\'s not\n" + str).data());
     

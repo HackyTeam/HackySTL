@@ -17,7 +17,7 @@ namespace hsd
             fflush(stderr);
         }
 
-        static u8sstream& read_line()
+        static sstream& read_line()
         {
             do
             {
@@ -31,7 +31,7 @@ namespace hsd
             return _u8io_buf;
         }
 
-        static u8sstream& read()
+        static sstream& read()
         {
             do
             {
@@ -67,44 +67,44 @@ namespace hsd
             return _wio_buf;
         }
 
-        template < io_detail::string_literal fmt, typename... Args >
+        template < basic_string_literal fmt, typename... Args >
         static void print(Args&&... args)
         {
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
             static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
 
             constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+            constexpr basic_string_literal<char_type, _len + 1> _last{
                 _fmt_buf.first[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
                     _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<_last>();
         }
 
-        template < io_detail::string_literal fmt, typename... Args >
+        template < basic_string_literal fmt, typename... Args >
         static void err_print(Args&&... args)
         {
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
             static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
 
             constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+            constexpr basic_string_literal<char_type, _len + 1> _last{
                 _fmt_buf.first[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
                     _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, stderr), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
@@ -120,14 +120,14 @@ namespace hsd
 
         bool only_write()
         {
-            return (u8cstring::compare(_file_mode, "w") == 0
-            || u8cstring::compare(_file_mode, "wb") == 0);
+            return (cstring::compare(_file_mode, "w") == 0
+            || cstring::compare(_file_mode, "wb") == 0);
         }
 
         bool only_read()
         {
-            return (u8cstring::compare(_file_mode, "r") == 0
-            || u8cstring::compare(_file_mode, "rb") == 0);
+            return (cstring::compare(_file_mode, "r") == 0
+            || cstring::compare(_file_mode, "rb") == 0);
         }
 
     public:
@@ -180,7 +180,7 @@ namespace hsd
             }
         }
 
-        u8sstream& read_line()
+        sstream& read_line()
         {
             _u8io_buf.reset_data();
             
@@ -212,7 +212,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        u8sstream& read()
+        sstream& read()
         {
             _u8io_buf.reset_data();
 
@@ -244,7 +244,7 @@ namespace hsd
             return _wio_buf;
         }
 
-        template < io_detail::string_literal fmt, typename... Args >
+        template < basic_string_literal fmt, typename... Args >
         void print(Args&&... args)
         {
             if(only_read())
@@ -252,17 +252,17 @@ namespace hsd
 
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            constexpr auto _fmt_buf = io_detail::split<fmt, sizeof...(Args) + 1>();
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
             static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
 
             constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
-            constexpr io_detail::string_literal<char_type, _len + 1> _last{
+            constexpr basic_string_literal<char_type, _len + 1> _last{
                 _fmt_buf.first[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<io_detail::string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
+                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
                     _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, _file_buf), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 

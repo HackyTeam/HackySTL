@@ -5,6 +5,14 @@
 
 namespace hsd
 {
+    #if defined(HSD_COMPILER_MSVC)
+        #define HSD_FUNCION_NAME __FUNCSIG__
+    #elif  defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
+        #define HSD_FUNCION_NAME __PRETTY_FUNCTION__
+    #else
+        #define HSD_FUNCION_NAME __builtin_FUNCTION()
+    #endif
+
     namespace _detail
     {
         class source_location
@@ -16,7 +24,7 @@ namespace hsd
 
         public:
             constexpr source_location(
-                const char* file_name = __builtin_FILE(), 
+                const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 usize line = __builtin_LINE()) noexcept
                 : _file_name{file_name}, _func{func}, _line{line}
@@ -47,7 +55,8 @@ namespace hsd
             clock _clk{};
 
         public:
-            profiler_value(const char* file_name = __builtin_FILE(), 
+            profiler_value(
+                const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 usize line = __builtin_LINE()) noexcept
                 : _file_name{file_name}, _func{func}, _line{line}
@@ -102,9 +111,8 @@ namespace hsd
         }
 
         stack_trace& add(
-            const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE()) noexcept
+            const char* func, usize line = __builtin_LINE(),
+            const char* file_name = __builtin_FILE()) noexcept
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
@@ -150,9 +158,8 @@ namespace hsd
         }
 
         profiler& add(
-            const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE()) noexcept
+            const char* func, usize line = __builtin_LINE(),
+            const char* file_name = __builtin_FILE()) noexcept
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
@@ -177,6 +184,9 @@ namespace hsd
     static inline stack_trace exec_stack;
     static inline profiler profiler_stack;
     using source_location = _detail::source_location;
+
+    #define invoke_profiler_func(func, ...) func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
+    #define invoke_stacktrace_func(func, ...) func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
 
     class stack_trace_exception : public std::exception
     {

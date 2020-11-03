@@ -7,8 +7,6 @@
 #include "StackArray.hpp"
 #include "Vector.hpp"
 #include "String.hpp"
-#include "Pair.hpp"
-#include "Tuple.hpp"
 
 namespace hsd
 {
@@ -255,9 +253,9 @@ namespace hsd
         }
 
         template <string_literal str>
-        static i32 _write(uchar val, pair<char*, usize> dest)
+        static i32 _write(char8 val, pair<char*, usize> dest)
         {
-            return snprintf(dest.first, dest.second, basic_string_literal(str, "%c").data, val);
+            return snprintf(dest.first, dest.second, basic_string_literal(str, "%zc").data, val);
         }
 
         template <string_literal str>
@@ -360,7 +358,19 @@ namespace hsd
         }
 
         template <string_literal str>
+        static i32 _write(const char8* val, pair<char*, usize> dest)
+        {
+            return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val);
+        }
+
+        template <string_literal str>
         static i32 _write(const string& val, pair<char*, usize> dest)
+        {
+            return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val.c_str());
+        }
+
+        template <string_literal str>
+        static i32 _write(const u8string& val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val.c_str());
         }
@@ -399,9 +409,9 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static i32 _write(uchar val, pair<wchar*, usize> dest)
+        static i32 _write(char8 val, pair<wchar*, usize> dest)
         {
-            return swprintf(dest.first, dest.second, basic_string_literal(str, L"%c").data, val);
+            return swprintf(dest.first, dest.second, basic_string_literal(str, L"%zc").data, val);
         }
 
         template <wstring_literal str>
@@ -504,19 +514,31 @@ namespace hsd
         }
 
         template <wstring_literal str>
+        static i32 _write(const char8* val, pair<wchar*, usize> dest)
+        {
+            return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val);
+        }
+
+        template <wstring_literal str>
         static i32 _write(const wchar* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, basic_string_literal(str, L"%ls").data, val);
         }
 
         template <wstring_literal str>
-        static i32 _write(string& val, pair<wchar*, usize> dest)
+        static i32 _write(const string& val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val.c_str());
         }
 
         template <wstring_literal str>
-        static i32 _write(wstring& val, pair<wchar*, usize> dest)
+        static i32 _write(const u8string& val, pair<wchar*, usize> dest)
+        {
+            return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val.c_str());
+        }
+
+        template <wstring_literal str>
+        static i32 _write(const wstring& val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, basic_string_literal(str, L"%ls").data, val.c_str());
         }

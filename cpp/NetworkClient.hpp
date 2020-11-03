@@ -284,7 +284,7 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template< string_literal fmt, typename... Args >
+            template < string_literal fmt, typename... Args >
             net::received_state respond(Args&&... args)
             {
                 _clear_buf();

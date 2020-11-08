@@ -1,6 +1,5 @@
 #pragma once
 
-#include <math.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <locale.h>
@@ -87,9 +86,9 @@ namespace hsd
         template <string_literal str>
         static void _print(f32 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || hsd::math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, basic_string_literal(str, "%e").data, val);
             }
@@ -102,9 +101,9 @@ namespace hsd
         template <string_literal str>
         static void _print(f64 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || hsd::math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, basic_string_literal(str, "%e").data, val);
             }
@@ -117,9 +116,9 @@ namespace hsd
         template <string_literal str>
         static void _print(f128 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || hsd::math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, basic_string_literal(str, "%Le").data, val);
             }
@@ -252,9 +251,9 @@ namespace hsd
         template <wstring_literal str>
         static void _print(f32 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) ||hsd::math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, basic_string_literal(str, L"%e").data, val);
             }
@@ -267,9 +266,9 @@ namespace hsd
         template <wstring_literal str>
         static void _print(f64 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || hsd::math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, basic_string_literal(str, L"%e").data, val);
             }
@@ -282,9 +281,9 @@ namespace hsd
         template <wstring_literal str>
         static void _print(f128 val, FILE* file_buf = stdout)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = hsd::math::abs(hsd::math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || hsd::math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, basic_string_literal(str, L"%Le").data, val);
             }

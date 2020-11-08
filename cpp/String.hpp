@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CString.hpp"
-
+#include "Math.hpp"
 #include <stdexcept>
 
 namespace hsd
@@ -89,13 +89,14 @@ namespace hsd
             return *this;
         }
 
-        template <typename RhsCharT>
+        template <typename RhsCharT> requires(std::is_convertible_v<RhsCharT, CharT>)
         HSD_CONSTEXPR basic_string& operator=(const basic_string<RhsCharT>& rhs)
         {
             _reset();
             _size = rhs.size();
             _reserved_size = _size;
-            _data = _str_utils::to_string(rhs.c_str(), _size);
+            _data = new CharT[_size + 1]{};
+            copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
 
@@ -204,7 +205,7 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                hsd::min(_size, rhs._size)
+                hsd::math::min(_size, rhs._size)
             ) == 0;
         }
 
@@ -217,7 +218,7 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                hsd::min(_size, rhs._size)
+                hsd::math::min(_size, rhs._size)
             ) == -1;
         }
 
@@ -229,7 +230,7 @@ namespace hsd
         constexpr bool operator>(const basic_string& rhs)
         {
             return _str_utils::compare(_data, rhs._data, 
-                hsd::min(_size, rhs._size)) == 1;
+                hsd::math::min(_size, rhs._size)) == 1;
         }
 
         constexpr bool operator>=(const basic_string& rhs)

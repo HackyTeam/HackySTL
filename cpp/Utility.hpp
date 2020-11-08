@@ -44,18 +44,6 @@ namespace hsd
         return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
     }
 
-    template <typename T1>
-    static constexpr T1 min(T1 first, T1 second) noexcept
-    {
-        return first < second ? first : second;
-    }
-
-    template <typename T1>
-    static constexpr T1 max(T1 first, T1 second) noexcept
-    {
-        return first > second ? first : second;
-    }
-
     template <typename T>
     static constexpr T&& forward(remove_reference_t<T>&& val)
     {

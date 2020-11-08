@@ -90,6 +90,9 @@ namespace hsd
     struct limits
     {
         static constexpr bool is_specialized = false;
+        static constexpr T infinity = 0;
+        static constexpr T epsilon = 0;
+        static constexpr T nan = 0;
         static constexpr T min = _detail::min<T>();
         static constexpr T max = _detail::max<T>();
         static constexpr bool is_signed = _detail::is_signed<T>();
@@ -102,8 +105,11 @@ namespace hsd
     struct limits<f32>
     {
         static constexpr bool is_specialized = true;
-        static constexpr f32 min = 1.17549435e-38F;
-        static constexpr f32 max = 3.40282347e+38F;
+        static constexpr f32 infinity = __builtin_inff();
+        static constexpr f32 nan = __builtin_nanf("");
+        static constexpr f32 epsilon = 1.19209290e-7f;
+        static constexpr f32 min = 1.17549435e-38f;
+        static constexpr f32 max = 3.40282347e+38f;
         static constexpr bool is_signed = true;
         static constexpr i32 digits = 24;
         static constexpr i32 digits10 = 6;
@@ -114,6 +120,9 @@ namespace hsd
     struct limits<f64>
     {
         static constexpr bool is_specialized = true;
+        static constexpr f64 infinity = __builtin_inf();
+        static constexpr f64 nan = __builtin_nan("");
+        static constexpr f64 epsilon = 2.2204460492503131e-16;
         static constexpr f64 min = 2.2250738585072014e-308;
         static constexpr f64 max = 1.7976931348623157e+308;
         static constexpr bool is_signed = true;
@@ -126,8 +135,11 @@ namespace hsd
     struct limits<f128>
     {
         static constexpr bool is_specialized = true;
-        static constexpr f128 min = 3.36210314311209350626e-4932L;
-        static constexpr f128 max = 1.18973149535723176502e+4932L;
+        static constexpr f128 infinity = __builtin_infl();
+        static constexpr f128 nan = __builtin_nanl("");
+        static constexpr f128 epsilon = 1.08420217248550443401e-19l;
+        static constexpr f128 min = 3.36210314311209350626e-4932l;
+        static constexpr f128 max = 1.18973149535723176502e+4932l;
         static constexpr bool is_signed = true;
         static constexpr i32 digits = 64;
         static constexpr i32 digits10 = 18;

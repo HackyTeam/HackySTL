@@ -81,7 +81,12 @@
         "cstdbool": "cpp",
         "*.inc": "cpp",
         "*.rh": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "csignal": "cpp",
+        "strstream": "cpp",
+        "complex": "cpp",
+        "cfenv": "cpp",
+        "*.ipp": "cpp"
     },
     "cSpell.words": [
         "alignas",

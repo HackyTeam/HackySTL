@@ -731,12 +731,12 @@ namespace hsd
                     return a + 1 * static_cast<T>(static_cast<usize>(b - a) / 2);
                 }
             }
-            else // is_floating
+            else
             {
-                constexpr auto _low_limit = hsd::limits<T>::min * 2;
-                constexpr auto _high_limit = hsd::limits<T>::max / 2;
-                const auto _abs_a = hsd::math::abs(a);
-                const auto _abs_b = hsd::math::abs(b);
+                constexpr auto _low_limit = limits<T>::min * 2;
+                constexpr auto _high_limit = limits<T>::max / 2;
+                const auto _abs_a = math::abs(a);
+                const auto _abs_b = math::abs(b);
 
                 if(_abs_a <= _high_limit && _abs_b <= _high_limit) [[likely]] 
                 {
@@ -761,7 +761,7 @@ namespace hsd
         constexpr T* midpoint(T* a, T* b) noexcept
         {
             static_assert(sizeof(T) != 0, "type must be complete");
-            return a + (-a) / 2;
+            return a + (b - a) / 2;
         }
 
         template <IsFloat T>

@@ -10,7 +10,7 @@ namespace hsd
     template< typename Key, typename T, typename Hasher = fnv1a<usize> >
     class unordered_map;
 
-    namespace _detail
+    namespace umap_detail
     {
         template< typename Key, typename T, typename Hasher = fnv1a<usize> >
         class map_value
@@ -114,13 +114,13 @@ namespace hsd
                 return &_it->get();
             }
         };
-    } // namespace _detail
+    } // namespace umap_detail
 
     template< typename Key, typename T, typename Hasher >
     class unordered_map
     {
     private:
-        using map_value_type = _detail::map_value< Key, T, Hasher >;
+        using map_value_type = umap_detail::map_value< Key, T, Hasher >;
         vector< vector< reference<map_value_type> > > _buckets;
         static constexpr f64 _limit_ratio = 0.75f;
         vector<map_value_type> _data;
@@ -157,7 +157,7 @@ namespace hsd
 
     public:
         using reference_type = T&;
-        using iterator = _detail::iterator< Key, T, Hasher >;
+        using iterator = umap_detail::iterator< Key, T, Hasher >;
         using const_iterator = typename vector<map_value_type>::const_iterator;
 
         HSD_CONSTEXPR ~unordered_map() = default;

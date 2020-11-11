@@ -8,6 +8,13 @@ namespace hsd
     {
         namespace shared_detail
         {
+            template <typename T, typename U>
+            concept Derived = std::is_base_of_v<T, U>;
+            template <typename T>
+            concept ArrayPointer = is_array<T>::value;
+            template <typename T>
+            concept ValuePointer = !ArrayPointer<T>;
+
             template <typename T>
             struct ptr_info
             {
@@ -18,8 +25,7 @@ namespace hsd
             template <typename T>
             struct deleter
             {
-                template < typename U = T, disable_if<is_array<U>::value, int>::type = 0 >
-                void operator()(ptr_info<T>& ptr)
+                void operator()(ptr_info<T>& ptr) requires(ValuePointer<T>)
                 {
                     if(*ptr._size == 1)
                     {
@@ -36,8 +42,7 @@ namespace hsd
                     }
                 }
 
-                template < typename U = T, enable_if<is_array<U>::value, int>::type = 0 >
-                void operator()(ptr_info<T>& ptr)
+                void operator()(ptr_info<T>& ptr) requires(ArrayPointer<T>)
                 {
                     if(*ptr._size == 1)
                     {
@@ -93,15 +98,13 @@ namespace hsd
             shared_ptr() = default;
             HSD_CONSTEXPR shared_ptr(NullType) {}
 
-            template < typename U = T, typename = disable_if_t<is_array<U>::value, i32> >
-            HSD_CONSTEXPR shared_ptr(pointer<U> ptr)
+            HSD_CONSTEXPR shared_ptr(pointer<T> ptr) requires(shared_detail::ValuePointer<T>)
             {
                 _value._ptr._value = ptr;
                 _value._ptr._size = new usize(1);
             }
 
-            template < typename U = T, typename = enable_if_t<std::is_array_v<U>, i32> >
-            HSD_CONSTEXPR shared_ptr(remove_array_pointer<U> ptr)
+            HSD_CONSTEXPR shared_ptr(remove_array_pointer<T> ptr) requires(shared_detail::ArrayPointer<T>)
             {
                 _value._ptr = ptr;
                 _value._ptr._size = new usize(1);
@@ -120,14 +123,14 @@ namespace hsd
                 ptr._value._ptr._value = nullptr;
             }
 
-            template < typename U, typename = enable_if_t<std::is_base_of_v<T, U>, i32> >
+            template <typename U> requires(shared_detail::Derived<T, U>)
             constexpr shared_ptr(const shared_ptr<U>& ptr)
             {
                 _value = ptr._value;
                 (*_value._ptr._size)++;
             }
 
-            template < typename U, typename = enable_if_t<std::is_base_of_v<T, U>, i32> >
+            template <typename U> requires(shared_detail::Derived<T, U>)
             constexpr shared_ptr(shared_ptr<U>&& ptr)
             {
                 _value = ptr._value;
@@ -163,7 +166,7 @@ namespace hsd
                 return *this;
             }
 
-            template < typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
+            template <typename U> requires(shared_detail::Derived<T, U>)
             HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U>& lhs)
             {
                 _delete();
@@ -172,7 +175,7 @@ namespace hsd
                 return *this;
             }
 
-            template < typename U, std::enable_if_t<std::is_base_of_v<T, U>, i32> = 0 >
+            template <typename U> requires(shared_detail::Derived<T, U>)
             HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U>&& lhs)
             {
                 _delete();
@@ -253,7 +256,7 @@ namespace hsd
         make_shared(usize size)
         {
             using ptr_type = remove_array_t<T>;
-            return shared_ptr<T>(new ptr_type[size]());
+            return shared_ptr<T>(new ptr_type[size]{});
         }
 
         template <typename T, typename... Args>

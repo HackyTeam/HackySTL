@@ -5,20 +5,25 @@
 
 namespace hsd
 {
-    namespace _detail
+    namespace unique_detail
     {
+        template <typename T, typename U>
+        concept Derived = std::is_base_of_v<T, U>;
+        template <typename T>
+        concept ArrayPointer = is_array<T>::value;
+        template <typename T>
+        concept ValuePointer = !ArrayPointer<T>;
+
         template <typename T>
         struct deleter
         {
-            template < typename U = T, disable_if<is_array<U>::value, int>::type = 0 >
-            HSD_CONSTEXPR void operator()(remove_array_t<T>*& ptr)
+            HSD_CONSTEXPR void operator()(T*& ptr) requires(ValuePointer<T>)
             {
                 delete ptr;
                 ptr = nullptr;
             }
 
-            template < typename U = T, enable_if<is_array<U>::value, int>::type = 0 >
-            HSD_CONSTEXPR void operator()(remove_array_t<T>*& ptr)
+            HSD_CONSTEXPR void operator()(remove_array_t<T>*& ptr) requires(ArrayPointer<T>)
             {
                 delete[] ptr;
                 ptr = nullptr;
@@ -38,11 +43,11 @@ namespace hsd
 
     } // namespace unique_detail
 
-    template < typename T, typename Deleter = _detail::deleter<T> >
+    template < typename T, typename Deleter = unique_detail::deleter<T> >
     class unique_ptr
     {
     private:
-        _detail::storage<T, Deleter> _value;
+        unique_detail::storage<T, Deleter> _value;
 
         template <typename U, typename Del>
         friend class unique_ptr;
@@ -66,15 +71,13 @@ namespace hsd
         constexpr unique_ptr(NullType) {}
         unique_ptr(unique_ptr&) = delete;
         unique_ptr(const unique_ptr&) = delete;
-
-        template < typename U = T, typename = disable_if_t<is_array<U>::value, int> >
-        constexpr unique_ptr(pointer<U> ptr)
+;
+        constexpr unique_ptr(pointer<T> ptr) requires(unique_detail::ValuePointer<T>)
         {
             _value._ptr = ptr;
         }
 
-        template < typename U = T, typename = enable_if_t<is_array<U>::value, int> >
-        constexpr unique_ptr(remove_array_pointer<U> ptr)
+        constexpr unique_ptr(remove_array_pointer<T> ptr) requires(unique_detail::ArrayPointer<T>)
         {
             _value._ptr = ptr;
         }
@@ -85,7 +88,7 @@ namespace hsd
             other._value._ptr = nullptr;
         }
 
-        template < typename U, enable_if<std::is_base_of_v<T, U>, int>::type = 0 >
+        template <typename U> requires(unique_detail::Derived<T, U>)
         constexpr unique_ptr(unique_ptr<U>&& other)
         {
             _value._ptr = other._value._ptr;
@@ -111,7 +114,7 @@ namespace hsd
             return *this;
         }
 
-        template < typename U, typename = enable_if<std::is_base_of_v<T, U>, int> >
+        template <typename U> requires(unique_detail::Derived<T, U>)
         HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U>&& rhs)
         {
             _delete();
@@ -191,7 +194,7 @@ namespace hsd
     make_unique(usize size)
     {
         using ptr_type = remove_array_t<T>;
-        return unique_ptr<T>(new ptr_type[size]());
+        return unique_ptr<T>(new ptr_type[size]{});
     }
 
     template <typename T, typename... Args>

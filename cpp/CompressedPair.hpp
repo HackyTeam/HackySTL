@@ -4,7 +4,7 @@
 
 namespace hsd
 {
-    namespace _detail
+    namespace detail
     {
         template <typename _Ty>
         struct _wrapper_for
@@ -24,7 +24,7 @@ namespace hsd
 
         template <typename _Ty>
         using is_empty = std::bool_constant<_is_empty<_Ty>::value>;
-    } // namespace _detail
+    } // namespace detail
 
     template <typename _Ta, typename _Tb>
     class _compressed_pair_ab
@@ -131,10 +131,10 @@ namespace hsd
 
     template <typename _Ta, typename _Tb>
     using _compressed_pair = conditional_t<
-        _detail::_is_empty<_Ta>::value,
+        detail::_is_empty<_Ta>::value,
         _compressed_pair_b<_Ta, _Tb>,
         conditional_t<
-            _detail::_is_empty<_Tb>::value,
+            detail::_is_empty<_Tb>::value,
             _compressed_pair_a<_Ta, _Tb>,
             _compressed_pair_ab<_Ta, _Tb>>>;
 

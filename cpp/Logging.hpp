@@ -13,7 +13,7 @@ namespace hsd
         #define HSD_FUNCION_NAME __builtin_FUNCTION()
     #endif
 
-    namespace _detail
+    namespace detail
     {
         class source_location
         {
@@ -82,14 +82,14 @@ namespace hsd
                 return _clk.elapsed_time();
             }
         };        
-    } // namespace _detail
+    } // namespace detail
     
     class stack_trace
     {
     private:
         static inline i32 _count = std::uncaught_exceptions();
-        static inline hsd::vector<_detail::source_location> _stack;
-        using stack_iterator = hsd::vector<_detail::source_location>::iterator;
+        static inline hsd::vector<detail::source_location> _stack;
+        using stack_iterator = hsd::vector<detail::source_location>::iterator;
 
     public:
 
@@ -118,7 +118,7 @@ namespace hsd
             return *this;
         }
         
-        _detail::source_location& get() noexcept
+        detail::source_location& get() noexcept
         {
             return _stack.back();
         }
@@ -137,8 +137,8 @@ namespace hsd
     class profiler
     {
     private:
-        using iterator = hsd::vector<_detail::profiler_value>::iterator;
-        static inline hsd::vector<_detail::profiler_value> _stack;
+        using iterator = hsd::vector<detail::profiler_value>::iterator;
+        static inline hsd::vector<detail::profiler_value> _stack;
 
     public:
 
@@ -165,7 +165,7 @@ namespace hsd
             return *this;
         }
         
-        _detail::profiler_value& get() noexcept
+        detail::profiler_value& get() noexcept
         {
             return _stack.back();
         }
@@ -183,7 +183,7 @@ namespace hsd
 
     static inline stack_trace exec_stack;
     static inline profiler profiler_stack;
-    using source_location = _detail::source_location;
+    using source_location = detail::source_location;
 
     #define invoke_profiler_func(func, ...) func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
     #define invoke_stacktrace_func(func, ...) func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)

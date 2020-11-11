@@ -4,7 +4,7 @@
 
 namespace hsd
 {
-    namespace _detail
+    namespace detail
     {
         template <typename T>
         constexpr bool is_signed_byte()
@@ -83,7 +83,7 @@ namespace hsd
         {
             return 2 + value * 643L / 2136;
         }
-    } // namespace _detail
+    } // namespace detail
     
 
     template <typename T>
@@ -93,11 +93,11 @@ namespace hsd
         static constexpr T infinity = 0;
         static constexpr T epsilon = 0;
         static constexpr T nan = 0;
-        static constexpr T min = _detail::min<T>();
-        static constexpr T max = _detail::max<T>();
-        static constexpr bool is_signed = _detail::is_signed<T>();
-        static constexpr i32 digits = _detail::digits<T>();
-        static constexpr i32 digits10 = _detail::digits10<T>();
+        static constexpr T min = detail::min<T>();
+        static constexpr T max = detail::max<T>();
+        static constexpr bool is_signed = detail::is_signed<T>();
+        static constexpr i32 digits = detail::digits<T>();
+        static constexpr i32 digits10 = detail::digits10<T>();
         static constexpr i32 max_digits10 = 0;
     }; 
 

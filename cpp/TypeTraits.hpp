@@ -90,8 +90,45 @@ namespace hsd
         : public true_type
     {};
 
+    template <typename>
+    struct is_lvalue_reference
+        : public false_type
+    {};
+
+    template <typename T>
+    struct is_lvalue_reference<T&>
+        : public true_type
+    {};
+
+    template <typename>
+    struct is_rvalue_reference
+        : public false_type
+    {};
+
+    template <typename T>
+    struct is_rvalue_reference<T&&>
+        : public true_type 
+    {};
+
+    template <typename T>
+    struct is_reference
+        : public disjunction<
+            is_rvalue_reference<T>, 
+            is_lvalue_reference<T> >
+    {};
+
     namespace helper
     {
+        template <typename>
+        struct is_void
+            : public false_type
+        {};
+        
+        template <>
+        struct is_void<void>
+            : public true_type
+        {};
+
         template <typename>
         struct is_integral
             : public false_type
@@ -641,6 +678,14 @@ namespace hsd
             va_args::is_va_args_function<T> >
     {};
 
+    template<typename T>
+    struct is_object
+        : public negation< 
+            disjunction< is_function<T>, is_reference<T>,
+            helper::is_void< typename remove_cv<T>::type > > 
+        >::type
+    {};
+
     namespace sfinae
     {
         template <typename T>
@@ -709,6 +754,9 @@ namespace hsd
 
     template <typename T>
     using is_unsigned = helper::is_unsigned< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_void = helper::is_void< typename remove_cv<T>::type >;
 
     template < bool Cond, typename IfTrue, typename IfFalse >
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;

@@ -1,5 +1,8 @@
 #include <benchmark/benchmark.h>
+#define FMT_HEADER_ONLY
+
 #include <iostream>
+#include <fmt/format.h>
 #include "../../cpp/Io.hpp"
 
 static void hsdIO(benchmark::State& state)

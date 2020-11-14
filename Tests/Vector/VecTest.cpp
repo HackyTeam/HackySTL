@@ -53,6 +53,23 @@ void test(hsd::vector<T>&&)
 
 }
 
+constexpr auto make_constexpr_vec()
+{
+    hsd::vector< int, hsd::constexpr_allocator<int, 100> > v;
+    v.emplace_back(1);
+    v.emplace_back(2);
+    v.emplace_back(3);
+    v.emplace_back(4);
+    v.emplace_back(5);
+    v.emplace_back(6);
+    v.emplace_back(7);
+    v.emplace_back(8);
+    v.emplace_back(9);
+    v.emplace_back(10);
+
+    return v;
+}
+
 int main()
 {
     {
@@ -62,6 +79,9 @@ int main()
         test<int>({{1, 2, 3, 4, 5, 6}});
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
+        // let's test constexpr vector
+        constexpr auto v = make_constexpr_vec();
+        printf("%d\n==========\n", v[3]);
     }
 
     {

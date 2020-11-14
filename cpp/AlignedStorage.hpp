@@ -4,7 +4,7 @@
 
 namespace hsd 
 {
-    template <usize _Size, usize _Alignment>
+    template < usize _Size, usize _Alignment >
     struct aligned_storage 
     {
         struct alignas(_Alignment) type 

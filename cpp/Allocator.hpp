@@ -16,8 +16,12 @@ namespace hsd
     };
 
     template <typename T>
-    struct allocator
+    class allocator
     {
+    protected:
+        T* _data = nullptr;
+
+    public:
         using pointer_type = T*;
         using value_type = T;
         allocator() = default;
@@ -59,43 +63,23 @@ namespace hsd
         }
     };
 
-    class buffered_allocator
-    {
-    protected:
-        usize _buf_pos = 0;
-
-    public:
-        constexpr usize get_pos() const
-        {
-            return _buf_pos;
-        }
-    };
-    
-
     template < typename T, usize MaxSize >
     class constexpr_allocator
-        : public buffered_allocator
     {
-    private:
-        stack_array<T, MaxSize> _buf;
+    protected:
+        using data_type = stack_array<T, MaxSize>;
+        data_type _data;
 
     public:
-        using pointer_type = const T*;
-        using value_type = const T;
+        using pointer_type = T*;
+        using value_type = T;
 
-        [[nodiscard]] constexpr auto allocate(usize size)
+        [[nodiscard]] constexpr auto allocate(usize)
         {
-            usize _old_pos = _buf_pos;
-            _buf_pos += size;
-            return &_buf[_old_pos];
+            return &_data[0];
         }
 
-        constexpr auto get_data()
-        {
-            return _buf.data();
-        }
-
-        constexpr void deallocate(pointer_type ptr, usize size)
+        constexpr void deallocate(data_type&, usize)
         {}
     };
 } // mamespace hsd

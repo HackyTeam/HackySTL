@@ -12,8 +12,9 @@ namespace hsd
     template < typename T, typename Allocator = allocator<T> >
     class vector
     {
+    private:
         Allocator _alloc;
-        T* _data = nullptr;
+        typename Allocator::pointer_type _data = nullptr;
         usize _size = 0;
         usize _capacity = 0;
 
@@ -60,7 +61,7 @@ namespace hsd
               _size(N), _capacity(N)
         {   
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&_data[_index], arr[_index]);
+                new(&_data[_index]) T(arr[_index]);
         }
 
         template <usize N>
@@ -69,7 +70,7 @@ namespace hsd
               _size(N), _capacity(N)
         {   
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&_data[_index], move(arr[_index]));
+                new(&_data[_index]) T(move(arr[_index]));
         }
 
         HSD_CONSTEXPR vector& operator=(const vector& rhs)
@@ -80,7 +81,7 @@ namespace hsd
                 reserve(rhs._size);
                 
                 for (usize _index = 0; _index < rhs._size; ++_index)
-                    std::construct_at(&_data[_index], rhs[_index]);
+                    new(&_data[_index]) T(rhs[_index]);
                 
                 _size = rhs._size;
             }
@@ -100,7 +101,7 @@ namespace hsd
                 else if (rhs._size > _size)
                 {
                     for (; _index < rhs._size; ++_index)
-                        std::construct_at(&_data[_index], rhs[_index]);
+                        new(&_data[_index]) T(rhs[_index]);
                 }
 
                 _size = rhs._size;
@@ -130,7 +131,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    std::construct_at(&_data[_index], arr[_index]);
+                    new(&_data[_index]) T(arr[_index]);
                 
                 _size = N;
             }
@@ -151,7 +152,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        std::construct_at(&_data[_index], arr[_index]);
+                        new(&_data[_index]) T(arr[_index]);
                 }
                 
                 _size = N;
@@ -169,7 +170,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    std::construct_at(&_data[_index], move(arr[_index]));
+                    new(&_data[_index]) T(move(arr[_index]));
                 
                 _size = N;
             }
@@ -190,7 +191,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        std::construct_at(&_data[_index], move(arr[_index]));
+                        new(&_data[_index]) T(move(arr[_index]));
                 }
 
                 _size = N;
@@ -200,6 +201,7 @@ namespace hsd
         }
 
         constexpr T& operator[](usize index) noexcept
+        requires(!is_const<typename Allocator::value_type>::value)
         {
             return _data[index];
         }
@@ -245,12 +247,13 @@ namespace hsd
             return _data[index];
         }
 
-        constexpr T& at_unchecked(usize index) noexcept
+        constexpr T& at_unchecked(usize index) noexcept 
+        requires(!is_const<typename Allocator::value_type>::value)
         {
             return _data[index];
         }
 
-        constexpr T& at_unchecked(usize index) const noexcept
+        constexpr const T& at_unchecked(usize index) const noexcept
         {
             return _data[index];
         }
@@ -279,6 +282,7 @@ namespace hsd
                 {
                     auto& _value = at_unchecked(_index);
                     std::construct_at(&_new_buf[_index], move(_value));
+                    //new(&_new_buf[_index]) T(move(_value));
                     _value.~T();
                 }
                 
@@ -322,12 +326,12 @@ namespace hsd
                 for (; _index < _size; ++_index)
                 {
                     auto& _value = at_unchecked(_index);
-                    std::construct_at(&_new_buf[_index], move(_value));
+                    new(&_new_buf[_index]) T(move(_value));
                     _value.~T();
                 }
                 for (; _index < new_size; ++_index)
                 {
-                    std::construct_at(&_new_buf[_index]);
+                    new(&_new_buf[_index]) T();
                 }
                 
                 _alloc.deallocate(_data, _capacity);
@@ -338,7 +342,7 @@ namespace hsd
             else if (new_size > _size)
             {
                 for (usize _index = _size; _index < new_size; ++_index)
-                    std::construct_at(&_data[_index]);
+                    new(&_data[_index]) T();
                 
                 _size = new_size;
             }
@@ -366,6 +370,7 @@ namespace hsd
         {
             reserve(_size + 1);
             std::construct_at(&_data[_size], forward<Args>(args)...);
+            //new(&_data[_size]) T(forward<Args>(args)...);
             ++_size;
         }
 

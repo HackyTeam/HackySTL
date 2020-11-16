@@ -73,18 +73,18 @@ constexpr auto make_constexpr_vec()
 int main()
 {
     {
-        // for function type deduction
+        /*/ for function type deduction
         test(hsd::vector{{1, 2, 3, 4, 5, 6}});
         // alternatively you can do
         test<int>({{1, 2, 3, 4, 5, 6}});
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
-        // let's test constexpr vector
+        // let's test constexpr vector*/
         constexpr auto v = make_constexpr_vec();
         printf("%d\n==========\n", v[3]);
     }
 
-    {
+    /*{
         // you have to do this: {{...}}
         hsd::vector e = {{1, 2, 3, 4, 5, 6}};
 
@@ -144,5 +144,5 @@ int main()
             std::puts("--- move");
             auto verb3 = hsd::move(verb); // move
         }
-    }
+    }*/
 }

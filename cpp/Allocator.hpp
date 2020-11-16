@@ -18,6 +18,8 @@ namespace hsd
     template <typename T>
     struct allocator
     {
+        using pointer_type = T*;
+        using value_type = T;
         allocator() = default;
 
         template <typename U>
@@ -33,14 +35,14 @@ namespace hsd
             else
             {
                 #ifdef __cpp_aligned_new
-                return static_cast<T*>(::operator new(size * sizeof(T), std::align_val_t(alignof(T))));
+                return static_cast<pointer_type>(::operator new(size * sizeof(T), std::align_val_t(alignof(T))));
                 #else
-                return static_cast<T*>(::operator new(size * sizeof(T)));
+                return static_cast<pointer_type>(::operator new(size * sizeof(T)));
                 #endif
             }
         }
 
-        constexpr void deallocate(T* ptr, usize size)
+        constexpr void deallocate(pointer_type ptr, usize size)
         {
             if(size > limits<usize>::max / sizeof(T))
             {
@@ -57,30 +59,43 @@ namespace hsd
         }
     };
 
+    class buffered_allocator
+    {
+    protected:
+        usize _buf_pos = 0;
+
+    public:
+        constexpr usize get_pos() const
+        {
+            return _buf_pos;
+        }
+    };
+    
+
     template < typename T, usize MaxSize >
     class constexpr_allocator
+        : public buffered_allocator
     {
     private:
-    
-        static stack_array<T, MaxSize> _buf;
-        usize _ptr_index = 0;
+        stack_array<T, MaxSize> _buf;
 
-        constexpr auto end_buf()
-        {
-            return &_buf[MaxSize];
-        }
     public:
+        using pointer_type = const T*;
+        using value_type = const T;
 
         [[nodiscard]] constexpr auto allocate(usize size)
         {
-            usize _old_index = _ptr_index;
-            _ptr_index += size;
-            return &_buf[_old_index];
+            usize _old_pos = _buf_pos;
+            _buf_pos += size;
+            return &_buf[_old_pos];
         }
 
-        constexpr void deallocate(T* ptr, usize size)
+        constexpr auto get_data()
         {
-            //_ptr_index -= size;
+            return _buf.data();
         }
+
+        constexpr void deallocate(pointer_type ptr, usize size)
+        {}
     };
 } // mamespace hsd

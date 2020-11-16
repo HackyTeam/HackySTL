@@ -90,6 +90,16 @@ namespace hsd
         : public true_type
     {};
 
+    template <typename T> 
+    struct is_const                
+        : public false_type
+    {};
+
+    template <typename T> 
+    struct is_const<const T>       
+        : public true_type
+    {};
+
     template <typename>
     struct is_lvalue_reference
         : public false_type

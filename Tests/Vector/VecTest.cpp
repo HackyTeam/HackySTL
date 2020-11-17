@@ -79,9 +79,13 @@ int main()
         test<int>({{1, 2, 3, 4, 5, 6}});
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
-        // let's test constexpr vector
+        // let's test constexpr vector (it works)
         constexpr auto v = make_constexpr_vec();
-        printf("%d\n==========\n", v[3]);
+        
+        for(auto& val : v)
+            printf("%d\n", val);
+
+        printf("==========\n");
     }
 
     {

@@ -36,8 +36,18 @@ namespace hsd
 
         HSD_CONSTEXPR vector() noexcept = default;
 
+        HSD_CONSTEXPR vector(const Allocator& alloc)
+        requires (std::is_copy_constructible_v<Allocator>)
+            : Allocator(alloc)
+        {}
+
+        // used only for initializing once
+        HSD_CONSTEXPR vector(Allocator&& alloc)
+            : Allocator(move(alloc))
+        {}
+
         HSD_CONSTEXPR vector(const vector& rhs)
-            : _size(rhs._size), _capacity(rhs._capacity)
+            : Allocator(rhs), _size(rhs._size), _capacity(rhs._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
                 this->_data = this->allocate(rhs._capacity);
@@ -126,8 +136,8 @@ namespace hsd
                 swap(this->_data, rhs._data);
             }
             
-            _size = exchange(rhs._size, 0);
-            _capacity = exchange(rhs._capacity, 0);
+            _size = exchange(rhs._size, 0u);
+            _capacity = exchange(rhs._capacity, 0u);
     
             return *this;
         }
@@ -460,6 +470,7 @@ namespace hsd
 
     template < typename T, usize N > vector(const T (&)[N]) -> vector<T>;
     template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
+    template <typename T> using buffered_vector = vector< T, buffered_allocator<T> >;
 
     template< typename L, typename... U >
     requires (std::is_constructible_v<L, U> && ...)

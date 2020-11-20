@@ -5,12 +5,12 @@
 
 struct S
 {
-    int a;
-    char b;
-    float c;
-    const char* d;
+    int _a;
+    char _b;
+    float _c;
+    const char* _d;
 
-    S(int a, char b, float c, const char* d) : a(a), b(b), c(c), d(d) {}
+    S(int a, char b, float c, const char* d) : _a(a), _b(b), _c(c), _d(d) {}
 };
 
 int main()

@@ -14,8 +14,8 @@ struct test
     {}
 };
 
-template<hsd::string_literal str>
-void _print(test& t, FILE* ptr = stdout)
+template <hsd::string_literal str>
+static void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
@@ -29,8 +29,8 @@ void _print(test& t, FILE* ptr = stdout)
     }
 }
 
-template<hsd::wstring_literal str>
-void _print(test& t, FILE* ptr = stdout)
+template <hsd::wstring_literal str>
+static void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
@@ -45,9 +45,9 @@ void _print(test& t, FILE* ptr = stdout)
     }
 }
 
-void _parse(hsd::pair<const char*, hsd::usize>& str, test& t)
+static void _parse(hsd::pair<const char*, hsd::usize>& str, test& t)
 {
-    sscanf(str.first, "%d%d%f", &t.a, &t.b, &t.d);
+    sscanf(str.first, "%d%d%lf", &t.a, &t.b, &t.d);
 }
 
 int main()

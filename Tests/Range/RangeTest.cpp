@@ -5,6 +5,6 @@ int main()
 {
     for(auto i : hsd::Range(0, 15))
     {
-        printf("%d\n", i);
+        printf("%ld\n", i);
     }
 }

@@ -93,6 +93,7 @@
         "clientv",
         "hintv",
         "isize",
+        "qookie",
         "usize",
         "wprint",
         "wsstream"

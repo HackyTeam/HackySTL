@@ -77,9 +77,8 @@ namespace hsd
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
-            auto _add = [&]< usize... Ints1, usize... Ints2>(
-                index_sequence<Ints1...> int_seq1, 
-                index_sequence<Ints2...> int_seq2
+            auto _add = [&]< usize... Ints1, usize... Ints2 >(
+                index_sequence<Ints1...>, index_sequence<Ints2...>
             ) -> tuple<T, Rest..., Args...> {
 
                 [](auto... args) {
@@ -97,9 +96,8 @@ namespace hsd
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
-            auto _add = [&]< usize... Ints1, usize... Ints2>(
-                index_sequence<Ints1...> int_seq1, 
-                index_sequence<Ints2...> int_seq2
+            auto _add = [&]< usize... Ints1, usize... Ints2 >(
+                index_sequence<Ints1...>, index_sequence<Ints2...>
             ) -> tuple<T, Rest..., Args...> {
 
                 [](auto... args) {

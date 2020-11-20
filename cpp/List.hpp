@@ -425,8 +425,8 @@ namespace hsd
 
         HSD_CONSTEXPR void clear()
         {
-            for(; !empty(); pop_front());
-                pop_front();
+            for(; !empty(); pop_front()) {}
+            pop_front();
         }
 
         constexpr usize size() const

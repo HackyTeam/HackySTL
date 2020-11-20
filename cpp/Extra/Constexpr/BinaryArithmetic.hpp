@@ -37,17 +37,20 @@ namespace hsd
 
     struct nil {};
 
+    namespace binary_helper
+    {
+        template <typename T>
+        struct is_number : false_type {};
+
+        template <Bit F, typename R>
+        struct is_number<cons_pair<F, R>> : is_number<R> {};
+
+        template <>
+        struct is_number<nil> : true_type {};
+    } // namespace binary_helper
+
     template <typename T>
-    struct is_number : false_type {};
-
-    template <Bit F, typename R>
-    struct is_number<cons_pair<F, R>> : is_number<R> {};
-
-    template <>
-    struct is_number<nil> : true_type {};
-
-    template <typename T>
-    concept Number = is_number<T>::value;
+    concept Number = binary_helper::is_number<T>::value;
 
     // Gamma operations
     namespace natural 

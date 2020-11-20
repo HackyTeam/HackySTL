@@ -1,6 +1,6 @@
 #include "../../cpp/Logging.hpp"
 
-void test_trace(hsd::stack_trace tr, const char* msg, hsd::usize N)
+static void test_trace(hsd::stack_trace tr, const char* msg, hsd::usize N)
 {
     if(N == 0)
         throw hsd::stack_trace_exception();
@@ -8,7 +8,7 @@ void test_trace(hsd::stack_trace tr, const char* msg, hsd::usize N)
     invoke_stacktrace_func(test_trace, msg, N - 1);
 }
 
-void test_profiler(hsd::profiler tr, hsd::usize N)
+static void test_profiler(hsd::profiler tr, hsd::usize N)
 {
     if(N == 0)
         return;

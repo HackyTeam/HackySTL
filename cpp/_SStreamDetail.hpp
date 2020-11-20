@@ -58,165 +58,165 @@ namespace hsd
         }
 
 		template <typename CharT>
-        void _parse(pair<const CharT*, usize>&, auto&);
+        inline void _parse(pair<const CharT*, usize>&, auto&);
     
         template <>
-        void _parse<char>(pair<const char*, usize>& str, char& val)
+        inline void _parse<char>(pair<const char*, usize>& str, char& val)
         {
             sscanf(str.first, "%c", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, uchar& val)
+        inline void _parse<char>(pair<const char*, usize>& str, uchar& val)
         {
             sscanf(str.first, "%c", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, i16& val)
+        inline void _parse<char>(pair<const char*, usize>& str, i16& val)
         {
             sscanf(str.first, "%hd", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, u16& val)
+        inline void _parse<char>(pair<const char*, usize>& str, u16& val)
         {
             sscanf(str.first, "%hu", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, i32& val)
+        inline void _parse<char>(pair<const char*, usize>& str, i32& val)
         {
             sscanf(str.first, "%d", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, u32& val)
+        inline void _parse<char>(pair<const char*, usize>& str, u32& val)
         {
             sscanf(str.first, "%u", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, i64& val)
+        inline void _parse<char>(pair<const char*, usize>& str, i64& val)
         {
             sscanf(str.first, "%lld", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, u64& val)
+        inline void _parse<char>(pair<const char*, usize>& str, u64& val)
         {
             sscanf(str.first, "%llu", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, f32& val)
+        inline void _parse<char>(pair<const char*, usize>& str, f32& val)
         {
             sscanf(str.first, "%f", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, f64& val)
+        inline void _parse<char>(pair<const char*, usize>& str, f64& val)
         {
             sscanf(str.first, "%lf", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, f128& val)
+        inline void _parse<char>(pair<const char*, usize>& str, f128& val)
         {
             sscanf(str.first, "%Lf", &val);
         }
 
         template <>
-        void _parse<char>(pair<const char*, usize>& str, string& val)
+        inline void _parse<char>(pair<const char*, usize>& str, string& val)
         {
             val = move(string(str.first, str.second));
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, char& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, char& val)
         {
             swscanf(str.first, L"%c", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, uchar& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, uchar& val)
         {
             swscanf(str.first, L"%c", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, wchar& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, wchar& val)
         {
             swscanf(str.first, L"%lc", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, i16& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, i16& val)
         {
             swscanf(str.first, L"%hd", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, u16& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, u16& val)
         {
             swscanf(str.first, L"%hu", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, i32& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, i32& val)
         {
             swscanf(str.first, L"%d", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, u32& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, u32& val)
         {
             swscanf(str.first, L"%u", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, i64& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, i64& val)
         {
             swscanf(str.first, L"%lld", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, u64& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, u64& val)
         {
             swscanf(str.first, L"%llu", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, f32& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, f32& val)
         {
             swscanf(str.first, L"%f", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, f64& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, f64& val)
         {
             swscanf(str.first, L"%lf", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, f128& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, f128& val)
         {
             swscanf(str.first, L"%Lf", &val);
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, string& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, string& val)
         {
             val = move(wstring(str.first, str.second));
         }
 
         template <>
-        void _parse<wchar>(pair<const wchar*, usize>& str, wstring& val)
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, wstring& val)
         {
             val = move(wstring(str.first, str.second));
         }
 
-        void _sub_from(i32& from, i32 amount)
+        static void _sub_from(i32& from, i32 amount)
         {
             if(amount < 0)
             {
@@ -228,7 +228,7 @@ namespace hsd
             }
         }
 
-        void _sub_from(usize& from, i32 amount)
+        static void _sub_from(usize& from, i32 amount)
         {
             if(amount < 0)
             {
@@ -236,7 +236,7 @@ namespace hsd
             }
             else
             {
-                from -= amount;
+                from -= static_cast<usize>(amount);
             }
         }
 
@@ -309,9 +309,9 @@ namespace hsd
         template <string_literal str>
         static i32 _write(f32 val, pair<char*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, basic_string_literal(str, "%e").data, val);
             }
@@ -324,9 +324,9 @@ namespace hsd
         template <string_literal str>
         static i32 _write(f64 val, pair<char*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, basic_string_literal(str, "%e").data, val);
             }
@@ -339,9 +339,9 @@ namespace hsd
         template <string_literal str>
         static i32 _write(f128 val, pair<char*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, basic_string_literal(str, "%Le").data, val);
             }
@@ -465,9 +465,9 @@ namespace hsd
         template <wstring_literal str>
         static i32 _write(f32 val, pair<wchar*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, basic_string_literal(str, L"%e").data, val);
             }
@@ -480,9 +480,9 @@ namespace hsd
         template <wstring_literal str>
         static i32 _write(f64 val, pair<wchar*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, basic_string_literal(str, L"%e").data, val);
             }
@@ -495,9 +495,9 @@ namespace hsd
         template <wstring_literal str>
         static i32 _write(f128 val, pair<wchar*, usize> dest)
         {
-            auto _res = abs(floor(val) - val);
+            auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || abs(val) > 1.e+10)
+            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, basic_string_literal(str, L"%Le").data, val);
             }

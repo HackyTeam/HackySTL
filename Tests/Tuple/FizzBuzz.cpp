@@ -6,7 +6,7 @@ struct FizzBase
 {
     char const* msg;
 
-    bool fizz(hsd::i32 x) const
+    bool fizz(hsd::u32 x) const
     {
         if (x % N == 0)
             return (hsd::io::print<"{}">(msg)), true;
@@ -18,7 +18,7 @@ template <typename... Ts>
 struct FizzGame
 {
     hsd::tuple<Ts...> bases;
-    hsd::i32 x = 0;
+    hsd::u32 x = 0;
 
     FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}
 

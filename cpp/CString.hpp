@@ -295,7 +295,7 @@ namespace hsd
 
 			while(num)
 			{
-				_buf[--_len] = '0' + (num % 10);
+				_buf[--_len] = '0' + static_cast<CharT>(num % 10);
 				num /= 10;
 			}
 
@@ -501,7 +501,7 @@ namespace hsd
 			usize _len = 0;
 			i64 _round_num = static_cast<i64>(num);
 			bool _negative = (_round_num < 0);
-			usize _point_num = _modulus(num - _round_num) * 10000 + 1;
+			usize _point_num = static_cast<usize>(_modulus(num - static_cast<f32>(_round_num)) * 10000) + 1;
 			
 			if(_negative)
 				_len = _num_len(_round_num) + 6;
@@ -513,7 +513,7 @@ namespace hsd
 
 			for(; _point_num != 0; _point_num /= 10)
 			{
-				_buf[--_len] = '0' + (_point_num % 10);
+				_buf[--_len] = '0' + static_cast<CharT>(_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
@@ -612,7 +612,7 @@ namespace hsd
 		        _point_num *= 10;
 		        _point_num += *str - '0';
 		    }
-		    for(; _num_len != 0; _num_len--, _point_num *= 0.1);
+		    for(; _num_len != 0; _num_len--, _point_num *= 0.1f) {}
 			
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
@@ -689,7 +689,9 @@ namespace hsd
 			usize _index_helper = 0;
 
 		    for (; src[_index_helper] != '\0'; _index_helper++)
-		        dest[_index + _index_helper] = src[_index_helper];
+		    {
+				dest[_index + _index_helper] = src[_index_helper];
+			}
 
 			dest[_index + _index_helper] = '\0';
 		    return dest;
@@ -701,7 +703,9 @@ namespace hsd
 			usize _index_helper = 0;
 
 		    for (; src[_index_helper] != '\0'; _index_helper++)
-		        dest[_index + _index_helper] = src[_index_helper];
+		    {
+				dest[_index + _index_helper] = src[_index_helper];
+			}
 
 			dest[_index + _index_helper] = '\0';
 		    return dest;

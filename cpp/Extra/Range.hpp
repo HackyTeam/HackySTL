@@ -38,12 +38,12 @@ namespace hsd
             return _val;
         }
 
-        constexpr bool operator!=(const RangeIterator& rhs)
+        constexpr bool operator!=(const RangeIterator& rhs) const
         {
             return _val != rhs._val;
         }
 
-        constexpr bool operator==(const RangeIterator& rhs)
+        constexpr bool operator==(const RangeIterator& rhs) const
         {
             return _val == rhs._val;
         }
@@ -68,12 +68,12 @@ namespace hsd
             return _val >= rhs._val;
         }
 
-        constexpr bool operator!=(size_t rhs)
+        constexpr bool operator!=(size_t rhs) const
         {
             return _val != rhs;
         }
 
-        constexpr bool operator==(size_t rhs)
+        constexpr bool operator==(size_t rhs) const
         {
             return _val == rhs;
         }

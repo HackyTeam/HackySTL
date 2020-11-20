@@ -2,6 +2,7 @@
 
 #include "Limits.hpp"
 #include "StackArray.hpp"
+#include <string.h>
 #include <new>
 
 namespace hsd
@@ -11,7 +12,151 @@ namespace hsd
     {
         virtual const char* what() const noexcept override
         {
-            return "Bad length for \'::operator new(usize)\'";
+            return "Bad length for Allocation";
+        }
+    };
+
+    class bad_dealloc
+        : public std::exception
+    {
+        virtual const char* what() const noexcept override
+        {
+            return "Bad length for Deallocation";
+        }
+    };
+
+    static void* align_mem(usize align, usize size, void*& ptr, usize& space) noexcept
+    {
+        const auto _iptr = reinterpret_cast<u64>(ptr);
+        const auto _aligned = (_iptr - 1 + align) & -align;
+        const auto _diff = _aligned - _iptr;
+    
+        if ((size + _diff) > space)
+        { 
+            return nullptr;
+        }
+        else
+        {
+            space -= _diff;
+            return ptr = reinterpret_cast<void*>(_aligned);
+        }
+    }
+
+    template <typename T>
+    class buffered_allocator
+    {
+    private:
+        uchar* _buf = nullptr;
+        usize _size = 0;
+
+        // thanks qookie
+        struct block 
+        {
+            usize size{};
+            bool in_use{};
+            uchar data[];
+        };
+
+    protected:
+        T* _data = nullptr;
+
+    public:
+        using pointer_type = T*;
+        using value_type = T;
+
+        constexpr buffered_allocator(uchar* buf, usize size)
+            : _buf{buf}, _size{size}
+        {}
+
+        template <typename U>
+        constexpr buffered_allocator(const buffered_allocator<U>& other)
+            : _buf{other._buf}, _size{other._size}
+        {}
+        
+        template <typename U>
+        constexpr buffered_allocator(buffered_allocator<U>&& other)
+        {
+            _buf = exchange(other._buf, nullptr);
+            _size = exchange(other._size, 0u);
+        }
+
+        template <typename U>
+        constexpr buffered_allocator& operator=(const buffered_allocator<U>& other)
+        {
+            _buf = other._buf;
+            _size = other._size;
+        }
+
+        template <typename U>
+        constexpr buffered_allocator& operator=(buffered_allocator<U>&& other)
+        {
+            _buf = exchange(other._buf, nullptr);
+            _size = exchange(other._size, 0u);
+        }
+
+        [[nodiscard]] constexpr T* allocate(usize size)
+        {
+            auto* _block_ptr = reinterpret_cast<block*>(_buf);
+            auto* _block_end = reinterpret_cast<block*>(_buf + _size - sizeof(block));
+            auto* _block_back = reinterpret_cast<block*>(_buf);
+            usize _free_size = 0u;
+            
+            while (_block_ptr < _block_end) 
+            {
+                if (!_block_ptr->in_use)
+                {
+                    if(_block_ptr->size == 0) 
+                    {
+                        _block_ptr->size = size * sizeof(T);
+                        _block_ptr->in_use = true;
+                        return reinterpret_cast<T*>(_block_ptr->data);
+                    }
+                    else if(_block_ptr->size >= size * sizeof(T))
+                    {
+                        _block_ptr->in_use = true;
+                        return reinterpret_cast<T*>(_block_ptr->data);
+                    }
+                    else
+                    {
+                        _free_size = static_cast<usize>(_block_ptr - _block_back) + _block_ptr->size;
+
+                        if(_free_size >= size * sizeof(T))
+                        {
+                            memset(
+                                reinterpret_cast<uchar*>(_block_back) + 
+                                sizeof(usize) + 1u, 0, _free_size
+                            );
+                            _block_back->size = _free_size;
+                            _block_back->in_use = true;
+                            return reinterpret_cast<T*>(_block_back->data);
+                        }
+                    }
+                }
+                else
+                {
+                    _free_size = 0u;
+                    _block_back = _block_ptr;
+                }
+                
+                _block_ptr = reinterpret_cast<block *>(
+                    reinterpret_cast<uchar*>(_block_ptr) + 
+                    _block_ptr->size + sizeof(block)
+                );
+            }
+
+            return nullptr;
+        }
+
+        void deallocate(T* ptr, usize)
+        {
+            if(ptr != nullptr)
+            {
+                auto* _block_ptr = reinterpret_cast<block*>(
+                    reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
+                );
+
+                _block_ptr->in_use = false;
+            }
         }
     };
 
@@ -30,11 +175,11 @@ namespace hsd
         constexpr allocator(const allocator<U>&)
         {}
 
-        [[nodiscard]] constexpr auto allocate(usize size)
+        [[nodiscard]] constexpr auto* allocate(usize size)
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw std::bad_array_new_length();
+                throw bad_alloc();
             }
             else
             {
@@ -50,7 +195,7 @@ namespace hsd
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw std::bad_array_new_length();
+                throw bad_dealloc();
             }
             else
             {
@@ -74,7 +219,7 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        [[nodiscard]] constexpr auto allocate(usize)
+        [[nodiscard]] constexpr auto* allocate(usize)
         {
             return &_data[0];
         }

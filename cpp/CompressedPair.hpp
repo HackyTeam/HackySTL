@@ -35,7 +35,9 @@ namespace hsd
     public:
         template <typename _Aa, typename _Ab>
         _compressed_pair_ab(_Aa&& _a, _Ab&& _b)
-            : a(forward<_Aa>(_a)), b(forward<_Ab>(_b)) {}
+            : a(static_cast<_Ta>(forward<_Aa>(_a))), 
+            b(static_cast<_Tb>(forward<_Ab>(_b)))
+        {}
 
         constexpr _Ta& first()
         {

@@ -22,7 +22,7 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
-        static constexpr isize npos = -1;
+        static constexpr usize npos = static_cast<usize>(-1);
 
         HSD_CONSTEXPR basic_string()
         {
@@ -279,15 +279,21 @@ namespace hsd
         constexpr usize find(CharT str, usize pos = 0)
         {
             if(pos >= _size)
+            {
                 return npos;
+            }
             else
             {
                 const CharT* _find_addr = _str_utils::find(&_data[pos], str);
 
                 if(_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 

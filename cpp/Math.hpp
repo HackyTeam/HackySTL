@@ -446,7 +446,7 @@ namespace hsd
                 else
                 {
                     i64 _rez = static_cast<i64>(value / factor);
-                    return value - _rez * factor;
+                    return value - static_cast<T>(_rez) * factor;
                 }
             }
 

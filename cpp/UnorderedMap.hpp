@@ -152,7 +152,7 @@ namespace hsd
                 }
             }
 
-            return -1;
+            return static_cast<usize>(-1);
         }
 
     public:
@@ -279,7 +279,7 @@ namespace hsd
             {
                 _data.emplace_back(_data.size(), key, T{forward<Args>(args)...});
 
-                if(static_cast<f64>(_data.size()) / _buckets.size() >= _limit_ratio)
+                if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                     _replace();
 
                 return {_data.end() - 1, true};
@@ -299,7 +299,7 @@ namespace hsd
             {
                 _data.emplace_back(_data.size(), move(key), move(T{forward<Args>(args)...}));
 
-                if(static_cast<f64>(_data.size()) / _buckets.size() >= _limit_ratio)
+                if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                     _replace();
 
                 return {_data.end() - 1, true};

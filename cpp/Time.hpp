@@ -31,32 +31,32 @@ namespace hsd
 
         u16 second()
         {
-            return _time->tm_sec;
+            return static_cast<u16>(_time->tm_sec);
         }
 
         u16 minute()
         {
-            return _time->tm_min;
+            return static_cast<u16>(_time->tm_min);
         }
 
         u16 hour()
         {
-            return _time->tm_hour;
+            return static_cast<u16>(_time->tm_hour);
         }
 
         u16 month_day()
         {
-            return _time->tm_mday;
+            return static_cast<u16>(_time->tm_mday);
         }
         
         u16 week_day()
         {
-            return _time->tm_wday;
+            return static_cast<u16>(_time->tm_wday);
         }
 
         u16 month()
         {
-            return _time->tm_mon;
+            return static_cast<u16>(_time->tm_mon);
         }
 
         const char* timezone()
@@ -66,12 +66,12 @@ namespace hsd
 
         u16 year_day()
         {
-            return _time->tm_yday;
+            return static_cast<u16>(_time->tm_yday);
         }
 
         usize year()
         {
-            return _time->tm_year + 1900;
+            return static_cast<usize>(_time->tm_year) + 1900;
         }
 
         const char* to_text()
@@ -90,6 +90,10 @@ namespace hsd
         {
             _clk = clk;
         }
+
+        clock(const clock& rhs)
+            : _clk(rhs._clk)
+        {}
 
         clock& operator=(const clock& rhs)
         {
@@ -149,12 +153,12 @@ namespace hsd
 
         i64 to_microseconds()
         {
-            return to_seconds() * 1000000;
+            return static_cast<i64>(to_seconds() * 1000000);
         }
 
         i32 to_miliseconds()
         {
-            return to_seconds() * 1000;
+            return static_cast<i32>(to_seconds() * 1000);
         }
 
         f32 to_seconds()

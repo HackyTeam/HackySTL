@@ -65,10 +65,10 @@ struct B : verbose<B>
         return "B"; 
     }
     
-    int a;
+    int _a;
     
     B(int a) 
-        : verbose<B>(0), a(a) 
+        : verbose<B>(0), _a(a) 
     {
         std::cout << "B constructor\n";
     }
@@ -81,7 +81,7 @@ constexpr bool operator==(A const&, A const&) noexcept
 
 constexpr bool operator==(B const& a, B const& b) noexcept 
 {
-    return a.a == b.a;
+    return a._a == b._a;
 }
 
 int main() 
@@ -119,7 +119,7 @@ int main()
     }
     if (auto* val = va2.get_if<B>()) 
     {
-        std::cout << "B inside va2: " << val->a << '\n';
+        std::cout << "B inside va2: " << val->_a << '\n';
     } 
     else 
     {
@@ -132,7 +132,7 @@ int main()
     std::cout << "(after assignment) " << (va2 == va3) << '\n';
     va3 = hsd::variant<A, B>(6);
     std::cout << "(after new assignment)\nva3 == va4: " << (va3 == va4) << '\n';
-    va3.get<B>().a = 5;
+    va3.get<B>()._a = 5;
     std::cout << "(after modification) " << (va3 == va4) << '\n';
 
     hsd::variant<A, B> va5;

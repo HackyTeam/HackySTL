@@ -5,8 +5,8 @@
 
 namespace hsd
 {
-    #define HSD_ENABLE_IF(...) enable_if_t<(__VA_ARGS__), i32> = 0
-    #define HSD_DISABLE_IF(...) disable_if_t<(__VA_ARGS__), i32> = 0
+    #define HSD_ENABLE_IF(...) hsd::enable_if_t<(__VA_ARGS__), hsd::i32> = 0
+    #define HSD_DISABLE_IF(...) hsd::disable_if_t<(__VA_ARGS__), hsd::i32> = 0
 
     template <typename T>
     static constexpr remove_reference_t<T>&& move(T&& val)
@@ -74,10 +74,11 @@ namespace hsd
     template < typename InIt, typename OutIt >
     static constexpr OutIt copy_n(InIt first, usize n, OutIt dest)
     {
-        for(usize _index = 0; _index != n; _index++) 
-        {
-            *dest++ = *first++;
-        }
+        using value_type = remove_reference_t<decltype(*dest)>;
+
+        for(usize _index = 0; _index != n; _index++)
+            *dest++ = static_cast<value_type>(*first++);
+    
         return dest;
     }
 

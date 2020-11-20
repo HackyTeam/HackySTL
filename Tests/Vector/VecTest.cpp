@@ -3,14 +3,17 @@
 
 #include <cstdio>
 #include <iterator>
+#include <boost/pool/pool.hpp>
 
 struct S
 {
-    int a;
-    float b;
-    char c;
+    int _a;
+    float _b;
+    char _c;
 
-    S(int a, float b, char c) : a(a), b(b), c(c) {}
+    S(int a, float b, char c)
+        : _a(a), _b(b), _c(c) 
+    {}
 };
 
 struct verbose {
@@ -53,6 +56,8 @@ void test(hsd::vector<T>&&)
 
 }
 
+#ifdef HSD_COMPILER_CLANG
+
 constexpr auto make_constexpr_vec()
 {
     hsd::vector< int, hsd::constexpr_allocator<int, 100> > v;
@@ -68,7 +73,9 @@ constexpr auto make_constexpr_vec()
     v.emplace_back(10);
 
     return v;
+
 }
+#endif
 
 int main()
 {
@@ -80,9 +87,40 @@ int main()
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
         // let's test constexpr vector (it works)
-        constexpr auto v = make_constexpr_vec();
+        #ifdef HSD_COMPILER_CLANG
+            constexpr auto v = make_constexpr_vec();
+
+            for(auto& val : v)
+                printf("%d\n", val);
+
+            printf("==========\n");
+        #endif
+    }
+
+    {
+        // let's test the buffred vector
+        hsd::uchar buf[1000]{};
+        hsd::buffered_allocator<int> alloc = {buf, 200};
+        hsd::buffered_vector<int> vec{alloc};
+        hsd::buffered_vector<int> vec2{alloc};
+        vec.push_back(1);
+        vec.push_back(2);
+        vec.push_back(3);
+        vec.push_back(4);
+        vec.push_back(5);
+
+        vec2.push_back(5);
+        vec2.push_back(4);
+        vec2.push_back(3);
+        vec2.push_back(2);
+        vec2.push_back(1);
+
+        for(auto& val : vec)
+            printf("%d\n", val);
+
+        printf("==========\n");
         
-        for(auto& val : v)
+        for(auto& val : vec2)
             printf("%d\n", val);
 
         printf("==========\n");

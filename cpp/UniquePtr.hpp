@@ -22,6 +22,9 @@ namespace hsd
             usize _size = 0;
             using pointer_type = typename Allocator::pointer_type;
             using value_type = typename Allocator::value_type;
+            
+            template <typename U, typename Alloc>
+            friend class storage;
 
         public:
             HSD_CONSTEXPR storage()
@@ -59,19 +62,16 @@ namespace hsd
             HSD_CONSTEXPR storage(storage<U, Alloc>&& other)
                 : Allocator(static_cast<Alloc&&>(other))
             {
-                set_pointer(other.get_pointer());
-                set_size(other.get_size());
-                other.set_pointer(nullptr);
-                other.set_size(0);
+                this->_data = exchange(other._data, nullptr);
+                swap(this->_size, other._size);
             }
 
             template < typename U, typename Alloc >
             HSD_CONSTEXPR storage& operator=(storage<U, Alloc>&& rhs)
             {
-                set_pointer(rhs.get_pointer());
-                set_size(rhs.get_size());
-                rhs.set_pointer(nullptr);
-                rhs.set_size(0);
+                this->deallocate(this->_data, _size);
+                this->_data = exchange(rhs._data, nullptr);
+                swap(this->_size, rhs._size);
                 return *this;
             }
 
@@ -171,7 +171,6 @@ namespace hsd
         HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U>&& rhs)
         {
             _value.operator=(move(rhs._value));
-            rhs._delete();
             return *this;
         }
 

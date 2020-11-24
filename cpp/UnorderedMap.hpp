@@ -3,127 +3,32 @@
 #include "Pair.hpp"
 #include "Vector.hpp"
 #include "Hash.hpp"
-#include "Reference.hpp"
 
 namespace hsd
 {
-    template< typename Key, typename T, typename Hasher = fnv1a<usize> >
+    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
+        template <typename> typename Allocator = allocator >
     class unordered_map;
 
     namespace umap_detail
     {
-        template< typename Key, typename T, typename Hasher = fnv1a<usize> >
-        class map_value
-        {
-        private:
-            usize _index = 0;
-            pair<Key, T> _data;
-            friend class unordered_map< Key, T, Hasher >;
-        
-        public:
-            using value_type = T;
-            using reference_type = T&;
-
-            HSD_CONSTEXPR map_value() = default;
-
-            HSD_CONSTEXPR map_value(usize index, const Key& key, const value_type& val)
-                : _index{index}, _data{key, val}
-            {}
-
-            HSD_CONSTEXPR map_value(usize index, Key&& key, value_type&& val)
-                : _index{index}, _data{move(key), move(val)}
-            {}
-
-            constexpr pair<Key, T>& get() noexcept 
-            { 
-                return _data; 
-            }
-        };
-
-        template< typename Key, typename T, typename Hasher = fnv1a<usize> >
-        class iterator
-        {
-        private:
-            using value_type = map_value< Key, T, Hasher >;
-            map_value< Key, T, Hasher >* _it;
-
-        public:
-            HSD_CONSTEXPR iterator(value_type* iter) noexcept
-                : _it{iter}
-            {}
-
-            constexpr iterator& operator=(const iterator& rhs) noexcept
-            {
-                _it = rhs._it;
-                return *this;
-            }
-
-            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs) noexcept
-            {
-                return lhs._it == rhs._it;
-            }
-
-            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs) noexcept
-            {
-                return lhs._it != rhs._it;
-            }
-
-            constexpr iterator& operator++() noexcept
-            {
-                _it++;
-                return *this;
-            }
-
-            constexpr iterator& operator--() noexcept
-            {
-                _it--;
-                return *this;
-            }
-
-            constexpr iterator operator++(i32) noexcept
-            {
-                iterator tmp = *this;
-                operator++();
-                return tmp;
-            }
-
-            constexpr iterator operator--(i32) noexcept
-            {
-                iterator tmp = *this;
-                operator--();
-                return tmp;
-            }
-
-            constexpr pair<Key, T>& operator*() noexcept
-            {
-                return _it->get();
-            }
-
-            constexpr pair<Key, T>& operator*() const noexcept
-            {
-                return _it->get();
-            }
-
-            constexpr pair<Key, T>* operator->() noexcept
-            {
-                return &_it->get();
-            }
-
-            constexpr pair<Key, T>* operator->() const noexcept
-            {
-                return &_it->get();
-            }
-        };
+        template < template <typename> typename Allocator >
+        concept DefaultAlloc = std::is_default_constructible_v<Allocator<uchar>>;
+        template < template <typename> typename Allocator >
+        concept CopyAlloc = std::is_copy_constructible_v<Allocator<uchar>>;
     } // namespace umap_detail
 
-    template< typename Key, typename T, typename Hasher >
+    template< typename Key, typename T, typename Hasher, 
+        template <typename> typename Allocator >
     class unordered_map
     {
     private:
-        using map_value_type = umap_detail::map_value< Key, T, Hasher >;
-        vector< vector< reference<map_value_type> > > _buckets;
+        using ref_value = pair< typename Hasher::ResultType, usize >;
+        using ref_vector = vector< ref_value, Allocator >;
+
         static constexpr f64 _limit_ratio = 0.75f;
-        vector<map_value_type> _data;
+        vector< ref_vector, Allocator > _buckets;
+        vector< pair<Key, T>, Allocator > _data;
 
         HSD_CONSTEXPR void _replace()
         {
@@ -131,39 +36,48 @@ namespace hsd
             _buckets.clear();
             _buckets.resize(_new_size);
 
-            for(map_value_type& _val : _data)
+            for(usize _index = 0; _index < _data.size(); _index++)
             {
-                auto _hash_rez = Hasher::get_hash(_val._data.first);
-                usize _index = _hash_rez % _new_size;
-                _buckets[_index].emplace_back(_val);
+                auto _hash_rez = Hasher::get_hash(_data[_index].first);
+                usize _bucket_index = _hash_rez % _new_size;
+                _buckets[_bucket_index].emplace_back(_hash_rez, _index);
             }
         }
 
-        constexpr usize _get(const Key& key)
+        constexpr pair<usize, usize> _get(const Key& key) const
         {
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
 
-            for(map_value_type& _val : _buckets[_index])
+            for(auto& _val : _buckets[_index])
             {
-                if(_key_hash == Hasher::get_hash(_val._data.first))
+                if(_key_hash == _val.first)
                 {
-                    return _val._index;
+                    return {_val.second, _index};
                 }
             }
 
-            return static_cast<usize>(-1);
+            return {static_cast<usize>(-1), _index};
         }
 
     public:
         using reference_type = T&;
-        using iterator = umap_detail::iterator< Key, T, Hasher >;
-        using const_iterator = typename vector<map_value_type>::const_iterator;
+        using iterator = typename vector<pair<Key, T>>::iterator;
+        using const_iterator = typename vector<pair<Key, T>>::const_iterator;
 
-        HSD_CONSTEXPR ~unordered_map() = default;
+        HSD_CONSTEXPR ~unordered_map() {}
 
         HSD_CONSTEXPR unordered_map()
+        requires (umap_detail::DefaultAlloc<Allocator>)
             : _buckets(10)
+        {}
+
+        HSD_CONSTEXPR unordered_map(const Allocator<uchar>& alloc)
+        requires (
+            !umap_detail::DefaultAlloc<Allocator> || 
+            umap_detail::CopyAlloc<Allocator>
+        )
+            : _buckets(10, static_cast<Allocator<ref_vector>>(alloc)), _data(alloc)
         {}
 
         HSD_CONSTEXPR unordered_map(const unordered_map& other)
@@ -171,9 +85,9 @@ namespace hsd
         {
             for(auto& _val : _data)
             {
-                auto _hash_rez = Hasher::get_hash(_val._data.first);
+                auto _hash_rez = Hasher::get_hash(_val.get().first);
                 usize _index = _hash_rez % _buckets.size();
-                _buckets[_index].emplace_back(_val);
+                _buckets[_index].emplace_back(_hash_rez, _index);
             }
         }
 
@@ -181,18 +95,18 @@ namespace hsd
             : _buckets{move(other._buckets)}, _data{move(other._data)}
         {}
 
-        HSD_CONSTEXPR unordered_map(const std::initializer_list<pair<Key, T>>& other)
+        template <usize N>
+        HSD_CONSTEXPR unordered_map(pair<Key, T> (&&other)[N])
+        requires (umap_detail::DefaultAlloc<Allocator>)
             : _buckets(10)
         {
-            for(auto& val : other)
-                emplace(val.first, val.second);
-        }
-
-        HSD_CONSTEXPR unordered_map(std::initializer_list<pair<Key, T>>&& other)
-            : _buckets(10)
-        {
-            for(auto& val : other)
-                emplace(move(val.first), move(val.second));
+            for(usize _index = 0; _index < N; _index++)
+            {
+                emplace(
+                    move(other[_index].first), 
+                    move(other[_index].second)
+                );
+            }
         }
 
         HSD_CONSTEXPR unordered_map& operator=(unordered_map&& rhs)
@@ -212,22 +126,31 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR unordered_map& operator=(const std::initializer_list<pair<Key, T>>& rhs)
+        template <usize N>
+        HSD_CONSTEXPR unordered_map& operator=(const pair<Key, T>(&rhs)[N])
         {
             clear();
 
-            for(auto& val : rhs._data)
-                emplace(val.first, val.second);
+            for(usize _index = 0; _index < N; _index++)
+            {
+                emplace(rhs[_index].first, rhs[_index].second);
+            }
 
             return *this;
         }
 
-        HSD_CONSTEXPR unordered_map& operator=(std::initializer_list<pair<Key, T>>&& rhs)
+        template <usize N>
+        HSD_CONSTEXPR unordered_map& operator=(pair<Key, T>(&&rhs)[N])
         {
             clear();
 
-            for(auto& val : rhs._data)
-                emplace(move(val.first), move(val.second));
+            for(usize _index = 0; _index < N; _index++)
+            {
+                emplace(
+                    move(rhs[_index].first), 
+                    move(rhs[_index].second)
+                );
+            }
 
             return *this;
         }
@@ -237,9 +160,18 @@ namespace hsd
             return emplace(key).first->second;
         }
 
-        HSD_CONSTEXPR reference_type operator[](const Key& key) const noexcept
+        HSD_CONSTEXPR auto& operator[](const Key& key) const
         {
-            return emplace(key).first->second;
+            auto [_data_index, _] = _get(key);
+
+            if(_data_index != static_cast<usize>(-1))
+            {
+                return _data[_data_index].second;
+            }
+            else
+            {
+                throw std::runtime_error("Data not found");
+            }
         }
 
         HSD_CONSTEXPR reference_type at(const Key& key)
@@ -269,7 +201,7 @@ namespace hsd
         template< typename NewKey, typename... Args >
         HSD_CONSTEXPR pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
         {
-            usize _data_index = _get(key);
+            auto [_data_index, _bucket_index] = _get(key);
 
             if(_data_index != static_cast<usize>(-1))
             {
@@ -277,10 +209,16 @@ namespace hsd
             }
             else
             {
-                _data.emplace_back(_data.size(), key, T{forward<Args>(args)...});
+                _data.emplace_back(key, T{forward<Args>(args)...});
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
+                { 
                     _replace();
+                }
+                else
+                {
+                    _buckets[_bucket_index].emplace_back(Hasher::get_hash(_data.back().first), _data.size() - 1);
+                }
 
                 return {_data.end() - 1, true};
             }
@@ -289,7 +227,7 @@ namespace hsd
         template< typename NewKey, typename... Args >
         HSD_CONSTEXPR pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
         {
-            usize _data_index = _get(key);
+            auto [_data_index, _bucket_index] = _get(key);
 
             if(_data_index != static_cast<usize>(-1))
             {
@@ -297,10 +235,16 @@ namespace hsd
             }
             else
             {
-                _data.emplace_back(_data.size(), move(key), move(T{forward<Args>(args)...}));
+                _data.emplace_back(move(key), move(T{forward<Args>(args)...}));
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
+                {
                     _replace();
+                }
+                else
+                {
+                    _buckets[_bucket_index].emplace_back(Hasher::get_hash(_data.back().first), _data.size() - 1);
+                }
 
                 return {_data.end() - 1, true};
             }
@@ -317,27 +261,33 @@ namespace hsd
             return _data.begin();
         }
 
+        constexpr const_iterator begin() const
+        {
+            return cbegin();
+        }
+
         constexpr iterator end()
         {
             return _data.end();
         }
 
+        constexpr const_iterator end() const
+        {
+            return cend();
+        }
+
         constexpr const_iterator cbegin() const
         {
-            return _data.begin();
+            return _data.cbegin();
         }
 
         constexpr const_iterator cend() const
         {
-            return _data.end();
+            return _data.cend();
         }
     };
 
-    template< typename Key, typename T >
-    unordered_map(const std::initializer_list<pair<Key, T>>& other) 
-        -> unordered_map< Key, T, fnv1a<usize> >;
-
-    template< typename Key, typename T >
-    unordered_map(std::initializer_list<pair<Key, T>>&& other) 
-        -> unordered_map< Key, T, fnv1a<usize> >;
+    template< typename Key, typename T, usize N >
+    unordered_map(pair<Key, T> (&&other)[N]) 
+        -> unordered_map< Key, T, fnv1a<usize>, allocator >;
 } // namespace hsd

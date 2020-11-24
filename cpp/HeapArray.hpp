@@ -19,7 +19,7 @@ namespace hsd
 
         HSD_CONSTEXPR heap_array()
         {
-            _array = new T[N];
+            _array = new T[N]{};
         }
 
         template <usize L>

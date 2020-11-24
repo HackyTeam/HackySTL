@@ -25,29 +25,15 @@ namespace hsd
         }
     };
 
-    static void* align_mem(usize align, usize size, void*& ptr, usize& space) noexcept
-    {
-        const auto _iptr = reinterpret_cast<u64>(ptr);
-        const auto _aligned = (_iptr - 1 + align) & -align;
-        const auto _diff = _aligned - _iptr;
-    
-        if ((size + _diff) > space)
-        { 
-            return nullptr;
-        }
-        else
-        {
-            space -= _diff;
-            return ptr = reinterpret_cast<void*>(_aligned);
-        }
-    }
-
     template <typename T>
     class buffered_allocator
     {
     private:
         uchar* _buf = nullptr;
         usize _size = 0;
+
+        template <typename U>
+        friend class buffered_allocator;
 
         // thanks qookie
         struct block 
@@ -63,6 +49,8 @@ namespace hsd
     public:
         using pointer_type = T*;
         using value_type = T;
+
+        //constexpr buffered_allocator() = default;
 
         constexpr buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
@@ -85,13 +73,6 @@ namespace hsd
         {
             _buf = other._buf;
             _size = other._size;
-        }
-
-        template <typename U>
-        constexpr buffered_allocator& operator=(buffered_allocator<U>&& other)
-        {
-            _buf = exchange(other._buf, nullptr);
-            _size = exchange(other._size, 0u);
         }
 
         [[nodiscard]] constexpr T* allocate(usize size)
@@ -170,10 +151,13 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
         allocator() = default;
+        constexpr allocator(const allocator&) {}
+        constexpr allocator(allocator&&) {}
 
         template <typename U>
-        constexpr allocator(const allocator<U>&)
-        {}
+        constexpr allocator(const allocator<U>&) {}
+        template <typename U>
+        constexpr allocator(allocator<U>&&) {}
 
         [[nodiscard]] constexpr auto* allocate(usize size)
         {
@@ -216,15 +200,22 @@ namespace hsd
         data_type _data;
 
     public:
-        using pointer_type = T*;
+        using pointer_type = data_type;
         using value_type = T;
 
-        [[nodiscard]] constexpr auto* allocate(usize)
+        constexpr_allocator() = default;
+        constexpr_allocator(const constexpr_allocator&) = delete;
+        constexpr_allocator(constexpr_allocator&&) = delete;
+
+        [[nodiscard]] constexpr auto& allocate(usize)
         {
-            return &_data[0];
+            return _data;
         }
 
-        constexpr void deallocate(data_type&, usize)
+        constexpr void deallocate(const data_type&, usize)
+        {}
+
+        constexpr void deallocate(const T*, usize)
         {}
     };
 } // mamespace hsd

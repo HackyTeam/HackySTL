@@ -56,11 +56,16 @@ void test(hsd::vector<T>&&)
 
 }
 
-#ifdef HSD_COMPILER_CLANG
+#if defined(HSD_COMPILER_CLANG)
+
+template <typename T>
+class hsdCTAlloc :
+    public hsd::constexpr_allocator<T, 100>
+{};
 
 constexpr auto make_constexpr_vec()
 {
-    hsd::vector< int, hsd::constexpr_allocator<int, 100> > v;
+    hsd::vector< int, hsdCTAlloc > v;
     v.emplace_back(1);
     v.emplace_back(2);
     v.emplace_back(3);
@@ -87,7 +92,7 @@ int main()
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
         // let's test constexpr vector (it works)
-        #ifdef HSD_COMPILER_CLANG
+        #if defined(HSD_COMPILER_CLANG)
             constexpr auto v = make_constexpr_vec();
 
             for(auto& val : v)
@@ -100,7 +105,7 @@ int main()
     {
         // let's test the buffred vector
         hsd::uchar buf[1000]{};
-        hsd::buffered_allocator<int> alloc = {buf, 200};
+        hsd::buffered_allocator<hsd::uchar> alloc = {buf, 200};
         hsd::buffered_vector<int> vec{alloc};
         hsd::buffered_vector<int> vec2{alloc};
         vec.push_back(1);

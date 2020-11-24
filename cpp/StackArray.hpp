@@ -69,7 +69,7 @@ namespace hsd
             return _array;
         }
 
-        constexpr iterator data() const
+        constexpr const_iterator data() const
         {
             return _array;
         }
@@ -79,9 +79,9 @@ namespace hsd
             return data();
         }
 
-        constexpr iterator begin() const
+        constexpr const_iterator begin() const
         {
-            return data();
+            return cbegin();
         }
 
         constexpr iterator end()
@@ -89,31 +89,30 @@ namespace hsd
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        constexpr const_iterator end() const
         {
-            return begin() + size();
-        }
-
-        constexpr const_iterator cbegin()
-        {
-            return begin();
+            return cend();
         }
 
         constexpr const_iterator cbegin() const
         {
-            return begin();
-        }
-
-        constexpr const_iterator cend()
-        {
-            return end();
+            return data();
         }
 
         constexpr const_iterator cend() const
         {
-            return end();
+            return cbegin() + size();
         }
     };
 
     template < typename L, typename... U > stack_array(L, U...) -> stack_array<L, 1 + sizeof...(U)>;
+
+    template <typename T, usize N>
+    static constexpr void swap(stack_array<T, N>& first, stack_array<T, N>& second)
+    {
+        for(usize _index = 0; _index < N; _index++)
+        {
+            swap(first[_index], second[_index]);
+        }
+    }
 }

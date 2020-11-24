@@ -7,8 +7,11 @@ namespace hsd
     template <typename HashType>
     struct fnv1a
     {
+        // this is an alias for HashType
+        using ResultType = HashType;
+
         template <typename T>
-        static constexpr HashType get_hash(T begin)
+        static constexpr ResultType get_hash(T begin)
         {
             HashType offset_basis = 0;
             HashType prime = 0;
@@ -36,7 +39,7 @@ namespace hsd
         }
 
         template <typename T> requires (is_integral<T>::value)
-        static constexpr HashType get_hash(T number)
+        static constexpr ResultType get_hash(T number)
         {
             return static_cast<HashType>(number);
         }

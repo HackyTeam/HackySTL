@@ -57,6 +57,23 @@ namespace hsd
                 }
 
                 HSD_CONSTEXPR storage(const storage& other)
+                requires (std::is_copy_constructible_v<Allocator<value_type>>)
+                    : Allocator<value_type>(other)
+                {
+                    this->_data = other._data;
+                    this->_size = other._size;
+                }
+
+                HSD_CONSTEXPR storage(const storage& other)
+                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
+                {
+                    this->_data = other._data;
+                    this->_size = other._size;
+                }
+
+                template < typename U, template <typename> typename Alloc >
+                HSD_CONSTEXPR storage(const storage<U, Alloc>& other)
+                requires (std::is_copy_constructible_v<Allocator<value_type>>)
                     : Allocator<value_type>(other)
                 {
                     this->_data = other._data;
@@ -65,13 +82,30 @@ namespace hsd
 
                 template < typename U, template <typename> typename Alloc >
                 HSD_CONSTEXPR storage(const storage<U, Alloc>& other)
-                    : Allocator<value_type>(other)
+                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
                 {
                     this->_data = other._data;
                     this->_size = other._size;
                 }
 
                 HSD_CONSTEXPR storage(storage&& other)
+                requires (std::is_move_constructible_v<Allocator<value_type>>)
+                    : Allocator<value_type>(move(other))
+                {
+                    this->_data = exchange(other._data, nullptr);
+                    swap(this->_size, other._size);
+                }
+
+                HSD_CONSTEXPR storage(storage&& other)
+                requires (!std::is_move_constructible_v<Allocator<value_type>>)
+                {
+                    this->_data = exchange(other._data, nullptr);
+                    swap(this->_size, other._size);
+                }
+
+                template < typename U, template <typename> typename Alloc >
+                HSD_CONSTEXPR storage(storage<U, Alloc>&& other)
+                requires (std::is_move_constructible_v<Allocator<value_type>>)
                     : Allocator<value_type>(move(other))
                 {
                     this->_data = exchange(other._data, nullptr);
@@ -80,7 +114,7 @@ namespace hsd
 
                 template < typename U, template <typename> typename Alloc >
                 HSD_CONSTEXPR storage(storage<U, Alloc>&& other)
-                    : Allocator<value_type>(move(other))
+                requires (!std::is_move_constructible_v<Allocator<value_type>>)
                 {
                     this->_data = exchange(other._data, nullptr);
                     swap(this->_size, other._size);
@@ -150,7 +184,6 @@ namespace hsd
             };
 
             template < template <typename> typename Allocator >
-            requires (is_same<typename Allocator<usize>::pointer_type, usize*>::value)
             class counter
                 : private Allocator<usize>
             {
@@ -158,6 +191,9 @@ namespace hsd
                 using alloc_type = Allocator<usize>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
+
+                template < template <typename> typename Alloc >
+                friend class counter;                
 
             public:
                 HSD_CONSTEXPR counter()
@@ -191,6 +227,23 @@ namespace hsd
                 }
 
                 HSD_CONSTEXPR counter(const counter& other)
+                requires (std::is_copy_constructible_v<Allocator<usize>>)
+                    : Allocator<usize>(other)
+                {
+                    this->_data = other._data;
+                    (*this->_data)++;
+                }
+
+                HSD_CONSTEXPR counter(const counter& other)
+                requires (!std::is_copy_constructible_v<Allocator<usize>>)
+                {
+                    this->_data = other._data;
+                    (*this->_data)++;
+                }
+
+                template < template <typename> typename Alloc >
+                requires (std::is_copy_constructible_v<Allocator<usize>>)
+                HSD_CONSTEXPR counter(const counter<Alloc>& other)
                     : Allocator<usize>(other)
                 {
                     this->_data = other._data;
@@ -198,8 +251,8 @@ namespace hsd
                 }
 
                 template < template <typename> typename Alloc >
+                requires (!std::is_copy_constructible_v<Allocator<usize>>)
                 HSD_CONSTEXPR counter(const counter<Alloc>& other)
-                    : Allocator<usize>(other)
                 {
                     this->_data = other._data;
                     (*this->_data)++;
@@ -484,7 +537,7 @@ namespace hsd
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1);
             std::construct_at(_ptr, forward<Args>(args)...);
-            return shared_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
+            return shared_ptr<T, Allocator>(_ptr, static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
         }
 
         template <typename T, template <typename> typename Allocator = allocator, typename... Args>

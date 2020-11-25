@@ -80,6 +80,7 @@ constexpr auto make_constexpr_vec()
     return v;
 
 }
+
 #endif
 
 int main()

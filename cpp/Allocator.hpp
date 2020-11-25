@@ -151,13 +151,13 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
         allocator() = default;
-        constexpr allocator(const allocator&) {}
-        constexpr allocator(allocator&&) {}
+        constexpr allocator(const allocator&) = delete;
+        constexpr allocator(allocator&&) = delete;
 
         template <typename U>
-        constexpr allocator(const allocator<U>&) {}
+        constexpr allocator(const allocator<U>&) = delete;
         template <typename U>
-        constexpr allocator(allocator<U>&&) {}
+        constexpr allocator(allocator<U>&&) = delete;
 
         [[nodiscard]] constexpr auto* allocate(usize size)
         {

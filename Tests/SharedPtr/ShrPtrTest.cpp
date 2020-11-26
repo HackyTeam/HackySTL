@@ -60,9 +60,13 @@ int main()
     hsd::uchar buf[128]{};
     hsd::buffered_allocator<int> alloc{buf, 128};
 
-    shared_ptr elm = make_shared<S>(12, 'c', 4.3f, "str");
+    shared_ptr elm = make_shared<S>(alloc, 12, 'c', 4.3f, "str");
     shared_ptr elm2 = elm;
     print(elm);
     print(elm2);
-    shared_ptr elm3 = hsd::move(elm2);
+    elm2 = hsd::move(elm);
+    shared_ptr<base> elm3 = make_shared<derived>();
+    shared_ptr<base> elm4;
+    elm4 = elm3;
+    elm4 = hsd::move(elm3);
 }

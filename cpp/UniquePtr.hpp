@@ -58,18 +58,18 @@ namespace hsd
 
             storage(const storage&) = delete;
 
-            template < typename U, template <typename> typename Alloc >
-            HSD_CONSTEXPR storage(storage<U, Alloc>&& other)
-            requires (std::is_move_constructible_v<Alloc<uchar>>)
+            template <typename U = T>
+            HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
+            requires (std::is_move_constructible_v<Allocator<uchar>>)
                 : Allocator<value_type>(move(other))
             {
                 this->_data = exchange(other._data, nullptr);
                 swap(this->_size, other._size);
             }
 
-            template < typename U, template <typename> typename Alloc >
-            HSD_CONSTEXPR storage(storage<U, Alloc>&& other)
-            requires (!std::is_move_constructible_v<Alloc<uchar>>)
+            template <typename U = T>
+            HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
+            requires (!std::is_move_constructible_v<Allocator<uchar>>)
             {
                 if constexpr(is_same<pointer_type, value_type*>::value)
                 {
@@ -83,8 +83,8 @@ namespace hsd
                 swap(this->_size, other._size);
             }
 
-            template < typename U, template <typename> typename Alloc >
-            HSD_CONSTEXPR storage& operator=(storage<U, Alloc>&& rhs)
+            template <typename U = T>
+            HSD_CONSTEXPR storage& operator=(storage<U, Allocator>&& rhs)
             {
                 this->deallocate(this->_data, _size);
                 
@@ -187,9 +187,9 @@ namespace hsd
             : _value{ptr, alloc, size}
         {}
 
-        template < typename U = T, template <typename> typename Alloc > 
+        template <typename U = T> 
         requires(unique_detail::ConvertibleDerived<T, U>)
-        HSD_CONSTEXPR unique_ptr(unique_ptr<U, Alloc>&& other)
+        HSD_CONSTEXPR unique_ptr(unique_ptr<U, Allocator>&& other)
             : _value{move(other._value)}
         {}
 
@@ -204,9 +204,9 @@ namespace hsd
             return *this;
         }
 
-        template < typename U = T, template <typename> typename Alloc > 
+        template <typename U = T> 
         requires(unique_detail::ConvertibleDerived<T, U>)
-        HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U, Alloc>&& rhs)
+        HSD_CONSTEXPR unique_ptr& operator=(unique_ptr<U, Allocator>&& rhs)
         {
             _value = move(rhs._value);
             return *this;

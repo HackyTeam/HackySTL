@@ -9,10 +9,17 @@ using hsdCTAlloc = hsd::constexpr_allocator<T, 20>;
 
 constexpr auto gen_map()
 {
-    hsd::unordered_map<int, int, hsd::fnv1a<size_t>, hsdCTAlloc > map{};
+    hsd::unordered_map<const char*, int, hsd::fnv1a<size_t>, hsdCTAlloc > map;
 
-    map.emplace(1, 0);
-    map.emplace(2, 2);
+    map.emplace("1", 0);
+    map.emplace("2", 1);
+    map.emplace("3", 2);
+    map.emplace("4", 3);
+    map.emplace("5", 4);
+    map.emplace("6", 5);
+    map.emplace("7", 6);
+    map.emplace("8", 7);
+    map.emplace("9", 8);
 
     return map;
 }
@@ -21,34 +28,40 @@ constexpr auto gen_map()
 
 int main()
 {
-    hsd::heap_array<hsd::uchar, 4096> buf{};
+    hsd::heap_array<hsd::uchar, 3072> buf{};
+    hsd::buffered_allocator<hsd::uchar> alloc{buf.data(), 3072};
+    hsd::unordered_map<int, int, hsd::fnv1a<size_t>, hsd::buffered_allocator> map{alloc};
 
-    hsd::buffered_allocator<hsd::uchar> alloc{buf.data(), 4096};
-    hsd::unordered_map<const char*, int, hsd::fnv1a<size_t>, hsd::buffered_allocator> map{alloc};
+    map.emplace(1, 1);        
+    map.emplace(2, 2);
+    map.emplace(3, 3);
+    map.emplace(4, 4);
+    map.emplace(5, 5);
+    map.emplace(6, 6);
+    map.emplace(7, 7);
+    map.emplace(8, 8);
+    map.emplace(9, 9);
+    map.emplace(10, 10);
+    map.emplace(11, 11);
+    map.emplace(12, 12);
+    map.emplace(13, 13);
+    map.emplace(14, 14);
 
-    map.emplace("key", 0);        
-    map.emplace("key2", 1);
-    map.emplace("key3", 2);
-    map.emplace("key4", 0);
-    map.emplace("key5", 1);
-    map.emplace("key6", 2);
-    map.emplace("key7", 0);
-    map.emplace("key8", 1);
-
-    printf("%d\n========\n", map["key8"]);
-    map["key9"] = 2;
-    printf("%d\n========\n", map["key9"]);
-
+    printf("%d\n========\n", map[8]);
+    printf("%d\n========\n", map[9]);
 
     for(auto& _it : map)
-        printf("%s\n", _it.first);
+        printf("%d\n", _it.first);
+
+    puts("===============================");
+    alloc.print_buffer();
 
     #if defined(HSD_COMPILER_CLANG)
     constexpr auto map2 = gen_map();
 
-    printf("========\n%d\n========\n", map2[2]);
+    printf("========\n%d\n========\n", map2["2"]);
 
     for(auto& _it : map2)
-        printf("%d\n", _it.first);
+        printf("%s\n", _it.first);
     #endif
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Limits.hpp"
+#include "Math.hpp"
 #include "StackArray.hpp"
 #include <string.h>
 #include <new>
@@ -50,8 +50,6 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        //constexpr buffered_allocator() = default;
-
         constexpr buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
         {}
@@ -99,6 +97,9 @@ namespace hsd
                     }
                     else
                     {
+                        if(_block_back->in_use == true)
+                            _block_back = _block_ptr;
+
                         _free_size = static_cast<usize>(_block_ptr - _block_back) + _block_ptr->size;
 
                         if(_free_size >= size * sizeof(T))
@@ -138,6 +139,21 @@ namespace hsd
 
                 _block_ptr->in_use = false;
             }
+        }
+
+        void print_buffer() const
+        {
+            usize _vlen = static_cast<usize>(math::sqrt(static_cast<f64>(_size)));
+            usize _hlen = _vlen + (_size - _vlen * _vlen);
+
+            for (usize _hindex = 0; _hindex < _hlen; _hindex++)
+            {
+                for (usize _vindex = 0; _vindex < _vlen; _vindex++)
+                    printf("%02x ", _buf[_hindex * _hlen + _vindex]);
+
+                puts("");
+            }
+            
         }
     };
 
@@ -212,10 +228,7 @@ namespace hsd
             return _data;
         }
 
-        constexpr void deallocate(const data_type&, usize)
-        {}
-
-        constexpr void deallocate(const T*, usize)
-        {}
+        constexpr void deallocate(const data_type&, usize) {}
+        constexpr void deallocate(const T*, usize) {}
     };
 } // mamespace hsd

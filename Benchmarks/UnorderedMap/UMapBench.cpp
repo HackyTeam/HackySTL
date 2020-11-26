@@ -4,19 +4,45 @@
 #include <unordered_map>
 #include <benchmark/benchmark.h>
 
+template <typename T>
+using hsdCTAlloc = hsd::constexpr_allocator<T, 20>;
+
+auto gen_std_umap()
+{
+    std::unordered_map<const char*, int> map;
+    map.emplace("key1", 0);
+    map.emplace("key2", 1);
+    map.emplace("key3", 2);
+    map.emplace("key4", 0);
+    map.emplace("key5", 1);
+    map.emplace("key6", 2);
+    map.emplace("key7", 0);
+    map.emplace("key8", 1);
+
+    return map;
+}
+
+constexpr auto gen_hsd_umap()
+{
+    hsd::unordered_map<const char*, int, hsd::fnv1a<size_t>, hsdCTAlloc> map;
+    map.emplace("key1", 0);
+    map.emplace("key2", 1);
+    map.emplace("key3", 2);
+    map.emplace("key4", 0);
+    map.emplace("key5", 1);
+    map.emplace("key6", 2);
+    map.emplace("key7", 0);
+    map.emplace("key8", 1);
+
+    return map;
+}
+
+
 static void hsdMap(benchmark::State& state)
 {
     for(auto _ : state)
     {
-        hsd::unordered_map<const char*, int> map;
-        map["key1"] = 0;
-        map["key2"] = 1;
-        map["key3"] = 2;
-        map["key4"] = 0;
-        map["key5"] = 1;
-        map["key6"] = 2;
-        map["key7"] = 0;
-        map["key8"] = 1;
+        constexpr auto map = gen_hsd_umap();
 
         for(auto _it : map)
             std::cout << _it.second << '\r';
@@ -29,15 +55,7 @@ static void stdMap(benchmark::State& state)
 {
     for(auto _ : state)
     {
-        std::unordered_map<const char*, int> map;
-        map["key1"] = 0;
-        map["key2"] = 1;
-        map["key3"] = 2;
-        map["key4"] = 0;
-        map["key5"] = 1;
-        map["key6"] = 2;
-        map["key7"] = 0;
-        map["key8"] = 1;
+        const auto map = gen_std_umap();
     
         for(auto _it : map)
             std::cout << _it.second << '\r';

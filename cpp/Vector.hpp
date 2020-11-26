@@ -315,8 +315,11 @@ namespace hsd
 
         constexpr void clear() noexcept
         {
-            for (usize _index = _size; _index > 0; --_index)
-                at_unchecked(_index - 1).~T();
+            if constexpr(is_same<decltype(this->_data), T*>::value)
+            {
+                for (usize _index = _size; _index > 0; --_index)
+                    at_unchecked(_index - 1).~T();
+            }
                 
             _size = 0;
         }

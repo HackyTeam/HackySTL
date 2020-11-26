@@ -738,7 +738,7 @@ namespace hsd
                 const auto _abs_a = math::abs(a);
                 const auto _abs_b = math::abs(b);
 
-                if(_abs_a <= _high_limit && _abs_b <= _high_limit) [[likely]] 
+                if(_abs_a <= _high_limit && _abs_b <= _high_limit)
                 {
                     return (a + b) / 2;
                 }
@@ -943,11 +943,11 @@ namespace hsd
         {
             if(std::is_constant_evaluated())
             {
-                return constexpr_math::pow(base, exp);
+                return constexpr_math::pow(base, exp_term);
             }
             else
             {
-                return std::pow(base, exp);
+                return std::pow(base, exp_term);
             }
         }
     } // namespace math

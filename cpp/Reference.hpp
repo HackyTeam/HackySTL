@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Utility.hpp"
-#include <stdexcept>
+#include "Result.hpp"
 
 namespace hsd
-{   
+{
     template <typename T>
     class reference 
     {
@@ -12,44 +12,23 @@ namespace hsd
         T* _ptr = nullptr;
 
     public:
-        constexpr reference() noexcept = default;
+        using value_type = T;
 
         constexpr reference(T& value) noexcept
         {
-            if(std::is_constant_evaluated())
-            {
-                _ptr = &value;
-            }
-            else
-            {
-                _ptr = addressof(value);
-            }
+            _ptr = addressof(value);
         }
         
         reference(const reference&) noexcept = default;
-        reference& operator=(const reference& x) noexcept = default;
-    
+        reference& operator=(const reference&) noexcept = delete;
+
         constexpr operator T&() const 
         { 
-            if(_ptr == nullptr)
-            {
-                throw std::runtime_error(
-                    "Dereferencing a nullptr in hsd::reference"
-                );
-            }
-
             return *_ptr; 
         }
 
         constexpr T& get() const
         { 
-            if(_ptr == nullptr)
-            {
-                throw std::runtime_error(
-                    "Dereferencing a nullptr in hsd::reference"
-                );
-            }
-
             return *_ptr; 
         }
     };

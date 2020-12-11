@@ -5,7 +5,7 @@
 
 namespace hsd
 {
-    template < typename... T >
+    template <typename... T>
     class tuple
     {
     public:
@@ -15,10 +15,10 @@ namespace hsd
         }
     };
 
-    template < typename... Args > static constexpr auto make_tuple(Args&&... args);
+    template <typename... Args> static constexpr auto make_tuple(Args&&... args);
 
     template < typename Tuple1, typename Tuple2 >
-    using is_same_tuple = std::is_same<Tuple1, Tuple2>;
+    using is_same_tuple = is_same<Tuple1, Tuple2>;
 
     template < typename T, typename... Rest >
     class tuple<T, Rest...>
@@ -65,7 +65,7 @@ namespace hsd
             : _first{other._first}, _rest{other._rest}
         {}
 
-        template < typename... Args >
+        template <typename... Args>
         constexpr tuple& operator=(const tuple<Args...>& other)
         {
             _first = other._first;
@@ -130,7 +130,7 @@ namespace hsd
         }
     };
 
-    template < typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
+    template <typename... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
     template < typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
     template <typename... Args>

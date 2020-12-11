@@ -19,22 +19,15 @@ int main()
 
     // any type
     hsd::any a = 1;
-    std::cout << a.type().name() << ": " << a.cast_to<int>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<int>().unwrap() << '\n';
     a = 3.14;
-    std::cout << a.type().name() << ": " << a.cast_to<double>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<double>().unwrap() << '\n';
     a = true;
-    std::cout << a.type().name() << ": " << a.cast_to<bool>() << '\n';
+    std::cout << a.type().name() << ": " << a.cast_to<bool>().unwrap() << '\n';
  
     // bad cast
-    try
-    {
-        a = 1;
-        std::cout << a.cast_to<float>() << '\n';
-    }
-    catch (const hsd::bad_any_cast& e)
-    {
-        std::cout << e.what() << '\n';
-    }
+    a = 1;
+    std::cout << a.cast_to<float>().unwrap() << '\n';
  
     // has value
     a = 1;

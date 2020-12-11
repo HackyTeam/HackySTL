@@ -290,7 +290,10 @@ namespace hsd
         constexpr auto& at(usize index)
         {
             if(index >= _size)
-                throw std::out_of_range("Accessed element out of range");
+            {
+                puts("Out of range");
+                abort();
+            }
 
             return this->_data[index];
         }
@@ -298,7 +301,10 @@ namespace hsd
         constexpr const auto& at(usize index) const
         {
             if(index >= _size)
-                throw std::out_of_range("Accessed element out of range");
+            {
+                puts("Out of range");
+                abort();
+            }
 
             return this->_data[index];
         }

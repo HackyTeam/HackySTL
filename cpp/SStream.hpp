@@ -37,7 +37,8 @@ namespace hsd
 
             if(sizeof...(Args) > _data_set.size())
             {
-                throw std::runtime_error("Input too small");
+                puts("Input too small");
+                abort();
             }
             else if(sizeof...(Args) < _data_set.size())
             {

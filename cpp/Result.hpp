@@ -1,0 +1,400 @@
+#pragma once
+
+#include "Io.hpp"
+#include "Reference.hpp"
+#include <stdlib.h>
+
+namespace hsd
+{
+    namespace Result_detail
+    {
+        template <typename From, typename To>
+        concept is_same = hsd::is_same<From, To>::value;
+
+        template <typename T>
+        using InvokeType = decltype(std::declval<T>()());
+
+        template < typename Func, typename Result >
+        concept UnwrapInvocable = requires(Func a) 
+        {
+            {a()} -> is_same<Result>;
+        };
+
+        template <typename T>
+        concept IsReference = (requires {typename T::value_type;} && 
+            hsd::is_same<T, reference<typename T::value_type>>::value
+        );
+    } // namespace Result_detail
+
+    template < typename Ok, typename Err >
+    class Result
+    {
+    private:
+        union
+        {
+            Ok _ok_data;
+            Err _err_data;
+        };
+
+        bool _initialized = false;
+        
+    public:
+        HSD_CONSTEXPR Result(const Result&) = delete;
+        HSD_CONSTEXPR Result(Result&&) = delete;
+        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
+        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+
+        HSD_CONSTEXPR Result(const Ok& value)
+            : _ok_data{value}, _initialized{true}
+        {}
+
+        HSD_CONSTEXPR Result(Ok&& value)
+            : _ok_data{move(value)}, _initialized{true}
+        {}
+
+        template <typename T>
+        requires (std::is_convertible_v<T, Err>)
+        HSD_CONSTEXPR Result(T&& value)
+            : _err_data{forward<T>(value)}, _initialized{false}
+        {}
+
+        ~Result()
+        {
+            if(_initialized)
+            {
+                _ok_data.~Ok();
+            }
+            else
+            {
+                _err_data.~Err();
+            }
+        }
+
+        constexpr decltype(auto) unwrap(
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return _ok_data;
+                }
+            }
+            else
+            {
+                if constexpr(requires {_err_data();})
+                {
+                    static_assert(
+                        is_same<const char*, Result_detail::InvokeType<Err>>::value, 
+                        "Error: Invoke result type is not same with \'const char*\'"
+                    );
+                    
+                    io::err_print<
+                        "Got type error in file:\n{}\n"
+                        "Invoked from: {} at line: {}\n"
+                        "With the Err result value: {}\n"
+                    >(file_name, func, line, _err_data());
+                }
+                else
+                {
+                    io::err_print<
+                        "Got type error in file:\n{}\n"
+                        "Invoked from: {} at line: {}"
+                        "\nWith the Err value: {}\n"
+                    >(file_name, func, line, _err_data);
+                }
+
+                abort();
+            }
+        }
+
+        constexpr decltype(auto) expect(
+            const char* message = "Got an Error instead",
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return _ok_data;
+                }
+            }
+            else
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}"
+                    "\nWith the message: {}\n"
+                >(file_name, func, line, message);
+                abort();
+            }
+        }
+
+        constexpr decltype(auto) unwrap_or(const Ok& value)
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return _ok_data;
+                }
+            }
+            else
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<Ok::value_type&>(value);
+                }
+                else
+                {
+                    return static_cast<Ok>(value);
+                }
+            }
+        } 
+        
+        constexpr decltype(auto) unwrap_or_default()
+        requires (std::is_default_constructible_v<Ok>)
+        {
+            if(_initialized)
+            {
+                return _ok_data;
+            }
+            else
+            {
+                return Ok{};
+            }
+        }
+
+        template <typename Func>
+        requires (Result_detail::UnwrapInvocable<Func, Ok>)
+        constexpr decltype(auto) unwrap_or_else(Func&& func)
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return _ok_data;
+                }
+            }
+            else
+            {
+                return func();
+            }
+        }
+
+        constexpr decltype(auto) unwrap_err(
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(!_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Err>)
+                {
+                    return static_cast<Err::value_type&>(_err_data);
+                }
+                else
+                {
+                    return _err_data;
+                }
+            }
+            else
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}"
+                    "\nWith the Ok value: {}\n"
+                >(file_name, func, line, _ok_data);
+                abort();
+            }
+        }
+
+        constexpr decltype(auto) expect_err(
+            const char* message = "Got a Value instead",
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(!_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Err>)
+                {
+                    return static_cast<Err::value_type&>(_err_data);
+                }
+                else
+                {
+                    return _err_data;
+                }
+            }
+            else
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}"
+                    "\nWith the message: {}\n"
+                >(file_name, func, line, message);
+                abort();
+            }
+        }
+    };
+
+    template <typename Err>
+    class Result<void, Err>
+    {
+    private:
+        union {
+            Err _err_data;
+        };
+        
+        bool _initialized = false;
+
+    public:
+        HSD_CONSTEXPR Result(const Result&) = delete;
+        HSD_CONSTEXPR Result(Result&&) = delete;
+        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
+        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+        constexpr void unwrap_or_default() = delete;
+        constexpr void unwrap_or() = delete;
+
+        HSD_CONSTEXPR Result()
+            : _initialized{true}
+        {}
+
+        template <typename T>
+        requires (std::is_convertible_v<T, Err>)
+        HSD_CONSTEXPR Result(T&& value)
+            : _err_data{forward<Err>(value)}, _initialized{false}
+        {}
+
+        ~Result()
+        {
+            if(!_initialized)
+            {
+                _err_data.~Err();
+            }
+        }
+
+        constexpr void unwrap(
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(!_initialized)
+            {
+                if constexpr(requires {_err_data();})
+                {
+                    static_assert(
+                        is_same<const char*, Result_detail::InvokeType<Err>>::value, 
+                        "Error: Invoke result type is not same with \'const char*\'"
+                    );
+                    
+                    io::err_print<
+                        "Got type error in file:\n{}\n"
+                        "Invoked from: {} at line: {}\n"
+                        "With the Err result value: {}\n"
+                    >(file_name, func, line, _err_data());
+                }
+                else
+                {
+                    io::err_print<
+                        "Got type error in file:\n{}\n"
+                        "Invoked from: {} at line: {}"
+                        "\nWith the Err value: {}\n"
+                    >(file_name, func, line, _err_data);
+                }
+                
+                abort();
+            }
+        }
+
+        constexpr void expect(
+            const char* message = "Got an Error instead",
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(!_initialized)
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}"
+                    "\nWith the message: {}\n"
+                >(file_name, func, line, message);
+                abort();
+            }
+        }
+
+        template <typename Func>
+        requires (Result_detail::UnwrapInvocable<Func, void>)
+        constexpr void unwrap_or_else(Func&& func)
+        {
+            if(!_initialized)
+            {
+                func();
+            }
+        }
+
+        constexpr decltype(auto) unwrap_err(
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}\n"
+                >(file_name, func, line);
+                abort();
+            }
+            else
+            {
+                if constexpr(Result_detail::IsReference<Err>)
+                {
+                    return static_cast<Err::value_type&>(_err_data);
+                }
+                else
+                {
+                    return _err_data;
+                }
+            }
+        }
+
+        constexpr decltype(auto) expect_err(
+            const char* message = "Got a Value instead",
+            const char* file_name = __builtin_FILE(),
+            const char* func = __builtin_FUNCTION(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                io::err_print<
+                    "Got type error in file:\n{}\n"
+                    "Invoked from: {} at line: {}"
+                    "\nWith the message: {}\n"
+                >(file_name, func, line, message);
+                abort();
+            }
+        }
+    };
+} // namespace hsd

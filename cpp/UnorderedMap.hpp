@@ -168,9 +168,9 @@ namespace hsd
             {
                 return _data[_data_index].second;
             }
-            else
             {
-                throw std::runtime_error("Data not found");
+                puts("Data not found");
+                abort();
             }
         }
 
@@ -180,7 +180,8 @@ namespace hsd
 
             if(_data_index == static_cast<usize>(-1))
             {
-                throw std::out_of_range("");
+                puts("Out of range");
+                abort();
             }
 
             return _data[_data_index]._data.second;
@@ -192,7 +193,8 @@ namespace hsd
 
             if(_data_index == static_cast<usize>(-1))
             {
-                throw std::out_of_range("");
+                puts("Out of range");
+                abort();
             }
 
             return _data[_data_index]._data.second;

@@ -7,8 +7,7 @@
 #endif
 
 #include <type_traits>
-#include <exception>
-
+#include "Result.hpp"
 #include "Types.hpp"
 #include "Utility.hpp"
 #include "UniquePtr.hpp"
@@ -18,9 +17,9 @@ namespace hsd
     template <typename T>
     concept Copyable = std::is_copy_constructible_v<T>;
 
-    struct bad_any_cast : public std::exception 
+    struct bad_any_cast
     {
-        virtual const char* what() const noexcept override 
+        const char* operator()() 
         {
             return "Illegal casting:\n"
             "Cannot cast into different type";
@@ -95,7 +94,7 @@ namespace hsd
         }
 
         template <typename T>
-        HSD_CONSTEXPR auto cast_to() const
+        HSD_CONSTEXPR auto cast_to() const -> Result<T, bad_any_cast>
         {
             using type = typename std::remove_pointer<T>::type;
 
@@ -105,7 +104,7 @@ namespace hsd
             }
             else
             {
-                throw bad_any_cast();
+                return bad_any_cast{};
             }
         }
 

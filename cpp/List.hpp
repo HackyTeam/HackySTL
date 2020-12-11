@@ -1,9 +1,10 @@
 #pragma once
 
-#include <stdexcept>
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "Utility.hpp"
 #include "Types.hpp"
+#include <new>
 
 namespace hsd
 {
@@ -142,7 +143,10 @@ namespace hsd
             constexpr iterator& operator++()
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 _iterator = _iterator->_next;
                 return *this;
@@ -151,7 +155,10 @@ namespace hsd
             constexpr iterator& operator--()
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 _iterator = _iterator->_back;
                 return *this;
@@ -174,7 +181,10 @@ namespace hsd
             constexpr T& operator*()
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 return _iterator->_value;
             }
@@ -182,7 +192,10 @@ namespace hsd
             constexpr T& operator*() const
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 return _iterator->_value;
             }
@@ -190,7 +203,10 @@ namespace hsd
             constexpr T* operator->()
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 return get();
             }
@@ -198,7 +214,10 @@ namespace hsd
             constexpr T* operator->() const
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                {
+                    puts("Null pointer access denied");
+                    abort();
+                }
 
                 return get();
             }

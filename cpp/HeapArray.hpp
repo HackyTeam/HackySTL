@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdexcept>
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "Utility.hpp"
 #include "Types.hpp"
 
@@ -100,7 +100,8 @@ namespace hsd
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                puts("Tried to access elements out of bounds");
+                abort();
             }
 
             return _array[index];
@@ -110,7 +111,8 @@ namespace hsd
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                puts("Tried to access elements out of bounds");
+                abort();
             }
 
             return _array[index];

@@ -6,6 +6,18 @@
 namespace hsd
 {
     template <typename> class function;
+    
+    template < typename Func, typename... Args >
+    concept Invocable = requires(Func func, Args... args) 
+    {
+        func(args...);
+    };
+
+    template < typename Func, typename Res, typename... Args >
+    concept IsFunction = (
+        !is_same<Func, function<Res(Args...)>>::value && 
+        Invocable<Func, Args...>
+    );
 
     template < typename Result, typename... Args >
     class function<Result(Args...)> 
@@ -50,9 +62,8 @@ namespace hsd
     public:
         function() = default;
 
-        template < typename Func, 
-            typename = ResolvedType<negation<is_same<Func, function>>, void>,
-            typename = ResolvedType<std::is_invocable<Func, Args...>, void>> 
+        template <typename Func>
+        requires (IsFunction<Func, Result, Args...>)
         HSD_CONSTEXPR function(Func);
 
         constexpr function(const function&);
@@ -153,7 +164,8 @@ namespace hsd
     }
 
     template < typename Res, typename... Args >
-    template < typename Func, typename, typename >
+    template < typename Func >
+    requires (IsFunction<Func, Res, Args...>)
     HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
     {
         _func_impl = new callable<Func>(func);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdexcept>
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "Utility.hpp"
 
 namespace hsd
@@ -27,20 +27,22 @@ namespace hsd
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                puts("Tried to access elements out of bounds");
+                abort();
             }
 
-            return _array[index];
+            return {_array[index]};
         }
 
-        constexpr T& at(usize index) const
+        constexpr const T& at(usize index) const
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                puts("Tried to access elements out of bounds");
+                abort();
             }
 
-            return _array[index];
+            return {_array[index]};
         }
 
         template < usize U, usize L >

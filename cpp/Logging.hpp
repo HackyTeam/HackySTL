@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Io.hpp"
 #include "Time.hpp"
+#include "Result.hpp"
 
 namespace hsd
 {
@@ -87,7 +87,6 @@ namespace hsd
     class stack_trace
     {
     private:
-        static inline i32 _count = std::uncaught_exceptions();
         static inline hsd::vector<detail::source_location> _stack;
         using stack_iterator = hsd::vector<detail::source_location>::iterator;
 
@@ -98,15 +97,6 @@ namespace hsd
 
         ~stack_trace() noexcept
         {
-            if(_count != std::uncaught_exceptions())
-            {
-                hsd::io::err_print<"Info: {}:{}\n\tFunction: {}\n">
-                ( 
-                    get().file_name(), get().line(), 
-                    get().function_name()
-                );
-            }
-
             _stack.pop_back();
         }
 
@@ -116,6 +106,18 @@ namespace hsd
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
+        }
+
+        void print_stack()
+        {
+            for(auto it = rbegin(); it != rend(); it--)
+            {
+                hsd::io::err_print<"Info: {}:{}\n\tFunction: {}\n">
+                (
+                    it->file_name(), it->line(), 
+                    it->function_name()
+                );
+            }
         }
         
         detail::source_location& get() noexcept
@@ -188,19 +190,11 @@ namespace hsd
     #define invoke_profiler_func(func, ...) func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
     #define invoke_stacktrace_func(func, ...) func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
 
-    class stack_trace_exception : public std::exception
+    struct stack_trace_error
     {
-        virtual const char* what() const noexcept override
-        {
-            for(auto it = exec_stack.rbegin(); it != exec_stack.rend(); it--)
-            {
-                hsd::io::err_print<"Info: {}:{}\n\tFunction: {}\n">
-                (
-                    it->file_name(), it->line(), 
-                    it->function_name()
-                );
-            }
-            
+        const char* operator()() const
+        {   
+            exec_stack.print_stack();
             return "The stack was unwined up there";
         }
     };

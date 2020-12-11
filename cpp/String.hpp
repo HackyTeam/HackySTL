@@ -241,7 +241,10 @@ namespace hsd
         constexpr CharT& at(usize index)
         {
             if(index >= _size)
-                throw std::out_of_range("");
+            {
+                puts("Out of Range");
+                abort();
+            }
 
             return _data[index];
         }
@@ -399,8 +402,9 @@ namespace hsd
         HSD_CONSTEXPR basic_string gen_range()
         {
             if(Pos + Count > _size)
-            {    
-                throw std::out_of_range("");
+            {
+                puts("Out of range");
+                abort();
             }
     
             return basic_string(&_data[Pos], Count);

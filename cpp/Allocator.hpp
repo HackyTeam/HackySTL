@@ -7,24 +7,6 @@
 
 namespace hsd
 {
-    class bad_alloc
-        : public std::exception
-    {
-        virtual const char* what() const noexcept override
-        {
-            return "Bad length for Allocation";
-        }
-    };
-
-    class bad_dealloc
-        : public std::exception
-    {
-        virtual const char* what() const noexcept override
-        {
-            return "Bad length for Deallocation";
-        }
-    };
-
     template <typename T>
     class buffered_allocator
     {
@@ -117,27 +99,40 @@ namespace hsd
                 else
                 {
                     _free_size = 0u;
-                    _block_back = _block_ptr;
+                    _block_back = reinterpret_cast<block*>(
+                        reinterpret_cast<uchar*>(_block_ptr) + 
+                        _block_ptr->size + sizeof(block)
+                    );
                 }
                 
-                _block_ptr = reinterpret_cast<block *>(
+                _block_ptr = reinterpret_cast<block*>(
                     reinterpret_cast<uchar*>(_block_ptr) + 
                     _block_ptr->size + sizeof(block)
                 );
             }
 
-            return nullptr;
+            puts("Insufficient memory");
+            abort();
         }
 
         void deallocate(T* ptr, usize)
         {
             if(ptr != nullptr)
             {
-                auto* _block_ptr = reinterpret_cast<block*>(
-                    reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
-                );
+                if(reinterpret_cast<uchar*>(ptr) >= _buf && 
+                    reinterpret_cast<uchar*>(ptr) < _buf + _size)
+                {
+                    auto* _block_ptr = reinterpret_cast<block*>(
+                        reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
+                    );
 
-                _block_ptr->in_use = false;
+                    _block_ptr->in_use = false;
+                }
+                else
+                {
+                    puts("Pointer out of bounds");
+                    abort();
+                }
             }
         }
 
@@ -175,11 +170,12 @@ namespace hsd
         template <typename U>
         constexpr allocator(allocator<U>&&) = delete;
 
-        [[nodiscard]] constexpr auto* allocate(usize size)
+        [[nodiscard]] constexpr T* allocate(usize size)
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw bad_alloc();
+                puts("Bad length for allocation");
+                abort();
             }
             else
             {
@@ -195,7 +191,8 @@ namespace hsd
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw bad_dealloc();
+                puts("Bad length for deallocation");
+                abort();
             }
             else
             {

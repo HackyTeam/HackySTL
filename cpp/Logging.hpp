@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Time.hpp"
+#include "Io.hpp"
 #include "Result.hpp"
 
 namespace hsd

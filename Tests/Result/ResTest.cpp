@@ -18,7 +18,7 @@ static auto fail_func(int v) -> hsd::Result<void, S>
 
 int main()
 {
-    fail_func(1).unwrap();
+    //fail_func(1).unwrap();
     fail_func(1).unwrap_err();
     //fail_func(1).expect("Test");
     fail_func(1).expect_err("Test");

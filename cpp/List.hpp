@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "Result.hpp"
 #include "Utility.hpp"
 #include "Types.hpp"
 #include <new>
@@ -12,6 +11,15 @@ namespace hsd
 
     namespace list_detail
     {
+        struct bad_iterator
+        {
+            const char* operator()() const
+            {
+                return "Null pointer access denied";
+            }
+        };
+        
+
         template <typename T>
         class iterator
         {
@@ -140,28 +148,24 @@ namespace hsd
                 return lhs._iterator != rhs._iterator;
             }
 
-            constexpr iterator& operator++()
+            constexpr auto operator++()
+                -> Result<reference<iterator>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
+                    return bad_iterator{};
 
                 _iterator = _iterator->_next;
-                return *this;
+                return {*this};
             }
 
-            constexpr iterator& operator--()
+            constexpr auto operator--()
+                -> Result<reference<iterator>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
+                    return bad_iterator{};
 
                 _iterator = _iterator->_back;
-                return *this;
+                return {*this};
             }
 
             constexpr iterator operator++(i32)
@@ -178,46 +182,37 @@ namespace hsd
                 return tmp;
             }
 
-            constexpr T& operator*()
+            constexpr auto operator*()
+                -> Result<reference<T>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
+                    bad_iterator{};
 
-                return _iterator->_value;
+                return {_iterator->_value};
             }
 
-            constexpr T& operator*() const
+            constexpr auto operator*() const
+                -> Result<const reference<T>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
+                   return bad_iterator{};
 
-                return _iterator->_value;
+                return {_iterator->_value};
             }
 
-            constexpr T* operator->()
+            constexpr auto operator->()
+                -> Result<T*, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
 
                 return get();
             }
 
-            constexpr T* operator->() const
+            constexpr auto operator->() const
+                -> Result<const T*, bad_iterator>
             {
                 if(_iterator == nullptr)
-                {
-                    puts("Null pointer access denied");
-                    abort();
-                }
+                    return bad_iterator{};
 
                 return get();
             }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Result.hpp"
 #include "Pair.hpp"
 #include "Vector.hpp"
 #include "Hash.hpp"
@@ -16,6 +17,14 @@ namespace hsd
         concept DefaultAlloc = std::is_default_constructible_v<Allocator<uchar>>;
         template < template <typename> typename Allocator >
         concept CopyAlloc = std::is_copy_constructible_v<Allocator<uchar>>;
+
+        struct bad_key
+        {
+            const char* operator()() const
+            {
+                return "Tried to use an invalid key";
+            }
+        };
     } // namespace umap_detail
 
     template< typename Key, typename T, typename Hasher, 
@@ -155,49 +164,36 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
+        HSD_CONSTEXPR auto& operator[](const Key& key) noexcept
         {
             return emplace(key).first->second;
         }
 
-        HSD_CONSTEXPR auto& operator[](const Key& key) const
+        HSD_CONSTEXPR const auto& operator[](const Key& key) const
         {
-            auto [_data_index, _] = _get(key);
-
-            if(_data_index != static_cast<usize>(-1))
-            {
-                return _data[_data_index].second;
-            }
-            {
-                puts("Data not found");
-                abort();
-            }
+            return at(key).unwrap();
         }
 
-        HSD_CONSTEXPR reference_type at(const Key& key)
+        HSD_CONSTEXPR auto at(const Key& key)
+            -> Result<reference<T>, umap_detail::bad_key>
+        {
+            usize _data_index = _get(key).first;
+
+            if(_data_index == static_cast<usize>(-1))
+                return umap_detail::bad_key{};
+
+            return {_data[_data_index].second};
+        }
+
+        HSD_CONSTEXPR auto at(const Key& key) const
+            -> Result<reference<T>, umap_detail::bad_key>
         {
             usize _data_index = _get(key);
 
             if(_data_index == static_cast<usize>(-1))
-            {
-                puts("Out of range");
-                abort();
-            }
+                return umap_detail::bad_key{};
 
-            return _data[_data_index]._data.second;
-        }
-
-        HSD_CONSTEXPR reference_type at(const Key& key) const
-        {
-            usize _data_index = _get(key);
-
-            if(_data_index == static_cast<usize>(-1))
-            {
-                puts("Out of range");
-                abort();
-            }
-
-            return _data[_data_index]._data.second;
+            return {_data[_data_index]._data.second};
         }
 
         template< typename NewKey, typename... Args >

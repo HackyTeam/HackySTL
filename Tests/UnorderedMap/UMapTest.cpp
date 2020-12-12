@@ -53,9 +53,6 @@ int main()
     for(auto& _it : map)
         printf("%d\n", _it.first);
 
-    puts("===============================");
-    alloc.print_buffer();
-
     #if defined(HSD_COMPILER_CLANG)
     constexpr auto map2 = gen_map();
 

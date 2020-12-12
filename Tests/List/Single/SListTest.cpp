@@ -6,6 +6,11 @@ struct S
     int a;
     float b;
     char c;
+
+    S() = default;
+    S(int aa, float bb, char cc)
+        : a{aa}, b {bb}, c{cc}
+    {}
 };
 
 int main()
@@ -16,7 +21,7 @@ int main()
 
     for(auto it : ls)
     {
-        printf("%d\n", it.a);
+        printf("%d\n", it.unwrap().a);
     }
 
     puts("==========");
@@ -24,7 +29,7 @@ int main()
 
     for(auto it : ls)
     {
-        printf("%d\n", it.a);
+        printf("%d\n", it.unwrap().a);
     }
 
     puts("==========");
@@ -32,6 +37,6 @@ int main()
 
     for(auto it : ls)
     {
-        printf("%d\n", it.a);
+        printf("%d\n", it.unwrap().a);
     }
 }

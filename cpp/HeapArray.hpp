@@ -1,12 +1,23 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "Result.hpp"
 #include "Utility.hpp"
 #include "Types.hpp"
 
 namespace hsd
 {
+    namespace harray_detail
+    {
+        struct bad_access
+        {
+            const char* operator()() const
+            {
+                return "Tried to access elements out of bounds";
+            }
+        };
+        
+    } // namespace harray_detail
+
     template < typename T, usize N >
     class heap_array
     {
@@ -96,26 +107,22 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index)
+        constexpr auto at(usize index) 
+            -> Result<reference<T>, harray_detail::bad_access>
         {
             if(index >= N)
-            {
-                puts("Tried to access elements out of bounds");
-                abort();
-            }
+                return harray_detail::bad_access{};
 
-            return _array[index];
+            return {_array[index]};
         }
 
-        constexpr const T& at(usize index) const
+        constexpr auto at(usize index) const 
+            -> Result<const reference<T>, harray_detail::bad_access>
         {
             if(index >= N)
-            {
-                puts("Tried to access elements out of bounds");
-                abort();
-            }
+                return harray_detail::bad_access{};
 
-            return _array[index];
+            return {_array[index]};
         }
 
         template < usize U, usize L >

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Io.hpp"
 #include "Reference.hpp"
+#include <stdio.h>
 #include <stdlib.h>
 
 namespace hsd
@@ -21,9 +21,16 @@ namespace hsd
         };
 
         template <typename T>
-        concept IsReference = (requires {typename T::value_type;} && 
-            hsd::is_same<T, reference<typename T::value_type>>::value
-        );
+        concept IsReference = (requires {typename T::value_type;} && (
+            hsd::is_same<T, reference<typename T::value_type>>::value ||
+            hsd::is_same<T, const reference<typename T::value_type>>::value
+        ));
+
+        template <typename T>
+        concept IsString = requires(T str) 
+        {
+            {str.c_str()} -> is_same<const char*>;
+        };
     } // namespace Result_detail
 
     template < typename Ok, typename Err >
@@ -79,7 +86,14 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    return static_cast<Ok::value_type&>(_ok_data);
+                    if constexpr(is_const<Ok>::value)
+                    {
+                        return static_cast<const typename Ok::value_type&>(_ok_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Ok::value_type&>(_ok_data);
+                    }
                 }
                 else
                 {
@@ -95,19 +109,32 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    io::err_print<
-                        "Got type error in file:\n{}\n"
-                        "Invoked from: {} at line: {}\n"
-                        "With the Err result value: {}\n"
-                    >(file_name, func, line, _err_data());
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err result value:"
+                        " %s\n", file_name, func, line, 
+                        _err_data()
+                    );
+                }
+                else if constexpr(Result_detail::IsString<Err>)
+                {
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err value: %s\n",
+                        file_name, func, line, 
+                        _err_data.c_str()
+                    );
                 }
                 else
                 {
-                    io::err_print<
-                        "Got type error in file:\n{}\n"
-                        "Invoked from: {} at line: {}"
-                        "\nWith the Err value: {}\n"
-                    >(file_name, func, line, _err_data);
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err value: %s\n",
+                        file_name, func, line, _err_data
+                    );
                 }
 
                 abort();
@@ -124,7 +151,14 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    return static_cast<Ok::value_type&>(_ok_data);
+                    if constexpr(is_const<Ok>::value)
+                    {
+                        return static_cast<const typename Ok::value_type&>(_ok_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Ok::value_type&>(_ok_data);
+                    }
                 }
                 else
                 {
@@ -133,38 +167,59 @@ namespace hsd
             }
             else
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}"
-                    "\nWith the message: {}\n"
-                >(file_name, func, line, message);
+                fprintf(
+                    stderr, "Got type error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
                 abort();
             }
         }
 
-        constexpr decltype(auto) unwrap_or(const Ok& value)
+        template <typename... Args>
+        constexpr decltype(auto) unwrap_or(Args&&... args)
+        requires (Result_detail::IsReference<Ok>)
         {
             if(_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr(is_const<Ok>::value)
                 {
-                    return static_cast<Ok::value_type&>(_ok_data);
+                    return static_cast<const typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
-                    return _ok_data;
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
             }
             else
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr(is_const<Ok>::value)
                 {
-                    return static_cast<Ok::value_type&>(value);
+                    return static_cast<const typename Ok::value_type&>(
+                        Ok{forward<Args>(args)...}
+                    );
                 }
                 else
                 {
-                    return static_cast<Ok>(value);
+                    return static_cast<typename Ok::value_type&>(
+                        Ok{forward<Args>(args)...}
+                    );
                 }
+            }
+        } 
+
+        template <typename... Args>
+        constexpr decltype(auto) unwrap_or(Args&&... args)
+        requires (!Result_detail::IsReference<Ok>)
+        {
+            if(_initialized)
+            {
+                return _ok_data;
+            }
+            else
+            {
+                return Ok{forward<Args>(args)...};
             }
         } 
         
@@ -189,7 +244,14 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    return static_cast<Ok::value_type&>(_ok_data);
+                    if constexpr(is_const<Ok>::value)
+                    {
+                        return static_cast<const typename Ok::value_type&>(_ok_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Ok::value_type&>(_ok_data);
+                    }
                 }
                 else
                 {
@@ -211,7 +273,14 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Err>)
                 {
-                    return static_cast<Err::value_type&>(_err_data);
+                    if constexpr(is_const<Err>::value)
+                    {
+                        return static_cast<const typename Err::value_type&>(_err_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Err::value_type&>(_err_data);
+                    }
                 }
                 else
                 {
@@ -220,11 +289,12 @@ namespace hsd
             }
             else
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}"
-                    "\nWith the Ok value: {}\n"
-                >(file_name, func, line, _ok_data);
+                fprintf(
+                    stderr, "Got type error in file:\n"
+                    "%s\nInvoked from: %s at line: %zu"
+                    "\nExpected Err, got Ok instead\n",
+                    file_name, func, line
+                );
                 abort();
             }
         }
@@ -239,7 +309,14 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Err>)
                 {
-                    return static_cast<Err::value_type&>(_err_data);
+                    if constexpr(is_const<Err>::value)
+                    {
+                        return static_cast<const typename Err::value_type&>(_err_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Err::value_type&>(_err_data);
+                    }
                 }
                 else
                 {
@@ -248,11 +325,12 @@ namespace hsd
             }
             else
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}"
-                    "\nWith the message: {}\n"
-                >(file_name, func, line, message);
+                fprintf(
+                    stderr, "Got type error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
                 abort();
             }
         }
@@ -308,19 +386,32 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    io::err_print<
-                        "Got type error in file:\n{}\n"
-                        "Invoked from: {} at line: {}\n"
-                        "With the Err result value: {}\n"
-                    >(file_name, func, line, _err_data());
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err result value:"
+                        " %s\n", file_name, func, line, 
+                        _err_data()
+                    );
+                }
+                else if constexpr(Result_detail::IsString<Err>)
+                {
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err value: %s\n",
+                        file_name, func, line, 
+                        _err_data.c_str()
+                    );
                 }
                 else
                 {
-                    io::err_print<
-                        "Got type error in file:\n{}\n"
-                        "Invoked from: {} at line: {}"
-                        "\nWith the Err value: {}\n"
-                    >(file_name, func, line, _err_data);
+                    fprintf(
+                        stderr, "Got type error in file:"
+                        "\n%s\nInvoked from: %s at line:"
+                        " %zu\nWith the Err value: %s\n",
+                        file_name, func, line, _err_data
+                    );
                 }
                 
                 abort();
@@ -335,11 +426,12 @@ namespace hsd
         {
             if(!_initialized)
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}"
-                    "\nWith the message: {}\n"
-                >(file_name, func, line, message);
+                fprintf(
+                    stderr, "Got type error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
                 abort();
             }
         }
@@ -361,17 +453,18 @@ namespace hsd
         {
             if(_initialized)
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}\n"
-                >(file_name, func, line);
+                fprintf(
+                    stderr, "Got type error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\n", file_name, func, line
+                );
                 abort();
             }
             else
             {
                 if constexpr(Result_detail::IsReference<Err>)
                 {
-                    return static_cast<Err::value_type&>(_err_data);
+                    return static_cast<typename Err::value_type&>(_err_data);
                 }
                 else
                 {
@@ -388,11 +481,11 @@ namespace hsd
         {
             if(_initialized)
             {
-                io::err_print<
-                    "Got type error in file:\n{}\n"
-                    "Invoked from: {} at line: {}"
-                    "\nWith the message: {}\n"
-                >(file_name, func, line, message);
+                fprintf(
+                    stderr, "Got type error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message);
                 abort();
             }
         }

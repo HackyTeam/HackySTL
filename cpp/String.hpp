@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Result.hpp"
 #include "CString.hpp"
 #include "Math.hpp"
-#include <stdexcept>
 
 namespace hsd
 {
@@ -14,6 +14,22 @@ namespace hsd
         CharT* _data = nullptr;
         usize _size = 0;
         usize _reserved_size = 1;
+
+        struct bad_access
+        {
+            const char* operator()() const
+            {
+                return "Tried to access an element out of bounds";
+            }
+        };
+        
+        struct out_of_range
+        {
+            const char* operator()() const
+            {
+                return "Out of range";
+            }
+        };
 
         HSD_CONSTEXPR void _reset()
         {
@@ -238,15 +254,22 @@ namespace hsd
             return operator>(rhs) && operator==(rhs);
         }
 
-        constexpr CharT& at(usize index)
+        constexpr auto at(usize index)
+            -> Result<reference<CharT>, bad_access>
         {
             if(index >= _size)
-            {
-                puts("Out of Range");
-                abort();
-            }
+                return bad_access{}
 
-            return _data[index];
+            return {_data[index]};
+        }
+
+        constexpr auto at(usize index) const
+            -> Result<const reference<CharT>, bad_access>
+        {
+            if(index >= _size)
+                return bad_access{}
+
+            return {_data[index]};
         }
 
         constexpr usize find(const basic_string& str, usize pos = 0)
@@ -399,13 +422,11 @@ namespace hsd
         }
 
         template < usize Pos, usize Count >
-        HSD_CONSTEXPR basic_string gen_range()
+        HSD_CONSTEXPR auto gen_range()
+            -> Result<basic_string<CharT>, out_of_range>
         {
             if(Pos + Count > _size)
-            {
-                puts("Out of range");
-                abort();
-            }
+                return out_of_range{};
     
             return basic_string(&_data[Pos], Count);
         }

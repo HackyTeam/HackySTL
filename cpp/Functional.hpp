@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Tuple.hpp"
-#include <stdexcept>
+#include "Result.hpp"
 
 namespace hsd
 {
@@ -19,14 +19,14 @@ namespace hsd
         Invocable<Func, Args...>
     );
 
-    template < typename Result, typename... Args >
-    class function<Result(Args...)> 
+    template < typename ResultType, typename... Args >
+    class function<ResultType(Args...)> 
     {
     private:
         struct callable_base
         {
             usize _instances = 1;
-            virtual Result operator()(Args&&...) = 0;
+            virtual ResultType operator()(Args&&...) = 0;
             virtual ~callable_base() {}
         };
 
@@ -38,9 +38,17 @@ namespace hsd
                 : _func{func}
             {}
 
-            virtual Result operator()(Args&&... args) override
+            virtual ResultType operator()(Args&&... args) override
             {
                 return _func(hsd::forward<Args>(args)...);
+            }
+        };
+
+        struct bad_function
+        {
+            const char* operator()() const
+            {
+                return "Bad function";
             }
         };
         
@@ -63,7 +71,7 @@ namespace hsd
         function() = default;
 
         template <typename Func>
-        requires (IsFunction<Func, Result, Args...>)
+        requires (IsFunction<Func, ResultType, Args...>)
         HSD_CONSTEXPR function(Func);
 
         constexpr function(const function&);
@@ -98,13 +106,10 @@ namespace hsd
         }
 
         template <typename Func>
-        HSD_CONSTEXPR function& operator=(Func func)
+        HSD_CONSTEXPR function& operator=(Func&& func)
         {
-            if(static_cast<bool>(func))
-            {
-                reset();
-                _func_impl = new callable<Func>(func);
-            }
+            reset();
+            _func_impl = new callable<Func>(forward<Func>(func));
             return *this;
         }
 
@@ -113,14 +118,22 @@ namespace hsd
             reset();
         }
 
-        constexpr Result operator()(Args&&... args)
+        constexpr auto operator()(Args&&... args) 
+            -> Result<ResultType, bad_function>
         {
             if(_func_impl == nullptr)
-            {
-                throw std::runtime_error("Bad function");
-            }
+                return bad_function{};
 
-            return _func_impl->operator()(hsd::forward<Args>(args)...);
+            return {_func_impl->operator()(hsd::forward<Args>(args)...)};
+        }
+
+        constexpr auto operator()(Args&&... args) const
+            -> Result<const ResultType, bad_function>
+        {
+            if(_func_impl == nullptr)
+                return bad_function{};
+
+            return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
     };
 
@@ -174,20 +187,32 @@ namespace hsd
     template < typename Func, typename... Args >
     static HSD_CONSTEXPR auto bind(Func func, Args&&... args)
     {
-        return [&, func]{
-            hsd::function _internal_func = func;
-            return _internal_func(hsd::forward<Args>(args)...);
+        return [=]{
+            if constexpr(requires {func(std::declval<Args>()...).unwrap();})
+            {
+                return func(hsd::forward<Args>(args)...).unwrap();
+            }
+            else
+            {
+                return func(hsd::forward<Args>(args)...);
+            }
         };
     }
 
     template < typename Func, typename... Args >
     static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...> args)
     {
-        return [&, func]{
-            return [&, func]<usize... Ints>(hsd::index_sequence<Ints...>)
+        return [=]{
+            return [&]<usize... Ints>(hsd::index_sequence<Ints...>)
             {
-                hsd::function _internal_func = func;
-                return _internal_func(hsd::forward<Args>(args.template get<Ints>())...);
+                if constexpr(requires {func(std::declval<Args>()...).unwrap();})
+                {
+                    return func(hsd::forward<Args>(args.template get<Ints>())...).unwrap();
+                }
+                else
+                {
+                    return func(hsd::forward<Args>(args.template get<Ints>())...);
+                }
             }(hsd::make_index_sequence<args.size()>{});
         };
     }

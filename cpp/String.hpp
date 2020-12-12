@@ -258,7 +258,7 @@ namespace hsd
             -> Result<reference<CharT>, bad_access>
         {
             if(index >= _size)
-                return bad_access{}
+                return bad_access{};
 
             return {_data[index]};
         }
@@ -267,7 +267,7 @@ namespace hsd
             -> Result<const reference<CharT>, bad_access>
         {
             if(index >= _size)
-                return bad_access{}
+                return bad_access{};
 
             return {_data[index]};
         }

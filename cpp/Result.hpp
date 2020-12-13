@@ -1,8 +1,17 @@
 #pragma once
 
 #include "Reference.hpp"
+#include <bits/stl_construct.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#if defined(HSD_COMPILER_MSVC)
+    #define HSD_FUNCION_NAME __FUNCSIG__
+#elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
+    #define HSD_FUNCION_NAME __PRETTY_FUNCTION__
+#else
+    #define HSD_FUNCION_NAME __builtin_FUNCTION()
+#endif
 
 namespace hsd
 {
@@ -46,8 +55,6 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        HSD_CONSTEXPR Result(const Result&) = delete;
-        HSD_CONSTEXPR Result(Result&&) = delete;
         HSD_CONSTEXPR Result& operator=(const Result&) = delete;
         HSD_CONSTEXPR Result& operator=(Result&&) = delete;
 
@@ -65,7 +72,33 @@ namespace hsd
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 
-        ~Result()
+        HSD_CONSTEXPR Result(const Result& other)
+            : _initialized{other._initialized}
+        {
+            if(_initialized)
+            {
+                std::construct_at(&_ok_data, other._ok_data);
+            }
+            else
+            {
+                std::construct_at(&_err_data, other._err_data);
+            }
+        }
+
+        HSD_CONSTEXPR Result(Result&& other)
+            : _initialized{other._initialized}
+        {
+            if(_initialized)
+            {
+                std::construct_at(&_ok_data, move(other._ok_data));
+            }
+            else
+            {
+                std::construct_at(&_err_data, move(other._err_data));
+            }
+        }
+
+        HSD_CONSTEXPR ~Result()
         {
             if(_initialized)
             {
@@ -78,9 +111,9 @@ namespace hsd
         }
 
         constexpr decltype(auto) unwrap(
-            const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE()) const
         {
             if(_initialized)
             {
@@ -143,9 +176,9 @@ namespace hsd
 
         constexpr decltype(auto) expect(
             const char* message = "Got an Error instead",
-            const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE()) const
         {
             if(_initialized)
             {
@@ -178,7 +211,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr decltype(auto) unwrap_or(Args&&... args) const
         requires (Result_detail::IsReference<Ok>)
         {
             if(_initialized)
@@ -210,7 +243,7 @@ namespace hsd
         } 
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr decltype(auto) unwrap_or(Args&&... args) const
         requires (!Result_detail::IsReference<Ok>)
         {
             if(_initialized)
@@ -223,7 +256,7 @@ namespace hsd
             }
         } 
         
-        constexpr decltype(auto) unwrap_or_default()
+        constexpr decltype(auto) unwrap_or_default() const
         requires (std::is_default_constructible_v<Ok>)
         {
             if(_initialized)
@@ -238,7 +271,7 @@ namespace hsd
 
         template <typename Func>
         requires (Result_detail::UnwrapInvocable<Func, Ok>)
-        constexpr decltype(auto) unwrap_or_else(Func&& func)
+        constexpr decltype(auto) unwrap_or_else(Func&& func) const
         {
             if(_initialized)
             {
@@ -265,9 +298,9 @@ namespace hsd
         }
 
         constexpr decltype(auto) unwrap_err(
+            const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            usize line = __builtin_LINE()) const
         {
             if(!_initialized)
             {
@@ -301,9 +334,9 @@ namespace hsd
 
         constexpr decltype(auto) expect_err(
             const char* message = "Got a Value instead",
-            const char* file_name = __builtin_FILE(),
             const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE()) const
         {
             if(!_initialized)
             {
@@ -364,7 +397,7 @@ namespace hsd
             : _err_data{forward<Err>(value)}, _initialized{false}
         {}
 
-        ~Result()
+        HSD_CONSTEXPR ~Result()
         {
             if(!_initialized)
             {
@@ -373,9 +406,9 @@ namespace hsd
         }
 
         constexpr void unwrap(
+            const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            usize line = __builtin_LINE()) const
         {
             if(!_initialized)
             {
@@ -420,9 +453,9 @@ namespace hsd
 
         constexpr void expect(
             const char* message = "Got an Error instead",
+            const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            usize line = __builtin_LINE()) const
         {
             if(!_initialized)
             {
@@ -438,7 +471,7 @@ namespace hsd
 
         template <typename Func>
         requires (Result_detail::UnwrapInvocable<Func, void>)
-        constexpr void unwrap_or_else(Func&& func)
+        constexpr void unwrap_or_else(Func&& func) const
         {
             if(!_initialized)
             {
@@ -447,9 +480,9 @@ namespace hsd
         }
 
         constexpr decltype(auto) unwrap_err(
+            const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            usize line = __builtin_LINE()) const
         {
             if(_initialized)
             {
@@ -475,9 +508,9 @@ namespace hsd
 
         constexpr decltype(auto) expect_err(
             const char* message = "Got a Value instead",
-            const char* file_name = __builtin_FILE(),
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE())
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE()) const
         {
             if(_initialized)
             {

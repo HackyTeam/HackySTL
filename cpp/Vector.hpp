@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdexcept>
+#include <bits/stl_construct.h>
 #include <cassert>
 
 #include "Utility.hpp"

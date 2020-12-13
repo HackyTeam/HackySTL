@@ -6,14 +6,6 @@
 
 namespace hsd
 {
-    #if defined(HSD_COMPILER_MSVC)
-        #define HSD_FUNCION_NAME __FUNCSIG__
-    #elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-        #define HSD_FUNCION_NAME __PRETTY_FUNCTION__
-    #else
-        #define HSD_FUNCION_NAME __builtin_FUNCTION()
-    #endif
-
     namespace detail
     {
         class source_location
@@ -188,14 +180,17 @@ namespace hsd
     static inline profiler profiler_stack;
     using source_location = detail::source_location;
 
-    #define invoke_profiler_func(func, ...) func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
-    #define invoke_stacktrace_func(func, ...) func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
+    #define invoke_profiler_func(func, ...) \
+        func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
+    #define invoke_stacktrace_func(func, ...) \
+        func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
 
     struct stack_trace_error
     {
         const char* operator()() const
         {   
             exec_stack.print_stack();
+            fputc('\n', stderr);
             return "The stack was unwined up there";
         }
     };

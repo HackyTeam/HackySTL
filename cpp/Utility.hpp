@@ -44,15 +44,6 @@ namespace hsd
         return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
     }
 
-    template <typename T>
-    static constexpr T&& forward(remove_reference_t<T>&& val)
-    {
-        static_assert(!std::is_lvalue_reference<T>::value,
-                      "Can not forward an rvalue as an lvalue.");
-
-        return static_cast<T&&>(val);
-    }
-
     template <typename T1>
     static constexpr void swap(T1& first, T1& second) noexcept
     {

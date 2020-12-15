@@ -181,9 +181,9 @@ namespace hsd
     using source_location = detail::source_location;
 
     #define invoke_profiler_func(func, ...) \
-        func(hsd::profiler_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
+        func(hsd::profiler_stack.add(HSD_FUNCTION_NAME), __VA_ARGS__)
     #define invoke_stacktrace_func(func, ...) \
-        func(hsd::exec_stack.add(HSD_FUNCION_NAME), __VA_ARGS__)
+        func(hsd::exec_stack.add(HSD_FUNCTION_NAME), __VA_ARGS__)
 
     struct stack_trace_error
     {

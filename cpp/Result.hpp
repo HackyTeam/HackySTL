@@ -6,11 +6,11 @@
 #include <stdlib.h>
 
 #if defined(HSD_COMPILER_MSVC)
-    #define HSD_FUNCION_NAME __FUNCSIG__
+    #define HSD_FUNCTION_NAME __FUNCSIG__
 #elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-    #define HSD_FUNCION_NAME __PRETTY_FUNCTION__
+    #define HSD_FUNCTION_NAME __PRETTY_FUNCTION__
 #else
-    #define HSD_FUNCION_NAME __builtin_FUNCTION()
+    #define HSD_FUNCTION_NAME __builtin_FUNCTION()
 #endif
 
 namespace hsd

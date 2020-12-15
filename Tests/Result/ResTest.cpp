@@ -31,8 +31,8 @@ int main()
     [](const auto& param)
     {
         auto v = fail_func2(param);
-        v.unwrap(HSD_FUNCION_NAME);
-        v.expect_err("fuck you error", HSD_FUNCION_NAME);
+        v.unwrap(HSD_FUNCTION_NAME);
+        v.expect_err("Goodbye error", HSD_FUNCTION_NAME);
     }(10);
 
     fail_func(10).unwrap();

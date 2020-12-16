@@ -23,8 +23,8 @@ struct counter {
 int main()
 {
     int b = 5;
-    hsd::function<int&(int&)> val;
-    val(b).unwrap();
+    hsd::function val = func2<int>;
+    val(hsd::reference(b)).unwrap();
 
     hsd::function<int()> f3;
     

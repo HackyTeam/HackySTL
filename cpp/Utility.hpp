@@ -15,6 +15,9 @@ namespace hsd
     }
 
     template <typename T>
+    static constexpr T&& forward(const remove_reference_t<T>& val) = delete;
+
+    template <typename T>
     static constexpr T&& forward(remove_reference_t<T>& val)
     {
         return static_cast<T&&>(val);

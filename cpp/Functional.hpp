@@ -212,17 +212,17 @@ namespace hsd
         return [=]{
             if constexpr(requires {func(std::declval<Args>()...).unwrap();})
             {
-                return func(hsd::forward<Args>(args)...).unwrap();
+                return func(args...).unwrap();
             }
             else
             {
-                return func(hsd::forward<Args>(args)...);
+                return func(args...);
             }
         };
     }
 
     template < typename Func, typename... Args >
-    static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...> args)
+    static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...>&& args)
     {
         return [=]{
             return [&]<usize... Ints>(hsd::index_sequence<Ints...>)

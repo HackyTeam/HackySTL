@@ -6,6 +6,11 @@ static int func(int a)
     return a;
 }
 
+static const auto& func2(auto& val)
+{
+    return val;
+}
+
 struct counter {
     counter(int a = 0) : c(a) {}
     int c;
@@ -18,10 +23,13 @@ struct counter {
 int main()
 {
     int b = 5;
+    hsd::function<int&(int&)> val;
+    val(b).unwrap();
+
     hsd::function<int()> f3;
     
     {
-        hsd::function f = func;  
+        hsd::function f = func;
         auto f2 = f;
         f3 = hsd::bind(func, hsd::make_tuple(5));
     }

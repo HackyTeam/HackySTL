@@ -7,17 +7,43 @@ namespace hsd
 {
     template <typename> class function;
     
-    template < typename Func, typename... Args >
-    concept Invocable = requires(Func func, Args... args) 
+    namespace func_detail
     {
-        func(args...);
-    };
+        template < typename Func, typename... Args >
+        concept Invocable = requires(Func func, Args... args) 
+        {
+            func(args...);
+        };
 
-    template < typename Func, typename Res, typename... Args >
-    concept IsFunction = (
-        !is_same<Func, function<Res(Args...)>>::value && 
-        Invocable<Func, Args...>
-    );
+        template < typename Func, typename Res, typename... Args >
+        concept IsFunction = (
+            !is_same<Func, function<Res(Args...)>>::value && 
+            Invocable<Func, Args...>
+        );
+
+        struct bad_function
+        {
+            const char* operator()() const
+            {
+                return "Bad function";
+            }
+        };
+
+        template <typename T>
+        struct store_ref
+        {
+            using type = T;
+        };
+        
+        template <typename T>
+        struct store_ref<T&>
+        {
+            using type = reference<T>;
+        };
+
+        template <typename T>
+        using store_ref_t = typename store_ref<remove_cv_t<T>>::type;
+    } // namespace func_detail
 
     template < typename ResultType, typename... Args >
     class function<ResultType(Args...)> 
@@ -43,14 +69,6 @@ namespace hsd
                 return _func(hsd::forward<Args>(args)...);
             }
         };
-
-        struct bad_function
-        {
-            const char* operator()() const
-            {
-                return "Bad function";
-            }
-        };
         
         callable_base* _func_impl = nullptr;
 
@@ -71,7 +89,7 @@ namespace hsd
         function() = default;
 
         template <typename Func>
-        requires (IsFunction<Func, ResultType, Args...>)
+        requires (func_detail::IsFunction<Func, ResultType, Args...>)
         HSD_CONSTEXPR function(Func);
 
         constexpr function(const function&);
@@ -119,19 +137,23 @@ namespace hsd
         }
 
         constexpr auto operator()(Args&&... args) 
-            -> Result<ResultType, bad_function>
+            -> Result<
+                func_detail::store_ref_t<ResultType>, 
+                func_detail::bad_function >
         {
             if(_func_impl == nullptr)
-                return bad_function{};
+                return func_detail::bad_function{};
 
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
 
         constexpr auto operator()(Args&&... args) const
-            -> Result<const ResultType, bad_function>
+            -> Result<
+                const func_detail::store_ref_t<ResultType>, 
+                func_detail::bad_function >
         {
             if(_func_impl == nullptr)
-                return bad_function{};
+                return func_detail::bad_function{};
 
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
@@ -178,7 +200,7 @@ namespace hsd
 
     template < typename Res, typename... Args >
     template < typename Func >
-    requires (IsFunction<Func, Res, Args...>)
+    requires (func_detail::IsFunction<Func, Res, Args...>)
     HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
     {
         _func_impl = new callable<Func>(func);

@@ -20,6 +20,12 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
+    template <typename T>
+    static constexpr T&& forward(remove_reference_t<T>&& val)
+    {
+        return static_cast<T&&>(val);
+    }
+
     template <class T, class U = T>
     static constexpr T exchange(T& target, U&& new_val) noexcept
     {
@@ -38,10 +44,14 @@ namespace hsd
         return dest;
     }
 
-    template <typename _Type>
-    static constexpr _Type* addressof(_Type& value)
+    template <typename Type>
+    static constexpr Type* addressof(const Type& value)
     {
-        return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
+        return reinterpret_cast<Type*>(
+            &reinterpret_cast<char&>(
+                const_cast<Type&>(value)
+            )
+        );
     }
 
     template <typename T1>

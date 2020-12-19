@@ -26,13 +26,19 @@ static constexpr auto fail_func2(const T& v) -> hsd::Result<T, S>
         return v;
 }
 
+static hsd::optional<int> opt_fail()
+{
+    return hsd::bad_optional_access{};
+}
+
 int main()
 {
     [](const auto& param)
     {
         auto v = fail_func2(param);
-        v.unwrap(HSD_FUNCTION_NAME);
-        v.expect_err("Goodbye error", HSD_FUNCTION_NAME);
+        //opt_fail().unwrap(HSD_FUNCTION_NAME);
+        //v.unwrap_err(HSD_FUNCTION_NAME);
+        v.expect("Goodbye error", HSD_FUNCTION_NAME);
     }(10);
 
     fail_func(10).unwrap();

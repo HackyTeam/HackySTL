@@ -15,9 +15,6 @@ namespace hsd
     }
 
     template <typename T>
-    static constexpr T&& forward(const remove_reference_t<T>& val) = delete;
-
-    template <typename T>
     static constexpr T&& forward(remove_reference_t<T>& val)
     {
         return static_cast<T&&>(val);
@@ -27,6 +24,19 @@ namespace hsd
     static constexpr T&& forward(remove_reference_t<T>&& val)
     {
         return static_cast<T&&>(val);
+    }
+
+    template < typename T, typename... Args >
+    static constexpr void construct_at(T* ptr, Args&&... args)
+    {
+        if(std::is_constant_evaluated())
+        {
+            (*ptr) = T{forward<Args>(args)...};
+        }
+        else
+        {
+            new (ptr) T{forward<Args>(args)...};
+        }
     }
 
     template <class T, class U = T>

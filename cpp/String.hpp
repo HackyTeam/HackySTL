@@ -34,6 +34,7 @@ namespace hsd
         HSD_CONSTEXPR void _reset()
         {
             delete[] _data;
+            _data = nullptr;
         }
     public:
         using iterator = CharT*;
@@ -255,7 +256,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index)
-            -> Result<reference<CharT>, bad_access>
+            -> Result< reference<CharT>, bad_access >
         {
             if(index >= _size)
                 return bad_access{};
@@ -264,7 +265,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index) const
-            -> Result<const reference<CharT>, bad_access>
+            -> Result< const reference<CharT>, bad_access >
         {
             if(index >= _size)
                 return bad_access{};

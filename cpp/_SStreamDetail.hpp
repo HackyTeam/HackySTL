@@ -1,8 +1,7 @@
 #pragma once
 
 #include <wchar.h>
-#include <stdio.h>
-
+#include "Result.hpp"
 #include "StringLiteral.hpp"
 #include "StackArray.hpp"
 #include "Vector.hpp"
@@ -12,6 +11,18 @@ namespace hsd
 {
     namespace sstream_detail
     {
+        class runtime_error
+        {
+        private:
+            const char* _err = nullptr;
+
+        public:
+            runtime_error(const char* error)
+                : _err{error}
+            {}
+        };
+        
+
         template <typename CharT>
         static auto split_data(const CharT* str, usize size)
         {

@@ -235,7 +235,7 @@ namespace hsd
                 {
                     return func(hsd::forward<Args>(args.template get<Ints>())...);
                 }
-            }(hsd::make_index_sequence<args.size()>{});
+            }(hsd::index_sequence_for<Args...>{});
         };
     }
 

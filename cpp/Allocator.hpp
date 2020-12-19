@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Result.hpp"
 #include "Math.hpp"
 #include "StackArray.hpp"
 #include <string.h>
@@ -7,6 +8,26 @@
 
 namespace hsd
 {
+    namespace allocator_detail
+    {
+        class allocator_error
+        {
+        private:
+            const char* _err = nullptr;
+
+        public:
+            allocator_error(const char* error)
+                : _err{error}
+            {}
+
+            const char* operator()() const
+            {
+                return _err;
+            }
+        };
+    } // namespace allocator_detail
+    
+
     template <typename T>
     class buffered_allocator
     {
@@ -55,7 +76,8 @@ namespace hsd
             _size = other._size;
         }
 
-        [[nodiscard]] constexpr T* allocate(usize size)
+        [[nodiscard]] constexpr auto allocate(usize size)
+            -> Result< T*, allocator_detail::allocator_error >
         {
             auto* _block_ptr = reinterpret_cast<block*>(_buf);
             auto* _block_end = reinterpret_cast<block*>(_buf + _size - sizeof(block));
@@ -111,11 +133,11 @@ namespace hsd
                 );
             }
 
-            puts("Insufficient memory");
-            abort();
+            return allocator_detail::allocator_error{"Insufficient memory"};
         }
 
-        void deallocate(T* ptr, usize)
+        auto deallocate(T* ptr, usize)
+            -> Result< void, allocator_detail::allocator_error >
         {
             if(ptr != nullptr)
             {
@@ -130,10 +152,11 @@ namespace hsd
                 }
                 else
                 {
-                    puts("Pointer out of bounds");
-                    abort();
+                    return allocator_detail::allocator_error{"Pointer out of bounds"};
                 }
             }
+
+            return {};
         }
 
         void print_buffer() const
@@ -170,12 +193,12 @@ namespace hsd
         template <typename U>
         constexpr allocator(allocator<U>&&) = delete;
 
-        [[nodiscard]] constexpr T* allocate(usize size)
+        [[nodiscard]] inline auto allocate(usize size)
+            -> Result< T*, allocator_detail::allocator_error >
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                puts("Bad length for allocation");
-                abort();
+                return allocator_detail::allocator_error{"Bad length for allocation"};
             }
             else
             {
@@ -187,12 +210,12 @@ namespace hsd
             }
         }
 
-        constexpr void deallocate(pointer_type ptr, usize size)
+        inline auto deallocate(pointer_type ptr, usize size)
+            -> Result< void, allocator_detail::allocator_error >
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                puts("Bad length for deallocation");
-                abort();
+                return allocator_detail::allocator_error{"Bad length for deallocation"};
             }
             else
             {
@@ -201,6 +224,8 @@ namespace hsd
                 #else
                 ::operator delete(ptr, std::align_val_t(alignof(T)));
                 #endif
+
+                return {};
             }
         }
     };
@@ -219,13 +244,5 @@ namespace hsd
         constexpr_allocator() = default;
         constexpr_allocator(const constexpr_allocator&) = delete;
         constexpr_allocator(constexpr_allocator&&) = delete;
-
-        [[nodiscard]] constexpr auto& allocate(usize)
-        {
-            return _data;
-        }
-
-        constexpr void deallocate(const data_type&, usize) {}
-        constexpr void deallocate(const T*, usize) {}
     };
 } // mamespace hsd

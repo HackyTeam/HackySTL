@@ -5,7 +5,7 @@
 template <typename T>
 using hsdCTAlloc = hsd::constexpr_allocator<T, 20>;
 
-#if defined(HSD_COMPILER_CLANG)
+//#if defined(HSD_COMPILER_CLANG)
 
 constexpr auto gen_map()
 {
@@ -24,7 +24,7 @@ constexpr auto gen_map()
     return map;
 }
 
-#endif
+//#endif
 
 int main()
 {
@@ -53,12 +53,12 @@ int main()
     for(auto& _it : map)
         printf("%d\n", _it.first);
 
-    #if defined(HSD_COMPILER_CLANG)
+    //#if defined(HSD_COMPILER_CLANG)
     constexpr auto map2 = gen_map();
 
     printf("========\n%d\n========\n", map2["2"]);
 
     for(auto& _it : map2)
         printf("%s\n", _it.first);
-    #endif
+    //#endif
 }

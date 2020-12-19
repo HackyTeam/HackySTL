@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Reference.hpp"
-#include <bits/stl_construct.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -42,6 +42,15 @@ namespace hsd
         };
     } // namespace Result_detail
 
+    struct bad_optional_access
+    {
+        const char* operator()() const
+        {
+            return "Acessed an uninitialized value";
+        }
+    };
+    
+
     template < typename Ok, typename Err >
     class Result
     {
@@ -77,11 +86,11 @@ namespace hsd
         {
             if(_initialized)
             {
-                std::construct_at(&_ok_data, other._ok_data);
+                construct_at(&_ok_data, other._ok_data);
             }
             else
             {
-                std::construct_at(&_err_data, other._err_data);
+                construct_at(&_err_data, other._err_data);
             }
         }
 
@@ -90,11 +99,11 @@ namespace hsd
         {
             if(_initialized)
             {
-                std::construct_at(&_ok_data, move(other._ok_data));
+                construct_at(&_ok_data, move(other._ok_data));
             }
             else
             {
-                std::construct_at(&_err_data, move(other._err_data));
+                construct_at(&_err_data, move(other._err_data));
             }
         }
 
@@ -119,14 +128,7 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    if constexpr(is_const<Ok>::value)
-                    {
-                        return static_cast<const typename Ok::value_type&>(_ok_data);
-                    }
-                    else
-                    {
-                        return static_cast<typename Ok::value_type&>(_ok_data);
-                    }
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
@@ -184,14 +186,7 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    if constexpr(is_const<Ok>::value)
-                    {
-                        return static_cast<const typename Ok::value_type&>(_ok_data);
-                    }
-                    else
-                    {
-                        return static_cast<typename Ok::value_type&>(_ok_data);
-                    }
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
@@ -216,14 +211,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                if constexpr(is_const<Ok>::value)
-                {
-                    return static_cast<const typename Ok::value_type&>(_ok_data);
-                }
-                else
-                {
-                    return static_cast<typename Ok::value_type&>(_ok_data);
-                }
+                return static_cast<typename Ok::value_type&>(_ok_data);
             }
             else
             {
@@ -277,14 +265,7 @@ namespace hsd
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
-                    if constexpr(is_const<Ok>::value)
-                    {
-                        return static_cast<const typename Ok::value_type&>(_ok_data);
-                    }
-                    else
-                    {
-                        return static_cast<typename Ok::value_type&>(_ok_data);
-                    }
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
@@ -523,4 +504,7 @@ namespace hsd
             }
         }
     };
+
+    template <typename T>
+    using optional = Result<T, bad_optional_access>;
 } // namespace hsd

@@ -175,7 +175,7 @@ namespace hsd
         }
 
         HSD_CONSTEXPR auto at(const Key& key)
-            -> Result<reference<T>, umap_detail::bad_key>
+            -> Result< reference<T>, umap_detail::bad_key >
         {
             usize _data_index = _get(key).first;
 
@@ -186,14 +186,14 @@ namespace hsd
         }
 
         HSD_CONSTEXPR auto at(const Key& key) const
-            -> Result<reference<T>, umap_detail::bad_key>
+            -> Result< reference<const T>, umap_detail::bad_key >
         {
-            usize _data_index = _get(key);
+            usize _data_index = _get(key).first;
 
             if(_data_index == static_cast<usize>(-1))
                 return umap_detail::bad_key{};
 
-            return {_data[_data_index]._data.second};
+            return {_data[_data_index].second};
         }
 
         template< typename NewKey, typename... Args >

@@ -7,8 +7,8 @@
 
 namespace hsd
 {
-    template < typename T, typename Allocator = allocator<T> >
-    class vector : private Allocator
+    template < typename T, template <typename> typename Allocator = allocator >
+    class vector : private Allocator<T>
     {
     private:
         usize _size = 0;
@@ -22,9 +22,6 @@ namespace hsd
             }
         };
 
-        template <typename U, typename Alloc>
-        friend class vector;
-
     public:
         using value_type = T;
         using iterator = T*;
@@ -37,49 +34,52 @@ namespace hsd
                 for (usize _index = _size; _index > 0; --_index)
                     at_unchecked(_index - 1).~T();
 
-                this->deallocate(this->_data, _capacity);
+                this->deallocate(this->_data, _capacity).unwrap();
             }
         }
 
         HSD_CONSTEXPR vector() noexcept
-        requires (std::is_default_constructible_v<Allocator>) = default;
+        requires (std::is_default_constructible_v<Allocator<T>>) = default;
 
         HSD_CONSTEXPR vector(usize size)
         {
             resize(size);
         }
 
-        HSD_CONSTEXPR vector(const Allocator& alloc)
-        requires (std::is_copy_constructible_v<Allocator>)
-            : Allocator(alloc)
+        template <typename U>
+        HSD_CONSTEXPR vector(const Allocator<U>& alloc)
+        requires (std::is_copy_constructible_v<Allocator<T>>)
+            : Allocator<T>(alloc)
         {}
 
-        HSD_CONSTEXPR vector(usize size, const Allocator& alloc)
-        requires (std::is_copy_constructible_v<Allocator>)
-            : Allocator(alloc)
+        template <typename U>
+        HSD_CONSTEXPR vector(usize size, const Allocator<U>& alloc)
+        requires (std::is_copy_constructible_v<Allocator<T>>)
+            : Allocator<T>(alloc)
         {
             resize(size);
         }
 
         // used only for initializing once
-        HSD_CONSTEXPR vector(Allocator&& alloc)
+        template <typename U>
+        HSD_CONSTEXPR vector(Allocator<U>&& alloc)
         requires (is_same<decltype(this->_data), T*>::value)
-            : Allocator(move(alloc))
+            : Allocator<T>(move(alloc))
         {}
 
         HSD_CONSTEXPR vector(const vector& rhs)
-        requires (std::is_copy_constructible_v<Allocator>)
-            : Allocator(rhs), _size(rhs._size), _capacity(rhs._capacity)
+        requires (std::is_copy_constructible_v<Allocator<T>>)
+            : Allocator<T>(rhs), _size(rhs._size), _capacity(rhs._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(rhs._capacity);
+                this->_data = this->allocate(rhs._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
                 construct_at(&this->_data[_index], rhs[_index]);
         }
 
         HSD_CONSTEXPR vector(const vector& rhs)
-        requires (!std::is_copy_constructible_v<Allocator>)
+        requires (!std::is_copy_constructible_v<Allocator<T>>)
             : _size(rhs._size), _capacity(rhs._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
@@ -90,8 +90,8 @@ namespace hsd
         }
 
         constexpr vector(vector&& other) noexcept
-        requires (std::is_move_constructible_v<Allocator>)
-            : Allocator(move(other))
+        requires (std::is_move_constructible_v<Allocator<T>>)
+            : Allocator<T>(move(other))
         {
             swap(this->_data, other._data);
             swap(_size, other._size);
@@ -99,7 +99,7 @@ namespace hsd
         }
 
         constexpr vector(vector&& other) noexcept
-        requires (!std::is_move_constructible_v<Allocator>)
+        requires (!std::is_move_constructible_v<Allocator<T>>)
         {
             swap(this->_data, other._data);
             swap(_size, other._size);
@@ -404,11 +404,11 @@ namespace hsd
                     {
                         if constexpr(requires{typename T::value_type;})
                         {
-                            if constexpr(requires{this->_data[0].allocate(0);} &&
-                                std::is_copy_constructible_v<Allocator>)
+                            if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
+                                std::is_copy_constructible_v<Allocator<T>>)
                             {
                                 construct_at(&_new_buf[_index], 
-                                    static_cast<Allocator>(*this)
+                                    static_cast<Allocator<T>>(*this)
                                 );
                             }
                             else
@@ -435,11 +435,11 @@ namespace hsd
                 {
                     if constexpr(requires{typename T::value_type;})
                     {
-                        if constexpr(requires{this->_data[0].allocate(0);} &&
-                            std::is_copy_constructible_v<Allocator>)
+                        if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
+                            std::is_copy_constructible_v<Allocator<T>>)
                         {
                             construct_at(&this->_data[_index], 
-                                static_cast<Allocator>(*this)
+                                static_cast<Allocator<T>>(*this)
                             );
                         }
                         else
@@ -552,10 +552,19 @@ namespace hsd
 
     };
 
+    template <hsd::usize N>
+    struct ct_alloc_helper
+    {
+        template <typename T>
+        struct alloc_type 
+            : hsd::constexpr_allocator<T, N>
+        {};
+    };
+
     template < typename T, usize N > vector(const T (&)[N]) -> vector<T>;
     template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
-    template < typename T > using buffered_vector = vector< T, buffered_allocator<T> >;
-    template < typename T, usize N > using constexpr_vector = vector< T, constexpr_allocator<T, N> >;
+    template < typename T > using buffered_vector = vector< T, buffered_allocator >;
+    template < typename T, usize N > using constexpr_vector = vector< T, ct_alloc_helper<N>::template alloc_type >;
 
     template< typename L, typename... U >
     requires (std::is_constructible_v<L, U> && ...)

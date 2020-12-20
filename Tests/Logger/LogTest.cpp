@@ -1,31 +1,25 @@
 #include "../../cpp/Logging.hpp"
 
-void test_trace(const char* msg, size_t N, hsd::stack_trace tr = hsd::exec_stack.add())
+static auto test_trace(hsd::stack_trace tr, const char* msg, hsd::usize N)
+    -> hsd::Result<void, hsd::stack_trace_error>
 {
     if(N == 0)
-        throw hsd::stack_trace_exception();
+        return hsd::stack_trace_error{};
 
-    test_trace(msg, N - 1);
+    invoke_stacktrace_func(test_trace, msg, N - 1).unwrap();
+    return {};
 }
 
-void test_profiler(size_t N, hsd::profiler tr = hsd::profiler_stack.add())
+static void test_profiler(hsd::profiler tr, hsd::usize N)
 {
     if(N == 0)
         return;
 
-    test_profiler(N - 1);
+    invoke_profiler_func(test_profiler, N - 1);
 }
 
 int main()
 {
-    try
-    {
-        test_trace("hello", 32);   
-    }
-    catch(const std::exception& e)
-    {
-        hsd::io::err_print<"{}\n\n">(e.what());
-    }
-
-    test_profiler(32);
+    invoke_stacktrace_func(test_trace, "hello", 0).unwrap();   
+    invoke_profiler_func(test_profiler, 32);
 }

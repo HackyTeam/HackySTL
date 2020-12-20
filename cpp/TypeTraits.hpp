@@ -1,7 +1,6 @@
 #pragma once
 
 #include <type_traits>
-
 #include "Types.hpp"
 
 namespace hsd
@@ -91,6 +90,188 @@ namespace hsd
         : public true_type
     {};
 
+    template <typename T> 
+    struct is_const                
+        : public false_type
+    {};
+
+    template <typename T> 
+    struct is_const<const T>       
+        : public true_type
+    {};
+
+    template <typename>
+    struct is_lvalue_reference
+        : public false_type
+    {};
+
+    template <typename T>
+    struct is_lvalue_reference<T&>
+        : public true_type
+    {};
+
+    template <typename>
+    struct is_rvalue_reference
+        : public false_type
+    {};
+
+    template <typename T>
+    struct is_rvalue_reference<T&&>
+        : public true_type 
+    {};
+
+    template <typename T>
+    struct is_reference
+        : public disjunction<
+            is_rvalue_reference<T>, 
+            is_lvalue_reference<T> >
+    {};
+
+    namespace helper
+    {
+        template <typename>
+        struct is_void
+            : public false_type
+        {};
+        
+        template <>
+        struct is_void<void>
+            : public true_type
+        {};
+
+        template <typename>
+        struct is_integral
+            : public false_type
+        {};
+
+        template <>
+        struct is_integral<bool>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<char>
+            : public true_type
+        {};
+        
+        template <>
+        struct is_integral<char8>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<char16>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<char32>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<i16>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<i32>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<i64>
+            : public true_type
+        {};
+
+        #if defined(HSD_COMPILER_GCC)
+        
+        template <>
+        struct is_integral<i128>
+            : public true_type
+        {};
+        
+        #endif
+
+        template <>
+        struct is_integral<isize>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<uchar>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<u16>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<u32>
+            : public true_type
+        {};
+
+        template <>
+        struct is_integral<u64>
+            : public true_type
+        {};
+
+        #if defined(HSD_COMPILER_GCC)
+
+        template <>
+        struct is_integral<u128>
+            : public true_type
+        {};
+
+        #endif
+
+        template <>
+        struct is_integral<usize>
+            : public true_type
+        {};
+
+        template <typename>
+        struct is_floating_point
+            : public false_type
+        {};
+
+        template <>
+        struct is_floating_point<f32>
+            : public true_type
+        {};
+
+        template <>
+        struct is_floating_point<f64>
+            : public true_type
+        {};
+
+        template <>
+        struct is_floating_point<f128>
+            : public true_type
+        {};
+
+        template <typename T>
+        struct is_number
+            : disjunction< is_integral<T>, is_floating_point<T> >
+        {};
+
+        template < typename T, bool = is_number<T>::value >
+        struct is_signed : public false_type 
+        {};
+
+        template <typename T>
+        struct is_signed<T, true>
+            : public literal_constant< bool, T(-1) < T(0) >
+        {};
+
+        template <typename T>
+        struct is_unsigned
+            : public negation<is_signed<T>>
+        {};
+    }
+
     template <typename T>
     struct remove_reference
     {
@@ -126,194 +307,6 @@ namespace hsd
     {
         using type = T;
     };
-    
-    template <typename T>
-    using remove_array_t = typename remove_array<T>::type;
-
-    template <typename>
-    struct is_char_pointer 
-        : public false_type
-    {};
-
-    template <>
-    struct is_char_pointer<char[]> 
-        : public true_type
-    {};
-
-    template <usize N>
-    struct is_char_pointer<char[N]> 
-        : public std::true_type
-    {};
-
-    template <>
-    struct is_char_pointer<char*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char* const> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<uchar[]> 
-        : public true_type
-    {};
-
-    template <usize N>
-    struct is_char_pointer<uchar[N]> 
-        : public std::true_type
-    {};
-
-    template <>
-    struct is_char_pointer<uchar*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const uchar*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const uchar* const> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<wchar[]> 
-        : public true_type
-    {};
-
-    template <usize N>
-    struct is_char_pointer<wchar[N]> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<wchar*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const wchar*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const wchar* const> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<char16[]> 
-        : public true_type
-    {};
-
-    template <usize N>
-    struct is_char_pointer<char16[N]> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<char16*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char16*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char16* const> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<char32[]> 
-        : public true_type
-    {};
-
-    template <usize N>
-    struct is_char_pointer<char32[N]> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<char32*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char32*> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char_pointer<const char32* const> 
-        : public true_type
-    {};
-
-    template <typename>
-    struct is_char
-        : public false_type
-    {};
-
-    template <>
-    struct is_char<char> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<const char> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<uchar> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<const uchar> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<wchar> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<const wchar> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<char16> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<const char16> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<char32> 
-        : public true_type
-    {};
-
-    template <>
-    struct is_char<const char32> 
-        : public true_type
-    {};
 
     template <typename T> 
     struct remove_cv                   
@@ -695,6 +688,14 @@ namespace hsd
             va_args::is_va_args_function<T> >
     {};
 
+    template<typename T>
+    struct is_object
+        : public negation< 
+            disjunction< is_function<T>, is_reference<T>,
+            helper::is_void< typename remove_cv<T>::type > > 
+        >::type
+    {};
+
     namespace sfinae
     {
         template <typename T>
@@ -749,8 +750,38 @@ namespace hsd
     template < typename First, typename Second, typename Result >
 	using DisableIfSame = ResolvedType< is_same<First, Second>, Result >;
 
+    template <typename T>
+    using is_integral = helper::is_integral< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_floating_point = helper::is_floating_point< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_number = helper::is_number< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_signed = helper::is_signed< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_unsigned = helper::is_unsigned< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_void = helper::is_void< typename remove_cv<T>::type >;
+
     template < bool Cond, typename IfTrue, typename IfFalse >
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;
+
+    template <typename T>
+    using remove_array_t = typename remove_array<T>::type;
+
+    template <typename T>
+    using remove_cv_t = typename remove_cv<T>::type;
+
+    template <typename T>
+    using remove_const_t = typename remove_const<T>::type;
+
+    template <typename T>
+    using remove_volatile_t = typename remove_volatile<T>::type;
 
     template <typename T>
     using remove_reference_t = typename remove_reference<T>::type;

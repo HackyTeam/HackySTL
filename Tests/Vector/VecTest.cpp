@@ -1,16 +1,16 @@
-#define HSD_DISABLE_VECTOR_CONSTEXPR // Remove this unless not working without this
 #include "../../cpp/Vector.hpp"
-
 #include <cstdio>
 #include <iterator>
 
 struct S
 {
-    int a;
-    float b;
-    char c;
+    int _a;
+    float _b;
+    char _c;
 
-    S(int a, float b, char c) : a(a), b(b), c(c) {}
+    S(int a, float b, char c)
+        : _a(a), _b(b), _c(c) 
+    {}
 };
 
 struct verbose {
@@ -47,18 +47,95 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
     return vec;
 }
 
+template <typename T>
+void test(hsd::vector<T>&&)
+{
+
+}
+
+constexpr auto make_constexpr_vec()
+{
+    hsd::constexpr_vector<int, 20> v;
+    v.emplace_back(1);
+    v.emplace_back(2);
+    v.emplace_back(3);
+    v.emplace_back(4);
+    v.emplace_back(5);
+    v.emplace_back(6);
+    v.emplace_back(7);
+    v.emplace_back(8);
+    v.emplace_back(9);
+    v.emplace_back(10);
+
+    return v;
+}
+
 int main()
 {
     {
-        hsd::vector e = {1, 2, 3, 4, 5, 6};
+        // for function type deduction
+        test(hsd::vector{{1, 2, 3, 4, 5, 6}});
+        // alternatively you can do
+        test<int>({{1, 2, 3, 4, 5, 6}});
+        // it does the same thing
+        test(hsd::make_vector(1, 2, 3, 4, 5, 6));
+        // let's test constexpr vector (it works)
+        constexpr auto v = make_constexpr_vec();
+
+        for(auto& val : v)
+            printf("%d\n", val);
+
+        printf("==========\n");
+    }
+
+    {
+        // let's test the buffred vector
+        hsd::uchar buf[1000]{};
+        hsd::buffered_allocator<hsd::uchar> alloc = {buf, 200};
+        hsd::buffered_vector<int> vec{alloc};
+        hsd::buffered_vector<int> vec2{alloc};
+        vec.push_back(1);
+        vec.push_back(2);
+        vec.push_back(3);
+        vec.push_back(4);
+        vec.push_back(5);
+
+        vec2.push_back(5);
+        vec2.push_back(4);
+        vec2.push_back(3);
+        vec2.push_back(2);
+        vec2.push_back(1);
+
+        for(auto& val : vec)
+            printf("%d\n", val);
+
+        printf("==========\n");
+        
+        for(auto& val : vec2)
+            printf("%d\n", val);
+
+        printf("==========\n");
+    }
+
+    {
+        // you have to do this: {{...}}
+        hsd::vector e = {{1, 2, 3, 4, 5, 6}};
 
         for (auto val : e)
         {
             printf("%d\n", val);
         }
 
-    std::puts("==========");
+        std::puts("==========");
         auto e2 = gen_range(e, 2, 5);
+
+        for (auto val : e2)
+        {
+            std::printf("%d\n", val);
+        }
+
+        std::puts("==========");
+        e2 = {{12, 21, 123}};
 
         for (auto val : e2)
         {

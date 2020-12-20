@@ -1,9 +1,9 @@
 #pragma once
 
-#include <stdexcept>
-
 #include "Utility.hpp"
 #include "Types.hpp"
+#include "Result.hpp"
+#include <new>
 
 namespace hsd
 {
@@ -11,6 +11,14 @@ namespace hsd
 
     namespace forward_list_detail
     {
+        struct bad_iterator
+        {
+            const char* operator()() const
+            {
+                return "Null pointer access denied";
+            }
+        };
+
         template <typename T>
         class iterator
         {
@@ -49,9 +57,9 @@ namespace hsd
                 return *this;
             }
 
-            constexpr bool operator==(const iterator& rhs)
+            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
             {
-                return _iterator == rhs._iterator;
+                return lhs._iterator == rhs._iterator;
             }
 
             constexpr T* get()
@@ -117,18 +125,19 @@ namespace hsd
             }
         public:
         
-            constexpr bool operator!=(const iterator& rhs)
+            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
             {
-                return _iterator != rhs._iterator;
+                return lhs._iterator != rhs._iterator;
             }
 
-            constexpr iterator& operator++()
+            constexpr auto operator++() 
+                -> Result<reference<iterator>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                    return bad_iterator{};
 
                 _iterator = _iterator->_next;
-                return *this;
+                return {*this};
             }
 
             constexpr iterator operator++(i32)
@@ -138,34 +147,38 @@ namespace hsd
                 return tmp;
             }
 
-            constexpr T& operator*()
+            constexpr auto operator*() 
+                -> Result<reference<T>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                    return bad_iterator{};
 
-                return _iterator->_value;
+                return {_iterator->_value};
             }
 
-            constexpr T& operator*() const
+            constexpr auto operator*() const 
+                -> Result<const reference<T>, bad_iterator>
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                    return bad_iterator{};
 
-                return _iterator->_value;
+                return {_iterator->_value};
             }
 
-            constexpr T* operator->()
+            constexpr auto operator->() 
+                -> Result<T*, bad_iterator>
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                    return bad_iterator{};
 
                 return get();
             }
 
-            constexpr T* operator->() const
+            constexpr auto operator->() const 
+                -> Result<const T*, bad_iterator>
             {
                 if(_iterator == nullptr)
-                    throw std::runtime_error("Null pointer access denied");
+                    return bad_iterator{};
 
                 return get();
             }
@@ -178,6 +191,7 @@ namespace hsd
     private:
         forward_list_detail::iterator<T> _head;
         forward_list_detail::iterator<T> _tail;
+        usize _size = 0;
         
     public:
         using iterator = forward_list_detail::iterator<T>;
@@ -198,16 +212,18 @@ namespace hsd
             other._tail = nullptr;
         }
 
-        HSD_CONSTEXPR forward_list(const std::initializer_list<T>& other)
+        template <usize N>
+        HSD_CONSTEXPR forward_list(const T (&arr)[N])
         {
-            for(const auto& _element : other)
-                push_back(_element);
+            for(usize _index = 0; _index < N; _index++)
+                push_back(arr[_index]);
         }
 
-        HSD_CONSTEXPR forward_list(std::initializer_list<T>&& other)
+        template <usize N>
+        HSD_CONSTEXPR forward_list(T (&&arr)[N])
         {
-            for(auto&& _element : other)
-                push_back(move(_element));
+            for(usize _index = 0; _index < N; _index++)
+                push_back(move(arr[_index]));
         }
 
         HSD_CONSTEXPR ~forward_list()
@@ -235,60 +251,82 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR forward_list& operator=(const std::initializer_list<T>& other)
+        template <usize N>
+        HSD_CONSTEXPR forward_list& operator=(const T (&arr)[N])
         {
             clear();
+            usize _index = 0;
 
-            for(const auto& _element : other)
+            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+                *_it = arr[_index];
+
+            for(; _index < N; _index++)
+                push_back(arr[_index]);
+
+            return *this;
+        }
+
+        template <usize N>
+        HSD_CONSTEXPR forward_list& operator=(T (&&arr)[N])
+        {
+            clear();
+            usize _index = 0;
+
+            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+                *_it = move(arr[_index]);
+
+            for(; _index < N; _index++)
+                push_back(move(arr[_index]));
+
+            return *this;
+        }
+
+        HSD_CONSTEXPR forward_list& operator+=(const forward_list& rhs)
+        {
+            for(const auto& _element : rhs)
                 push_back(_element);
 
             return *this;
         }
 
-        HSD_CONSTEXPR forward_list& operator=(std::initializer_list<T>&& other)
+        HSD_CONSTEXPR forward_list& operator+=(forward_list&& rhs)
         {
-            clear;
-
-            for(auto&& _element : other)
+            for(auto&& _element : rhs)
                 push_back(move(_element));
-
-            return *this;
-        }
-
-        HSD_CONSTEXPR forward_list& operator+(const forward_list& rhs)
-        {
-            for(auto _element : rhs)
-                push_back(_element);
 
             return *this;
         }
 
         HSD_CONSTEXPR void push_back(const T& value)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl(value);
                 _tail = _head;
             }
             else
                 _tail.push_back(value);
+
+            _size++;
         }
 
         HSD_CONSTEXPR void push_back(T&& value)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl(hsd::move(value));
                 _tail = _head;
             }
             else
                 _tail.push_back(hsd::move(value));
+
+            _size++;
         }
 
         template <typename... Args>
         HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl();
                 _head._iterator->_value.~T();
@@ -297,34 +335,40 @@ namespace hsd
             }
             else
                 _tail.emplace_back(hsd::forward<Args>(args)...);
+
+            _size++;
         }
 
         HSD_CONSTEXPR void push_front(const T& value)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl(value);
                 _tail = _head;
             }
             else
                 _head.push_front(value);
+
+            _size++;
         }
 
         HSD_CONSTEXPR void push_front(T&& value)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl(hsd::move(value));
                 _tail = _head;
             }
             else
                 _head.push_front(hsd::move(value));
+
+            _size++;
         }
 
         template <typename... Args>
         HSD_CONSTEXPR void emplace_front(Args&&... args)
         {
-            if(_head == end())
+            if(empty())
             {
                 _head._iterator = new typename iterator::forward_list_impl();
                 _head._iterator->_value.~T();
@@ -333,25 +377,31 @@ namespace hsd
             }
             else
                 _head.emplace_front(hsd::forward<Args>(args)...);
+
+            _size++;
         }
 
         HSD_CONSTEXPR void pop_front()
         {
-            if(_head != end())
+            if(!empty())
+            {
                 _head.pop_front();
+            }
             else
                 _tail = _head;
+                
+            _size--;
         }
 
         HSD_CONSTEXPR void clear()
         {
-            for(; _head != end(); pop_front());
-                pop_front();
+            for(; !empty(); pop_front());
+            pop_front();
         }
 
         constexpr bool empty()
         {
-            return _head == end();
+            return _size == 0;
         }
 
         constexpr T& front()

@@ -14,21 +14,58 @@ namespace hsd
         }
     };
 
-    template < typename T, T Prev, T... Next >
+    template < typename T, T To, T Prev, T... Next >
     struct make_integer_sequence_helper
-        : hsd::conditional_t<Prev == 0, integer_sequence< T, Next... >, 
-        make_integer_sequence_helper< T, Prev - 1, Prev - 1, Next... >>
+        : hsd::conditional_t<Prev == To, integer_sequence< T, Next... >, 
+        make_integer_sequence_helper< T, To, Prev - 1, Prev - 1, Next... >>
     {};
 
     template <usize... Next>
     using index_sequence = integer_sequence<usize, Next...>;
+
+    template <usize Size>
+    using make_index_sequence = make_integer_sequence_helper<usize, 0, Size>;
     
-    template <usize N>
-    using make_index_sequence = make_integer_sequence_helper<usize, N>;
-    
-    template <typename T, T Size> requires(Size >= 0)
-    using make_integer_sequence = make_integer_sequence_helper<T, Size>;
+    template <typename T, T Size>
+    using make_integer_sequence = make_integer_sequence_helper<T, 0, Size>;
     
     template <typename... T>
     using index_sequence_for = make_index_sequence<sizeof...(T)>;
+    
+    namespace ranged
+    {
+        template < typename T, T From, T To > requires(From <= To)
+        using make_integer_sequence = make_integer_sequence_helper< T, From, To >;
+
+        template < usize From, usize To > requires(From <= To)
+        using make_index_sequence = make_integer_sequence_helper< usize, From, To >;
+    } // namespace range
+
+    namespace inverse
+    {
+        template < typename T, T To, T Prev, T... Next >
+        struct make_inverse_sequence_helper
+            : hsd::conditional_t<Prev == To, integer_sequence< T, Next... >, 
+            make_inverse_sequence_helper< T, To, Prev + 1, Prev + 1, Next... >>
+        {};
+
+        template <usize Size>
+        using make_index_sequence = make_inverse_sequence_helper<usize, Size, 0>;
+
+        template <typename T, T Size>
+        using make_integer_sequence = make_inverse_sequence_helper<T, Size, 0>;
+
+        template <typename... T>
+        using index_sequence_for = inverse::make_index_sequence<sizeof...(T)>;
+
+        namespace ranged
+        {
+            template < typename T, T From, T To > requires(From >= To)
+            using make_integer_sequence = make_inverse_sequence_helper< T, From, To >;
+
+            template < usize From, usize To > requires(From >= To)
+            using make_index_sequence = make_inverse_sequence_helper< usize, From, To >;
+        } // namespace range
+        
+    } // namespace inverse
 }

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Io.hpp"
 #include "Time.hpp"
+#include "Io.hpp"
+#include "Result.hpp"
 
 namespace hsd
 {
-    namespace _detail
+    namespace detail
     {
         class source_location
         {
@@ -16,7 +17,7 @@ namespace hsd
 
         public:
             constexpr source_location(
-                const char* file_name = __builtin_FILE(), 
+                const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 usize line = __builtin_LINE()) noexcept
                 : _file_name{file_name}, _func{func}, _line{line}
@@ -47,7 +48,8 @@ namespace hsd
             clock _clk{};
 
         public:
-            profiler_value(const char* file_name = __builtin_FILE(), 
+            profiler_value(
+                const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 usize line = __builtin_LINE()) noexcept
                 : _file_name{file_name}, _func{func}, _line{line}
@@ -73,14 +75,13 @@ namespace hsd
                 return _clk.elapsed_time();
             }
         };        
-    } // namespace _detail
+    } // namespace detail
     
     class stack_trace
     {
     private:
-        static inline i32 _count = std::uncaught_exceptions();
-        static inline hsd::vector<_detail::source_location> _stack;
-        using stack_iterator = hsd::vector<_detail::source_location>::iterator;
+        static inline hsd::vector<detail::source_location> _stack;
+        using stack_iterator = hsd::vector<detail::source_location>::iterator;
 
     public:
 
@@ -89,28 +90,30 @@ namespace hsd
 
         ~stack_trace() noexcept
         {
-            if(_count != std::uncaught_exceptions())
-            {
-                hsd::io::err_print<"Info: {}:{} Function: {}\n">
-                ( 
-                    get().file_name(), get().line(), 
-                    get().function_name()
-                );
-            }
-
             _stack.pop_back();
         }
 
         stack_trace& add(
-            const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE()) noexcept
+            const char* func, usize line = __builtin_LINE(),
+            const char* file_name = __builtin_FILE()) noexcept
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
         }
+
+        void print_stack()
+        {
+            for(auto it = rbegin(); it != rend(); it--)
+            {
+                hsd::io::err_print<"Info: {}:{}\n\tFunction: {}\n">
+                (
+                    it->file_name(), it->line(), 
+                    it->function_name()
+                );
+            }
+        }
         
-        _detail::source_location& get() noexcept
+        detail::source_location& get() noexcept
         {
             return _stack.back();
         }
@@ -129,8 +132,8 @@ namespace hsd
     class profiler
     {
     private:
-        using iterator = hsd::vector<_detail::profiler_value>::iterator;
-        static inline hsd::vector<_detail::profiler_value> _stack;
+        using iterator = hsd::vector<detail::profiler_value>::iterator;
+        static inline hsd::vector<detail::profiler_value> _stack;
 
     public:
 
@@ -141,7 +144,7 @@ namespace hsd
         {
             if(_stack.size() > 0)
             {
-                hsd::io::print<"Info: {}:{}\nFunction: {}, time taken: {}us\n">(
+                hsd::io::print<"Info: {}:{}\n\tFunction: {}, time taken: {}us\n">(
                     get().file_name(), get().line(), get().function_name(),
                     get().elapsed_time().to_microseconds()
                 );
@@ -150,15 +153,14 @@ namespace hsd
         }
 
         profiler& add(
-            const char* file_name = __builtin_FILE(), 
-            const char* func = __builtin_FUNCTION(), 
-            usize line = __builtin_LINE()) noexcept
+            const char* func, usize line = __builtin_LINE(),
+            const char* file_name = __builtin_FILE()) noexcept
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
         }
         
-        _detail::profiler_value& get() noexcept
+        detail::profiler_value& get() noexcept
         {
             return _stack.back();
         }
@@ -176,21 +178,19 @@ namespace hsd
 
     static inline stack_trace exec_stack;
     static inline profiler profiler_stack;
-    using source_location = _detail::source_location;
+    using source_location = detail::source_location;
 
-    class stack_trace_exception : public std::exception
+    #define invoke_profiler_func(func, ...) \
+        func(hsd::profiler_stack.add(HSD_FUNCTION_NAME), __VA_ARGS__)
+    #define invoke_stacktrace_func(func, ...) \
+        func(hsd::exec_stack.add(HSD_FUNCTION_NAME), __VA_ARGS__)
+
+    struct stack_trace_error
     {
-        virtual const char* what() const noexcept override
-        {
-            for(auto it = exec_stack.rbegin(); it != exec_stack.rend(); it--)
-            {
-                hsd::io::err_print<"Info: {}:{} Function: {}\n">
-                (
-                    it->file_name(), it->line(), 
-                    it->function_name()
-                );
-            }
-            
+        const char* operator()() const
+        {   
+            exec_stack.print_stack();
+            fputc('\n', stderr);
             return "The stack was unwined up there";
         }
     };

@@ -9,7 +9,7 @@ struct PseudoString
 
     constexpr PseudoString(const CharT* cstr)
     {
-        _size = hsd::u8cstring::length(cstr);
+        _size = hsd::basic_cstring<CharT>::length(cstr);
         _cstr = new CharT[_size + 1];
         hsd::copy(cstr, cstr + _size + 1, _cstr);
     }
@@ -23,6 +23,6 @@ struct PseudoString
 int main()
 {
     PseudoString test = "ana";
-    hsd::u8cstring::reverse(test._cstr, test._size);
+    hsd::cstring::reverse(test._cstr, test._size);
     printf("%s\n", test._cstr);
 }

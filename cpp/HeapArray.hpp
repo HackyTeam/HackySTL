@@ -1,13 +1,23 @@
 #pragma once
 
-#include <stdexcept>
-#include <initializer_list>
-
+#include "Result.hpp"
 #include "Utility.hpp"
 #include "Types.hpp"
 
 namespace hsd
 {
+    namespace harray_detail
+    {
+        struct bad_access
+        {
+            const char* operator()() const
+            {
+                return "Tried to access elements out of bounds";
+            }
+        };
+        
+    } // namespace harray_detail
+
     template < typename T, usize N >
     class heap_array
     {
@@ -20,31 +30,39 @@ namespace hsd
 
         HSD_CONSTEXPR heap_array()
         {
-            _array = new T[N];
+            _array = new T[N]{};
         }
 
-        HSD_CONSTEXPR heap_array(T* data)
+        template <usize L>
+        HSD_CONSTEXPR heap_array(const T (&arr)[L])
         {
-            _array = new T[N];
-            hsd::copy(data, data + N, _array);
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                _array = new T[N]{arr[Ints]...};
+            }(make_index_sequence<N>{});
         }
 
-        template < typename L, typename... U >
-        HSD_CONSTEXPR heap_array(const L& value, const U&... values)
+        template <usize L>
+        HSD_CONSTEXPR heap_array(T (&&arr)[L])
         {
-            _array = new T[N]{value, values...};
-        }
-
-        template < typename L, typename... U >
-        HSD_CONSTEXPR heap_array(L&& value, U&&... values)
-        {
-            _array = new T[N]{move(value), move(values)...};
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                _array = new T[N]{move(arr[Ints])...};
+            }(make_index_sequence<N>{});
         }
 
         HSD_CONSTEXPR heap_array(const heap_array& other)
         {
-            _array = new T[N];
-            hsd::copy(other.begin(), other.end(), begin());
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                _array = new T[N]{other[Ints]...};
+            }(make_index_sequence<N>{});;
+        }
+
+        HSD_CONSTEXPR heap_array(heap_array&& other)
+        {
+            _array = other._array;
+            other._array = nullptr;
         }
 
         HSD_CONSTEXPR ~heap_array()
@@ -58,25 +76,24 @@ namespace hsd
             return *this;
         }
 
-        constexpr heap_array& operator=(const std::initializer_list<T>& rhs)
+        constexpr heap_array& operator=(heap_array&& other)
         {
-            if(rhs.size() != N)
-            {
-                throw std::out_of_range("");
-            }
-
-            hsd::copy(rhs.begin(), rhs.begin() + N, _array);
+            _array = other._array;
+            other._array = nullptr;
             return *this;
         }
 
-        constexpr heap_array& operator=(std::initializer_list<T>&& rhs)
+        template <usize L>
+        constexpr heap_array& operator=(const T (&arr)[L])
         {
-            if(rhs.size() != N)
-            {
-                throw std::out_of_range("");
-            }
+            hsd::copy(arr, arr + N, _array);
+            return *this;
+        }
 
-            hsd::move(rhs.begin(), rhs.begin() + N, _array);
+        template <usize L>
+        constexpr heap_array& operator=(T (&&arr)[L])
+        {
+            hsd::move(arr, arr + N, _array);
             return *this;
         }
 
@@ -90,24 +107,22 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index)
+        constexpr auto at(usize index) 
+            -> Result<reference<T>, harray_detail::bad_access>
         {
             if(index >= N)
-            {
-                throw std::out_of_range("");
-            }
+                return harray_detail::bad_access{};
 
-            return _array[index];
+            return {_array[index]};
         }
 
-        constexpr const T& at(usize index) const
+        constexpr auto at(usize index) const 
+            -> Result<const reference<T>, harray_detail::bad_access>
         {
             if(index >= N)
-            {
-                throw std::out_of_range("");
-            }
+                return harray_detail::bad_access{};
 
-            return _array[index];
+            return {_array[index]};
         }
 
         template < usize U, usize L >
@@ -115,7 +130,11 @@ namespace hsd
         {
             static_assert(L - U <= N, "Out of range\n");
 
-            return heap_array<T, L - U>(&_array[U]);
+
+            return [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                return heap_array<T, L - U>{{_array[Ints]...}};
+            }(make_index_sequence<L - U>{});
         }
 
         constexpr usize size()
@@ -179,5 +198,6 @@ namespace hsd
         }
     };
 
-    template < typename L, typename... U > heap_array(L, U...) -> heap_array<L, 1 + sizeof...(U)>;
+    template < typename T, usize N > heap_array(const T (&)[N]) -> heap_array<T, N>;
+    template < typename T, usize N > heap_array(T (&&)[N]) -> heap_array<T, N>;
 }

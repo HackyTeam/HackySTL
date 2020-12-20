@@ -7,8 +7,7 @@
 #endif
 
 #include <type_traits>
-#include <exception>
-
+#include "Result.hpp"
 #include "Types.hpp"
 #include "Utility.hpp"
 #include "UniquePtr.hpp"
@@ -18,9 +17,9 @@ namespace hsd
     template <typename T>
     concept Copyable = std::is_copy_constructible_v<T>;
 
-    struct bad_any_cast : public std::exception 
+    struct bad_any_cast
     {
-        virtual const char* what() const noexcept override 
+        const char* operator()() 
         {
             return "Illegal casting:\n"
             "Cannot cast into different type";
@@ -45,11 +44,13 @@ namespace hsd
         friend class any;
 
     public:
-        HSD_CONSTEXPR _any_derived(T value) : _value(move(value)) {}
+        HSD_CONSTEXPR _any_derived(T value) 
+            : _value(move(value)) 
+        {}
 
         hsd::unique_ptr<_any_base> clone() const override 
         {
-            return hsd::make_unique<_any_derived>(_value);
+            return hsd::make_unique<_any_derived, allocator>(_value);
         }
 
         #ifdef HSD_ANY_ENABLE_TYPEINFO
@@ -93,7 +94,7 @@ namespace hsd
         }
 
         template <typename T>
-        HSD_CONSTEXPR auto cast_to() const
+        HSD_CONSTEXPR auto cast_to() const -> Result<T, bad_any_cast>
         {
             using type = typename std::remove_pointer<T>::type;
 
@@ -103,7 +104,7 @@ namespace hsd
             }
             else
             {
-                throw bad_any_cast();
+                return bad_any_cast{};
             }
         }
 

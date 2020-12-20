@@ -1,14 +1,12 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Limits.hpp"
 
 namespace hsd
 {	
-	template <typename C>
-	concept IsChar = is_char<C>::value;
-
 	template <typename CharT>
-    class cstring
+    class basic_cstring
     {
     private:
         static constexpr bool _compare(const CharT* str, const CharT* substr)
@@ -200,8 +198,7 @@ namespace hsd
 	    	}
 	    }
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, isize, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(isize num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -235,9 +232,8 @@ namespace hsd
 			return _buf;
 		}
 
-		#if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, i128, CharT* > to_string(Value num)
+		#if defined(HSD_COMPILER_GCC)
+		static HSD_CONSTEXPR CharT* to_string(i128 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -272,8 +268,41 @@ namespace hsd
 		}
 		#endif
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, i64, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(i64 num)
+		{
+			bool _negative = (num < 0);
+			usize _len = _num_len(num);
+			CharT* _buf = nullptr;
+
+			if(_negative)
+			{
+				_len += 1;
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+				_buf[0] = '-';
+				num = -num;
+			}
+			else
+			{
+				_buf = new CharT[_len + 1];
+				_buf[_len] = '\0';
+			}
+
+			if(num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+
+			while(num)
+			{
+				_buf[--_len] = '0' + static_cast<CharT>(num % 10);
+				num /= 10;
+			}
+
+			return _buf;
+		}
+
+		static HSD_CONSTEXPR CharT* to_string(i32 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -307,8 +336,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, i32, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(i16 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -342,43 +370,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, i16, CharT* > to_string(Value num)
-		{
-			bool _negative = (num < 0);
-			usize _len = _num_len(num);
-			CharT* _buf = nullptr;
-
-			if(_negative)
-			{
-				_len += 1;
-				_buf = new CharT[_len + 1];
-				_buf[_len] = '\0';
-				_buf[0] = '-';
-				num = -num;
-			}
-			else
-			{
-				_buf = new CharT[_len + 1];
-				_buf[_len] = '\0';
-			}
-
-			if(num == 0)
-			{
-				_buf[--_len] = '0';
-			}
-
-			while(num)
-			{
-				_buf[--_len] = '0' + (num % 10);
-				num /= 10;
-			}
-
-			return _buf;
-		}
-
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, usize, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(usize num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -392,9 +384,8 @@ namespace hsd
 			return _buf;
 		}
 
-		#if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, u128, CharT* > to_string(Value num)
+		#if defined(HSD_COMPILER_GCC)
+		static HSD_CONSTEXPR CharT* to_string(u128 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -409,8 +400,7 @@ namespace hsd
 		}
 		#endif
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, u64, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(u64 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -424,8 +414,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, u32, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(u32 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -439,8 +428,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, u16, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(u16 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -454,8 +442,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, f128, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(f128 num)
 		{
 			usize _len = 0;
 			i32 _round_num = static_cast<i64>(num);
@@ -482,8 +469,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, f64, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(f64 num)
 		{
 			usize _len = 0;
 			i32 _round_num = static_cast<i64>(num);
@@ -510,13 +496,12 @@ namespace hsd
 			return _buf;
 		}
 
-		template <typename Value>
-		static HSD_CONSTEXPR EnableIfSame< Value, f32, CharT* > to_string(Value num)
+		static HSD_CONSTEXPR CharT* to_string(f32 num)
 		{
 			usize _len = 0;
 			i64 _round_num = static_cast<i64>(num);
 			bool _negative = (_round_num < 0);
-			usize _point_num = _modulus(num - _round_num) * 10000 + 1;
+			usize _point_num = static_cast<usize>(_modulus(num - static_cast<f32>(_round_num)) * 10000) + 1;
 			
 			if(_negative)
 				_len = _num_len(_round_num) + 6;
@@ -528,7 +513,7 @@ namespace hsd
 
 			for(; _point_num != 0; _point_num /= 10)
 			{
-				_buf[--_len] = '0' + (_point_num % 10);
+				_buf[--_len] = '0' + static_cast<CharT>(_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
@@ -538,10 +523,9 @@ namespace hsd
 			return _buf;
 		}
 		
-		template <IsChar C>
-		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(const C* str)
+		static HSD_CONSTEXPR CharT* to_string(const CharT* str)
 		{
-			usize _len = cstring<C>::length(str);
+			usize _len = length(str);
 			CharT* _buf = new CharT[_len + 1];
 
 			for (usize _index = 0; _index <= _len; _index++)
@@ -550,8 +534,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <IsChar C>
-		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(const C* str, usize len)
+		static HSD_CONSTEXPR CharT* to_string(const CharT* str, usize len)
 		{
 			CharT* _buf = new CharT[len + 1];
 
@@ -561,8 +544,7 @@ namespace hsd
 			return _buf;
 		}
 
-		template <IsChar C>
-		static HSD_CONSTEXPR EnableIfConvertible<C, CharT, CharT*> to_string(C letter)
+		static HSD_CONSTEXPR CharT* to_string(CharT letter)
 		{
 			CharT* _buf = new CharT[2];
 			_buf[0] = static_cast<CharT>(letter);
@@ -630,7 +612,7 @@ namespace hsd
 		        _point_num *= 10;
 		        _point_num += *str - '0';
 		    }
-		    for(; _num_len != 0; _num_len--, _point_num *= 0.1);
+		    for(; _num_len != 0; _num_len--, _point_num *= 0.1f) {}
 			
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
@@ -707,7 +689,9 @@ namespace hsd
 			usize _index_helper = 0;
 
 		    for (; src[_index_helper] != '\0'; _index_helper++)
-		        dest[_index + _index_helper] = src[_index_helper];
+		    {
+				dest[_index + _index_helper] = src[_index_helper];
+			}
 
 			dest[_index + _index_helper] = '\0';
 		    return dest;
@@ -719,15 +703,18 @@ namespace hsd
 			usize _index_helper = 0;
 
 		    for (; src[_index_helper] != '\0'; _index_helper++)
-		        dest[_index + _index_helper] = src[_index_helper];
+		    {
+				dest[_index + _index_helper] = src[_index_helper];
+			}
 
 			dest[_index + _index_helper] = '\0';
 		    return dest;
 		}
     };
 
-	using wcstring = hsd::cstring<wchar>;
-	using u8cstring = hsd::cstring<char>;
-	using u16cstring = hsd::cstring<char16>;
-	using u32cstring = hsd::cstring<char32>;
+	using cstring = basic_cstring<char>;
+	using wcstring = basic_cstring<wchar>;
+	using u8cstring = basic_cstring<char8>;
+	using u16cstring = basic_cstring<char16>;
+	using u32cstring = basic_cstring<char32>;
 }

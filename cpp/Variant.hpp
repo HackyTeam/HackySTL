@@ -29,7 +29,7 @@ namespace hsd
     template <usize _Idx>
     constexpr inline in_place_index_t<_Idx> in_place_index{};
 
-    namespace _detail_variant
+    namespace variant_detail
     {
         //// helper classes
         // class template _value_holder
@@ -65,7 +65,7 @@ namespace hsd
             using _select_overload_for<_Trest...>::get;
             constexpr static _Tfirst get(_Tfirst);
         };
-    } // namespace _detail_variant
+    } // namespace variant_detail
 
     // class bad_variant_access
     struct bad_variant_access : public std::exception
@@ -93,7 +93,7 @@ namespace hsd
         static_assert(sizeof...(_Ts) != 0, "empty variant is not allowed");
     };
 
-    namespace _detail_variant
+    namespace variant_detail
     {
         template <typename _Ty, usize _Idx>
         struct index_tagged
@@ -436,13 +436,13 @@ namespace hsd
             using ascp_for = conditional_t< conjunction< std::is_trivially_copy_assignable<_Ts>... >::value,
                                         asmv_for<_Ts...>, ascp_base<_Ts...> >;
         } // namespace bases
-    } // namespace _detail_variant
+    } // namespace variant_detail
 
     template <typename _Tfirst, typename... _Trest>
     class variant<_Tfirst, _Trest...>
-        : private _detail_variant::bases::ascp_for<_Tfirst, _Trest...>
+        : private variant_detail::bases::ascp_for<_Tfirst, _Trest...>
     {
-        using _Base = _detail_variant::bases::ascp_for<_Tfirst, _Trest...>;
+        using _Base = variant_detail::bases::ascp_for<_Tfirst, _Trest...>;
         using _StorageTraits = typename _Base::_StorageTraits;
 
         template <typename _Func>
@@ -460,7 +460,7 @@ namespace hsd
         template <typename _Ty>
         struct _type_for
         {
-            using type = decltype(_detail_variant::_select_overload_for<_Tfirst, _Trest...>::get(std::declval<_Ty>()));
+            using type = decltype(variant_detail::_select_overload_for<_Tfirst, _Trest...>::get(std::declval<_Ty>()));
         };
 
     public:
@@ -470,7 +470,7 @@ namespace hsd
         constexpr variant(variant&& other) = default;
 
         template <typename _Tother, typename = enable_if_t<!is_same< variant, std::decay_t<_Tother> >::value >,
-                  usize _Idx = _detail_variant::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
+                  usize _Idx = variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
         constexpr variant(_Tother &&val)
             : _Base(in_place_index<_Idx>, forward<_Tother>(val)) 
         {}
@@ -486,7 +486,7 @@ namespace hsd
         template < typename _Tother, typename = enable_if_t< !is_same< variant, std::decay_t<_Tother> >::value > >
         constexpr variant &operator=(_Tother &&rhs)
         {
-            _Base::_StorageTraits::template assign_fwd<_detail_variant::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>(this->_storage(), _Base::_StoredIndex, std::forward<_Tother>(rhs));
+            _Base::_StorageTraits::template assign_fwd<variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>(this->_storage(), _Base::_StoredIndex, std::forward<_Tother>(rhs));
             return *this;
         }
 
@@ -516,13 +516,13 @@ namespace hsd
         template <typename _Ty>
         constexpr _Ty& get()
         {
-            return get<_detail_variant::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
+            return get<variant_detail::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
         }
 
         template <typename _Ty>
         constexpr _Ty const& get() const
         {
-            return get<_detail_variant::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
+            return get<variant_detail::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
         }
 
         template <usize _Idx>
@@ -545,13 +545,13 @@ namespace hsd
         template <typename _Ty>
         constexpr _Ty* get_if() noexcept
         {
-            return get_if<_detail_variant::_variant_index< _Ty, _Tfirst, _Trest... >::value>();
+            return get_if<variant_detail::_variant_index< _Ty, _Tfirst, _Trest... >::value>();
         }
 
         template <typename _Ty>
         constexpr _Ty const* get_if() const noexcept
         {
-            return get_if<_detail_variant::_variant_index< _Ty, _Tfirst, _Trest... >::value>();
+            return get_if<variant_detail::_variant_index< _Ty, _Tfirst, _Trest... >::value>();
         }
 
         // requires _Ty is a variant alternative
@@ -559,7 +559,7 @@ namespace hsd
         constexpr _Ty& emplace_one(_Ty&& value)
         {
             _destroy();
-            constexpr usize _Idx = _detail_variant::_variant_index< std::remove_cv_t<remove_reference<_Ty>>, _Tfirst, _Trest... >::value;
+            constexpr usize _Idx = variant_detail::_variant_index< std::remove_cv_t<remove_reference<_Ty>>, _Tfirst, _Trest... >::value;
             this->_StoredIndex = _Idx;
             _StorageTraits::construct_fwd<_Idx>(this->_storage(), std::forward<_Ty>(value));
         }
@@ -567,7 +567,7 @@ namespace hsd
         template <typename _Ty>
         constexpr bool holds_alternative() const noexcept
         {
-            return index() == _detail_variant::_variant_index< _Ty, _Tfirst, _Trest... >::value;
+            return index() == variant_detail::_variant_index< _Ty, _Tfirst, _Trest... >::value;
         }
 
         friend constexpr bool operator==(variant const& a, variant const& b)
@@ -600,7 +600,7 @@ namespace hsd
     {};
 
     // class template variant_alternative
-    namespace _detail_variant
+    namespace variant_detail
     {
         template < usize _Idx, typename _Tfirst, typename... _Trest >
         struct variant_alternative_helper
@@ -613,11 +613,11 @@ namespace hsd
         {
             using type = _Tfirst;
         };
-    } // namespace _detail_variant
+    } // namespace variant_detail
 
     template < usize _Idx, typename... _Ts >
     struct variant_alternative< _Idx, variant<_Ts...> >
-        : _detail_variant::variant_alternative_helper<_Idx, _Ts...>
+        : variant_detail::variant_alternative_helper<_Idx, _Ts...>
     {};
 
     //// Utility functions

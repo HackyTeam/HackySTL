@@ -11,8 +11,8 @@ int main()
     }
 
     auto sarr2 = sarr.gen_range<0, 3>();
-    puts("");
-    
+    puts("========");
+
     for(auto i : sarr2)
     {
         printf("%d\n", i);

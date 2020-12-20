@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include "../../cpp/Functional.hpp"
 
-static constexpr int func(int a) noexcept
+static int func(int a)
 {
     return a;
+}
+
+static const auto& func2(auto& val)
+{
+    return val;
 }
 
 struct counter {
@@ -18,10 +23,18 @@ struct counter {
 int main()
 {
     int b = 5;
-    hsd::function f = func;  
-    auto f2 = f;
-    hsd::function f3 = hsd::bind(f, hsd::make_tuple(5));
-    printf("%d\n", f3());
+    hsd::function val = func2<int>;
+    val(hsd::reference(b)).unwrap();
+
+    hsd::function<int()> f3;
+    
+    {
+        hsd::function f = func;
+        auto f2 = f;
+        f3 = hsd::bind(func, hsd::make_tuple(5));
+    }
+
+    printf("%d\n", f3().unwrap());
     hsd::function my_counter = counter(1);
-    my_counter();
+    my_counter().unwrap();
 }

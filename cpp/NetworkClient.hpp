@@ -14,8 +14,8 @@ namespace hsd
             {
             private:
                 i32 _listening = 0;
-                sockaddr_in6 _hintv6{0};
-                sockaddr_in _hintv4{0};
+                sockaddr_in6 _hintv6{};
+                sockaddr_in _hintv4{};
                 net::protocol_type _protocol;
 
             public:
@@ -27,7 +27,7 @@ namespace hsd
                     if(_protocol == net::protocol_type::ipv4)
                     {
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv4.sin_family = static_cast<i32>(_protocol);
+                        _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
                         bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
@@ -35,7 +35,7 @@ namespace hsd
                     else
                     {
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv6.sin6_family = static_cast<i32>(_protocol);
+                        _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
                         bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
@@ -73,7 +73,7 @@ namespace hsd
                     if(_protocol == net::protocol_type::ipv4)
                     {
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv4.sin_family = static_cast<i32>(_protocol);
+                        _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
                         bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
@@ -81,7 +81,7 @@ namespace hsd
                     else
                     {
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv6.sin6_family = static_cast<i32>(_protocol);
+                        _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
                         bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
@@ -94,11 +94,11 @@ namespace hsd
         {
         private:
             client_detail::socket _sock;
-            sockaddr_in6 _hintv6{0};
-            sockaddr_in _hintv4{0};
+            sockaddr_in6 _hintv6{};
+            sockaddr_in _hintv4{};
             socklen_t _len = sizeof(sockaddr_in);
             net::protocol_type _protocol = net::protocol_type::ipv4;
-            hsd::u8sstream _net_buf{4095};
+            hsd::sstream _net_buf{4095};
 
             void _clear_buf()
             {
@@ -116,7 +116,7 @@ namespace hsd
                     _len = sizeof(sockaddr_in6);
             }
 
-            hsd::pair< hsd::u8sstream&, net::received_state > receive()
+            hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = 0;
@@ -147,49 +147,19 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template < usize N, typename... Args >
-            net::received_state respond(const char (&fmt)[N], Args&&... args)
+            template < string_literal fmt, typename... Args >
+            net::received_state respond(Args&&... args)
             {
-                hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-                hsd::vector<hsd::u8string> _args_buf = {
-                    hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-                };
-                hsd::u8string _send_buf;
+                _clear_buf();
+                _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
-                {
-                    throw std::runtime_error("Arguments don\'t match");
-                }
-                else
-                {
-                    usize index = 0;
-
-                    for(; index < _args_buf.size(); index++)
-                    {
-                        _send_buf += _fmt_buf[index] + _args_buf[index];
-                    }
-                    if(_fmt_buf.size() != _args_buf.size())
-                    {
-                        _send_buf += _fmt_buf[index];
-                    }
-
-                    isize _response = 0;
+                isize _response  = sendto(_sock.get_listening(), _net_buf.data(), 
+                    _net_buf.size(), 0, _sock.get_hint(), _len);
                     
-                    if(_protocol == net::protocol_type::ipv4)
-                    {
-                        _response = sendto(_sock.get_listening(), _send_buf.data(), 
-                            _send_buf.size(), 0, _sock.get_hint(), _len);
-                    }
-                    else
-                    {
-                        _response = sendto(_sock.get_listening(), _send_buf.data(), 
-                            _send_buf.size(), 0, _sock.get_hint(), _len);
-                    }
-                    if(_response == static_cast<isize>(net::received_state::err))
-                    {
-                        hsd::io::err_print<"Error in sending\n">();
-                        return net::received_state::err;
-                    }
+                if(_response == static_cast<isize>(net::received_state::err))
+                {
+                    hsd::io::err_print<"Error in sending\n">();
+                    return net::received_state::err;
                 }
 
                 return net::received_state::ok;
@@ -218,7 +188,7 @@ namespace hsd
                     if(_protocol == net::protocol_type::ipv4)
                     {
                         _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv4.sin_family = static_cast<i32>(_protocol);
+                        _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
                         connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
@@ -226,7 +196,7 @@ namespace hsd
                     else
                     {
                         _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
-                        _hintv6.sin6_family = static_cast<i32>(_protocol);
+                        _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
                         connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
@@ -256,7 +226,7 @@ namespace hsd
                     if(_protocol == net::protocol_type::ipv4)
                     {
                         _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv4.sin_family = static_cast<i32>(_protocol);
+                        _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
                         connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
@@ -264,7 +234,7 @@ namespace hsd
                     else
                     {
                         _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv6.sin6_family = static_cast<i32>(_protocol);
+                        _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
                         connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
@@ -277,7 +247,7 @@ namespace hsd
         {
         private:
             client_detail::socket _sock;
-            hsd::u8sstream _net_buf{4095};
+            hsd::sstream _net_buf{4095};
 
             void _clear_buf()
             {
@@ -292,7 +262,7 @@ namespace hsd
                 : _sock{protocol, port, ip_addr}
             {}
 
-            hsd::pair< hsd::u8sstream&, net::received_state > receive()
+            hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = recv(_sock.get_sock(), 
@@ -314,40 +284,19 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template< usize N, typename... Args >
-            net::received_state respond(const char (&fmt)[N], Args&&... args)
+            template < string_literal fmt, typename... Args >
+            net::received_state respond(Args&&... args)
             {
-                hsd::vector<hsd::u8string> _fmt_buf = io_detail::split(fmt, N - 1);
-                hsd::vector<hsd::u8string> _args_buf = {
-                    hsd::forward<hsd::u8string>(hsd::u8string::to_string(args))...
-                };
-                hsd::u8string _send_buf;
+                _clear_buf();
+                _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                if(_args_buf.size() != _fmt_buf.size() && _args_buf.size() + 1 != _fmt_buf.size())
+                isize _response = send(_sock.get_sock(), 
+                    _net_buf.data(), _net_buf.size(), 0);
+
+                if(_response == static_cast<isize>(net::received_state::err))
                 {
-                    throw std::runtime_error("Arguments don\'t match");
-                }
-                else
-                {
-                    hsd::usize index = 0;
-
-                    for(; index < _args_buf.size(); index++)
-                    {
-                        _send_buf += _fmt_buf[index] + _args_buf[index];
-                    }
-                    if(_fmt_buf.size() != _args_buf.size())
-                    {
-                        _send_buf += _fmt_buf[index];
-                    }
-
-                    isize _response = send(_sock.get_sock(), 
-                        _send_buf.data(), _send_buf.size(), 0);
-
-                    if(_response == static_cast<isize>(net::received_state::err))
-                    {
-                        hsd::io::err_print<"Error in sending\n">();
-                        return net::received_state::err;
-                    }
+                    hsd::io::err_print<"Error in sending\n">();
+                    return net::received_state::err;
                 }
 
                 return net::received_state::ok;

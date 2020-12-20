@@ -1,29 +1,33 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Result.hpp"
 
 namespace hsd
-{   
+{
     template <typename T>
     class reference 
     {
     private:
-        T* _ptr;
+        T* _ptr = nullptr;
 
     public:
+        using value_type = T;
+
         constexpr reference(T& value) noexcept
-            : _ptr(addressof(value)) 
-        {}
+        {
+            _ptr = addressof(value);
+        }
         
         reference(const reference&) noexcept = default;
-        reference& operator=(const reference& x) noexcept = default;
-    
-        constexpr operator T&() const noexcept 
+        reference& operator=(const reference&) noexcept = delete;
+
+        constexpr operator T&() const 
         { 
             return *_ptr; 
         }
 
-        constexpr T& get() const noexcept 
+        constexpr T& get() const
         { 
             return *_ptr; 
         }

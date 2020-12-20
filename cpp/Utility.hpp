@@ -1,11 +1,12 @@
 #pragma once
 
 #include "TypeTraits.hpp"
+#include "IntegerSequence.hpp"
 
 namespace hsd
 {
-    #define HSD_ENABLE_IF(...) enable_if_t<(__VA_ARGS__), i32> = 0
-    #define HSD_DISABLE_IF(...) disable_if_t<(__VA_ARGS__), i32> = 0
+    #define HSD_ENABLE_IF(...) hsd::enable_if_t<(__VA_ARGS__), hsd::i32> = 0
+    #define HSD_DISABLE_IF(...) hsd::disable_if_t<(__VA_ARGS__), hsd::i32> = 0
 
     template <typename T>
     static constexpr remove_reference_t<T>&& move(T&& val)
@@ -17,6 +18,25 @@ namespace hsd
     static constexpr T&& forward(remove_reference_t<T>& val)
     {
         return static_cast<T&&>(val);
+    }
+
+    template <typename T>
+    static constexpr T&& forward(remove_reference_t<T>&& val)
+    {
+        return static_cast<T&&>(val);
+    }
+
+    template < typename T, typename... Args >
+    static constexpr void construct_at(T* ptr, Args&&... args)
+    {
+        if(std::is_constant_evaluated())
+        {
+            (*ptr) = T{forward<Args>(args)...};
+        }
+        else
+        {
+            new (ptr) T{forward<Args>(args)...};
+        }
     }
 
     template <class T, class U = T>
@@ -37,31 +57,14 @@ namespace hsd
         return dest;
     }
 
-    template <typename _Type>
-    static constexpr _Type* addressof(_Type& value)
+    template <typename Type>
+    static constexpr Type* addressof(const Type& value)
     {
-        return reinterpret_cast<_Type*>(&reinterpret_cast<char&>(value));
-    }
-
-    template <typename T1>
-    static constexpr T1 min(T1 first, T1 second) noexcept
-    {
-        return first < second ? first : second;
-    }
-
-    template <typename T1>
-    static constexpr T1 max(T1 first, T1 second) noexcept
-    {
-        return first > second ? first : second;
-    }
-
-    template <typename T>
-    static constexpr T&& forward(remove_reference_t<T>&& val)
-    {
-        static_assert(!std::is_lvalue_reference<T>::value,
-                      "Can not forward an rvalue as an lvalue.");
-
-        return static_cast<T&&>(val);
+        return reinterpret_cast<Type*>(
+            &reinterpret_cast<char&>(
+                const_cast<Type&>(value)
+            )
+        );
     }
 
     template <typename T1>
@@ -85,10 +88,11 @@ namespace hsd
     template < typename InIt, typename OutIt >
     static constexpr OutIt copy_n(InIt first, usize n, OutIt dest)
     {
-        for(usize _index = 0; _index != n; _index++) 
-        {
-            *dest++ = *first++;
-        }
+        using value_type = remove_reference_t<decltype(*dest)>;
+
+        for(usize _index = 0; _index != n; _index++)
+            *dest++ = static_cast<value_type>(*first++);
+    
         return dest;
     }
 

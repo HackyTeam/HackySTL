@@ -1,12 +1,12 @@
 #include "../../cpp/Io.hpp"
 #include "../../cpp/Tuple.hpp"
 
-template <size_t N>
+template <hsd::usize N>
 struct FizzBase
 {
     char const* msg;
 
-    bool fizz(int x) const
+    bool fizz(hsd::u32 x) const
     {
         if (x % N == 0)
             return (hsd::io::print<"{}">(msg)), true;
@@ -18,10 +18,10 @@ template <typename... Ts>
 struct FizzGame
 {
     hsd::tuple<Ts...> bases;
+    hsd::u32 x = 0;
 
-    FizzGame(Ts... b) : bases(static_cast<Ts&&>(b)...) {}
+    FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}
 
-    int x = 0;
     void operator*()
     {
         bool acc = false;
@@ -45,9 +45,9 @@ struct FizzGame
 };
 
 int main() {
-    constexpr size_t game_size = 100;
+    constexpr hsd::usize game_size = 1000;
     auto game = FizzGame(FizzBase<3>{"fizz"}, FizzBase<5>{"buzz"});
     
-    for (size_t i = 0; i < game_size; ++i)
+    for (hsd::usize i = 0; i < game_size; ++i)
         *++game;
 }

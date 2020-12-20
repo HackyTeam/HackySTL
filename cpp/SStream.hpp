@@ -6,7 +6,7 @@ namespace hsd
 {
     
     template <typename CharT>
-    class sstream
+    class basic_sstream
     {
     private:
         CharT* _data = nullptr;
@@ -16,16 +16,16 @@ namespace hsd
     public:
 		using iterator = CharT*;
         using const_iterator = const CharT*;
-        sstream(const sstream& other) = delete;
+        basic_sstream(const basic_sstream& other) = delete;
 
-        sstream(usize size)
+        basic_sstream(usize size)
         {
             _data = new CharT[size + 1];
             _data[size] = '\0';
             _size = size;
         }
 
-        ~sstream()
+        ~basic_sstream()
         {
             delete[] _data;
         }
@@ -33,11 +33,12 @@ namespace hsd
 		template <typename... Args>
 		void set_data(Args&... args)
 		{
-            auto _data_set = sstream_detail::split(_data, _size);
+            auto _data_set = sstream_detail::split_data(_data, _size);
 
             if(sizeof...(Args) > _data_set.size())
             {
-                throw std::runtime_error("Input too small");
+                puts("Input too small");
+                abort();
             }
             else if(sizeof...(Args) < _data_set.size())
             {
@@ -57,14 +58,41 @@ namespace hsd
         {
             T _value{};
             using sstream_detail::_parse;
-            string<CharT> _str = move(to_string());
+            auto _str = pair{c_str(), size()};
             _parse(_str, _value);
             return _value;
         }
 
-        string<CharT> to_string()
+        template < basic_string_literal fmt, typename... Args >
+		void write_data(Args&&... args)
+		{
+            using char_type = typename decltype(fmt)::char_type;
+            using sstream_detail::_write;
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
+            usize _data_len = _size;
+
+            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
+            constexpr basic_string_literal<char_type, _len + 1> _last{
+                _fmt_buf[sizeof...(Args)].first, _len
+            };
+
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                (
+                    (sstream_detail::_sub_from(_data_len, _write<
+                    basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
+                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                    }>(args, {_data + (_size - _data_len), _data_len})), ...)
+                );
+            }(make_index_sequence<sizeof...(Args)>{});
+
+            _write<_last>({_data + (_size - _data_len), _data_len});
+		}
+
+        basic_string<CharT> to_string()
         {
-            return string<CharT>(_data);
+            return basic_string<CharT>(_data);
         }
 
 		void pop_back()
@@ -154,8 +182,9 @@ namespace hsd
         }
     };
     
-	using wsstream = sstream<wchar>;
-    using u8sstream = sstream<char>;
-    using u16sstream = sstream<char16>;
-    using u32sstream = sstream<char32>;
+    using sstream = basic_sstream<char>;
+	using wsstream = basic_sstream<wchar>;
+    using u8sstream = basic_sstream<char8>;
+    using u16sstream = basic_sstream<char16>;
+    using u32sstream = basic_sstream<char32>;
 } // namespace hsd

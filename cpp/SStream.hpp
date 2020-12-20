@@ -66,24 +66,24 @@ namespace hsd
         template < basic_string_literal fmt, typename... Args >
 		void write_data(Args&&... args)
 		{
-            using char_type = decltype(fmt)::char_type;
+            using char_type = typename decltype(fmt)::char_type;
             using sstream_detail::_write;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
-            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
             usize _data_len = _size;
 
-            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
             constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf.first[sizeof...(Args)].first, _len
+                _fmt_buf[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
                 (
                     (sstream_detail::_sub_from(_data_len, _write<
-                    basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >
-                    {_fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(
-                        args, {_data + (_size - _data_len), _data_len})), ...)
+                    basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
+                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                    }>(args, {_data + (_size - _data_len), _data_len})), ...)
                 );
             }(make_index_sequence<sizeof...(Args)>{});
 

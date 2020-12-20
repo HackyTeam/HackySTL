@@ -53,14 +53,9 @@ void test(hsd::vector<T>&&)
 
 }
 
-template <typename T>
-class hsdCTAlloc :
-    public hsd::constexpr_allocator<T, 100>
-{};
-
 constexpr auto make_constexpr_vec()
 {
-    hsd::vector< int, hsdCTAlloc > v;
+    hsd::constexpr_vector<int, 20> v;
     v.emplace_back(1);
     v.emplace_back(2);
     v.emplace_back(3);

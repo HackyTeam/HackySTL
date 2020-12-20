@@ -39,12 +39,12 @@ namespace hsd
             requires (std::is_copy_constructible_v<value_type>)
                 : Allocator<value_type>(alloc), _size{size}
             {
-                this->_data = this->allocate(size);
-                std::construct_at(this->_data);
+                this->_data = this->allocate(size).unwrap();
+                construct_at(this->_data);
 
                 for(usize _index = 0; _index < size; _index++)
                 {
-                    std::construct_at(&this->_data[_index]);
+                    construct_at(&this->_data[_index]);
                 }
             }
 
@@ -147,7 +147,7 @@ namespace hsd
         HSD_CONSTEXPR void _delete()
         {
             _value.get_allocator().deallocate(
-                _value.get_pointer(), _value.get_size());
+                _value.get_pointer(), _value.get_size()).unwrap();
 
             if constexpr(is_same<pointer_type, value_type*>::value)
                 _value.set_pointer(nullptr);
@@ -273,8 +273,8 @@ namespace hsd
     make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
-        auto _ptr = _alloc.allocate(1);
-        std::construct_at(_ptr, forward<Args>(args)...);
+        auto _ptr = _alloc.allocate(1).unwrap();
+        construct_at(_ptr, forward<Args>(args)...);
         return unique_ptr<T, Allocator>(_ptr);
     }
 
@@ -285,8 +285,8 @@ namespace hsd
     make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
-        auto& _ptr = _alloc.allocate(1);
-        std::construct_at(&_ptr[0], forward<Args>(args)...);
+        auto& _ptr = _alloc.allocate(1).unwrap();
+        construct_at(&_ptr[0], forward<Args>(args)...);
         return unique_ptr<T, Allocator>(_ptr);
     }
 
@@ -294,8 +294,8 @@ namespace hsd
     static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object 
     make_unique(Allocator<U>& alloc, Args&&... args)
     {
-        auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1);
-        std::construct_at(_ptr, forward<Args>(args)...);
+        auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
+        construct_at(_ptr, forward<Args>(args)...);
         return unique_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
     }
 
@@ -305,7 +305,7 @@ namespace hsd
     make_unique(usize size)
     {
         Allocator<remove_array_t<T>> _alloc;
-        auto* _ptr = _alloc.allocate(size);
+        auto* _ptr = _alloc.allocate(size).unwrap();
         return unique_ptr<T, Allocator>(_ptr, size);
     }
 

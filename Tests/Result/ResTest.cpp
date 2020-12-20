@@ -9,7 +9,8 @@ struct S
     }
 };
 
-static auto fail_func(int v) -> hsd::Result<hsd::string, S>
+static auto fail_func(int v) 
+    -> hsd::Result<hsd::string, S>
 {
     if(v < 10)
         return S{};
@@ -18,7 +19,8 @@ static auto fail_func(int v) -> hsd::Result<hsd::string, S>
 }
 
 template <typename T>
-static constexpr auto fail_func2(const T& v) -> hsd::Result<T, S>
+static constexpr auto fail_func2(const T& v) 
+    -> hsd::Result<T, S>
 {
     if(!static_cast<bool>(v))
         return S{};

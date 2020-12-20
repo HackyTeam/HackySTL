@@ -11,18 +11,6 @@ namespace hsd
 {
     namespace sstream_detail
     {
-        class runtime_error
-        {
-        private:
-            const char* _err = nullptr;
-
-        public:
-            runtime_error(const char* error)
-                : _err{error}
-            {}
-        };
-        
-
         template <typename CharT>
         static auto split_data(const CharT* str, usize size)
         {
@@ -43,29 +31,34 @@ namespace hsd
 
         template <basic_string_literal fmt, usize N>
         static constexpr auto split_literal()
+            -> Result< 
+                constexpr_vector< pair<
+                    const typename decltype(fmt)::char_type*, usize>, N > 
+                , runtime_error >
         {
-            using char_type = decltype(fmt)::char_type;
-            usize _index = 0;
-            stack_array< pair<const char_type*, usize>, N > _buf;
+            using char_type = typename decltype(fmt)::char_type;
+            using buf_type = constexpr_vector< pair<const char_type*, usize>, N >;
+
+            buf_type _buf;
             const char_type* _iter_f = fmt.data;
             const char_type* _iter_s = basic_cstring<char_type>::find(_iter_f, '{');
 
             if(_iter_s != nullptr && *(_iter_s + 1) != '}')
             {
-                throw std::runtime_error("invalid character after \'{\'");
+                return runtime_error{"invalid character after \'{\'"};
             }
             while (_iter_s != nullptr && *_iter_s != '\0')
             {
-                _buf[_index++] = {_iter_f, static_cast<usize>(_iter_s - _iter_f)};
+                _buf.emplace_back(_iter_f, static_cast<usize>(_iter_s - _iter_f));
                 _iter_f = _iter_s + 2;
                 _iter_s = basic_cstring<char_type>::find(_iter_f, '{');
 
                 if(_iter_s != nullptr && *(_iter_s + 1) != '}')
-                    throw std::runtime_error("invalid character after \'{\'");
+                    return runtime_error{"invalid character after \'{\'"};
             }
 
-            _buf[_index] = {_iter_f, static_cast<usize>(fmt.data + fmt.size() - _iter_f)};
-            return pair{_buf, _index};
+            _buf.emplace_back(_iter_f, static_cast<usize>(fmt.data + fmt.size() - _iter_f));
+            return _buf;
         }
 
 		template <typename CharT>
@@ -227,28 +220,34 @@ namespace hsd
             val = move(wstring(str.first, str.second));
         }
 
-        static void _sub_from(i32& from, i32 amount)
+        static auto _sub_from(i32& from, i32 amount)
+            -> Result< void, runtime_error >
         {
             if(amount < 0)
             {
-                throw std::runtime_error("Buffer too small");
+                return runtime_error{"Buffer too small"};
             }
             else
             {
                 from -= amount;
             }
+
+            return {};
         }
 
-        static void _sub_from(usize& from, i32 amount)
+        static auto _sub_from(usize& from, i32 amount)
+            -> Result< void, runtime_error >
         {
             if(amount < 0)
             {
-                throw std::runtime_error("Buffer too small");
+                return runtime_error{"Buffer too small"};
             }
             else
             {
                 from -= static_cast<usize>(amount);
             }
+
+            return {};
         }
 
         template <string_literal str>

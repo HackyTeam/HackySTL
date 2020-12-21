@@ -167,7 +167,7 @@ namespace hsd
             
             if(_file_buf == nullptr)
             {
-                fputs("File not found\n", stderr);
+                hsd_fputs_check(stderr, "File not found");
                 abort();
             }
         }

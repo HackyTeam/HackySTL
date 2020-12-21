@@ -16,7 +16,7 @@ namespace hsd
             const char* _err = nullptr;
 
         public:
-            allocator_error(const char* error)
+            HSD_CONSTEXPR allocator_error(const char* error)
                 : _err{error}
             {}
 
@@ -53,24 +53,24 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        constexpr buffered_allocator(uchar* buf, usize size)
+        HSD_CONSTEXPR buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
         {}
 
         template <typename U>
-        constexpr buffered_allocator(const buffered_allocator<U>& other)
+        HSD_CONSTEXPR buffered_allocator(const buffered_allocator<U>& other)
             : _buf{other._buf}, _size{other._size}
         {}
         
         template <typename U>
-        constexpr buffered_allocator(buffered_allocator<U>&& other)
+        HSD_CONSTEXPR buffered_allocator(buffered_allocator<U>&& other)
         {
             _buf = exchange(other._buf, nullptr);
             _size = exchange(other._size, 0u);
         }
 
         template <typename U>
-        constexpr buffered_allocator& operator=(const buffered_allocator<U>& other)
+        HSD_CONSTEXPR buffered_allocator& operator=(const buffered_allocator<U>& other)
         {
             _buf = other._buf;
             _size = other._size;
@@ -184,14 +184,14 @@ namespace hsd
     public:
         using pointer_type = T*;
         using value_type = T;
-        allocator() = default;
-        constexpr allocator(const allocator&) = delete;
-        constexpr allocator(allocator&&) = delete;
+        HSD_CONSTEXPR allocator() = default;
+        HSD_CONSTEXPR allocator(const allocator&) = delete;
+        HSD_CONSTEXPR allocator(allocator&&) = delete;
 
         template <typename U>
-        constexpr allocator(const allocator<U>&) = delete;
+        HSD_CONSTEXPR allocator(const allocator<U>&) = delete;
         template <typename U>
-        constexpr allocator(allocator<U>&&) = delete;
+        HSD_CONSTEXPR allocator(allocator<U>&&) = delete;
 
         [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
@@ -241,8 +241,8 @@ namespace hsd
         using pointer_type = data_type;
         using value_type = T;
 
-        constexpr_allocator() = default;
-        constexpr_allocator(const constexpr_allocator&) = delete;
-        constexpr_allocator(constexpr_allocator&&) = delete;
+        HSD_CONSTEXPR constexpr_allocator() = default;
+        HSD_CONSTEXPR constexpr_allocator(const constexpr_allocator&) = delete;
+        HSD_CONSTEXPR constexpr_allocator(constexpr_allocator&&) = delete;
     };
 } // mamespace hsd

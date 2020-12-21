@@ -37,12 +37,12 @@ namespace hsd
 
             if(sizeof...(Args) > _data_set.size())
             {
-                puts("Input too small");
+                hsd_fputs_check(stderr, "Input too small to parse");
                 abort();
             }
             else if(sizeof...(Args) < _data_set.size())
             {
-                fprintf(stderr, "Warning");
+                hsd_fputs_check(stderr, "Warning: Possible Undefined Behavior");
             }
             else
             {

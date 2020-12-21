@@ -18,7 +18,6 @@ namespace hsd
                 return "Null pointer access denied";
             }
         };
-        
 
         template <typename T>
         class iterator

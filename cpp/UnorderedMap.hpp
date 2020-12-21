@@ -33,11 +33,11 @@ namespace hsd
     {
     private:
         using ref_value = pair< typename Hasher::ResultType, usize >;
-        using ref_vector = vector< ref_value, Allocator<ref_value> >;
+        using ref_vector = vector< ref_value, Allocator >;
 
         static constexpr f64 _limit_ratio = 0.75f;
-        vector< ref_vector, Allocator<ref_vector> > _buckets;
-        vector< pair<Key, T>, Allocator<pair<Key, T>> > _data;
+        vector< ref_vector, Allocator > _buckets;
+        vector< pair<Key, T>, Allocator > _data;
 
         HSD_CONSTEXPR void _replace()
         {

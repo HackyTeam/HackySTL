@@ -58,13 +58,37 @@ namespace hsd
     }
 
     template <typename Type>
-    static constexpr Type* addressof(const Type& value)
+    static constexpr const Type* addressof(const Type& value)
     {
-        return reinterpret_cast<Type*>(
-            &reinterpret_cast<char&>(
-                const_cast<Type&>(value)
-            )
-        );
+        if constexpr(requires{value.operator&();})
+        {
+            return reinterpret_cast<Type*>(
+                &reinterpret_cast<char&>(
+                    const_cast<Type&>(value)
+                )
+            );
+        }
+        else
+        {
+            return &value;
+        }
+    }
+
+    template <typename Type>
+    static constexpr Type* addressof(Type& value)
+    {
+        if constexpr(requires {value.operator&();})
+        {
+            return reinterpret_cast<Type*>(
+                &reinterpret_cast<char&>(
+                    const_cast<Type&>(value)
+                )
+            );
+        }
+        else
+        {
+            return &value;
+        }
     }
 
     template <typename T1>

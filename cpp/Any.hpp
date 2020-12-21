@@ -6,7 +6,6 @@
 #   include <typeinfo>
 #endif
 
-#include <type_traits>
 #include "Result.hpp"
 #include "Types.hpp"
 #include "Utility.hpp"

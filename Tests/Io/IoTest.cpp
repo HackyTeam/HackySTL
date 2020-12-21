@@ -55,18 +55,18 @@ int main()
     hsd::wsstream str{256};
     hsd::i32 x, z;
     hsd::f32 y;
-    hsd::io::print<"hello, {} and other words\n">(123.2);
+    hsd::io::print<L"hello, {} and other words\n">(123.2);
     str.write_data<L"hello, {} and other words\n">(123.2);
     
-    hsd::io::err_print<"{}\n">(test{});
-    hsd::io::print<"{}\n">(test{21, 1, "how is this possible", 69.42342});
+    hsd::io::err_print<L"{}\n">(test{});
+    hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});
     auto t = hsd::io::read_line().unwrap().parse<test>();
     
     hsd::io::read_line().unwrap().set_data(x, y, z);
-    hsd::io::print<"{}, {}, {}\n">(x, y, z);
+    hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
     auto file = hsd::file(
-        "/home/catalin/Desktop/Programming"
+        "/catalin/Desktop/Programming"
         "/HackySTL/Tests/Io/test.txt",
         hsd::file::options::text::read
     );

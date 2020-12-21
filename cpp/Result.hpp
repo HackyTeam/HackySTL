@@ -2,6 +2,7 @@
 
 #include "Reference.hpp"
 
+#include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -12,6 +13,18 @@
 #else
     #define HSD_FUNCTION_NAME __builtin_FUNCTION()
 #endif
+
+#define hsd_fprint_check(stream, format, ...)\
+do {\
+    if(fprintf(stream, format, __VA_ARGS__) == -1)\
+        fwprintf(stream, L##format, __VA_ARGS__);\
+}while(0)
+
+#define hsd_fputs_check(stream, format)\
+do {\
+    if(fprintf(stream, format "\n") == -1)\
+        fwprintf(stream, L##format L"\n");\
+}while(0)
 
 namespace hsd
 {
@@ -154,7 +167,7 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err result value:"
@@ -164,7 +177,7 @@ namespace hsd
                 }
                 else if constexpr(Result_detail::IsString<Err>)
                 {
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
@@ -174,7 +187,7 @@ namespace hsd
                 }
                 else
                 {
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
@@ -205,7 +218,7 @@ namespace hsd
             }
             else
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
@@ -313,7 +326,7 @@ namespace hsd
             }
             else
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:\n"
                     "%s\nInvoked from: %s at line: %zu"
                     "\nExpected Err, got Ok instead\n",
@@ -349,7 +362,7 @@ namespace hsd
             }
             else
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
@@ -410,7 +423,7 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err result value:"
@@ -420,7 +433,7 @@ namespace hsd
                 }
                 else if constexpr(Result_detail::IsString<Err>)
                 {
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
@@ -430,7 +443,7 @@ namespace hsd
                 }
                 else
                 {
-                    fprintf(
+                    hsd_fprint_check(
                         stderr, "Got type error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
@@ -450,7 +463,7 @@ namespace hsd
         {
             if(!_initialized)
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
@@ -477,7 +490,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\n", file_name, func, line
@@ -505,7 +518,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                fprintf(
+                hsd_fprint_check(
                     stderr, "Got type error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",

@@ -564,7 +564,7 @@ namespace hsd
     template < typename T, usize N > vector(const T (&)[N]) -> vector<T>;
     template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
     template < typename T > using buffered_vector = vector< T, buffered_allocator >;
-    template < typename T, usize N > using constexpr_vector = vector< T, ct_alloc_helper<N>::template alloc_type >;
+    template < typename T, usize N > using static_vector = vector< T, ct_alloc_helper<N>::template alloc_type >;
 
     template< typename L, typename... U >
     requires (std::is_constructible_v<L, U> && ...)

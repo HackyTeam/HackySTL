@@ -5,10 +5,10 @@
 template <hsd::usize N>
 constexpr auto gen_map()
 {
-    hsd::constexpr_umap< hsd::i32, hsd::i32, N > map{};
+    hsd::static_umap< hsd::i32, hsd::i32, N > map{};
 
     for(hsd::i32 i = 0; i < N; i++)
-        map.emplace(i + 1, i);
+        map.emplace(i * i, i);
 
     return map;
 }
@@ -27,9 +27,9 @@ int main()
     for(auto& _it : map)
         printf("%d\n", _it.first);
 
-    constexpr auto map2 = gen_map<25>();
+    constexpr auto map2 = gen_map<10>();
 
-    printf("========\n%d\n========\n", map2[2]);
+    printf("========\n%d\n========\n", map2[49]);
 
     for(auto& _it : map2)
         printf("%d\n", _it.first);

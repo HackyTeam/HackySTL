@@ -4,9 +4,6 @@
 #include <unordered_map>
 #include <benchmark/benchmark.h>
 
-template <typename T>
-using hsdCTAlloc = hsd::constexpr_allocator<T, 20>;
-
 auto gen_std_umap()
 {
     std::unordered_map<const char*, int> map;
@@ -24,7 +21,7 @@ auto gen_std_umap()
 
 constexpr auto gen_hsd_umap()
 {
-    hsd::unordered_map<const char*, int, hsd::fnv1a<size_t>, hsdCTAlloc> map;
+    hsd::static_umap<const char*, int, 10> map;
     map.emplace("key1", 0);
     map.emplace("key2", 1);
     map.emplace("key3", 2);

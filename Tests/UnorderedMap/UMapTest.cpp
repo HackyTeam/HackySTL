@@ -5,7 +5,7 @@
 template <hsd::usize N>
 constexpr auto gen_map()
 {
-    hsd::constexpr_umap< hsd::i32, hsd::i32, N > map{};
+    hsd::static_umap< hsd::i32, hsd::i32, N > map{};
 
     for(hsd::i32 i = 0; i < N; i++)
         map.emplace(i * i, i);

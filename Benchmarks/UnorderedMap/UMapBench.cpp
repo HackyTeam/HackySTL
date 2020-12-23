@@ -21,7 +21,7 @@ auto gen_std_umap()
 
 constexpr auto gen_hsd_umap()
 {
-    hsd::constexpr_umap<const char*, int, 10> map;
+    hsd::static_umap<const char*, int, 10> map;
     map.emplace("key1", 0);
     map.emplace("key2", 1);
     map.emplace("key3", 2);

@@ -7,11 +7,6 @@
 
 namespace hsd
 {
-    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
-        template <typename> typename BucketAllocator = allocator,
-        template <typename> typename Allocator = BucketAllocator >
-    class unordered_map;
-
     namespace umap_detail
     {
         template < template <typename> typename Allocator >
@@ -30,9 +25,9 @@ namespace hsd
         };
     } // namespace umap_detail
 
-    template< typename Key, typename T, typename Hasher, 
-        template <typename> typename BucketAllocator,
-        template <typename> typename Allocator >
+    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
+        template <typename> typename BucketAllocator = allocator,
+        template <typename> typename Allocator = BucketAllocator >
     class unordered_map
     {
     private:
@@ -43,16 +38,15 @@ namespace hsd
         vector< ref_vector, BucketAllocator > _buckets;
         vector< pair<Key, T>, Allocator > _data;
 
-        constexpr void _replace()
+        constexpr void _replace(usize new_size)
         {
-            usize _new_size = _buckets.size() * 2;
             _buckets.clear();
-            _buckets.resize(_new_size);
+            _buckets.resize(new_size);
 
             for(usize _index = 0; _index < _data.size(); _index++)
             {
                 auto _hash_rez = Hasher::get_hash(_data[_index].first);
-                usize _bucket_index = _hash_rez % _new_size;
+                usize _bucket_index = _hash_rez % new_size;
                 _buckets[_bucket_index].emplace_back(_hash_rez, _index);
             }
         }
@@ -97,8 +91,8 @@ namespace hsd
 
         HSD_CONSTEXPR unordered_map(const BucketAllocator<uchar>& alloc)
         requires (
-            (!umap_detail::DefaultAlloc<Allocator> || 
-            umap_detail::CopyAlloc<Allocator>) && 
+            (!umap_detail::DefaultAlloc<BucketAllocator> || 
+            umap_detail::CopyAlloc<BucketAllocator>) && 
             umap_detail::DefaultAlloc<Allocator> &&
             !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
         )
@@ -250,8 +244,22 @@ namespace hsd
                 _data.emplace_back(key, T{forward<Args>(args)...});
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
-                { 
-                    _replace();
+                {
+                    if constexpr(requires {BucketAllocator<uchar>::limit();})
+                    {
+                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
+                        {
+                            _replace(_buckets.size() + _buckets.size() / 2);
+                        }
+                        else
+                        {
+                            _replace(BucketAllocator<uchar>::limit());
+                        }
+                    }
+                    else
+                    {
+                        _replace(_buckets.size() + _buckets.size() / 2);
+                    }
                 }
                 else
                 {
@@ -277,7 +285,21 @@ namespace hsd
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
-                    _replace();
+                    if constexpr(requires {BucketAllocator<uchar>::limit();})
+                    {
+                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
+                        {
+                            _replace(_buckets.size() + _buckets.size() / 2);
+                        }
+                        else
+                        {
+                            _replace(BucketAllocator<uchar>::limit());
+                        }
+                    }
+                    else
+                    {
+                        _replace(_buckets.size() + _buckets.size() / 2);
+                    }
                 }
                 else
                 {
@@ -332,7 +354,7 @@ namespace hsd
     template< typename Key, typename T >
     using buffered_umap = unordered_map< Key, T, fnv1a<usize>, buffered_allocator >;
     template< typename Key, typename T, usize N >
-    using constexpr_umap = unordered_map< Key, T, fnv1a<usize>, 
-        ct_alloc_helper<N + N / 4>::template alloc_type,
+    using static_umap = unordered_map< Key, T, fnv1a<usize>, 
+        ct_alloc_helper<N + N / 2>::template alloc_type,
         ct_alloc_helper<N>::template alloc_type >;
 } // namespace hsd

@@ -244,5 +244,10 @@ namespace hsd
         HSD_CONSTEXPR constexpr_allocator() = default;
         HSD_CONSTEXPR constexpr_allocator(const constexpr_allocator&) = delete;
         HSD_CONSTEXPR constexpr_allocator(constexpr_allocator&&) = delete;
+
+        static constexpr usize limit()
+        {
+            return MaxSize;
+        }
     };
 } // mamespace hsd

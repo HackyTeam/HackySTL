@@ -32,12 +32,12 @@ namespace hsd
         template <basic_string_literal fmt, usize N>
         static constexpr auto split_literal()
             -> Result< 
-                constexpr_vector< pair<
+                static_vector< pair<
                     const typename decltype(fmt)::char_type*, usize>, N > 
                 , runtime_error >
         {
             using char_type = typename decltype(fmt)::char_type;
-            using buf_type = constexpr_vector< pair<const char_type*, usize>, N >;
+            using buf_type = static_vector< pair<const char_type*, usize>, N >;
 
             buf_type _buf;
             const char_type* _iter_f = fmt.data;

@@ -72,13 +72,13 @@ namespace hsd
         }
 
         template <string_literal str>
-        static void _print(isize val, FILE* file_buf = stdout)
+        static void _print(long val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%zd").data, val);
         }
 
         template <string_literal str>
-        static void _print(usize val, FILE* file_buf = stdout)
+        static void _print(ulong val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%zu").data, val);
         }
@@ -237,13 +237,13 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(isize val, FILE* file_buf = stdout)
+        static void _print(long val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%zd").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(usize val, FILE* file_buf = stdout)
+        static void _print(ulong val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%zu").data, val);
         }

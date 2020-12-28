@@ -198,7 +198,7 @@ namespace hsd
 	    	}
 	    }
 
-		static HSD_CONSTEXPR CharT* to_string(isize num)
+		static HSD_CONSTEXPR CharT* to_string(long num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -370,7 +370,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(usize num)
+		static HSD_CONSTEXPR CharT* to_string(ulong num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];

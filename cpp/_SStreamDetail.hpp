@@ -67,67 +67,131 @@ namespace hsd
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, char& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%c", &val);
+            #else
             sscanf(str.first, "%c", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, uchar& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%c", &val);
+            #else
             sscanf(str.first, "%c", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, i16& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%hd", &val);
+            #else
             sscanf(str.first, "%hd", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, u16& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%hu", &val);
+            #else
             sscanf(str.first, "%hu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, i32& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%d", &val);
+            #else
             sscanf(str.first, "%d", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, u32& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%u", &val);
+            #else
             sscanf(str.first, "%u", &val);
+            #endif
+        }
+
+        template <>
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, long& val)
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%zd", &val);
+            #else
+            sscanf(str.first, "%zd", &val);
+            #endif
+        }
+
+        template <>
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, ulong& val)
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%zu", &val);
+            #else
+            sscanf(str.first, "%zu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, i64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%lld", &val);
+            #else
             sscanf(str.first, "%lld", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, u64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%llu", &val);
+            #else
             sscanf(str.first, "%llu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, f32& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%f", &val);
+            #else
             sscanf(str.first, "%f", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, f64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%lf", &val);
+            #else
             sscanf(str.first, "%lf", &val);
+            #endif
         }
 
         template <>
         inline void _parse<char>(pair<const char*, usize>& str, f128& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            sscanf_s(str.first, "%Lf", &val);
+            #else
             sscanf(str.first, "%Lf", &val);
+            #endif
         }
 
         template <>
@@ -139,73 +203,141 @@ namespace hsd
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, char& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%c", &val);
+            #else
             swscanf(str.first, L"%c", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, uchar& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%c", &val);
+            #else
             swscanf(str.first, L"%c", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, wchar& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%lc", &val);
+            #else
             swscanf(str.first, L"%lc", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, i16& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%hd", &val);
+            #else
             swscanf(str.first, L"%hd", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, u16& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%hu", &val);
+            #else
             swscanf(str.first, L"%hu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, i32& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%d", &val);
+            #else
             swscanf(str.first, L"%d", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, u32& val)
         {
-            swscanf(str.first, L"%u", &val);
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%d", &val);
+            #else
+            swscanf(str.first, L"%d", &val);
+            #endif
+        }
+
+        template <>
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, long& val)
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%zd", &val);
+            #else
+            swscanf(str.first, L"%zd", &val);
+            #endif
+        }
+
+        template <>
+        inline void _parse<wchar>(pair<const wchar*, usize>& str, ulong& val)
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%zu", &val);
+            #else
+            swscanf(str.first, L"%zu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, i64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%lld", &val);
+            #else
             swscanf(str.first, L"%lld", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, u64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%llu", &val);
+            #else
             swscanf(str.first, L"%llu", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, f32& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%f", &val);
+            #else
             swscanf(str.first, L"%f", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, f64& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%lf", &val);
+            #else
             swscanf(str.first, L"%lf", &val);
+            #endif
         }
 
         template <>
         inline void _parse<wchar>(pair<const wchar*, usize>& str, f128& val)
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            swscanf_s(str.first, L"%Lf", &val);
+            #else
             swscanf(str.first, L"%Lf", &val);
+            #endif
         }
 
         template <>

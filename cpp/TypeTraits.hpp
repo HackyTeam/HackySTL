@@ -194,7 +194,7 @@ namespace hsd
         #endif
 
         template <>
-        struct is_integral<isize>
+        struct is_integral<long>
             : public true_type
         {};
 
@@ -228,7 +228,7 @@ namespace hsd
         #endif
 
         template <>
-        struct is_integral<usize>
+        struct is_integral<ulong>
             : public true_type
         {};
 

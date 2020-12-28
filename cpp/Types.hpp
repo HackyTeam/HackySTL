@@ -48,6 +48,7 @@ namespace hsd
     using i128 = __int128_t;
     #endif
 
+    using ulong = unsigned long;
     using u64 = unsigned long long;
     using u32 = unsigned int;
     using u16 = unsigned short;

@@ -138,8 +138,13 @@ namespace hsd
         static constexpr f128 infinity = __builtin_infl();
         static constexpr f128 nan = __builtin_nanl("");
         static constexpr f128 epsilon = 1.08420217248550443401e-19l;
+        #if defined(HSD_PLATFORM_WINDOWS)
+        static constexpr f128 min = 4.9406564584124654E-324l;
+        static constexpr f128 max = 1.7976931348623157e+308l;
+        #else
         static constexpr f128 min = 3.36210314311209350626e-4932l;
-        static constexpr f128 max = 1.18973149535723176502e+4932l;
+        static constexpr f128 max = 1.18973149535723176502e+4932l
+        #endif
         static constexpr bool is_signed = true;
         static constexpr i32 digits = 64;
         static constexpr i32 digits10 = 18;

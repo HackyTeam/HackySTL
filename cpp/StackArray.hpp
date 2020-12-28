@@ -55,11 +55,6 @@ namespace hsd
             }(make_index_sequence<L - U>{});
         }
 
-        constexpr usize size()
-        {
-            return N;
-        }
-
         constexpr usize size() const
         {
             return N;

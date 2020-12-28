@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Windows debug files
+*.ilk
+*.pdb

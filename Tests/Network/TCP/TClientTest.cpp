@@ -2,12 +2,18 @@
 
 int main()
 {
-    hsd::tcp::client client{hsd::net::protocol_type::ipv4, 53000, "127.0.0.1"};
+    hsd::tcp::client client{hsd::net::protocol_type::ipv4, 48000, "127.0.0.1"};
+
+    for(hsd::u16 i = 48000; i < 60000; i++)
+    {
+        if(client.switch_to(hsd::net::protocol_type::ipv4, i, "127.0.0.1"))
+            break;
+    }
 
     while(true)
     {
         hsd::io::print<"> ">();
-        auto state = client.respond<"{}">(hsd::io::read_line().expect().to_string());
+        auto state = client.respond<"{}">(hsd::io::read_line().unwrap().to_string());
 
         if(state == hsd::net::received_state::err)
             continue;

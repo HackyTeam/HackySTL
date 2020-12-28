@@ -253,7 +253,7 @@ namespace hsd
 
             void _clear_buf()
             {
-                memset(_net_buf.data(), '\0', _net_buf.capacity());
+                memset(_net_buf.data(), '\0', 4096);
             }
 
         public:
@@ -273,7 +273,7 @@ namespace hsd
             {
                 _clear_buf();
                 isize _response = recv(_sock.get_sock(), 
-                    _net_buf.data(), _net_buf.capacity(), 0);
+                    _net_buf.data(), 4096, 0);
 
                 if (_response == static_cast<isize>(net::received_state::err))
                 {

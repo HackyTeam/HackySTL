@@ -1,4 +1,4 @@
-#include "../../../cpp/NetworkServer.hpp"
+#include <NetworkServer.hpp>
 
 int main()
 {

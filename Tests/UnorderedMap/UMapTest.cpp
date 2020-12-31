@@ -1,5 +1,5 @@
-#include "../../cpp/UnorderedMap.hpp"
-#include "../../cpp/HeapArray.hpp"
+#include <UnorderedMap.hpp>
+#include <HeapArray.hpp>
 #include <stdio.h>
 
 template <hsd::usize N>

@@ -1,4 +1,4 @@
-#include "../../cpp/UniquePtr.hpp"
+#include <UniquePtr.hpp>
 
 struct base
 {

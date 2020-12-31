@@ -1,7 +1,7 @@
 #include <iostream>
 
 #define HSD_ANY_ENABLE_TYPEINFO
-#include "../../cpp/Any.hpp"
+#include <Any.hpp>
 
 struct S
 {

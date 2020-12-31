@@ -125,7 +125,7 @@ namespace hsd
         }
 
         template <>
-        inline void _parse<wchar>(pair<const wchar*, usize>& str, long& val)
+        inline void _parse<char>(pair<const char*, usize>& str, long& val)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             sscanf_s(str.first, "%zd", &val);
@@ -135,7 +135,7 @@ namespace hsd
         }
 
         template <>
-        inline void _parse<wchar>(pair<const wchar*, usize>& str, ulong& val)
+        inline void _parse<char>(pair<const char*, usize>& str, ulong& val)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             sscanf_s(str.first, "%zu", &val);

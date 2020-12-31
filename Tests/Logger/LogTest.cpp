@@ -1,4 +1,4 @@
-#include "../../cpp/Logging.hpp"
+#include <Logging.hpp>
 
 static auto test_trace(hsd::stack_trace tr, const char* msg, hsd::usize N)
     -> hsd::Result<void, hsd::stack_trace_error>

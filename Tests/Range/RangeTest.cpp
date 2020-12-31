@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../cpp/Extra/Range.hpp"
+#include <Extra/Range.hpp>
 
 int main()
 {

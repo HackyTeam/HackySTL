@@ -1,14 +1,13 @@
 #include <stdio.h>
-#include "../../cpp/Functional.hpp"
+#include <Functional.hpp>
 
 static int func(int a)
 {
     return a;
 }
 
-static const auto& func2(auto& val)
+static void func2(auto& val)
 {
-    return val;
 }
 
 struct counter {
@@ -22,8 +21,8 @@ struct counter {
 
 int main()
 {
-    int b = 5;
-    hsd::function val = func2<int>;
+    counter b = 5;
+    hsd::function/*<void(counter&)>*/ val = func2<counter>;
     val(hsd::reference(b)).unwrap();
 
     hsd::function<int()> f3;

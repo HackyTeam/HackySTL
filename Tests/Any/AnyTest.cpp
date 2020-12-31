@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../../cpp/Any.hpp"
+#include <Any.hpp>
 
 struct S
 {

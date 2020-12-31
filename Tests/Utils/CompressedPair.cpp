@@ -1,5 +1,5 @@
-#include "../../cpp/CompressedPair.hpp"
-#include "../../cpp/Pair.hpp"
+#include <CompressedPair.hpp>
+#include <Pair.hpp>
 
 #include <iostream>
 

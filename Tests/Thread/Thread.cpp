@@ -1,5 +1,5 @@
-#include "../../cpp/Thread.hpp"
-#include "../../cpp/Io.hpp"
+#include <Thread.hpp>
+#include <Io.hpp>
 
 static void foo(int a, float b) 
 {

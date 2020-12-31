@@ -1,4 +1,4 @@
-#include "../../../cpp/NetworkClient.hpp"
+#include <NetworkClient.hpp>
 
 int main()
 {

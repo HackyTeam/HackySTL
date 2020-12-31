@@ -16,7 +16,8 @@ namespace hsd
     public:
 		using iterator = CharT*;
         using const_iterator = const CharT*;
-        basic_sstream(const basic_sstream& other) = delete;
+        basic_sstream(const basic_sstream&) = delete;
+        basic_sstream& operator=(const basic_sstream& other) = delete;
 
         basic_sstream(usize size)
         {
@@ -28,6 +29,15 @@ namespace hsd
         ~basic_sstream()
         {
             delete[] _data;
+        }
+
+        void add_raw_data(const CharT* raw_data)
+        {
+            _size += static_cast<usize>(
+                sstream_detail::_write<"">(raw_data, {_data + _size, _capacity - _size})
+            );
+            _data[_size++] = static_cast<CharT>(' ');
+            _data[_size] = static_cast<CharT>('\0');
         }
 
 		template <typename... Args>

@@ -1,4 +1,4 @@
-#include "../../cpp/Extra/Constexpr/BinaryArithmetic.hpp"
+#include <Extra/Constexpr/BinaryArithmetic.hpp>
 
 int main() 
 {

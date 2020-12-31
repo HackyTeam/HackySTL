@@ -140,6 +140,32 @@ namespace hsd
             -> Result<
                 func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
+        requires (!is_void<ResultType>::value)
+        {
+            if(_func_impl == nullptr)
+                return func_detail::bad_function{};
+
+            return {_func_impl->operator()(hsd::forward<Args>(args)...)};
+        }
+
+        constexpr auto operator()(Args&&... args) 
+            -> Result<
+                func_detail::store_ref_t<ResultType>, 
+                func_detail::bad_function >
+        requires (is_void<ResultType>::value)
+        {
+            if(_func_impl == nullptr)
+                return func_detail::bad_function{};
+
+            _func_impl->operator()(hsd::forward<Args>(args)...);
+            return {};
+        }
+
+        constexpr auto operator()(Args&&... args) const
+            -> Result<
+                const func_detail::store_ref_t<ResultType>, 
+                func_detail::bad_function >
+        requires (!is_void<ResultType>::value)
         {
             if(_func_impl == nullptr)
                 return func_detail::bad_function{};
@@ -151,11 +177,13 @@ namespace hsd
             -> Result<
                 const func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
+        requires (is_void<ResultType>::value)
         {
             if(_func_impl == nullptr)
                 return func_detail::bad_function{};
 
-            return {_func_impl->operator()(hsd::forward<Args>(args)...)};
+            _func_impl->operator()(hsd::forward<Args>(args)...);
+            return {};
         }
     };
 

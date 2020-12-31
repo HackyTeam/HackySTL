@@ -1,4 +1,4 @@
-#include "../../../cpp/List.hpp"
+#include <List.hpp>
 #include <stdio.h>
 
 struct S

@@ -1,4 +1,4 @@
-#include "../../cpp/Variant.hpp"
+#include <Variant.hpp>
 
 #include <iostream>
 

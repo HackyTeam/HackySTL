@@ -41,26 +41,25 @@ namespace hsd
         }
 
 		template <typename... Args>
-		void set_data(Args&... args)
+		Result<void, runtime_error> set_data(Args&... args)
 		{
-            auto _data_set = sstream_detail::split_data(_data, _capacity);
+            using sstream_detail::_parse;
+            constexpr usize num_args = sizeof...(Args);
+            auto _data_set = sstream_detail::split_data<num_args>(_data, _capacity);
 
-            if(sizeof...(Args) > _data_set.size())
+            if(num_args > _data_set.size())
             {
-                hsd_fputs_check(stderr, "Input too small to parse");
-                abort();
-            }
-            else if(sizeof...(Args) < _data_set.size())
-            {
-                hsd_fputs_check(stderr, "Warning: Possible Undefined Behavior");
+                return runtime_error{"Input too small to parse"};
             }
             else
             {
                 [&]<usize... Ints>(index_sequence<Ints...>)
                 {
-                    (sstream_detail::_parse(_data_set[Ints], args), ...);
+                    (_parse(_data_set[Ints], args), ...);
                 }(make_index_sequence<sizeof...(Args)>{});
             }
+
+            return {};
 		}
 
         template <typename T>

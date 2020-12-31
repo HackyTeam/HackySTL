@@ -62,7 +62,7 @@ int main()
     hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});
     auto t = hsd::io::read_line().unwrap().parse<test>();
     
-    hsd::io::read_line().unwrap().set_data(x, y, z);
+    hsd::io::read_line().unwrap().set_data(x, y, z).unwrap();
     hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
     auto file = hsd::file(

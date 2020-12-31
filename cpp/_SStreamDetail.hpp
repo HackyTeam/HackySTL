@@ -11,10 +11,10 @@ namespace hsd
 {
     namespace sstream_detail
     {
-        template <typename CharT>
+        template <usize N, typename CharT>
         static auto split_data(const CharT* str, usize size)
         {
-            vector< pair<const CharT*, usize> > _buf;
+            static_vector< pair<const CharT*, usize>, N > _buf;
             const CharT* _iter_f = str;
             const CharT* _iter_s = basic_cstring<CharT>::find(_iter_f, ' ');
 

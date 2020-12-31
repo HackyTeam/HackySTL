@@ -66,7 +66,6 @@ namespace hsd
                         _num_args--;
                     }
 
-                    _buf.data()[_buf.size() - 1] = '\0';
                     _function(_buf).unwrap(HSD_FUNCTION_NAME);
                     _index += _incrementor;
                     _buf.reset_data();

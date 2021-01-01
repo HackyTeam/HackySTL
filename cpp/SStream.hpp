@@ -44,10 +44,9 @@ namespace hsd
 		Result<void, runtime_error> set_data(Args&... args)
 		{
             using sstream_detail::_parse;
-            constexpr usize num_args = sizeof...(Args);
-            auto _data_set = sstream_detail::split_data<num_args>(_data, _capacity);
+            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data, _capacity);
 
-            if(num_args > _data_set.size())
+            if(sizeof...(Args) > _data_set.size())
             {
                 return runtime_error{"Input too small to parse"};
             }

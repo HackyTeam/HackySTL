@@ -3,7 +3,8 @@
 #include <cstdio>
 #include <cstring>
 
-int xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) {
+using namespace hsd;
+Result<void, runtime_error> hsd::xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) noexcept {
     while (*fmt) {
         char ch = *fmt++;
         if (ch != '%')
@@ -11,12 +12,10 @@ int xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) {
         else {
             char fch = *fmt++;
             if (!fch) {
-                std::fputs("\nError: Invalid format string", stderr);
-                return 123;
+                return runtime_error("\nError: Invalid format string");
             }
             if (tbegin == tend) {
-                std::fputs("\nError: Passed to few arguments", stderr);
-                return 1234;
+                return runtime_error("\nError: Passed to few arguments");
             }
             switch (fch) {
                 case 'd': {
@@ -25,7 +24,7 @@ int xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) {
                     break;
                 }
                 case 's': {
-                    auto value = tbegin.getnext<char const*>();
+                    auto value = tbegin.getnext<const char*>();
                     std::fwrite(value, 1, std::strlen(value), stdout);
                     break;
                 }
@@ -35,15 +34,13 @@ int xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) {
                     break;
                 }
                 default: {
-                    std::fputs("\nError: Invalid format specifier", stderr);
-                    return 12345;
+                    return runtime_error("\nError: Invalid format specifier");
                 }
             }
         }
     }
     if (tbegin != tend) {
-        std::fputs("\nError: Not all arguments parsed", stderr);
-        return -666;
+        return runtime_error("\nError: Not all arguments parsed");
     }
-    return 0;
+    return {};
 }

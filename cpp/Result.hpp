@@ -69,9 +69,13 @@ namespace hsd
         const char* _err = nullptr;
         
     public:
-        runtime_error(const char* error)
+        constexpr runtime_error(const char* error)
             : _err{error}
         {}
+
+        constexpr const char* operator()() const {
+            return _err;
+        }
     };
 
     template < typename Ok, typename Err >

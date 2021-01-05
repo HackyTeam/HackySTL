@@ -12,7 +12,7 @@ namespace hsd
         template <>
         struct remove_unsigned<unsigned char>
         {
-            using type = char;
+            using type = signed char;
         };
 
         template <>
@@ -43,6 +43,10 @@ namespace hsd
     using usize = decltype(sizeof(int));
     using isize = detail::remove_unsigned<usize>::type;
 
+    using uptr = usize;
+    using iptr = isize;
+    using ptrdiff = isize;
+
     #ifdef HSD_COMPILER_GCC
     using u128 = __uint128_t;
     using i128 = __int128_t;
@@ -54,6 +58,7 @@ namespace hsd
     using u16 = unsigned short;
     using u8 = unsigned char;
 
+    using ilong = long;
     using i64 = long long;
     using i32 = int;
     using i16 = short;

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdexcept>
 #include <cassert>
-
 #include "Utility.hpp"
 #include "Tuple.hpp"
 #include "Allocator.hpp"
@@ -16,6 +14,14 @@ namespace hsd
         usize _size = 0;
         usize _capacity = 0;
 
+        struct bad_access
+        {
+            const char* operator()() const
+            {
+                return "Tried to access an element out of bounds";
+            }
+        };
+
     public:
         using value_type = T;
         using iterator = T*;
@@ -28,7 +34,7 @@ namespace hsd
                 for (usize _index = _size; _index > 0; --_index)
                     at_unchecked(_index - 1).~T();
 
-                this->deallocate(this->_data, _capacity);
+                this->deallocate(this->_data, _capacity).unwrap();
             }
         }
 
@@ -66,10 +72,10 @@ namespace hsd
             : Allocator<T>(rhs), _size(rhs._size), _capacity(rhs._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(rhs._capacity);
+                this->_data = this->allocate(rhs._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&this->_data[_index], rhs[_index]);
+                construct_at(&this->_data[_index], rhs[_index]);
         }
 
         HSD_CONSTEXPR vector(const vector& rhs)
@@ -77,10 +83,10 @@ namespace hsd
             : _size(rhs._size), _capacity(rhs._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(rhs._capacity);
+                this->_data = this->allocate(rhs._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&this->_data[_index], rhs[_index]);
+                construct_at(&this->_data[_index], rhs[_index]);
         }
 
         constexpr vector(vector&& other) noexcept
@@ -105,10 +111,10 @@ namespace hsd
             : _size(N), _capacity(N)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(N);
+                this->_data = this->allocate(N).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&this->_data[_index], arr[_index]);
+                construct_at(&this->_data[_index], arr[_index]);
         }
 
         template <usize N>
@@ -116,10 +122,10 @@ namespace hsd
             : _size(N), _capacity(N)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(N);
+                this->_data = this->allocate(N).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                std::construct_at(&this->_data[_index], move(arr[_index]));
+                construct_at(&this->_data[_index], move(arr[_index]));
         }
 
         HSD_CONSTEXPR vector& operator=(const vector& rhs)
@@ -130,7 +136,7 @@ namespace hsd
                 reserve(rhs._size);
                 
                 for (usize _index = 0; _index < rhs._size; ++_index)
-                    std::construct_at(&this->_data[_index], rhs[_index]);
+                    construct_at(&this->_data[_index], rhs[_index]);
                 
                 _size = rhs._size;
             }
@@ -150,7 +156,7 @@ namespace hsd
                 else if (rhs._size > _size)
                 {
                     for (; _index < rhs._size; ++_index)
-                        std::construct_at(&this->_data[_index], rhs[_index]);
+                        construct_at(&this->_data[_index], rhs[_index]);
                 }
 
                 _size = rhs._size;
@@ -162,10 +168,10 @@ namespace hsd
         HSD_CONSTEXPR vector& operator=(vector&& rhs) noexcept
         {
             clear();
-            this->deallocate(this->_data, _capacity);
             
             if constexpr(is_same<decltype(this->_data), T*>::value)
             {
+                this->deallocate(this->_data, _capacity).unwrap();
                 this->_data = exchange(rhs._data, nullptr);
             }
             else
@@ -188,7 +194,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    std::construct_at(&this->_data[_index], arr[_index]);
+                    construct_at(&this->_data[_index], arr[_index]);
                 
                 _size = N;
             }
@@ -209,7 +215,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        std::construct_at(&this->_data[_index], arr[_index]);
+                        construct_at(&this->_data[_index], arr[_index]);
                 }
                 
                 _size = N;
@@ -227,7 +233,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    std::construct_at(&this->_data[_index], move(arr[_index]));
+                    construct_at(&this->_data[_index], move(arr[_index]));
                 
                 _size = N;
             }
@@ -248,7 +254,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        std::construct_at(&this->_data[_index], move(arr[_index]));
+                        construct_at(&this->_data[_index], move(arr[_index]));
                 }
 
                 _size = N;
@@ -259,12 +265,12 @@ namespace hsd
 
         constexpr auto& operator[](usize index) noexcept
         {
-            return at(index);
+            return at_unchecked(index);
         }
 
         constexpr auto& operator[](usize index) const noexcept
         {
-            return at(index);
+            return at_unchecked(index);
         }
 
         constexpr auto& front() noexcept
@@ -287,20 +293,22 @@ namespace hsd
             return *(begin() + size() - 1);
         }
 
-        constexpr auto& at(usize index)
+        constexpr auto at(usize index)
+            -> Result< reference<T>, bad_access >
         {
             if(index >= _size)
-                throw std::out_of_range("Accessed element out of range");
+                return bad_access{};
 
-            return this->_data[index];
+            return {this->_data[index]};
         }
 
-        constexpr const auto& at(usize index) const
+        constexpr auto at(usize index) const
+            -> Result< const reference<T>, bad_access >
         {
             if(index >= _size)
-                throw std::out_of_range("Accessed element out of range");
+                return bad_access{};
 
-            return this->_data[index];
+            return {this->_data[index]};
         }
 
         constexpr auto& at_unchecked(usize index) noexcept
@@ -336,16 +344,16 @@ namespace hsd
 
                 if constexpr(is_same<decltype(this->_data), T*>::value)
                 {
-                    T* _new_buf = this->allocate(_new_capacity);
+                    T* _new_buf = this->allocate(_new_capacity).unwrap();
                 
                     for (usize _index = 0; _index < _size; ++_index)
                     {
                         auto& _value = at_unchecked(_index);
-                        std::construct_at(&_new_buf[_index], move(_value));
+                        construct_at(&_new_buf[_index], move(_value));
                         _value.~T();
                     }
 
-                    this->deallocate(this->_data, _capacity);
+                    this->deallocate(this->_data, _capacity).unwrap();
                     this->_data = _new_buf;
                 }
                 
@@ -358,14 +366,14 @@ namespace hsd
             if (_size == 0)
             {
                 T* _old_buf = exchange(this->_data, nullptr);
-                this->deallocate(_old_buf, _capacity);
+                this->deallocate(_old_buf, _capacity).unwrap();
                 _capacity = 0;
             }
             else if (_size < _capacity)
             {
                 T* _new_buf = this->allocate(_size);
                 move<T>(this->_data, this->_data + _size, _new_buf);
-                this->deallocate(this->_data, _capacity);
+                this->deallocate(this->_data, _capacity).unwrap();
                 _capacity = _size;
                 this->_data = _new_buf;
             }
@@ -383,13 +391,13 @@ namespace hsd
 
                 if constexpr(is_same<decltype(this->_data), T*>::value)
                 {
-                    T* _new_buf = this->allocate(_new_capacity);
+                    T* _new_buf = this->allocate(_new_capacity).unwrap();
                     usize _index = 0;
 
                     for (; _index < _size; ++_index)
                     {
                         auto& _value = at_unchecked(_index);
-                        std::construct_at(&_new_buf[_index], move(_value));
+                        construct_at(&_new_buf[_index], move(_value));
                         _value.~T();
                     }
                     for (; _index < new_size; ++_index)
@@ -399,22 +407,22 @@ namespace hsd
                             if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
                                 std::is_copy_constructible_v<Allocator<T>>)
                             {
-                                std::construct_at(&_new_buf[_index], 
+                                construct_at(&_new_buf[_index], 
                                     static_cast<Allocator<T>>(*this)
                                 );
                             }
                             else
                             {
-                                std::construct_at(&_new_buf[_index]);
+                                construct_at(&_new_buf[_index]);
                             }
                         }
                         else
                         {
-                            std::construct_at(&_new_buf[_index]);
+                            construct_at(&_new_buf[_index]);
                         }
                     }
 
-                    this->deallocate(this->_data, _capacity);
+                    this->deallocate(this->_data, _capacity).unwrap();
                     this->_data = _new_buf;
                 }
 
@@ -430,18 +438,18 @@ namespace hsd
                         if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
                             std::is_copy_constructible_v<Allocator<T>>)
                         {
-                            std::construct_at(&this->_data[_index], 
+                            construct_at(&this->_data[_index], 
                                 static_cast<Allocator<T>>(*this)
                             );
                         }
                         else
                         {
-                            std::construct_at(&this->_data[_index]);
+                            construct_at(&this->_data[_index]);
                         }
                     }
                     else
                     {
-                        std::construct_at(&this->_data[_index]);
+                        construct_at(&this->_data[_index]);
                     }
                 }
                 
@@ -470,7 +478,7 @@ namespace hsd
         HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
             reserve(_size + 1);
-            std::construct_at(&this->_data[_size], forward<Args>(args)...);
+            construct_at(&this->_data[_size], forward<Args>(args)...);
             ++_size;
         }
 
@@ -544,9 +552,19 @@ namespace hsd
 
     };
 
+    template <hsd::usize N>
+    struct ct_alloc_helper
+    {
+        template <typename T>
+        struct alloc_type 
+            : hsd::constexpr_allocator<T, N>
+        {};
+    };
+
     template < typename T, usize N > vector(const T (&)[N]) -> vector<T>;
     template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
-    template <typename T> using buffered_vector = vector< T, buffered_allocator >;
+    template < typename T > using buffered_vector = vector< T, buffered_allocator >;
+    template < typename T, usize N > using static_vector = vector< T, ct_alloc_helper<N>::template alloc_type >;
 
     template< typename L, typename... U >
     requires (std::is_constructible_v<L, U> && ...)
@@ -558,7 +576,7 @@ namespace hsd
         
         [&vec]<usize... _index>(hsd::index_sequence<_index...>, auto&... args)
         {
-            (vec.emplace_back(forward<decltype(args)>(args)), ...);
+            (vec.emplace_back(forward<L>(args)), ...);
         }(hsd::make_index_sequence<size>{}, first, rest...);
         
         return vec;

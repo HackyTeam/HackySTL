@@ -1,45 +1,52 @@
 #pragma once
 
+#include "Result.hpp"
 #include "Pair.hpp"
 #include "Vector.hpp"
 #include "Hash.hpp"
 
 namespace hsd
 {
-    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
-        template <typename> typename Allocator = allocator >
-    class unordered_map;
-
     namespace umap_detail
     {
         template < template <typename> typename Allocator >
         concept DefaultAlloc = std::is_default_constructible_v<Allocator<uchar>>;
         template < template <typename> typename Allocator >
         concept CopyAlloc = std::is_copy_constructible_v<Allocator<uchar>>;
+        template < template <typename> typename Alloc1, template <typename> typename Alloc2 >
+        concept IsSameAlloc = is_same<Alloc1<uchar>, Alloc2<uchar>>::value;
+
+        struct bad_key
+        {
+            const char* operator()() const
+            {
+                return "Tried to use an invalid key";
+            }
+        };
     } // namespace umap_detail
 
-    template< typename Key, typename T, typename Hasher, 
-        template <typename> typename Allocator >
+    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
+        template <typename> typename BucketAllocator = allocator,
+        template <typename> typename Allocator = BucketAllocator >
     class unordered_map
     {
     private:
         using ref_value = pair< typename Hasher::ResultType, usize >;
-        using ref_vector = vector< ref_value, Allocator >;
+        using ref_vector = vector< ref_value, BucketAllocator >;
 
         static constexpr f64 _limit_ratio = 0.75f;
-        vector< ref_vector, Allocator > _buckets;
+        vector< ref_vector, BucketAllocator > _buckets;
         vector< pair<Key, T>, Allocator > _data;
 
-        HSD_CONSTEXPR void _replace()
+        constexpr void _replace(usize new_size)
         {
-            usize _new_size = _buckets.size() * 2;
             _buckets.clear();
-            _buckets.resize(_new_size);
+            _buckets.resize(new_size);
 
             for(usize _index = 0; _index < _data.size(); _index++)
             {
                 auto _hash_rez = Hasher::get_hash(_data[_index].first);
-                usize _bucket_index = _hash_rez % _new_size;
+                usize _bucket_index = _hash_rez % new_size;
                 _buckets[_bucket_index].emplace_back(_hash_rez, _index);
             }
         }
@@ -68,16 +75,51 @@ namespace hsd
         HSD_CONSTEXPR ~unordered_map() {}
 
         HSD_CONSTEXPR unordered_map()
-        requires (umap_detail::DefaultAlloc<Allocator>)
+        requires (umap_detail::DefaultAlloc<Allocator> &&
+            umap_detail::DefaultAlloc<BucketAllocator>)
             : _buckets(10)
         {}
 
         HSD_CONSTEXPR unordered_map(const Allocator<uchar>& alloc)
         requires (
-            !umap_detail::DefaultAlloc<Allocator> || 
-            umap_detail::CopyAlloc<Allocator>
+            (!umap_detail::DefaultAlloc<Allocator> || 
+            umap_detail::CopyAlloc<Allocator>) && 
+            umap_detail::IsSameAlloc<Allocator, BucketAllocator>
         )
-            : _buckets(10, static_cast<Allocator<ref_vector>>(alloc)), _data(alloc)
+            : _buckets(10, alloc), _data(alloc)
+        {}
+
+        HSD_CONSTEXPR unordered_map(const BucketAllocator<uchar>& alloc)
+        requires (
+            (!umap_detail::DefaultAlloc<BucketAllocator> || 
+            umap_detail::CopyAlloc<BucketAllocator>) && 
+            umap_detail::DefaultAlloc<Allocator> &&
+            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+        )
+            : _buckets(10, alloc)
+        {}
+
+        HSD_CONSTEXPR unordered_map(const Allocator<uchar>& alloc)
+        requires (
+            (!umap_detail::DefaultAlloc<Allocator> || 
+            umap_detail::CopyAlloc<Allocator>) && 
+            umap_detail::DefaultAlloc<BucketAllocator> &&
+            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+        )
+            : _buckets(10), _data(alloc)
+        {}
+
+        HSD_CONSTEXPR unordered_map(
+            const BucketAllocator<uchar>& bucket_alloc, 
+            const Allocator<uchar>& data_alloc)
+        requires (
+            (!umap_detail::DefaultAlloc<Allocator> || 
+            umap_detail::CopyAlloc<Allocator>) && 
+            umap_detail::DefaultAlloc<Allocator> &&
+            umap_detail::DefaultAlloc<BucketAllocator> &&
+            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+        )
+            : _buckets(10, bucket_alloc), _data(data_alloc)
         {}
 
         HSD_CONSTEXPR unordered_map(const unordered_map& other)
@@ -97,7 +139,8 @@ namespace hsd
 
         template <usize N>
         HSD_CONSTEXPR unordered_map(pair<Key, T> (&&other)[N])
-        requires (umap_detail::DefaultAlloc<Allocator>)
+        requires (umap_detail::DefaultAlloc<Allocator> &&
+            umap_detail::DefaultAlloc<BucketAllocator>)
             : _buckets(10)
         {
             for(usize _index = 0; _index < N; _index++)
@@ -155,51 +198,40 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR reference_type operator[](const Key& key) noexcept
+        constexpr auto& operator[](const Key& key) noexcept
         {
             return emplace(key).first->second;
         }
 
-        HSD_CONSTEXPR auto& operator[](const Key& key) const
+        constexpr const auto& operator[](const Key& key) const
         {
-            auto [_data_index, _] = _get(key);
-
-            if(_data_index != static_cast<usize>(-1))
-            {
-                return _data[_data_index].second;
-            }
-            else
-            {
-                throw std::runtime_error("Data not found");
-            }
+            return at(key).unwrap();
         }
 
-        HSD_CONSTEXPR reference_type at(const Key& key)
+        constexpr auto at(const Key& key)
+            -> Result< reference<T>, umap_detail::bad_key >
         {
-            usize _data_index = _get(key);
+            usize _data_index = _get(key).first;
 
             if(_data_index == static_cast<usize>(-1))
-            {
-                throw std::out_of_range("");
-            }
+                return umap_detail::bad_key{};
 
-            return _data[_data_index]._data.second;
+            return {_data[_data_index].second};
         }
 
-        HSD_CONSTEXPR reference_type at(const Key& key) const
+        constexpr auto at(const Key& key) const
+            -> Result< reference<const T>, umap_detail::bad_key >
         {
-            usize _data_index = _get(key);
+            usize _data_index = _get(key).first;
 
             if(_data_index == static_cast<usize>(-1))
-            {
-                throw std::out_of_range("");
-            }
+                return umap_detail::bad_key{};
 
-            return _data[_data_index]._data.second;
+            return {_data[_data_index].second};
         }
 
         template< typename NewKey, typename... Args >
-        HSD_CONSTEXPR pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
+        constexpr pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
         {
             auto [_data_index, _bucket_index] = _get(key);
 
@@ -212,8 +244,22 @@ namespace hsd
                 _data.emplace_back(key, T{forward<Args>(args)...});
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
-                { 
-                    _replace();
+                {
+                    if constexpr(requires {BucketAllocator<uchar>::limit();})
+                    {
+                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
+                        {
+                            _replace(_buckets.size() + _buckets.size() / 2);
+                        }
+                        else
+                        {
+                            _replace(BucketAllocator<uchar>::limit());
+                        }
+                    }
+                    else
+                    {
+                        _replace(_buckets.size() + _buckets.size() / 2);
+                    }
                 }
                 else
                 {
@@ -225,7 +271,7 @@ namespace hsd
         }
 
         template< typename NewKey, typename... Args >
-        HSD_CONSTEXPR pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
+        constexpr pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
         {
             auto [_data_index, _bucket_index] = _get(key);
 
@@ -239,7 +285,21 @@ namespace hsd
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
-                    _replace();
+                    if constexpr(requires {BucketAllocator<uchar>::limit();})
+                    {
+                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
+                        {
+                            _replace(_buckets.size() + _buckets.size() / 2);
+                        }
+                        else
+                        {
+                            _replace(BucketAllocator<uchar>::limit());
+                        }
+                    }
+                    else
+                    {
+                        _replace(_buckets.size() + _buckets.size() / 2);
+                    }
                 }
                 else
                 {
@@ -250,7 +310,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR void clear()
+        constexpr void clear()
         {
             _data.clear();
             _buckets.clear();
@@ -290,4 +350,11 @@ namespace hsd
     template< typename Key, typename T, usize N >
     unordered_map(pair<Key, T> (&&other)[N]) 
         -> unordered_map< Key, T, fnv1a<usize>, allocator >;
+
+    template< typename Key, typename T >
+    using buffered_umap = unordered_map< Key, T, fnv1a<usize>, buffered_allocator >;
+    template< typename Key, typename T, usize N >
+    using static_umap = unordered_map< Key, T, fnv1a<usize>, 
+        ct_alloc_helper<N + N / 2>::template alloc_type,
+        ct_alloc_helper<N>::template alloc_type >;
 } // namespace hsd

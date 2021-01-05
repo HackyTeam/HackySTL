@@ -1,51 +1,25 @@
-#include "../../cpp/UnorderedMap.hpp"
-#include "../../cpp/HeapArray.hpp"
+#include <UnorderedMap.hpp>
+#include <HeapArray.hpp>
 #include <stdio.h>
 
-template <typename T>
-using hsdCTAlloc = hsd::constexpr_allocator<T, 20>;
-
-#if defined(HSD_COMPILER_CLANG)
-
+template <hsd::usize N>
 constexpr auto gen_map()
 {
-    hsd::unordered_map<const char*, int, hsd::fnv1a<size_t>, hsdCTAlloc > map;
+    hsd::static_umap< hsd::i32, hsd::i32, N > map{};
 
-    map.emplace("1", 0);
-    map.emplace("2", 1);
-    map.emplace("3", 2);
-    map.emplace("4", 3);
-    map.emplace("5", 4);
-    map.emplace("6", 5);
-    map.emplace("7", 6);
-    map.emplace("8", 7);
-    map.emplace("9", 8);
+    for(hsd::i32 i = 0; i < N; i++)
+        map.emplace(i * i, i);
 
     return map;
 }
 
-#endif
-
 int main()
 {
     hsd::heap_array<hsd::uchar, 3072> buf{};
-    hsd::buffered_allocator<hsd::uchar> alloc{buf.data(), 3072};
-    hsd::unordered_map<int, int, hsd::fnv1a<size_t>, hsd::buffered_allocator> map{alloc};
+    hsd::buffered_umap<hsd::i32, hsd::i32> map{{buf.data(), 3072}};
 
-    map.emplace(1, 1);        
-    map.emplace(2, 2);
-    map.emplace(3, 3);
-    map.emplace(4, 4);
-    map.emplace(5, 5);
-    map.emplace(6, 6);
-    map.emplace(7, 7);
-    map.emplace(8, 8);
-    map.emplace(9, 9);
-    map.emplace(10, 10);
-    map.emplace(11, 11);
-    map.emplace(12, 12);
-    map.emplace(13, 13);
-    map.emplace(14, 14);
+    for(hsd::i32 i = 1; i <= 14; i++)
+        map.emplace(i, i);
 
     printf("%d\n========\n", map[8]);
     printf("%d\n========\n", map[9]);
@@ -53,15 +27,10 @@ int main()
     for(auto& _it : map)
         printf("%d\n", _it.first);
 
-    puts("===============================");
-    alloc.print_buffer();
+    constexpr auto map2 = gen_map<10>();
 
-    #if defined(HSD_COMPILER_CLANG)
-    constexpr auto map2 = gen_map();
-
-    printf("========\n%d\n========\n", map2["2"]);
+    printf("========\n%d\n========\n", map2[49]);
 
     for(auto& _it : map2)
-        printf("%s\n", _it.first);
-    #endif
+        printf("%d\n", _it.first);
 }

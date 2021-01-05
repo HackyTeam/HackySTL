@@ -17,16 +17,8 @@ namespace hsd
             : first{first_val}, second{second_val}
         {}
 
-        constexpr pair(T1&& first_val, const T2& second_val)
-            : first{move(first_val)}, second{second_val}
-        {}
-
-        constexpr pair(const T1& first_val, T2&& second_val)
-            : first{first_val}, second{move(second_val)}
-        {}
-
         constexpr pair(T1&& first_val, T2&& second_val)
-            : first{move(first_val)}, second{move(second_val)}
+            : first{forward<T1>(first_val)}, second{forward<T2>(second_val)}
         {}
 
         constexpr pair(const pair& other)
@@ -34,7 +26,7 @@ namespace hsd
         {}
         
         constexpr pair(pair&& other)
-            : first{move(other.first)}, second{move(other.second)}
+            : first{forward<T1>(other.first)}, second{forward<T2>(other.second)}
         {}
 
         constexpr pair& operator=(const pair& rhs)
@@ -46,8 +38,8 @@ namespace hsd
         
         constexpr pair& operator=(pair&& rhs)
         {
-            first = move(rhs.first);
-            second = move(rhs.second);
+            first = forward<T1>(rhs.first);
+            second = forward<T2>(rhs.second);
             return *this;
         }
 

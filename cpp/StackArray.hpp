@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdexcept>
-
+#include "Result.hpp"
 #include "Utility.hpp"
 
 namespace hsd
@@ -23,24 +22,26 @@ namespace hsd
             return _array[index];
         }
 
-        constexpr T& at(usize index)
+        constexpr auto at(usize index)
+            -> Result< reference<T>, runtime_error >
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                return runtime_error{"Tried to access elements out of bounds"};
             }
 
-            return _array[index];
+            return {_array[index]};
         }
 
-        constexpr T& at(usize index) const
+        constexpr auto at(usize index) const
+            -> Result< reference<const T>, runtime_error >
         {
             if(index >= N)
             {
-                throw std::out_of_range("");
+                return runtime_error{"Tried to access elements out of bounds"};
             }
 
-            return _array[index];
+            return {_array[index]};
         }
 
         template < usize U, usize L >
@@ -52,11 +53,6 @@ namespace hsd
             {
                 return stack_array<T, L - U>{_array[Ints]...};
             }(make_index_sequence<L - U>{});
-        }
-
-        constexpr usize size()
-        {
-            return N;
         }
 
         constexpr usize size() const

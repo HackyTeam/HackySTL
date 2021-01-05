@@ -59,7 +59,7 @@ namespace hsd
     }
 
     template <typename F, typename... Args, 
-        typename Op = decltype(&hsd::rev_ref_t<F>::operator())>
+        typename Op = decltype(&hsd::remove_reference_t<F>::operator())>
     defaultcall_t(F&&, Args&&...)
         -> defaultcall_t<typename hsd::helper::as_function<Op>::type, F>;
 

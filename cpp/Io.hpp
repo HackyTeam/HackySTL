@@ -17,7 +17,8 @@ namespace hsd
             fflush(stderr);
         }
 
-        static sstream& read_line()
+        static auto read_line()
+            -> Result< reference<sstream>, runtime_error >
         {
             do
             {
@@ -25,10 +26,12 @@ namespace hsd
                 char* _str = fgets(_u8io_buf.data(), 4096, stdin);
 
                 if(_str == nullptr)
-                    throw std::runtime_error("Input requirements not satisfied");
+                {
+                    return runtime_error{"Input requirements not satisfied"};
+                }
             }while(_u8io_buf.c_str()[0] == '\n');
 
-            return _u8io_buf;
+            return {_u8io_buf};
         }
 
         static sstream& read()
@@ -42,7 +45,8 @@ namespace hsd
             return _u8io_buf;
         }
 
-        static wsstream& wread_line()
+        static auto wread_line()
+            -> Result< reference<wsstream>, runtime_error >
         {
             do
             {
@@ -50,10 +54,12 @@ namespace hsd
                 wchar* _str = fgetws(_wio_buf.data(), 4096, stdin);
 
                 if(_str == nullptr)
-                    throw std::runtime_error("Input requirements not satisfied");
+                {
+                    return runtime_error{"Input requirements not satisfied"};
+                }
             }while(_wio_buf.c_str()[0] == '\n');
 
-            return _wio_buf;
+            return {_wio_buf};
         }
 
         static wsstream& wread()
@@ -72,18 +78,18 @@ namespace hsd
         {
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
-            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
 
-            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
             constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf.first[sizeof...(Args)].first, _len
+                _fmt_buf[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args), ...);
+                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
+                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<_last>();
@@ -94,18 +100,18 @@ namespace hsd
         {
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
-            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
+            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
 
-            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
             constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf.first[sizeof...(Args)].first, _len
+                _fmt_buf[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, stderr), ...);
+                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
+                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args, stderr), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<_last>(stderr);
@@ -160,7 +166,10 @@ namespace hsd
             _file_mode = open_option;
             
             if(_file_buf == nullptr)
-                throw std::runtime_error("File not found");
+            {
+                hsd_fputs_check(stderr, "File not found");
+                abort();
+            }
         }
 
         ~file()
@@ -168,7 +177,7 @@ namespace hsd
             fclose(_file_buf);
         }
 
-        void flush()
+        Result< void, runtime_error > flush()
         {
             if(only_read())
             {
@@ -176,97 +185,100 @@ namespace hsd
             }
             else
             {
-                throw std::runtime_error("Cannot flush in write or read-write mode");
+                return runtime_error{"Cannot flush in write or read-write mode"};
             }
+
+            return {};
         }
 
-        sstream& read_line()
+        Result< reference<sstream>, runtime_error > read_line()
         {
             _u8io_buf.reset_data();
             
             if(only_write())
             {
-                throw std::runtime_error("Cannot read file. It is in write mode");
+                return runtime_error{"Cannot read file. It is in write mode"};
             }
             if(fgets(_u8io_buf.data(), 4096, _file_buf) == nullptr)
             { 
                 _u8io_buf.reset_data();
             }
             
-            return _u8io_buf;
+            return {_u8io_buf};
         }
 
-        wsstream& wread_line()
+        Result< reference<wsstream>, runtime_error > wread_line()
         {
             _wio_buf.reset_data();
             
             if(only_write())
             {
-                throw std::runtime_error("Cannot read file. It is in write mode");
+                return runtime_error{"Cannot read file. It is in write mode"};
             }
             if(fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
             { 
                 _wio_buf.reset_data();
             }
             
-            return _wio_buf;
+            return {_wio_buf};
         }
 
-        sstream& read()
+        Result< reference<sstream>, runtime_error > read()
         {
             _u8io_buf.reset_data();
 
             if(only_write())
             {
-                throw std::runtime_error("Cannot read file. It is in write mode");
+                return runtime_error{"Cannot read file. It is in write mode"};
             }
             if(fscanf(_file_buf, "%s", _u8io_buf.data()) == EOF)
             {
                 _u8io_buf.reset_data();
             }
             
-            return _u8io_buf;
+            return {_u8io_buf};
         }
 
-        wsstream& wread()
+        Result< reference<wsstream>, runtime_error > wread()
         {
             _wio_buf.reset_data();
 
             if(only_write())
             {
-                throw std::runtime_error("Cannot read file. It is in write mode");
+                return runtime_error{"Cannot read file. It is in write mode"};
             }
             if(fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
             {
                 _wio_buf.reset_data();
             }
 
-            return _wio_buf;
+            return {_wio_buf};
         }
 
         template < basic_string_literal fmt, typename... Args >
-        void print(Args&&... args)
+        Result< void, runtime_error > print(Args&&... args)
         {
             if(only_read())
-                throw std::runtime_error("Cannot write file. It is in read mode");
+                return runtime_error{"Cannot write file. It is in read mode"};
 
             using char_type = decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
-            static_assert(_fmt_buf.second == sizeof...(Args), "Arguments don\'t match");
+            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
 
-            constexpr auto _len = _fmt_buf.first[sizeof...(Args)].second;
+            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
             constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf.first[sizeof...(Args)].first, _len
+                _fmt_buf[sizeof...(Args)].first, _len
             };
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf.first[Ints].second + 1 >{
-                    _fmt_buf.first[Ints].first, _fmt_buf.first[Ints].second}>(args, _file_buf), ...);
+                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
+                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args, _file_buf), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<_last>(_file_buf);
+            return {};
         }
     };
 } // namespace hsd

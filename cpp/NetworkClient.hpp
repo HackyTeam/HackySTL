@@ -218,7 +218,7 @@ namespace hsd
                     return _sock;
                 }
 
-                void switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
+                int switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
                 {
                     close();
                     _protocol = protocol;
@@ -229,7 +229,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        return connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                     }
                     else
                     {
@@ -237,8 +237,10 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        return connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                     }
+
+                    return -1;
                 }
             };
         } // namespace client_detail
@@ -261,6 +263,11 @@ namespace hsd
             client(net::protocol_type protocol, u16 port, const char* ip_addr)
                 : _sock{protocol, port, ip_addr}
             {}
+
+            bool switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
+            {
+                return _sock.switch_to(protocol, port, ip_addr) != -1;
+            }
 
             hsd::pair< hsd::sstream&, net::received_state > receive()
             {

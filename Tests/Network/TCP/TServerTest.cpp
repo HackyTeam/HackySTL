@@ -1,8 +1,8 @@
-#include "../../../cpp/NetworkServer.hpp"
+#include <NetworkServer.hpp>
 
 int main()
 {
-    hsd::tcp::server server{hsd::net::protocol_type::ipv4, 53000, "0.0.0.0"};
+    hsd::tcp::server server{hsd::net::protocol_type::ipv4, 48000, "0.0.0.0"};
 
     while(true)
     {
@@ -10,7 +10,7 @@ int main()
         
         if(code == hsd::net::received_state::ok)
         {
-            hsd::io::print<"CLIENT> {}\n">(buf.data());
+            hsd::io::print<"CLIENT> {}">(buf.data());
             server.respond<"Good\n">();
         }
         

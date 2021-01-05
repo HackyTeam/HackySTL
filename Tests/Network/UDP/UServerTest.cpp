@@ -1,4 +1,4 @@
-#include "../../../cpp/NetworkServer.hpp"
+#include <NetworkServer.hpp>
 
 int main()
 {
@@ -10,11 +10,12 @@ int main()
         
         if(code == hsd::net::received_state::ok)
         {
-            hsd::io::print<"CLIENT> {}\n">(buf.data());
+            hsd::io::print<"CLIENT> {}">(buf.data());
             server.respond<"Good\n">();
         }
         
-        if(buf.to_string() == "exit")
+        // because newline will be sent as well
+        if(buf.to_string() == "exit\n")
             break;
 
         if(code != hsd::net::received_state::ok)

@@ -199,7 +199,7 @@ namespace hsd
                 HSD_CONSTEXPR counter()
                 requires (std::is_default_constructible_v<Allocator<usize>>)
                 {
-                    this->_data = this->allocate(1);
+                    this->_data = this->allocate(1).unwrap();
                     *this->_data = 1;
                 }
 
@@ -207,7 +207,7 @@ namespace hsd
                 requires (std::is_copy_constructible_v<Allocator<usize>>)
                     : Allocator<usize>(alloc)
                 {
-                    this->_data = this->allocate(1);
+                    this->_data = this->allocate(1).unwrap();
                     *this->_data = 1;
                 }
 
@@ -451,8 +451,8 @@ namespace hsd
         make_shared(Args&&... args)
         {
             Allocator<remove_array_t<T>> _alloc;
-            auto* _ptr = _alloc.allocate(1);
-            std::construct_at(_ptr, forward<Args>(args)...);
+            auto* _ptr = _alloc.allocate(1).unwrap();
+            construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr);
         }
 
@@ -460,8 +460,8 @@ namespace hsd
         static HSD_CONSTEXPR typename MakeShr<T, Allocator>::single_object 
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
-            auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1);
-            std::construct_at(_ptr, forward<Args>(args)...);
+            auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
+            construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr, static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
         }
 
@@ -471,7 +471,7 @@ namespace hsd
         make_shared(usize size)
         {
             Allocator<remove_array_t<T>> _alloc;
-            auto* _ptr = _alloc.allocate(size);
+            auto* _ptr = _alloc.allocate(size).unwrap();
             return shared_ptr<T, Allocator>(_ptr, size);
         }
 

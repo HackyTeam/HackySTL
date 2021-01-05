@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../../cpp/IntegerSequence.hpp"
+#include <IntegerSequence.hpp>
 
 static void print(size_t S)
 {

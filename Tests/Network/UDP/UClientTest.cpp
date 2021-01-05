@@ -1,13 +1,13 @@
-#include "../../../cpp/NetworkClient.hpp"
+#include <NetworkClient.hpp>
 
 int main()
 {
-    hsd::udp::client client{hsd::net::protocol_type::ipv4, 54000, "192.168.0.108"};
+    hsd::udp::client client{hsd::net::protocol_type::ipv4, 54000, "192.168.0.105"};
 
     while(true)
     {
         hsd::io::print<"> ">();
-        auto state = client.respond<"{}">(hsd::io::read_line().to_string());
+        auto state = client.respond<"{}">(hsd::io::read_line().expect().to_string());
 
         if(state == hsd::net::received_state::err)
             continue;

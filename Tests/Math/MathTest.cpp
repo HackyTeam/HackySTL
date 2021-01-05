@@ -1,9 +1,6 @@
-#include "../../cpp/Math.hpp"
-#define FMT_HEADER_ONLY
-
+#include <Math.hpp>
 #include <stdio.h>
-#include <numeric>
-#include "../../cpp/Io.hpp"
+#include <Io.hpp>
 
 int main()
 {

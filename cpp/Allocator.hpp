@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Result.hpp"
 #include "Math.hpp"
 #include "StackArray.hpp"
 #include <string.h>
@@ -7,23 +8,25 @@
 
 namespace hsd
 {
-    class bad_alloc
-        : public std::exception
+    namespace allocator_detail
     {
-        virtual const char* what() const noexcept override
+        class allocator_error
         {
-            return "Bad length for Allocation";
-        }
-    };
+        private:
+            const char* _err = nullptr;
 
-    class bad_dealloc
-        : public std::exception
-    {
-        virtual const char* what() const noexcept override
-        {
-            return "Bad length for Deallocation";
-        }
-    };
+        public:
+            HSD_CONSTEXPR allocator_error(const char* error)
+                : _err{error}
+            {}
+
+            const char* operator()() const
+            {
+                return _err;
+            }
+        };
+    } // namespace allocator_detail
+    
 
     template <typename T>
     class buffered_allocator
@@ -50,30 +53,31 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        constexpr buffered_allocator(uchar* buf, usize size)
+        HSD_CONSTEXPR buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
         {}
 
         template <typename U>
-        constexpr buffered_allocator(const buffered_allocator<U>& other)
+        HSD_CONSTEXPR buffered_allocator(const buffered_allocator<U>& other)
             : _buf{other._buf}, _size{other._size}
         {}
         
         template <typename U>
-        constexpr buffered_allocator(buffered_allocator<U>&& other)
+        HSD_CONSTEXPR buffered_allocator(buffered_allocator<U>&& other)
         {
             _buf = exchange(other._buf, nullptr);
             _size = exchange(other._size, 0u);
         }
 
         template <typename U>
-        constexpr buffered_allocator& operator=(const buffered_allocator<U>& other)
+        HSD_CONSTEXPR buffered_allocator& operator=(const buffered_allocator<U>& other)
         {
             _buf = other._buf;
             _size = other._size;
         }
 
-        [[nodiscard]] constexpr T* allocate(usize size)
+        [[nodiscard]] constexpr auto allocate(usize size)
+            -> Result< T*, allocator_detail::allocator_error >
         {
             auto* _block_ptr = reinterpret_cast<block*>(_buf);
             auto* _block_end = reinterpret_cast<block*>(_buf + _size - sizeof(block));
@@ -117,28 +121,42 @@ namespace hsd
                 else
                 {
                     _free_size = 0u;
-                    _block_back = _block_ptr;
+                    _block_back = reinterpret_cast<block*>(
+                        reinterpret_cast<uchar*>(_block_ptr) + 
+                        _block_ptr->size + sizeof(block)
+                    );
                 }
                 
-                _block_ptr = reinterpret_cast<block *>(
+                _block_ptr = reinterpret_cast<block*>(
                     reinterpret_cast<uchar*>(_block_ptr) + 
                     _block_ptr->size + sizeof(block)
                 );
             }
 
-            return nullptr;
+            return allocator_detail::allocator_error{"Insufficient memory"};
         }
 
-        void deallocate(T* ptr, usize)
+        auto deallocate(T* ptr, usize)
+            -> Result< void, allocator_detail::allocator_error >
         {
             if(ptr != nullptr)
             {
-                auto* _block_ptr = reinterpret_cast<block*>(
-                    reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
-                );
+                if(reinterpret_cast<uchar*>(ptr) >= _buf && 
+                    reinterpret_cast<uchar*>(ptr) < _buf + _size)
+                {
+                    auto* _block_ptr = reinterpret_cast<block*>(
+                        reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
+                    );
 
-                _block_ptr->in_use = false;
+                    _block_ptr->in_use = false;
+                }
+                else
+                {
+                    return allocator_detail::allocator_error{"Pointer out of bounds"};
+                }
             }
+
+            return {};
         }
 
         void print_buffer() const
@@ -166,20 +184,21 @@ namespace hsd
     public:
         using pointer_type = T*;
         using value_type = T;
-        allocator() = default;
-        constexpr allocator(const allocator&) = delete;
-        constexpr allocator(allocator&&) = delete;
+        HSD_CONSTEXPR allocator() = default;
+        HSD_CONSTEXPR allocator(const allocator&) = delete;
+        HSD_CONSTEXPR allocator(allocator&&) = delete;
 
         template <typename U>
-        constexpr allocator(const allocator<U>&) = delete;
+        HSD_CONSTEXPR allocator(const allocator<U>&) = delete;
         template <typename U>
-        constexpr allocator(allocator<U>&&) = delete;
+        HSD_CONSTEXPR allocator(allocator<U>&&) = delete;
 
-        [[nodiscard]] constexpr auto* allocate(usize size)
+        [[nodiscard]] inline auto allocate(usize size)
+            -> Result< T*, allocator_detail::allocator_error >
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw bad_alloc();
+                return allocator_detail::allocator_error{"Bad length for allocation"};
             }
             else
             {
@@ -191,11 +210,12 @@ namespace hsd
             }
         }
 
-        constexpr void deallocate(pointer_type ptr, usize size)
+        inline auto deallocate(pointer_type ptr, usize size)
+            -> Result< void, allocator_detail::allocator_error >
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                throw bad_dealloc();
+                return allocator_detail::allocator_error{"Bad length for deallocation"};
             }
             else
             {
@@ -204,6 +224,8 @@ namespace hsd
                 #else
                 ::operator delete(ptr, std::align_val_t(alignof(T)));
                 #endif
+
+                return {};
             }
         }
     };
@@ -219,16 +241,13 @@ namespace hsd
         using pointer_type = data_type;
         using value_type = T;
 
-        constexpr_allocator() = default;
-        constexpr_allocator(const constexpr_allocator&) = delete;
-        constexpr_allocator(constexpr_allocator&&) = delete;
+        HSD_CONSTEXPR constexpr_allocator() = default;
+        HSD_CONSTEXPR constexpr_allocator(const constexpr_allocator&) = delete;
+        HSD_CONSTEXPR constexpr_allocator(constexpr_allocator&&) = delete;
 
-        [[nodiscard]] constexpr auto& allocate(usize)
+        static constexpr usize limit()
         {
-            return _data;
+            return MaxSize;
         }
-
-        constexpr void deallocate(const data_type&, usize) {}
-        constexpr void deallocate(const T*, usize) {}
     };
 } // mamespace hsd

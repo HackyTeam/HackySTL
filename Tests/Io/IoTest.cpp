@@ -1,4 +1,4 @@
-#include "../../cpp/Io.hpp"
+#include <Io.hpp>
 
 // custom struct for printing
 struct test 
@@ -60,16 +60,16 @@ int main()
     
     hsd::io::err_print<L"{}\n">(test{});
     hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});
-    auto t = hsd::io::read_line().parse<test>();
+    auto t = hsd::io::read_line().unwrap().parse<test>();
     
-    hsd::io::read_line().set_data(x, y, z);
+    hsd::io::read_line().unwrap().set_data(x, y, z).unwrap();
     hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
     auto file = hsd::file(
-        "/home/catalin/Desktop/Programming"
+        "/catalin/Desktop/Programming"
         "/HackySTL/Tests/Io/test.txt",
         hsd::file::options::text::read
     );
     
-    auto c = file.read_line().parse<hsd::i32>();
+    auto c = file.read_line().unwrap().parse<hsd::i32>();
 }

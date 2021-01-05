@@ -1,9 +1,6 @@
-#define HSD_DISABLE_VECTOR_CONSTEXPR // Remove this unless not working without this
-#include "../../cpp/Vector.hpp"
-
+#include <Vector.hpp>
 #include <cstdio>
 #include <iterator>
-#include <boost/pool/pool.hpp>
 
 struct S
 {
@@ -56,16 +53,9 @@ void test(hsd::vector<T>&&)
 
 }
 
-#if defined(HSD_COMPILER_CLANG)
-
-template <typename T>
-class hsdCTAlloc :
-    public hsd::constexpr_allocator<T, 100>
-{};
-
 constexpr auto make_constexpr_vec()
 {
-    hsd::vector< int, hsdCTAlloc > v;
+    hsd::static_vector<int, 20> v;
     v.emplace_back(1);
     v.emplace_back(2);
     v.emplace_back(3);
@@ -78,10 +68,7 @@ constexpr auto make_constexpr_vec()
     v.emplace_back(10);
 
     return v;
-
 }
-
-#endif
 
 int main()
 {
@@ -93,14 +80,12 @@ int main()
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
         // let's test constexpr vector (it works)
-        #if defined(HSD_COMPILER_CLANG)
-            constexpr auto v = make_constexpr_vec();
+        constexpr auto v = make_constexpr_vec();
 
-            for(auto& val : v)
-                printf("%d\n", val);
+        for(auto& val : v)
+            printf("%d\n", val);
 
-            printf("==========\n");
-        #endif
+        printf("==========\n");
     }
 
     {

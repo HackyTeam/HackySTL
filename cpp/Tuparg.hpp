@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types.hpp"
-#include "Utility.hpp"
+#include "Result.hpp"
 #include <cassert>
 
 namespace hsd {
@@ -10,7 +10,7 @@ namespace hsd {
         void* addr;
 
         template <typename X>
-        X& getnext() {
+        X& getnext_unsafe() {
             assert(addr);
 
             X* p = reinterpret_cast<X*>(addr);
@@ -21,6 +21,13 @@ namespace hsd {
             if (* ++layout == 0)
                 addr = nullptr;
             return *p;
+        }
+
+        template <typename X>
+        Result<reference<X>, runtime_error> getnext() {
+            if (!addr)
+                return runtime_error("Extracting value past end of the container");
+            return Result<reference<X>, runtime_error>(getnext_unsafe<X>(), ok_tag_t{});
         }
 
         bool operator==(const xtuple_iterator& o) const {

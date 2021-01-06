@@ -78,6 +78,10 @@ namespace hsd
         }
     };
 
+    // Tags for result construction
+    struct ok_tag_t {};
+    struct err_tag_t {};
+
     template < typename Ok, typename Err >
     class Result
     {
@@ -94,17 +98,17 @@ namespace hsd
         HSD_CONSTEXPR Result& operator=(const Result&) = delete;
         HSD_CONSTEXPR Result& operator=(Result&&) = delete;
 
-        HSD_CONSTEXPR Result(const Ok& value)
+        HSD_CONSTEXPR Result(const Ok& value, ok_tag_t = {})
             : _ok_data{value}, _initialized{true}
         {}
 
-        HSD_CONSTEXPR Result(Ok&& value)
+        HSD_CONSTEXPR Result(Ok&& value, ok_tag_t = {})
             : _ok_data{move(value)}, _initialized{true}
         {}
 
         template <typename T>
         requires (std::is_convertible_v<T, Err>)
-        HSD_CONSTEXPR Result(T&& value)
+        HSD_CONSTEXPR Result(T&& value, err_tag_t = {})
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 
@@ -395,13 +399,13 @@ namespace hsd
         constexpr void unwrap_or_default() = delete;
         constexpr void unwrap_or() = delete;
 
-        HSD_CONSTEXPR Result()
+        HSD_CONSTEXPR Result(ok_tag_t = {})
             : _initialized{true}
         {}
 
         template <typename T>
         requires (std::is_convertible_v<T, Err>)
-        HSD_CONSTEXPR Result(T&& value)
+        HSD_CONSTEXPR Result(T&& value, err_tag_t = {})
             : _err_data{forward<Err>(value)}, _initialized{false}
         {}
 

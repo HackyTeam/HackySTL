@@ -1,7 +1,9 @@
 #include "Printf.hpp"
 
 #include <cstdio>
-#include <cstring>
+
+#include "String.hpp"
+#include "Io.hpp"
 
 using namespace hsd;
 Result<void, runtime_error> hsd::xvprintf(const char* fmt, xtuple_iterator tbegin, xtuple_iterator tend) noexcept {
@@ -19,17 +21,18 @@ Result<void, runtime_error> hsd::xvprintf(const char* fmt, xtuple_iterator tbegi
             }
             switch (fch) {
                 case 'd': {
-                    int value = tbegin.getnext<int>();
-                    std::printf("%d", value);
+                    int value = tbegin.getnext<int>().unwrap();
+                    auto s = string::to_string(value);
+                    std::fwrite(s.data(), 1, s.size(), stdout);
                     break;
                 }
                 case 's': {
-                    auto value = tbegin.getnext<const char*>();
-                    std::fwrite(value, 1, std::strlen(value), stdout);
+                    auto value = tbegin.getnext<const char*>().unwrap();
+                    std::fwrite(value, 1, cstring::length(value), stdout);
                     break;
                 }
                 case 'c': {
-                    char value = tbegin.getnext<char>();
+                    char value = tbegin.getnext<char>().unwrap();
                     std::putchar(value);
                     break;
                 }

@@ -250,4 +250,4 @@ namespace hsd
             return MaxSize;
         }
     };
-} // mamespace hsd
+} // namespace hsd

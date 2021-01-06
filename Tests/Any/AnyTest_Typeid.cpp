@@ -26,8 +26,7 @@ int main()
     std::cout << a.type().name() << ": " << a.cast_to<bool>().unwrap() << '\n';
  
     // bad cast
-    a = 1;
-    std::cout << a.cast_to<float>().unwrap() << '\n';
+    //std::cout << a.cast_to<float>().unwrap() << '\n';
  
     // has value
     a = 1;

@@ -4,14 +4,16 @@
 struct test 
 {
     hsd::i32 a = 1, b = 0;
-    const char* c = "sample text";
+    char c[30] = "sample text";
     hsd::f64 d = 4.2;
 
     test() = default;
 
     test(hsd::i32 first, hsd::i32 second, const char* third, hsd::f64 forth)
-        : a{first}, b{second}, c{third}, d{forth}
-    {}
+        : a{first}, b{second}, d{forth}
+    {
+        hsd::cstring::copy(c, third);
+    }
 };
 
 template <hsd::string_literal str>
@@ -65,11 +67,7 @@ int main()
     hsd::io::read_line().unwrap().set_data(x, y, z).unwrap();
     hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
-    auto file = hsd::file(
-        "/catalin/Desktop/Programming"
-        "/HackySTL/Tests/Io/test.txt",
-        hsd::file::options::text::read
-    );
+    auto file = hsd::file("test.txt", hsd::file::options::text::read);
     
     auto c = file.read_line().unwrap().parse<hsd::i32>();
 }

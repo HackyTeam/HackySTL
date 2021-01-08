@@ -437,13 +437,13 @@ namespace hsd
         }
 
         template <string_literal str>
-        static i32 _write(isize val, pair<char*, usize> dest)
+        static i32 _write(long val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, basic_string_literal(str, "%zd").data, val);
         }
 
         template <string_literal str>
-        static i32 _write(usize val, pair<char*, usize> dest)
+        static i32 _write(ulong val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, basic_string_literal(str, "%zu").data, val);
         }
@@ -593,13 +593,13 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static i32 _write(isize val, pair<wchar*, usize> dest)
+        static i32 _write(long val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, basic_string_literal(str, L"%zd").data, val);
         }
 
         template <wstring_literal str>
-        static i32 _write(usize val, pair<wchar*, usize> dest)
+        static i32 _write(ulong val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, basic_string_literal(str, L"%zu").data, val);
         }

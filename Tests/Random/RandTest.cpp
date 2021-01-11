@@ -7,6 +7,6 @@ int main()
 
     for(hsd::u16 i = 0; i < 65000; i++)
     {
-        hsd::io::print<"{}\n">(engine.generate(1, 4).unwrap());
+        hsd::io::print<L"{}\n">(engine.generate(1, 4).unwrap());
     }
 }

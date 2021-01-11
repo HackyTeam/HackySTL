@@ -1,8 +1,5 @@
 #include <Time.hpp>
 #include <Io.hpp>
-
-#define FMT_HEADER_ONLY
-#include <fmt/format.h>
 #include <iostream>
 
 int main()
@@ -32,12 +29,6 @@ int main()
     hsd::io::print<"std IO elapsed time: {}ns\n">(
         c1.restart().to_microseconds() / (iterations/ 1000));
     c1.restart();
-
-    for(hsd::u32 i = 0; i < iterations; i++)
-        fmt::print("Hello World {} a {}\r", 123231u, 4.232f);
-
-    hsd::io::print<"fmt IO elapsed time: {}ns\n">(
-        c1.restart().to_microseconds() / (iterations / 1000));
 
     return 0;
 }

@@ -402,6 +402,21 @@ namespace hsd
             }
         }
 
+        constexpr auto erase(const_iterator pos)
+            -> Result<iterator, bad_access>
+        {
+            if(pos < begin() || pos > end())
+                return bad_access{};
+
+            usize _current_pos = static_cast<usize>(pos - begin());
+
+            for(usize _index = _current_pos; _index < _size - 1; _index++)
+                this->_data[_index] = move(this->_data[_index + 1]);
+
+            _size--;
+            return begin() + _current_pos;
+        }
+
         constexpr CharT& front()
         {
             return _data[0];

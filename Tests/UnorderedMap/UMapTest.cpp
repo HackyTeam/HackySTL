@@ -13,10 +13,36 @@ constexpr auto gen_map()
     return map;
 }
 
+static auto check_erase()
+{
+    hsd::unordered_map<hsd::i32, hsd::i32> map;
+
+    for(hsd::i32 i = 0; i < 20; i++)
+        map.emplace(i * i, i);
+
+    for(auto iter = map.begin(); iter != map.end();)
+    {
+        if(iter->second == 12)
+        {
+            iter = map.erase(iter).unwrap();
+        }
+        else
+        {
+            printf("%d %d\n", iter->first, iter->second);
+            iter++;
+        }
+    }
+
+    return map;
+}
+
 int main()
 {
     hsd::heap_array<hsd::uchar, 3072> buf{};
     hsd::buffered_umap<hsd::i32, hsd::i32> map{{buf.data(), 3072}};
+
+    check_erase();
+    puts("============");
 
     for(hsd::i32 i = 1; i <= 14; i++)
         map.emplace(i, i);

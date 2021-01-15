@@ -23,6 +23,14 @@ namespace hsd
                 return "Tried to use an invalid key";
             }
         };
+
+        struct bad_access
+        {
+            const char* operator()() const
+            {
+                return "Tried to access an element out of bounds";
+            }
+        };
     } // namespace umap_detail
 
     template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
@@ -33,6 +41,7 @@ namespace hsd
     private:
         using ref_value = pair< typename Hasher::ResultType, usize >;
         using ref_vector = vector< ref_value, BucketAllocator >;
+        using bucket_iter = typename ref_vector::iterator;
 
         static constexpr f64 _limit_ratio = 0.75f;
         vector< ref_vector, BucketAllocator > _buckets;
@@ -65,6 +74,23 @@ namespace hsd
             }
 
             return {static_cast<usize>(-1), _index};
+        }
+
+        constexpr auto _get_iter(const Key& key)
+            -> Result< pair<bucket_iter, usize>, umap_detail::bad_access >
+        {
+            auto _key_hash = Hasher::get_hash(key);
+            usize _index = _key_hash % _buckets.size();
+
+            for(auto _val = _buckets[_index].begin(); _val != _buckets[_index].end(); _val++)
+            {
+                if(_key_hash == _val->first)
+                {
+                    return pair{_val, _index};
+                }
+            }
+
+            return umap_detail::bad_access{};
         }
 
     public:
@@ -308,6 +334,20 @@ namespace hsd
 
                 return {_data.end() - 1, true};
             }
+        }
+
+        constexpr auto erase(const_iterator pos)
+            -> Result<iterator, umap_detail::bad_access>
+        {
+            auto _result = _get_iter(pos->first);
+            
+            if(_result.is_ok() == false)
+                return umap_detail::bad_access{};
+            
+            // now .unwrap() should not fail
+            auto [_iter, _index] = _result.unwrap();
+            _buckets[_index].erase(_iter).unwrap(HSD_FUNCTION_NAME);
+            return _data.erase(pos).unwrap(HSD_FUNCTION_NAME);
         }
 
         constexpr void clear()

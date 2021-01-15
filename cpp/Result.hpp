@@ -142,6 +142,11 @@ namespace hsd
             }
         }
 
+        constexpr bool is_ok() const
+        {
+            return _initialized;
+        }
+
         constexpr decltype(auto) unwrap(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
@@ -407,6 +412,11 @@ namespace hsd
             {
                 _err_data.~Err();
             }
+        }
+        
+        constexpr bool is_ok() const
+        {
+            return _initialized;
         }
 
         constexpr void unwrap(

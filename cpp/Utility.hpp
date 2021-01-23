@@ -32,11 +32,11 @@ namespace hsd
     {
         if(std::is_constant_evaluated())
         {
-            (*ptr) = T{forward<Args>(args)...};
+            (*ptr) = T(forward<Args>(args)...);
         }
         else
         {
-            new (ptr) T{forward<Args>(args)...};
+            new (ptr) T(forward<Args>(args)...);
         }
     }
 

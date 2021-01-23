@@ -25,7 +25,11 @@ namespace hsd
 
 	#else
 		#define HSD_PLATFORM_UNKNOWN
+	#endif
 
+	#if defined(HSD_PLATFORM_LINUX) || defined(HSD_PLATFORM_BSD) || \
+		defined(HSD_PLATFORM_OSX) || defined(HSD_PLATFORM_UNIX)
+		#define HSD_PLATFORM_POSIX
 	#endif
 
 	#if defined(__GNUC__)

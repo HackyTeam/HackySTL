@@ -2,7 +2,7 @@
 
 int main()
 {
-    hsd::udp::server server{hsd::net::protocol_type::ipv4, 54000, "0.0.0.0"};
+    hsd::udp::server server{hsd::net::protocol_type::ipv4, 48000, "0.0.0.0"};
 
     while(true)
     {

@@ -115,6 +115,8 @@ namespace hsd
         {
         	for(; pos != 0; pos--)
         	{
+				auto _bdg_char = str[pos];
+
         		if(str[pos] == letter)
         			return &str[pos];
         	}

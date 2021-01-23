@@ -11,6 +11,7 @@
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
                 "-o",
+                "-lpthread",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
@@ -34,6 +35,7 @@
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
+                "-lpthread",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

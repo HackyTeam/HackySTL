@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
-#include "Tuple.hpp" // std::decay_t
+#include "Tuple.hpp"
 
 #include <pthread.h>
 #include <cstdlib>
@@ -58,7 +58,7 @@ namespace hsd
 			{
 				hsd::i32* ready;
 	
-				std::decay_t<F> func;
+				hsd::decay_t<F> func;
 				hsd::tuple<decay_t<Args>...> args;
 	
 				static void* enter_thread(void* arg) 
@@ -83,16 +83,16 @@ namespace hsd
 			while (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE));
 		}
 	
-		thread(const thread &) = delete;
-		thread &operator=(const thread &) = delete;
+		thread(const thread&) = delete;
+		thread& operator=(const thread&) = delete;
 	
-		thread(thread &&other) 
+		thread(thread&& other) 
 			:id_{0} 
 		{
 			swap(other); 
 		}
 	
-		thread &operator=(thread &&other) 
+		thread &operator=(thread&& other) 
 		{
 			swap(other); return *this; 
 		}

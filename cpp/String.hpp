@@ -6,11 +6,14 @@
 
 namespace hsd
 {
+    struct move_data_pointer {};
+
     template <typename CharT>
     class basic_string
     {
     private:
         using _str_utils = basic_cstring<CharT>;
+        static inline CharT _empty_str[1]{};
         CharT* _data = nullptr;
         usize _size = 0;
         usize _reserved_size = 1;
@@ -31,7 +34,7 @@ namespace hsd
             }
         };
 
-        HSD_CONSTEXPR void _reset()
+        inline void _reset()
         {
             delete[] _data;
             _data = nullptr;
@@ -41,73 +44,78 @@ namespace hsd
         using const_iterator = const CharT*;
         static constexpr usize npos = static_cast<usize>(-1);
 
-        HSD_CONSTEXPR basic_string()
-        {
-            _data = new CharT[1];
-            _data[0] = '\0';
-        }
+        inline basic_string() = default;
 
-        HSD_CONSTEXPR basic_string(usize size)
+        inline basic_string(usize size)
         {
-            _data = new CharT[size + 1];
-            _data[size] = '\0';
+            _data = new CharT[size + 1]{};
             _size = size;
             _reserved_size = _size;
         }
 
-        HSD_CONSTEXPR basic_string(const CharT* cstr)
+        inline basic_string(const CharT* cstr)
         {
             _size = _str_utils::length(cstr);
             _reserved_size = _size;
-            _data = new CharT[_size + 1];
+            _data = new CharT[_size + 1]{};
             _str_utils::copy(_data, cstr, _size);
-            _data[_size] = '\0';
         }
 
-        HSD_CONSTEXPR basic_string(const CharT* cstr, usize size)
+        inline basic_string(const CharT* cstr, usize size)
         {
             _size = size;
             _reserved_size = _size;
-            _data = new CharT[_size + 1];
+            _data = new CharT[_size + 1]{};
             _str_utils::copy(_data, cstr, _size);
-            _data[size] = '\0';
         }
 
-        HSD_CONSTEXPR basic_string(const basic_string& other)
+        inline basic_string(CharT* cstr, move_data_pointer)
+        {
+            _size = _str_utils::length(cstr);
+            _reserved_size = _size;
+            _data = cstr;
+        }
+
+        inline basic_string(CharT* cstr, 
+            usize size, move_data_pointer)
+        {
+            _size = size;
+            _reserved_size = _size;
+            _data = cstr;
+        }
+
+        inline basic_string(const basic_string& other)
         {
             _size = other._size;
             _reserved_size = other._reserved_size;
-            _data = new CharT[_reserved_size + 1];
+            _data = new CharT[_reserved_size + 1]{};
             _str_utils::copy(_data, other._data, _size);
-            _data[_size] = '\0';
         }
 
-        constexpr basic_string(basic_string&& other)
+        inline basic_string(basic_string&& other)
         {
-            _size = other._size;
-            _reserved_size = other._reserved_size;
-            _data = other._data;
-            other._data = nullptr;
+            swap(_size, other._size);
+            swap(_reserved_size, other._reserved_size);
+            swap(_data, other._data);
         }
 
-        HSD_CONSTEXPR ~basic_string()
+        inline ~basic_string()
         {
             _reset();
         }
 
-        HSD_CONSTEXPR basic_string& operator=(const CharT* rhs)
+        inline basic_string& operator=(const CharT* rhs)
         {
             _reset();
             _size = _str_utils::length(rhs);
             _reserved_size = _size;
-            _data = new CharT[_size + 1];
+            _data = new CharT[_size + 1]{};
             _str_utils::copy(_data, rhs, _size);
-            _data[_size] = '\0';
             return *this;
         }
 
         template <typename RhsCharT> requires(std::is_convertible_v<RhsCharT, CharT>)
-        HSD_CONSTEXPR basic_string& operator=(const basic_string<RhsCharT>& rhs)
+        inline basic_string& operator=(const basic_string<RhsCharT>& rhs)
         {
             _reset();
             _size = rhs.size();
@@ -117,7 +125,7 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR basic_string& operator=(const basic_string& rhs)
+        inline basic_string& operator=(const basic_string& rhs)
         {
             _reset();
             _size = rhs.size();
@@ -126,32 +134,15 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR basic_string& operator=(basic_string&& rhs)
+        inline basic_string& operator=(basic_string&& rhs)
         {
-            _reset();
-            _size = rhs._size;
-            _reserved_size = rhs._reserved_size;
-            _data = rhs._data;
-            rhs._data = nullptr;
+            swap(_size, rhs._size);
+            swap(_reserved_size, rhs._reserved_size);
+            swap(_data, rhs._data);
             return *this;
         }
 
-        template <typename T>
-        static HSD_CONSTEXPR basic_string to_string(T val)
-        {
-            const CharT* _cstr_buf = _str_utils::to_string(val);
-            basic_string _str_buf = basic_string(_cstr_buf);
-            delete[] _cstr_buf;
-            return _str_buf;
-        }
-
-        template <typename T>
-        static constexpr basic_string<T>& to_string(basic_string<T>& val)
-        {
-            return val;
-        }
-
-        HSD_CONSTEXPR basic_string operator+(const basic_string& rhs)
+        inline basic_string operator+(const basic_string& rhs) const
         {
             basic_string _buf(_size + rhs._size);
             _str_utils::copy(_buf._data, _data, _size);
@@ -159,7 +150,7 @@ namespace hsd
             return _buf;
         }
 
-        HSD_CONSTEXPR basic_string operator+(const CharT* rhs)
+        inline basic_string operator+(const CharT* rhs) const
         {
             usize _rhs_len = _str_utils::length(rhs);
             basic_string _buf(_size + _rhs_len);
@@ -168,7 +159,7 @@ namespace hsd
             return _buf;
         }
 
-        HSD_CONSTEXPR friend basic_string operator+(const CharT* lhs, const basic_string& rhs)
+        inline friend basic_string operator+(const CharT* lhs, const basic_string& rhs)
         {
             usize _lhs_len = _str_utils::length(lhs);
             basic_string _buf(rhs._size + _lhs_len);
@@ -177,7 +168,7 @@ namespace hsd
             return _buf;
         }
 
-        HSD_CONSTEXPR basic_string& operator+=(const basic_string& rhs)
+        inline basic_string& operator+=(const basic_string& rhs)
         {
             if(_reserved_size <= _size + rhs._size)
             {
@@ -194,7 +185,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR basic_string& operator+=(const CharT* rhs)
+        inline basic_string& operator+=(const CharT* rhs)
         {
             usize _rhs_len = _str_utils::length(rhs);
 
@@ -213,12 +204,17 @@ namespace hsd
             }
         }
 
-        constexpr CharT& operator[](usize index)
+        inline CharT& operator[](usize index)
         {
             return _data[index];
         }
 
-        constexpr bool operator==(const basic_string& rhs)
+        inline const CharT& operator[](usize index) const
+        {
+            return _data[index];
+        }
+
+        inline bool operator==(const basic_string& rhs) const
         {
             return _str_utils::compare(
                 _data, rhs._data, 
@@ -226,12 +222,12 @@ namespace hsd
             ) == 0;
         }
 
-        constexpr bool operator!=(const basic_string& rhs)
+        inline bool operator!=(const basic_string& rhs) const
         {
             return !operator==(rhs);
         }
 
-        constexpr bool operator<(const basic_string& rhs)
+        inline bool operator<(const basic_string& rhs) const
         {
             return _str_utils::compare(
                 _data, rhs._data, 
@@ -239,23 +235,23 @@ namespace hsd
             ) == -1;
         }
 
-        constexpr bool operator<=(const basic_string& rhs)
+        inline bool operator<=(const basic_string& rhs) const
         {
             return operator<(rhs) && operator==(rhs);
         }
 
-        constexpr bool operator>(const basic_string& rhs)
+        inline bool operator>(const basic_string& rhs) const
         {
             return _str_utils::compare(_data, rhs._data, 
                 hsd::math::min(_size, rhs._size)) == 1;
         }
 
-        constexpr bool operator>=(const basic_string& rhs)
+        inline bool operator>=(const basic_string& rhs) const
         {
             return operator>(rhs) && operator==(rhs);
         }
 
-        constexpr auto at(usize index)
+        inline auto at(usize index)
             -> Result< reference<CharT>, bad_access >
         {
             if(index >= _size)
@@ -264,8 +260,8 @@ namespace hsd
             return {_data[index]};
         }
 
-        constexpr auto at(usize index) const
-            -> Result< const reference<CharT>, bad_access >
+        inline auto at(usize index) const
+            -> Result< reference<const CharT>, bad_access >
         {
             if(index >= _size)
                 return bad_access{};
@@ -273,13 +269,15 @@ namespace hsd
             return {_data[index]};
         }
 
-        constexpr usize find(const basic_string& str, usize pos = 0)
+        inline usize find(const basic_string& str, usize pos = 0) const
         {
             if(pos >= _size)
                 return npos;
             else
             {
-                const CharT* _find_addr = _str_utils::find(&_data[pos], str._data);
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], str._data
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -288,13 +286,15 @@ namespace hsd
             }
         }
 
-        constexpr usize find(const CharT* str, usize pos = 0)
+        inline usize find(const CharT* str, usize pos = 0) const
         {
             if(pos >= _size)
                 return npos;
             else
             {
-                const CharT* _find_addr = _str_utils::find(&_data[pos], str);
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], str
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -303,7 +303,7 @@ namespace hsd
             }
         }
 
-        constexpr usize find(CharT str, usize pos = 0)
+        inline usize find(CharT str, usize pos = 0) const
         {
             if(pos >= _size)
             {
@@ -311,7 +311,9 @@ namespace hsd
             }
             else
             {
-                const CharT* _find_addr = _str_utils::find(&_data[pos], str);
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], str
+                );
 
                 if(_find_addr == nullptr)
                 {
@@ -324,7 +326,7 @@ namespace hsd
             }
         }
 
-        constexpr usize rfind(const basic_string& str, usize pos = npos)
+        inline usize rfind(const basic_string& str, usize pos = npos) const
         {
             if(pos >= _size && pos != npos)
             {
@@ -332,7 +334,9 @@ namespace hsd
             }
             else if(pos == npos)
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str._data, _size);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str._data, _size
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -341,7 +345,9 @@ namespace hsd
             }
             else
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str._data, _size - pos);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str._data, _size - pos
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -350,7 +356,7 @@ namespace hsd
             }
         }
 
-        constexpr usize rfind(const CharT* str, usize pos = npos)
+        inline usize rfind(const CharT* str, usize pos = npos) const
         {
             if(pos >= _size && pos != npos)
             {
@@ -358,7 +364,9 @@ namespace hsd
             }
             else if(pos == npos)
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str, _size);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -367,7 +375,9 @@ namespace hsd
             }
             else
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str, _size - pos);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size - pos
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -376,7 +386,7 @@ namespace hsd
             }
         }
 
-        constexpr usize rfind(CharT str, usize pos = npos)
+        inline usize rfind(CharT str, usize pos = npos) const
         {
             if(pos >= _size && pos != npos)
             {
@@ -384,7 +394,9 @@ namespace hsd
             }
             else if(pos == npos)
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str, _size);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -393,7 +405,9 @@ namespace hsd
             }
             else
             {
-                const CharT* _find_addr = _str_utils::find_rev(&_data[pos], str, _size - pos);
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size - pos
+                );
 
                 if(_find_addr == nullptr)
                     return npos;
@@ -402,7 +416,7 @@ namespace hsd
             }
         }
 
-        constexpr auto erase(const_iterator pos)
+        inline auto erase(const_iterator pos)
             -> Result<iterator, bad_access>
         {
             if(pos < begin() || pos > end())
@@ -417,28 +431,28 @@ namespace hsd
             return begin() + _current_pos;
         }
 
-        constexpr CharT& front()
+        inline CharT& front()
         {
             return _data[0];
         }
 
-        constexpr CharT& back()
+        inline CharT& back()
         {
             return _data[_size - 1];
         }
 
-        constexpr usize size() const
+        inline usize size() const
         {
             return _size;
         }
 
-        constexpr usize capacity() const
+        inline usize capacity() const
         {
             return _reserved_size;
         }
 
         template < usize Pos, usize Count >
-        HSD_CONSTEXPR auto gen_range()
+        inline auto gen_range()
             -> Result<basic_string<CharT>, out_of_range>
         {
             if(Pos + Count > _size)
@@ -447,18 +461,13 @@ namespace hsd
             return basic_string(&_data[Pos], Count);
         }
 
-        HSD_CONSTEXPR void clear()
+        inline void clear()
         {
-            if(_data != nullptr)
-                _reset();
-    
-            _data = new CharT[1];
             _data[0] = '\0';
             _size = 0;
-            _reserved_size = 1;
         }
     
-        HSD_CONSTEXPR void reserve(usize size)
+        inline void reserve(usize size)
         {
             _reserved_size = size;
             CharT *_buf = new CharT[size + 1];
@@ -472,7 +481,8 @@ namespace hsd
     
             _data = _buf;
         }
-        HSD_CONSTEXPR void push_back(const CharT& val)
+
+        inline void push_back(const CharT& val)
         {
             if(_reserved_size > _size)
             {
@@ -488,61 +498,75 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR void pop_back()
+        inline void pop_back()
         {
             _data[--_size] = '\0';
         }
 
-        constexpr iterator data()
+        inline iterator data()
         {
-            return _data;
+            return _data != nullptr ? _data : _empty_str;
         }
 
-        constexpr const_iterator c_str() const
+        inline const_iterator c_str() const
         {
-            return _data;
+            return _data != nullptr ? _data : _empty_str;
         }
 
-        constexpr iterator begin()
-        {
-            return data();
-        }
-
-        constexpr iterator begin() const
+        inline iterator begin()
         {
             return data();
         }
 
-        constexpr iterator end()
+        inline const_iterator begin() const
+        {
+            return c_str();
+        }
+
+        inline iterator end()
         {
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        inline const_iterator end() const
         {
             return begin() + size();
         }
 
-        constexpr const_iterator cbegin()
+        inline const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        inline const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        inline const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        inline const_iterator cend() const
         {
             return end();
         }
     };
+
+    template <typename T, typename CharT>
+    static inline basic_string<CharT> to_string(T val)
+    {
+        const CharT* _cstr_buf = basic_cstring<CharT>::to_string(val);
+        basic_string<CharT> _str_buf = basic_string<CharT>(_cstr_buf, move_data_pointer{});
+        return _str_buf;
+    }
+
+    template <typename T>
+    static inline basic_string<T>& to_string(basic_string<T>& val)
+    {
+        return val;
+    }
     
     using string = basic_string<char>;
     using wstring = basic_string<wchar>;

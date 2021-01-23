@@ -24,6 +24,19 @@ namespace hsd
         }
 
         template <string_literal str>
+        static void _print(bool val, FILE* file_buf = stdout)
+        {
+            if(val == true)
+            {
+                fprintf(file_buf, basic_string_literal(str, "true").data);
+            }
+            else
+            {
+                fprintf(file_buf, basic_string_literal(str, "false").data);
+            }
+        }
+
+        template <string_literal str>
         static void _print(char val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%c").data, val);
@@ -180,6 +193,19 @@ namespace hsd
         static void _print(FILE* file_buf = stdout)
         {
             fwprintf(file_buf, str.data);
+        }
+
+        template <wstring_literal str>
+        static void _print(bool val, FILE* file_buf = stdout)
+        {
+            if(val == true)
+            {
+                fwprintf(file_buf, basic_string_literal(str, L"true").data);
+            }
+            else
+            {
+                fwprintf(file_buf, basic_string_literal(str, L"false").data);
+            }
         }
 
         template <wstring_literal str>

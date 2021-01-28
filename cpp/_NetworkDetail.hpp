@@ -3,7 +3,7 @@
 #include "Io.hpp"
 #include "_Define.hpp"
 
-#ifdef HSD_PLATFORM_LINUX
+#ifdef HSD_PLATFORM_POSIX
 
 #include <sys/types.h>
 #include <unistd.h>

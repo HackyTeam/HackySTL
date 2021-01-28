@@ -89,8 +89,10 @@
         "*.ipp": "cpp"
     },
     "cSpell.words": [
+        "IRWXA",
         "alignas",
         "clientv",
+        "ctim",
         "hintv",
         "isize",
         "qookie",

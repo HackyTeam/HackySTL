@@ -5,20 +5,40 @@ namespace fs = hsd::filesystem;
 
 static void file_status(const fs::path& p)
 {
-    hsd::io::print<"Name: {}\n">(p.relative_name());
-    hsd::io::print<"Directory size: {}b\n">(p.status().size().unwrap());
-    hsd::io::print<"Is Directory: {}\n">(p.status().is_directory().unwrap());
-    hsd::io::print<"Is Symlink: {}\n">(p.status().is_symlink().unwrap());
-    hsd::io::print<"Is Block file: {}\n">(p.status().is_block_file().unwrap());
-    hsd::io::print<"Is Character: {}\n">(p.status().is_character().unwrap());
-    hsd::io::print<"Is FIFO file: {}\n">(p.status().is_fifo_file().unwrap());
-    hsd::io::print<"Is File: {}\n">(p.status().is_regular_file().unwrap());
-    hsd::io::print<"Is Socket: {}\n">(p.status().is_socket().unwrap());
+    auto file_stat = p.status();
+    auto file_perms = file_stat.permissions().unwrap();
+
+    hsd::io::print<"Name:           {}\n">(p.relative_name()                   );
+    hsd::io::print<"Extension:      {}\n">(p.extension()                       );
+    hsd::io::print<"Directory size: {}\n">(file_stat.size()           .unwrap());
+    hsd::io::print<"Is Directory:   {}\n">(file_stat.is_directory()   .unwrap());
+    hsd::io::print<"Is Symlink:     {}\n">(file_stat.is_symlink()     .unwrap());
+    hsd::io::print<"Is Block file:  {}\n">(file_stat.is_block_file()  .unwrap());
+    hsd::io::print<"Is Character:   {}\n">(file_stat.is_character()   .unwrap());
+    hsd::io::print<"Is FIFO file:   {}\n">(file_stat.is_fifo_file()   .unwrap());
+    hsd::io::print<"Is File:        {}\n">(file_stat.is_regular_file().unwrap());
+    hsd::io::print<"Is Socket:      {}\n">(file_stat.is_socket()      .unwrap());
+    
+    puts("\nFile Permissions:");
+
+    hsd::io::print<"Can Owner Read:             {}\n">(file_perms.can_owner_read          );
+    hsd::io::print<"Can Owner Write:            {}\n">(file_perms.can_owner_write         );
+    hsd::io::print<"Can Owner Execute:          {}\n">(file_perms.can_owner_exec          );
+    hsd::io::print<"Can Owner Do everything:    {}\n">(file_perms.can_owner_do_everything );
+    hsd::io::print<"Can Group Read:             {}\n">(file_perms.can_group_read          );
+    hsd::io::print<"Can Group Write:            {}\n">(file_perms.can_group_write         );
+    hsd::io::print<"Can Group Execute:          {}\n">(file_perms.can_group_exec          );
+    hsd::io::print<"Can Group Do everything:    {}\n">(file_perms.can_group_do_everything );
+    hsd::io::print<"Can Others Read:            {}\n">(file_perms.can_others_read         );
+    hsd::io::print<"Can Others Write:           {}\n">(file_perms.can_others_write        );
+    hsd::io::print<"Can Others Execute:         {}\n">(file_perms.can_others_exec         );
+    hsd::io::print<"Can Others Do everything:   {}\n">(file_perms.can_others_do_everything);
+    hsd::io::print<"Can Everyone Do everything: {}\n">(file_perms.can_all_do_everything   );
 }
 
 int main()
 {
-    fs::path p{".vscode"};
+    fs::path p{"cpp"};
 
     file_status(p);
     puts("");
@@ -33,11 +53,13 @@ int main()
         puts("");
     }
 
-    for(auto& parent : p)
+    for(auto& parent : p.parents())
     {
         hsd::io::print<" \"{}\" |">(parent);
     }
 
+    //fs::path p2{"testsrc"};
+    //p2.copy("testcopy").unwrap();
     puts("");
     return 0;
 }

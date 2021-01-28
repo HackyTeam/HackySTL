@@ -3,7 +3,7 @@
 #include "_NetworkDetail.hpp"
 #include "Io.hpp"
 
-#ifdef HSD_PLATFORM_LINUX
+#ifdef HSD_PLATFORM_POSIX
 
 namespace hsd
 {

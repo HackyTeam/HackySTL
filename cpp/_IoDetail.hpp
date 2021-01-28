@@ -18,13 +18,13 @@ namespace hsd
         };
 
         template <string_literal str>
-        static void _print(FILE* file_buf = stdout)
+        static inline void _print(FILE* file_buf = stdout)
         {
             fprintf(file_buf, str.data);
         }
 
         template <string_literal str>
-        static void _print(bool val, FILE* file_buf = stdout)
+        static inline void _print(bool val, FILE* file_buf = stdout)
         {
             if(val == true)
             {
@@ -37,67 +37,67 @@ namespace hsd
         }
 
         template <string_literal str>
-        static void _print(char val, FILE* file_buf = stdout)
+        static inline void _print(char val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%c").data, val);
         }
 
         template <string_literal str>
-        static void _print(char8 val, FILE* file_buf = stdout)
+        static inline void _print(char8 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%zc").data, val);
         }
 
         template <string_literal str>
-        static void _print(i16 val, FILE* file_buf = stdout)
+        static inline void _print(i16 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%hd").data, val);
         }
 
         template <string_literal str>
-        static void _print(u16 val, FILE* file_buf = stdout)
+        static inline void _print(u16 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%hu").data, val);
         }
 
         template <string_literal str>
-        static void _print(i32 val, FILE* file_buf = stdout)
+        static inline void _print(i32 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%d").data, val);
         }
 
         template <string_literal str>
-        static void _print(u32 val, FILE* file_buf = stdout)
+        static inline void _print(u32 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%u").data, val);
         }
 
         template <string_literal str>
-        static void _print(i64 val, FILE* file_buf = stdout)
+        static inline void _print(i64 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%lld").data, val);
         }
 
         template <string_literal str>
-        static void _print(u64 val, FILE* file_buf = stdout)
+        static inline void _print(u64 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%llu").data, val);
         }
 
         template <string_literal str>
-        static void _print(long val, FILE* file_buf = stdout)
+        static inline void _print(long val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%zd").data, val);
         }
 
         template <string_literal str>
-        static void _print(ulong val, FILE* file_buf = stdout)
+        static inline void _print(ulong val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%zu").data, val);
         }
 
         template <string_literal str>
-        static void _print(f32 val, FILE* file_buf = stdout)
+        static inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -112,7 +112,7 @@ namespace hsd
         }
 
         template <string_literal str>
-        static void _print(f64 val, FILE* file_buf = stdout)
+        static inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -127,7 +127,7 @@ namespace hsd
         }
 
         template <string_literal str>
-        static void _print(f128 val, FILE* file_buf = stdout)
+        static inline void _print(f128 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -142,31 +142,31 @@ namespace hsd
         }
 
         template <string_literal str>
-        static void _print(const char* val, FILE* file_buf = stdout)
+        static inline void _print(const char* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%s").data, val);
         }
 
         template <string_literal str>
-        static void _print(const char8* val, FILE* file_buf = stdout)
+        static inline void _print(const char8* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%s").data, val);
         }
 
         template <string_literal str>
-        static void _print(const string& val, FILE* file_buf = stdout)
+        static inline void _print(const string& val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
         }
 
         template <string_literal str>
-        static void _print(const u8string& val, FILE* file_buf = stdout)
+        static inline void _print(const u8string& val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
         }
         
         template <string_literal str, typename... Args>
-        static void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
+        static inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, basic_string_literal(str, "(").data);
 
@@ -190,13 +190,13 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(FILE* file_buf = stdout)
+        static inline void _print(FILE* file_buf = stdout)
         {
             fwprintf(file_buf, str.data);
         }
 
         template <wstring_literal str>
-        static void _print(bool val, FILE* file_buf = stdout)
+        static inline void _print(bool val, FILE* file_buf = stdout)
         {
             if(val == true)
             {
@@ -209,73 +209,73 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(wchar val, FILE* file_buf = stdout)
+        static inline void _print(wchar val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%lc").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(char val, FILE* file_buf = stdout)
+        static inline void _print(char val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%c").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(char8 val, FILE* file_buf = stdout)
+        static inline void _print(char8 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%zc").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(i16 val, FILE* file_buf = stdout)
+        static inline void _print(i16 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%hd").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(u16 val, FILE* file_buf = stdout)
+        static inline void _print(u16 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%hu").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(i32 val, FILE* file_buf = stdout)
+        static inline void _print(i32 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%d").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(u32 val, FILE* file_buf = stdout)
+        static inline void _print(u32 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%u").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(i64 val, FILE* file_buf = stdout)
+        static inline void _print(i64 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%lld").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(u64 val, FILE* file_buf = stdout)
+        static inline void _print(u64 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%llu").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(long val, FILE* file_buf = stdout)
+        static inline void _print(long val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%zd").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(ulong val, FILE* file_buf = stdout)
+        static inline void _print(ulong val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%zu").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(f32 val, FILE* file_buf = stdout)
+        static inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -290,7 +290,7 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(f64 val, FILE* file_buf = stdout)
+        static inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -305,7 +305,7 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(f128 val, FILE* file_buf = stdout)
+        static inline void _print(f128 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
@@ -320,43 +320,43 @@ namespace hsd
         }
 
         template <wstring_literal str>
-        static void _print(const char* val, FILE* file_buf = stdout)
+        static inline void _print(const char* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%s").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(const char8* val, FILE* file_buf = stdout)
+        static inline void _print(const char8* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%s").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(const wchar* val, FILE* file_buf = stdout)
+        static inline void _print(const wchar* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val);
         }
 
         template <wstring_literal str>
-        static void _print(const string& val, FILE* file_buf = stdout)
+        static inline void _print(const string& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
         }
 
         template <wstring_literal str>
-        static void _print(const u8string& val, FILE* file_buf = stdout)
+        static inline void _print(const u8string& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
         }
 
         template <wstring_literal str>
-        static void _print(const wstring& val, FILE* file_buf = stdout)
+        static inline void _print(const wstring& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val.c_str());
         }
 
         template <wstring_literal str, typename... Args>
-        static void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
+        static inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, basic_string_literal(str, L"(").data);
 

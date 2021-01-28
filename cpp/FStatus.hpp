@@ -12,6 +12,53 @@ namespace hsd
     #if defined(HSD_PLATFORM_POSIX)
     namespace filesystem
     {
+        #define S_IRWXA (S_IRWXO | S_IRWXU | S_IRWXG)
+
+        enum class fs_perms_mask
+        {
+            owner_read   = S_IRUSR,     
+            owner_write  = S_IWUSR,    
+            owner_exec   = S_IXUSR,     
+            owner_all    = S_IRWXU,        
+            group_read   = S_IRGRP,        
+            group_write  = S_IWGRP,    
+            group_exec   = S_IXGRP,        
+            group_all    = S_IRWXG,      
+            others_read  = S_IROTH,    
+            others_write = S_IWOTH,   
+            others_exec  = S_IXOTH,    
+            others_all   = S_IRWXO,     
+            all_perms    = S_IRWXA
+        };
+
+        constexpr fs_perms_mask operator|(
+            const fs_perms_mask& lhs, const fs_perms_mask& rhs)
+        {
+            return static_cast<fs_perms_mask>(
+                static_cast<i32>(lhs) | static_cast<i32>(rhs)
+            );
+        }
+
+        struct fs_permissions
+        {
+            bool can_owner_read;            // File owner has read permission
+            bool can_owner_write;           // File owner has write permission
+            bool can_owner_exec;            // File owner has execute/search permission
+            bool can_owner_do_everything;	// File owner has read, write, and execute/search permissions
+
+            bool can_group_read;	        // The file's user group has read permission
+            bool can_group_write;           // The file's user group has write permission
+            bool can_group_exec;	        // The file's user group has execute/search permission
+            bool can_group_do_everything;   // The file's user group has read, write, and execute/search permissions
+
+            bool can_others_read;           // Other users have read permission
+            bool can_others_write;          // Other users have write permission
+            bool can_others_exec;           // Other users have execute/search permission
+            bool can_others_do_everything;  // Other users have read, write, and execute/search permissions
+
+            bool can_all_do_everything;     // Everyone can read write and execute the file
+        };
+
         class fs_status
         {
         private:
@@ -112,6 +159,26 @@ namespace hsd
                     return S_ISSOCK(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
+            }
+
+            inline auto permissions() const
+                -> Result<fs_permissions, runtime_error>
+            {
+                return fs_permissions{
+                    .can_owner_read           = (_status.st_mode & S_IRUSR) == S_IRUSR,
+                    .can_owner_write          = (_status.st_mode & S_IWUSR) == S_IWUSR,
+                    .can_owner_exec           = (_status.st_mode & S_IXUSR) == S_IXUSR,
+                    .can_owner_do_everything  = (_status.st_mode & S_IRWXU) == S_IRWXU,
+                    .can_group_read           = (_status.st_mode & S_IRGRP) == S_IRGRP,
+                    .can_group_write          = (_status.st_mode & S_IWGRP) == S_IWGRP,
+                    .can_group_exec           = (_status.st_mode & S_IXGRP) == S_IXGRP,
+                    .can_group_do_everything  = (_status.st_mode & S_IRWXG) == S_IRWXG,
+                    .can_others_read          = (_status.st_mode & S_IROTH) == S_IROTH,
+                    .can_others_write         = (_status.st_mode & S_IWOTH) == S_IWOTH,
+                    .can_others_exec          = (_status.st_mode & S_IXOTH) == S_IXOTH,
+                    .can_others_do_everything = (_status.st_mode & S_IRWXO) == S_IRWXO,
+                    .can_all_do_everything    = (_status.st_mode & S_IRWXA) == S_IRWXA
+                };
             }
 
             inline auto size() const

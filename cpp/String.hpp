@@ -603,40 +603,40 @@ namespace hsd
     }
 
     template <typename T>
-    static inline auto to_string(T val)
+    static inline auto to_u8string(T val)
     {
         char8* _cstr_buf = u8cstring::to_string(val);
         auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
         return _str_buf;
     }
 
-    static inline auto& to_string(basic_string<char8>& val)
+    static inline auto& to_u8string(basic_string<char8>& val)
     {
         return val;
     }
 
     template <typename T>
-    static inline auto to_string(T val)
+    static inline auto to_u16string(T val)
     {
         char16* _cstr_buf = u16cstring::to_string(val);
         auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
         return _str_buf;
     }
 
-    static inline auto& to_string(basic_string<char16>& val)
+    static inline auto& to_u16string(basic_string<char16>& val)
     {
         return val;
     }
 
     template <typename T>
-    static inline auto to_string(T val)
+    static inline auto to_u32string(T val)
     {
         char32* _cstr_buf = u32cstring::to_string(val);
         auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
         return _str_buf;
     }
 
-    static inline auto& to_string(basic_string<char32>& val)
+    static inline auto& to_u32string(basic_string<char32>& val)
     {
         return val;
     }

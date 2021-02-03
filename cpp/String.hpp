@@ -3,6 +3,7 @@
 #include "Result.hpp"
 #include "CString.hpp"
 #include "Math.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -575,16 +576,67 @@ namespace hsd
         }
     };
 
-    template <typename T, typename CharT>
-    static inline basic_string<CharT> to_string(T val)
+    template <typename T>
+    static inline auto to_string(T val)
     {
-        const CharT* _cstr_buf = basic_cstring<CharT>::to_string(val);
-        basic_string<CharT> _str_buf = basic_string<CharT>(_cstr_buf, move_data_pointer{});
+        char* _cstr_buf = cstring::to_string(val);
+        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
         return _str_buf;
     }
 
+    static inline auto& to_string(basic_string<char>& val)
+    {
+        return val;
+    }
+
     template <typename T>
-    static inline basic_string<T>& to_string(basic_string<T>& val)
+    static inline auto to_wstring(T val)
+    {
+        wchar* _cstr_buf = wcstring::to_string(val);
+        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        return _str_buf;
+    }
+
+    static inline auto& to_wstring(basic_string<wchar>& val)
+    {
+        return val;
+    }
+
+    template <typename T>
+    static inline auto to_string(T val)
+    {
+        char8* _cstr_buf = u8cstring::to_string(val);
+        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        return _str_buf;
+    }
+
+    static inline auto& to_string(basic_string<char8>& val)
+    {
+        return val;
+    }
+
+    template <typename T>
+    static inline auto to_string(T val)
+    {
+        char16* _cstr_buf = u16cstring::to_string(val);
+        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        return _str_buf;
+    }
+
+    static inline auto& to_string(basic_string<char16>& val)
+    {
+        return val;
+    }
+
+    template <typename T>
+    static inline auto to_string(T val)
+    {
+        char32* _cstr_buf = u32cstring::to_string(val);
+        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        return _str_buf;
+    }
+
+    static inline auto& to_string(basic_string<char32>& val)
     {
         return val;
     }

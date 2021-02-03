@@ -20,6 +20,6 @@ static void test_profiler(hsd::profiler tr, hsd::usize N)
 
 int main()
 {
-    invoke_stacktrace_func(test_trace, "hello", 0).unwrap();   
+    invoke_stacktrace_func(test_trace, "hello", 20).unwrap();   
     invoke_profiler_func(test_profiler, 32);
 }

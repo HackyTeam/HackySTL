@@ -155,7 +155,7 @@ namespace hsd
         constexpr decltype(auto) unwrap(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(_initialized)
             {
@@ -213,7 +213,7 @@ namespace hsd
             const char* message = "Got an Error instead",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(_initialized)
             {
@@ -239,7 +239,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args) const
+        constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (Result_detail::IsReference<Ok>)
         {
             if(_initialized)
@@ -264,7 +264,7 @@ namespace hsd
         } 
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args) const
+        constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (!Result_detail::IsReference<Ok>)
         {
             if(_initialized)
@@ -277,7 +277,7 @@ namespace hsd
             }
         } 
         
-        constexpr decltype(auto) unwrap_or_default() const
+        constexpr decltype(auto) unwrap_or_default()
         requires (std::is_default_constructible_v<Ok>)
         {
             if(_initialized)
@@ -292,7 +292,7 @@ namespace hsd
 
         template <typename Func>
         requires (Result_detail::UnwrapInvocable<Func, Ok>)
-        constexpr decltype(auto) unwrap_or_else(Func&& func) const
+        constexpr decltype(auto) unwrap_or_else(Func&& func)
         {
             if(_initialized)
             {
@@ -314,7 +314,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_err(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(!_initialized)
             {
@@ -350,7 +350,7 @@ namespace hsd
             const char* message = "Got a Value instead",
             const char* func = __builtin_FUNCTION(), 
             const char* file_name = __builtin_FILE(), 
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(!_initialized)
             {
@@ -427,7 +427,7 @@ namespace hsd
         constexpr void unwrap(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(!_initialized)
             {
@@ -474,7 +474,7 @@ namespace hsd
             const char* message = "Got an Error instead",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(!_initialized)
             {
@@ -490,7 +490,7 @@ namespace hsd
 
         template <typename Func>
         requires (Result_detail::UnwrapInvocable<Func, void>)
-        constexpr void unwrap_or_else(Func&& func) const
+        constexpr void unwrap_or_else(Func&& func)
         {
             if(!_initialized)
             {
@@ -501,7 +501,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_err(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(_initialized)
             {
@@ -529,7 +529,7 @@ namespace hsd
             const char* message = "Got a Value instead",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
-            usize line = __builtin_LINE()) const
+            usize line = __builtin_LINE())
         {
             if(_initialized)
             {

@@ -27,8 +27,8 @@ namespace hsd
         {}
 
         template <typename... Args>
-		Result<void, runtime_error> set_data(Args&... args)
-		{
+        Result<void, runtime_error> set_data(Args&... args)
+        {
             using sstream_detail::_parse;
             constexpr usize num_args = sizeof...(Args);
 
@@ -45,7 +45,7 @@ namespace hsd
             }
 
             return {};
-		}
+        }
     };
 
     class argument_parser

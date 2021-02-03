@@ -33,7 +33,7 @@ namespace hsd
         };
     } // namespace umap_detail
 
-    template< typename Key, typename T, typename Hasher = fnv1a<usize>, 
+    template< typename Key, typename T, typename Hasher = hash<usize, Key>, 
         template <typename> typename BucketAllocator = allocator,
         template <typename> typename Allocator = BucketAllocator >
     class unordered_map
@@ -389,12 +389,12 @@ namespace hsd
 
     template< typename Key, typename T, usize N >
     unordered_map(pair<Key, T> (&&other)[N]) 
-        -> unordered_map< Key, T, fnv1a<usize>, allocator >;
+        -> unordered_map< Key, T, hash<usize, Key>, allocator >;
 
     template< typename Key, typename T >
-    using buffered_umap = unordered_map< Key, T, fnv1a<usize>, buffered_allocator >;
+    using buffered_umap = unordered_map< Key, T, hash<usize, Key>, buffered_allocator >;
     template< typename Key, typename T, usize N >
-    using static_umap = unordered_map< Key, T, fnv1a<usize>, 
+    using static_umap = unordered_map< Key, T, hash<usize, Key>, 
         ct_alloc_helper<N + N / 2>::template alloc_type,
         ct_alloc_helper<N>::template alloc_type >;
 } // namespace hsd

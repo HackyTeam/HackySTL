@@ -152,6 +152,11 @@ namespace hsd
             return _initialized;
         }
 
+        explicit constexpr operator bool() const
+        {
+            return _initialized;
+        }
+
         constexpr decltype(auto) unwrap(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
@@ -165,7 +170,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -223,7 +228,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -269,7 +274,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                return _ok_data;
+                return release(_ok_data);
             }
             else
             {
@@ -282,7 +287,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                return _ok_data;
+                return release(_ok_data);
             }
             else
             {
@@ -302,7 +307,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -331,7 +336,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
             else
@@ -367,7 +372,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
             else
@@ -420,6 +425,11 @@ namespace hsd
         }
         
         constexpr bool is_ok() const
+        {
+            return _initialized;
+        }
+
+        explicit constexpr operator bool() const
         {
             return _initialized;
         }
@@ -520,7 +530,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
         }

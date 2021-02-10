@@ -8,11 +8,13 @@ int main(int argc, const char** argv)
         [](hsd::parser_stream&){printf("\e[1;1H\e[2J");}, 
         "-clear: Clears the console"
     );
-    arg_parser.add("-sum", 2, [](hsd::parser_stream& stream)
+
+    arg_parser.add("-exec", 1, [](hsd::parser_stream& stream)
     {
-        int a, b;
-        stream.set_data(a, b).unwrap(HSD_FUNCTION_NAME);
-        printf("%d\n", a + b);
-    }, "-sum num1 num2: Sums two numbers");
+        hsd::string command;
+        stream.set_data(command).unwrap(HSD_FUNCTION_NAME);
+        system(command.c_str());
+    }, "-exec: executes a command");
+
     arg_parser.parse(argc, argv);
 }

@@ -234,7 +234,78 @@ namespace hsd
         _func_impl = new callable<Func>(func);
     }
 
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static HSD_CONSTEXPR auto bind(Func func, T&& value, Args&&... args)
+    {
+        return [=, value{move(value)}]() mutable {
+            if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
+            {
+                return (value.*func)(args...).unwrap();
+            }
+            else
+            {
+                return (value.*func)(args...);
+            }
+        };
+    }
+
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static HSD_CONSTEXPR auto bind(Func func, T&& value, hsd::tuple<Args...>&& args)
+    {
+        return [=, value{move(value)}]() mutable {
+            return [&]<usize... Ints>(hsd::index_sequence<Ints...>)
+            {
+                if constexpr(requires {(value.*func)(std::declval<Args>()...).unwrap();})
+                {
+                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...).unwrap();
+                }
+                else
+                {
+                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...);
+                }
+            }(hsd::index_sequence_for<Args...>{});
+        };
+    }
+
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static HSD_CONSTEXPR auto bind(Func func, T& value, Args&&... args)
+    {
+        return [=, &value]{
+            if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
+            {
+                return (value.*func)(args...).unwrap();
+            }
+            else
+            {
+                return (value.*func)(args...);
+            }
+        };
+    }
+
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static HSD_CONSTEXPR auto bind(Func func, T& value, hsd::tuple<Args...>&& args)
+    {
+        return [=, &value]{
+            return [&]<usize... Ints>(hsd::index_sequence<Ints...>)
+            {
+                if constexpr(requires {(value.*func)(std::declval<Args>()...).unwrap();})
+                {
+                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...).unwrap();
+                }
+                else
+                {
+                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...);
+                }
+            }(hsd::index_sequence_for<Args...>{});
+        };
+    }
+
     template < typename Func, typename... Args >
+    requires (!std::is_member_function_pointer_v<Func>)
     static HSD_CONSTEXPR auto bind(Func func, Args&&... args)
     {
         return [=]{
@@ -250,6 +321,7 @@ namespace hsd
     }
 
     template < typename Func, typename... Args >
+    requires (!std::is_member_function_pointer_v<Func>)
     static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...>&& args)
     {
         return [=]{

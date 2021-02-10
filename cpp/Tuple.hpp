@@ -208,15 +208,45 @@ namespace hsd
         return tuple<decay_t<Args>&...>(args...);
     }
 
+    template < typename Func, typename T, typename... Args, usize... Is >
+    requires (std::is_member_function_pointer_v<Func>)
+    static constexpr auto apply_impl(Func&& func, T&& value, index_sequence<Is...>, const tuple<Args...>& args) 
+    {
+        return (value.*func)(args.template get<Is>()...);
+    }
+    
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static constexpr auto apply(Func&& func, T&& value, const tuple<Args...>& args)
+    {
+        return apply_impl(forward<Func>(func), forward<T>(value), make_index_sequence<sizeof...(Args)>{}, args);
+    }
+
+    template < typename Func, typename T, typename... Args, usize... Is >
+    requires (std::is_member_function_pointer_v<Func>)
+    static constexpr auto apply_impl(Func&& func, T& value, index_sequence<Is...>, const tuple<Args...>& args) 
+    {
+        return (value.*func)(args.template get<Is>()...);
+    }
+    
+    template < typename Func, typename T, typename... Args >
+    requires (std::is_member_function_pointer_v<Func>)
+    static constexpr auto apply(Func&& func, T& value, const tuple<Args...>& args)
+    {
+        return apply_impl(forward<Func>(func), value, make_index_sequence<sizeof...(Args)>{}, args);
+    }
+
     template < typename Func, typename... Args, usize... Is >
+    requires (!std::is_member_function_pointer_v<Func>)
     static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         return func(args.template get<Is>()...);
     }
     
     template < typename Func, typename... Args >
+    requires (!std::is_member_function_pointer_v<Func>)
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
-      return apply_impl(hsd::forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
+        return apply_impl(forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
     }
 }

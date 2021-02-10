@@ -13,3 +13,6 @@ The Idea came from another [project](https://github.com/LegatAbyssWalker/amazing
 # Contributors:
   DeKrain
   qookie
+
+# Platforms
+  [Discord](https://discord.gg/c68PPWrYW7)

@@ -6,13 +6,10 @@
 
 namespace hsd
 {
-    class argument_parser;
-
     class parser_stream
     {
     private:
         vector<pair<const char*, usize>> _args_buf;
-        friend class argument_parser;
 
     public:
         // It's a non-movable and copyable type
@@ -20,11 +17,8 @@ namespace hsd
         inline parser_stream(parser_stream&&) = delete;
         inline parser_stream& operator=(const parser_stream&) = delete;
         inline parser_stream& operator=(parser_stream&&) = delete;
+        inline parser_stream() = default;
         inline ~parser_stream() = default;
-
-        inline parser_stream(usize size)
-            : _args_buf{size}
-        {}
 
         template <typename... Args>
         Result<void, runtime_error> set_data(Args&... args)
@@ -46,6 +40,16 @@ namespace hsd
 
             return {};
         }
+
+        void emplace(const char* arg)
+        {
+            _args_buf.emplace_back(arg, cstring::length(arg));
+        }
+
+        void clear()
+        {
+            _args_buf.clear();
+        }
     };
 
     class argument_parser
@@ -55,7 +59,6 @@ namespace hsd
         using action_type = pair<function_type, usize>;
         unordered_map<const char*, action_type> _actions;
         vector<const char*> _informations;
-        usize _max_num_args = 0;
 
     public:
         inline argument_parser(const char* info)
@@ -72,9 +75,6 @@ namespace hsd
         inline void add(const char* argument, usize num_args,
             function_type&& func, const char* help)
         {
-            if(_max_num_args < num_args)
-                _max_num_args = num_args;
-
             _actions.emplace(argument, func, num_args);
             _informations.emplace_back(help);
         }
@@ -99,7 +99,7 @@ namespace hsd
                 // index = 2
 
                 i32 _index = 1, _incrementor;
-                parser_stream _buf{_max_num_args};
+                parser_stream _buf;
 
                 while(_index < argc)
                 {
@@ -108,17 +108,12 @@ namespace hsd
                     _incrementor = _num_args;
                     _index += 1;
                     
-                    while(_num_args != 0)
-                    {
-                        _buf._args_buf.emplace_back(
-                            argv[_index + _incrementor - _num_args], 0u
-                        );
-                        _num_args--;
-                    }
+                    for(; _incrementor != 0; _incrementor--)
+                        _buf.emplace(argv[_index + _num_args - _incrementor]);
 
                     _function(_buf).unwrap(HSD_FUNCTION_NAME);
-                    _index += _incrementor;
-                    _buf._args_buf.clear();
+                    _index += _num_args;
+                    _buf.clear();
                 }
             }
         }

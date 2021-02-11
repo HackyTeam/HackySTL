@@ -146,6 +146,8 @@ namespace hsd
 
         HSD_CONSTEXPR void _delete()
         {
+            if (get())
+                get()->~T();
             _value.get_allocator().deallocate(
                 _value.get_pointer(), _value.get_size()).unwrap();
 

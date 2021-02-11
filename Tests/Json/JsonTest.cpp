@@ -8,7 +8,7 @@ LR"json({
     "Cow": "milk",
     "gold": 5000,
     "primes": [2, 3, 5, 7, 11, 13],
-    "Unicode": "蛋",
+    "Unicode": "‏蛋‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎",
     "MontyPython": "import pickle",
     "LoS": [
         {
@@ -91,7 +91,7 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v) {
         auto& vec = v.as<hsd::JsonArray>().values();
         hsd::usize idx = 0;
         for (auto it = vec.begin(), end = vec.end(); it != end; ++it, ++idx) {
-            auto s = hsd::wstring::to_string(idx);
+            auto s = hsd::to_wstring(idx);
             path.push_back(static_cast<hsd::wstring_view>(s));
             print_value(path, *(*it));
             path.pop_back();

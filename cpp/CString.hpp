@@ -2,6 +2,7 @@
 
 #include "Utility.hpp"
 #include "Limits.hpp"
+#include "StackArray.hpp"
 
 namespace hsd
 {	
@@ -50,7 +51,69 @@ namespace hsd
 			return letter >= '0' && letter <= '9';
 		}
 
-    public:
+		static constexpr auto _get_whitespace_chars()
+		{
+			if constexpr (sizeof(CharT) >= sizeof(char16))
+			{
+				constexpr const CharT chars[] = {
+					static_cast<CharT>(0x09),
+					static_cast<CharT>(0x0A),
+					static_cast<CharT>(0x0B),
+					static_cast<CharT>(0x0C),
+					static_cast<CharT>(0x0D),
+					static_cast<CharT>(0x20),
+					static_cast<CharT>(0x85),
+					static_cast<CharT>(0xA0),
+					static_cast<CharT>(0x1680),
+					static_cast<CharT>(0x180E),
+					static_cast<CharT>(0x2000),
+					static_cast<CharT>(0x2001),
+					static_cast<CharT>(0x2002),
+					static_cast<CharT>(0x2003),
+					static_cast<CharT>(0x2004),
+					static_cast<CharT>(0x2005),
+					static_cast<CharT>(0x2006),
+					static_cast<CharT>(0x2007),
+					static_cast<CharT>(0x2008),
+					static_cast<CharT>(0x2009),
+					static_cast<CharT>(0x200A),
+					static_cast<CharT>(0x2028),
+					static_cast<CharT>(0x2029),
+					static_cast<CharT>(0x202F),
+					static_cast<CharT>(0x205F),
+					static_cast<CharT>(0x3000),
+					static_cast<CharT>(0) // Terminator
+				};
+				constexpr usize size = std::extent_v<decltype(chars)>;
+				hsd::stack_array<CharT, size> r;
+				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+				return r;
+			} else {
+				constexpr CharT chars[] = {
+					static_cast<CharT>(0x09),
+					static_cast<CharT>(0x0A),
+					static_cast<CharT>(0x0B),
+					static_cast<CharT>(0x0C),
+					static_cast<CharT>(0x0D),
+					static_cast<CharT>(0x20),
+					static_cast<CharT>(0x85),
+					static_cast<CharT>(0xA0),
+					static_cast<CharT>(0) // Terminator
+				};
+				constexpr usize size = std::extent_v<decltype(chars)>;
+				hsd::stack_array<CharT, size> r;
+				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+				return r;
+			}
+		}
+public:
+		static constexpr const auto whitespace_chars_arr = _get_whitespace_chars();
+		static constexpr const CharT* whitespace_chars = whitespace_chars_arr.data();
+
+		static constexpr bool iswhitespace(CharT ch)
+		{
+			return find(whitespace_chars, ch) != nullptr;
+		}
 
         static constexpr const CharT* find(const CharT* str, const CharT* substr)
         {
@@ -377,6 +440,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
+			_buf[0] = '0';
 
 			for(; num != 0; num /= 10)
 			{
@@ -392,6 +456,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
+			_buf[0] = '0';
 
 			for(; num != 0; num /= 10)
 			{
@@ -407,6 +472,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
+			_buf[0] = '0';
 
 			for(; num != 0; num /= 10)
 			{
@@ -421,6 +487,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
+			_buf[0] = '0';
 
 			for(; num != 0; num /= 10)
 			{
@@ -435,6 +502,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
+			_buf[0] = '0';
 
 			for(; num != 0; num /= 10)
 			{

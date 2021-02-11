@@ -3,7 +3,6 @@
 /// @brief JSON stream parser
 
 #include <queue>
-#include <cstring>
 
 #include "Types.hpp"
 #include "String.hpp"
@@ -25,11 +24,19 @@ namespace hsd {
     };
 
     class JsonError : public runtime_error {
+        hsd::string str;
     public:
         usize position;
 
         JsonError(const char* msg, usize pos)
             : runtime_error(msg), position(pos) {}
+
+        const char* operator()() {
+            if (str.size() != 0)
+                return str.c_str();
+
+            return (str = _err + to_string(position)).c_str();
+        }
     };
 
     template <typename CharT>
@@ -67,7 +74,7 @@ namespace hsd {
                 ++pos;
                 _reparse:
                 if (current_token == JsonToken::Empty) {
-                    if (std::isspace(ch))
+                    if (basic_cstring<CharT>::iswhitespace(ch))
                         continue;
                     switch (ch) {
                         #define CASE_CH(ch, tok) \
@@ -80,7 +87,7 @@ namespace hsd {
                         CASE_CH('{', JsonToken::BObject)
                         CASE_CH('}', JsonToken::EObject)
                         CASE_CH(',', JsonToken::Comma)
-                        CASE_CH('.', JsonToken::Colon)
+                        CASE_CH(':', JsonToken::Colon)
                         #undef CASE_CH
 
                         case static_cast<CharT>('n'):
@@ -107,6 +114,8 @@ namespace hsd {
                                 (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9')))
                             {
                                 current_token = JsonToken::Number;
+                                if (ch != static_cast<CharT>('+') and ch != static_cast<CharT>('-'))
+                                    token_str.push_back('+'); // Explicit sign for parse_i
                                 token_str.push_back(ch);
                                 ++token_position;
                             } else {
@@ -139,9 +148,10 @@ namespace hsd {
                             current_token = JsonToken::Empty;
                             token_position = 0;
                             token_str.clear();
+                        } else {
+                            ++token_position;
+                            token_str.push_back(ch);
                         }
-                        ++token_position;
-                        token_str.push_back(ch);
                     } else if (current_token == JsonToken::Number) {
                         if (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9')) {
                             token_position++;
@@ -190,7 +200,7 @@ namespace hsd {
 
     class JsonValue {
     public:
-        virtual ~JsonValue() {}
+        virtual ~JsonValue() = default;
         virtual JsonValueType type() const noexcept = 0;
         virtual bool is_complete() const noexcept {return true; };
 

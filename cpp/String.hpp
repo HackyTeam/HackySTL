@@ -483,7 +483,8 @@ namespace hsd
                 while (_new_capacity < new_cap)
                     _new_capacity += (_new_capacity + 1) / 2;
 
-                auto* _new_buf = _alloc.allocate(_new_capacity).unwrap();
+                // Allocate space for NUL byte
+                auto* _new_buf = _alloc.allocate(_new_capacity + 1).unwrap();
                 
                 for (usize _index = 0; _index < _size; ++_index)
                 {
@@ -492,7 +493,7 @@ namespace hsd
                     _value.~CharT();
                 }
 
-                _alloc.deallocate(_data, _capacity).unwrap();
+                _alloc.deallocate(_data, _capacity + 1).unwrap();
                 _data = _new_buf;
                 _capacity = _new_capacity;
             }
@@ -508,7 +509,8 @@ namespace hsd
             }
             else
             {
-                reserve(_size * 2);
+                usize new_size = _size ? _size * 2 : 1;
+                reserve(new_size);
                 _data[_size] = val;
                 _data[++_size] = '\0';
             }

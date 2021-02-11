@@ -65,7 +65,7 @@ namespace hsd
     
     class runtime_error
     {
-    private:
+    protected:
         const char* _err = nullptr;
         
     public:
@@ -95,16 +95,14 @@ namespace hsd
         HSD_CONSTEXPR Result& operator=(const Result&) = delete;
         HSD_CONSTEXPR Result& operator=(Result&&) = delete;
 
-        HSD_CONSTEXPR Result(const Ok& value)
-            : _ok_data{value}, _initialized{true}
-        {}
-
-        HSD_CONSTEXPR Result(Ok&& value)
-            : _ok_data{move(value)}, _initialized{true}
+        template <typename T>
+        requires (std::is_constructible_v<Ok, T&&>)
+        HSD_CONSTEXPR Result(T&& value)
+            : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
         template <typename T>
-        requires (std::is_convertible_v<T, Err>)
+        requires (std::is_constructible_v<Err, T&&>)
         HSD_CONSTEXPR Result(T&& value)
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
@@ -411,7 +409,7 @@ namespace hsd
         {}
 
         template <typename T>
-        requires (std::is_convertible_v<T, Err>)
+        requires (std::is_constructible_v<Err, T&&>)
         HSD_CONSTEXPR Result(T&& value)
             : _err_data{forward<Err>(value)}, _initialized{false}
         {}

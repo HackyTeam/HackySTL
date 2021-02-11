@@ -145,4 +145,16 @@ namespace hsd
         }
         return dest;
     }
+
+    template < typename Elem, usize Count >
+    static constexpr Elem* begin(Elem (&arr)[Count])
+    {
+        return static_cast<Elem*>(arr);
+    }
+
+    template < typename Elem, usize Count >
+    static constexpr Elem* end(Elem (&arr)[Count])
+    {
+        return static_cast<Elem*>(arr) + Count;
+    }
 }

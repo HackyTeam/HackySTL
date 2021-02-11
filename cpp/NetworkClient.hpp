@@ -175,8 +175,8 @@ namespace hsd
             {
             private:
                 i32 _sock = 0;
-                sockaddr_in6 _hintv6;
-                sockaddr_in _hintv4;
+                sockaddr_in6 _hintv6{};
+                sockaddr_in _hintv4{};
                 net::protocol_type _protocol;
 
             public:

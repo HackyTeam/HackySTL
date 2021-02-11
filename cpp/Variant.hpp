@@ -1,10 +1,10 @@
 #pragma once
 
 #include <type_traits>
-#include <exception>
 
 #include "_XUtility.hpp"
 #include "Utility.hpp"
+#include "Result.hpp"
 
 namespace hsd
 {
@@ -68,11 +68,12 @@ namespace hsd
     } // namespace variant_detail
 
     // class bad_variant_access
-    struct bad_variant_access : public std::exception
+    struct bad_variant_access
     {
-        virtual const char* what() const noexcept override
+        const char* operator()() const 
         {
-            return "A variant was accessed with the wrong stored type";
+            return "A variant was accessed "
+                "with the wrong stored type";
         }
     };
 
@@ -446,7 +447,7 @@ namespace hsd
         using _StorageTraits = typename _Base::_StorageTraits;
 
         template <typename _Func>
-        constexpr auto _visit(_Func &&func)
+        constexpr auto _visit(_Func&& func)
         {
             return _StorageTraits::visit(this->_storage(), this->_StoredIndex, forward<_Func>(func));
         }
@@ -471,7 +472,7 @@ namespace hsd
 
         template <typename _Tother, typename = enable_if_t<!is_same< variant, std::decay_t<_Tother> >::value >,
                   usize _Idx = variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
-        constexpr variant(_Tother &&val)
+        constexpr variant(_Tother&& val)
             : _Base(in_place_index<_Idx>, forward<_Tother>(val)) 
         {}
 
@@ -480,11 +481,11 @@ namespace hsd
             _destroy();
         }
 
-        constexpr variant &operator=(variant const &rhs) = default;
-        constexpr variant &operator=(variant &&rhs) = default;
+        constexpr variant& operator=(variant const& rhs) = default;
+        constexpr variant& operator=(variant&& rhs) = default;
 
         template < typename _Tother, typename = enable_if_t< !is_same< variant, std::decay_t<_Tother> >::value > >
-        constexpr variant &operator=(_Tother &&rhs)
+        constexpr variant& operator=(_Tother&& rhs)
         {
             _Base::_StorageTraits::template assign_fwd<variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>(this->_storage(), _Base::_StoredIndex, std::forward<_Tother>(rhs));
             return *this;
@@ -496,31 +497,31 @@ namespace hsd
         }
 
         template <usize _Idx>
-        constexpr variant_alternative_t<_Idx, variant>& get()
+        constexpr auto get() -> Result<reference<variant_alternative_t<_Idx, variant>>, bad_variant_access>
         {
             if (index() != _Idx)
-                throw bad_variant_access();
+                return bad_variant_access{};
 
-            return _StorageTraits::template get_mut_impl<_Idx>(this->_storage());
+            return {_StorageTraits::template get_mut_impl<_Idx>(this->_storage())};
         }
 
         template <usize _Idx>
-        constexpr variant_alternative_t<_Idx, variant> const& get() const
+        constexpr auto get() const -> Result<reference<const variant_alternative_t<_Idx, variant>>, bad_variant_access>
         {
             if (index() != _Idx)
-                throw bad_variant_access();
+                return bad_variant_access{};
 
-            return _StorageTraits::template get_impl<_Idx>(this->_storage());
+            return {_StorageTraits::template get_impl<_Idx>(this->_storage())};
         }
 
         template <typename _Ty>
-        constexpr _Ty& get()
+        constexpr auto get()
         {
             return get<variant_detail::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
         }
 
         template <typename _Ty>
-        constexpr _Ty const& get() const
+        constexpr auto get() const
         {
             return get<variant_detail::_variant_index<_Ty, _Tfirst, _Trest...>::value>();
         }
@@ -585,7 +586,7 @@ namespace hsd
 
         //// function template visit
         template <typename _Visitor>
-        constexpr auto visit(_Visitor &&vis)
+        constexpr auto visit(_Visitor&& vis)
         {
             return _visit([&](auto val) {
                 return forward<_Visitor>(vis)(val.val);

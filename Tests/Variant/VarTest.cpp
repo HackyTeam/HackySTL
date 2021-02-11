@@ -98,15 +98,18 @@ int main()
     std::cout << va3.index() << '\n';
     std::cout << va4.index() << '\n';
 
-    std::cout << va1.get<0>() << '\n';
-    try 
+    std::cout << va1.get<0>().unwrap() << '\n';
+    
+    auto _res = va1.get<float>();
+
+    if(_res.is_ok()) 
     {
         // This actually throws 
-        std::cout << va1.get<float>() << '\n';
+        std::cout << _res.unwrap() << '\n';
     } 
-    catch (hsd::bad_variant_access& err) 
+    else
     {
-        std::cerr << "Caught error: " << err.what() << '\n';
+        std::cerr << "Caught error: " << _res.unwrap_err()() << '\n';
     }
 
     if (auto* val = hsd::get_if<float>(&va1)) 
@@ -132,7 +135,7 @@ int main()
     std::cout << "(after assignment) " << (va2 == va3) << '\n';
     va3 = hsd::variant<A, B>(6);
     std::cout << "(after new assignment)\nva3 == va4: " << (va3 == va4) << '\n';
-    va3.get<B>()._a = 5;
+    va3.get<B>().unwrap()._a = 5;
     std::cout << "(after modification) " << (va3 == va4) << '\n';
 
     hsd::variant<A, B> va5;

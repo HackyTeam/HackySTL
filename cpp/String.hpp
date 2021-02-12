@@ -5,6 +5,8 @@
 #include "Math.hpp"
 #include "Allocator.hpp"
 
+#include "StringView.hpp"
+
 namespace hsd
 {
     struct move_data_pointer {};
@@ -14,26 +16,11 @@ namespace hsd
     {
     private:
         using _str_utils = basic_cstring<CharT>;
-        static inline CharT _empty_str[1]{};
+        const static inline CharT _s_empty = static_cast<CharT>(0);
         CharT* _data = nullptr;
         usize _size = 0;
         usize _capacity = 0;
 
-        struct bad_access
-        {
-            const char* operator()() const
-            {
-                return "Tried to access an element out of bounds";
-            }
-        };
-        
-        struct out_of_range
-        {
-            const char* operator()() const
-            {
-                return "Out of range";
-            }
-        };
 
         inline void _reset()
         {
@@ -84,6 +71,10 @@ namespace hsd
             _capacity = _size;
             _data = cstr;
         }
+
+        inline basic_string(basic_string_view<CharT> view)
+            : basic_string(view.data(), view.size())
+        {}
 
         inline basic_string(const basic_string& other)
         {
@@ -474,8 +465,11 @@ namespace hsd
 
         inline void clear()
         {
-            _data[0] = '\0';
-            _size = 0;
+            if (_size)
+            {
+                _data[0] = '\0';
+                _size = 0;
+            }
         }
     
         inline void reserve(usize new_cap)
@@ -489,7 +483,8 @@ namespace hsd
                 while (_new_capacity < new_cap)
                     _new_capacity += (_new_capacity + 1) / 2;
 
-                auto* _new_buf = _alloc.allocate(_new_capacity).unwrap();
+                // Allocate space for NUL byte
+                auto* _new_buf = _alloc.allocate(_new_capacity + 1).unwrap();
                 
                 for (usize _index = 0; _index < _size; ++_index)
                 {
@@ -498,7 +493,7 @@ namespace hsd
                     _value.~CharT();
                 }
 
-                _alloc.deallocate(_data, _capacity).unwrap();
+                _alloc.deallocate(_data, _capacity + 1).unwrap();
                 _data = _new_buf;
                 _capacity = _new_capacity;
             }
@@ -514,7 +509,8 @@ namespace hsd
             }
             else
             {
-                reserve(_size * 2);
+                usize new_size = _size ? _size * 2 : 1;
+                reserve(new_size);
                 _data[_size] = val;
                 _data[++_size] = '\0';
             }
@@ -527,12 +523,17 @@ namespace hsd
 
         inline iterator data()
         {
-            return _data != nullptr ? _data : _empty_str;
+            return _data;
+        }
+
+        inline const_iterator data() const
+        {
+            return _data;
         }
 
         inline const_iterator c_str() const
         {
-            return _data != nullptr ? _data : _empty_str;
+            return _data != nullptr ? _data : &_s_empty;
         }
 
         inline iterator begin()
@@ -542,7 +543,7 @@ namespace hsd
 
         inline const_iterator begin() const
         {
-            return c_str();
+            return data();
         }
 
         inline iterator end()
@@ -555,24 +556,19 @@ namespace hsd
             return begin() + size();
         }
 
-        inline const_iterator cbegin()
-        {
-            return begin();
-        }
-
         inline const_iterator cbegin() const
         {
             return begin();
         }
 
-        inline const_iterator cend()
+        inline const_iterator cend() const
         {
             return end();
         }
 
-        inline const_iterator cend() const
+        explicit constexpr operator basic_string_view<CharT>() const
         {
-            return end();
+            return basic_string_view<CharT>(_data, _size);
         }
     };
 
@@ -641,6 +637,16 @@ namespace hsd
         return val;
     }
     
+    template <typename HashType, typename CharT>
+    struct hash<HashType, basic_string<CharT>>
+    {
+        using ResultType = HashType;
+
+        static constexpr ResultType get_hash(const basic_string<CharT>& str) {
+            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end());
+        }
+    };
+
     using string = basic_string<char>;
     using wstring = basic_string<wchar>;
     using u8string = basic_string<char8>;

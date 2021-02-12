@@ -3,6 +3,7 @@
 #include "Utility.hpp"
 #include "Allocator.hpp"
 #include "Types.hpp"
+#include "_XUtility.hpp"
 
 namespace hsd
 {
@@ -146,6 +147,17 @@ namespace hsd
 
         HSD_CONSTEXPR void _delete()
         {
+            if (get()) {
+                if constexpr (is_array<T>::value)
+                {
+                    for (usize i = 0, size = _value.get_size(); i < size; ++i)
+                        _destroy_inplace(get()[size-i]);
+                }
+                else
+                {
+                    _destroy_inplace(*get());
+                }
+            }
             _value.get_allocator().deallocate(
                 _value.get_pointer(), _value.get_size()).unwrap();
 

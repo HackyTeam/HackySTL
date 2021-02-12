@@ -65,7 +65,7 @@ namespace hsd
     
     class runtime_error
     {
-    private:
+    protected:
         const char* _err = nullptr;
         
     public:
@@ -95,16 +95,14 @@ namespace hsd
         HSD_CONSTEXPR Result& operator=(const Result&) = delete;
         HSD_CONSTEXPR Result& operator=(Result&&) = delete;
 
-        HSD_CONSTEXPR Result(const Ok& value)
-            : _ok_data{value}, _initialized{true}
-        {}
-
-        HSD_CONSTEXPR Result(Ok&& value)
-            : _ok_data{move(value)}, _initialized{true}
+        template <typename T>
+        requires (std::is_constructible_v<Ok, T&&>)
+        HSD_CONSTEXPR Result(T&& value)
+            : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
         template <typename T>
-        requires (std::is_convertible_v<T, Err>)
+        requires (std::is_constructible_v<Err, T&&>)
         HSD_CONSTEXPR Result(T&& value)
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
@@ -152,6 +150,11 @@ namespace hsd
             return _initialized;
         }
 
+        explicit constexpr operator bool() const
+        {
+            return _initialized;
+        }
+
         constexpr decltype(auto) unwrap(
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
@@ -165,7 +168,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -223,7 +226,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -269,7 +272,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                return _ok_data;
+                return release(_ok_data);
             }
             else
             {
@@ -282,7 +285,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                return _ok_data;
+                return release(_ok_data);
             }
             else
             {
@@ -302,7 +305,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _ok_data;
+                    return release(_ok_data);
                 }
             }
             else
@@ -331,7 +334,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
             else
@@ -367,7 +370,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
             else
@@ -406,7 +409,7 @@ namespace hsd
         {}
 
         template <typename T>
-        requires (std::is_convertible_v<T, Err>)
+        requires (std::is_constructible_v<Err, T&&>)
         HSD_CONSTEXPR Result(T&& value)
             : _err_data{forward<Err>(value)}, _initialized{false}
         {}
@@ -420,6 +423,11 @@ namespace hsd
         }
         
         constexpr bool is_ok() const
+        {
+            return _initialized;
+        }
+
+        explicit constexpr operator bool() const
         {
             return _initialized;
         }
@@ -520,7 +528,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _err_data;
+                    return release(_err_data);
                 }
             }
         }

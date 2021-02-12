@@ -16,6 +16,12 @@ namespace hsd
     }
 
     template <typename T>
+    static constexpr remove_reference_t<T> release(T&& val)
+    {
+        return static_cast<remove_reference_t<T>&&>(val);
+    }
+
+    template <typename T>
     static constexpr T&& forward(remove_reference_t<T>& val)
     {
         return static_cast<T&&>(val);
@@ -138,5 +144,17 @@ namespace hsd
             first++;
         }
         return dest;
+    }
+
+    template < typename Elem, usize Count >
+    static constexpr Elem* begin(Elem (&arr)[Count])
+    {
+        return static_cast<Elem*>(arr);
+    }
+
+    template < typename Elem, usize Count >
+    static constexpr Elem* end(Elem (&arr)[Count])
+    {
+        return static_cast<Elem*>(arr) + Count;
     }
 }

@@ -45,7 +45,7 @@ namespace hsd
             const char* _file_name = "unknown";
             const char* _func = "unknown";
             usize _line = 0;
-            clock _clk{};
+            precise_clock _clk{};
 
         public:
             profiler_value(
@@ -70,7 +70,7 @@ namespace hsd
                 return _line;
             }
 
-            clock elapsed_time()
+            precise_clock elapsed_time()
             {
                 return _clk.elapsed_time();
             }

@@ -185,7 +185,7 @@ namespace hsd
                 -> Result<usize, runtime_error>
             {
                 if(_exists == true)
-                    return _status.st_size;
+                    return static_cast<usize>(_status.st_size);
 
                 return runtime_error{"File/Directory not found"};
             }

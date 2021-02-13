@@ -202,11 +202,7 @@ namespace hsd
             }
             else
             {
-                #ifdef __cpp_aligned_new
-                return static_cast<pointer_type>(::operator new(size * sizeof(T), std::align_val_t(alignof(T))));
-                #else
                 return static_cast<pointer_type>(::operator new(size * sizeof(T)));
-                #endif
             }
         }
 
@@ -219,12 +215,7 @@ namespace hsd
             }
             else
             {
-                #ifdef __cpp_sized_deallocation
-                ::operator delete(ptr, size * sizeof(T), std::align_val_t(alignof(T)));
-                #else
-                ::operator delete(ptr, std::align_val_t(alignof(T)));
-                #endif
-
+                ::operator delete(ptr);
                 return {};
             }
         }

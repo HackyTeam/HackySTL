@@ -7,7 +7,7 @@ static const hsd::wchar* s_test_string =
 LR"json({
     "Cow": "milk",
     "gold": 5000,
-    "primes": [2, 3, 5, 7, 11, 13, 22],
+    "primes": [2, 3, 5, 7, 11, 13, 23],
     "Unicode": "‏蛋‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎",
     "MontyPython": "import pickle",
     "LoS": [

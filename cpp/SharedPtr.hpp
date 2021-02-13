@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "_XUtility.hpp"
 #include "Allocator.hpp"
 
 namespace hsd
@@ -289,7 +290,7 @@ namespace hsd
             shared_detail::storage<T, Allocator> _value;
             shared_detail::counter<Allocator> _count;
 
-            template <typename U, template <typename> typename Del>
+            template <typename U, template <typename> typename Alloc>
             friend class shared_ptr;
 
             HSD_CONSTEXPR void _delete()
@@ -300,6 +301,17 @@ namespace hsd
 
                     if(*_count == 0)
                     {
+                        if (get() != nullptr) {
+                            if constexpr (is_array<T>::value)
+                            {
+                                for (usize i = 0, size = _value.get_size(); i < size; ++i)
+                                    _destroy_inplace(get()[size-i]);
+                            }
+                            else
+                            {
+                                _destroy_inplace(*get());
+                            }
+                        }
                         _value.get_allocator().deallocate(
                             _value.get_pointer(), _value.get_size());
                         _count.get_allocator().deallocate(

@@ -1,7 +1,7 @@
 // This file is UTF-8
 
 #include <Json.hpp>
-#include <iostream>
+#include <Io.hpp>
 
 static const hsd::wchar* s_test_string =
 LR"json({
@@ -31,6 +31,7 @@ void print_prefix(hsd::vector<hsd::wstring_view>& path);
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);
 
 int main() {
+    setlocale(LC_ALL, "en_US.UTF-8");
     hsd::JsonStream<hsd::wchar> lexer;
     // Lex the string
     lexer.lex(s_test_string).unwrap();
@@ -50,12 +51,12 @@ int main() {
 
 void print_prefix(hsd::vector<hsd::wstring_view>& path) {
     if (path.size() == 0)
-        std::wcout << L"<root>";
+        hsd::io::print<L"<root>">();
     else {
         for (auto part : path)
-            std::wcout << part << L':';
+            hsd::io::print<L"{}:">(part);
     }
-    std::wcout << L' ';
+    hsd::io::print<L" ">();
 }
 
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v) {
@@ -63,29 +64,29 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v) {
     hsd::JsonValueType type = v.type();
     switch (type) {
         case hsd::JsonValueType::Null:
-            std::wcout << L"null";
+            hsd::io::print<L"null">();
             break;
         case hsd::JsonValueType::True:
-            std::wcout << L"true";
+            hsd::io::print<L"true">();
             break;
         case hsd::JsonValueType::False:
-            std::wcout << L"false";
+            hsd::io::print<L"false">();
             break;
         case hsd::JsonValueType::Number:
-            std::wcout << v.as<hsd::JsonNumber>().value();
+            hsd::io::print<"{}">(v.as<hsd::JsonNumber>().value());
             break;
         case hsd::JsonValueType::String:
             // TODO: Escape?
-            std::wcout << L'"' << v.as_str<hsd::wchar>().value() << L'"';
+            hsd::io::print<L"\"{}\"">(v.as_str<hsd::wchar>().value());
             break;
         case hsd::JsonValueType::Array:
-            std::wcout << L"array";
+            hsd::io::print<L"array">();
             break;
         case hsd::JsonValueType::Object:
-            std::wcout << L"object";
+            hsd::io::print<L"object">();
             break;
     }
-    std::wcout << L'\n';
+    hsd::io::print<L"\n">();
 
     if (type == hsd::JsonValueType::Array) {
         auto& vec = v.as<hsd::JsonArray>().values();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_IoDetail.hpp"
+#include "String.hpp"
 
 namespace hsd
 {

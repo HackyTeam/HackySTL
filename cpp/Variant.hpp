@@ -470,7 +470,7 @@ namespace hsd
         constexpr variant(variant const& other) = default;
         constexpr variant(variant&& other) = default;
 
-        template <typename _Tother, typename = enable_if_t<!is_same< variant, std::decay_t<_Tother> >::value >,
+        template <typename _Tother, typename = enable_if_t<!is_same< variant, decay_t<_Tother> >::value >,
                   usize _Idx = variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
         constexpr variant(_Tother&& val)
             : _Base(in_place_index<_Idx>, forward<_Tother>(val)) 
@@ -484,7 +484,7 @@ namespace hsd
         constexpr variant& operator=(variant const& rhs) = default;
         constexpr variant& operator=(variant&& rhs) = default;
 
-        template < typename _Tother, typename = enable_if_t< !is_same< variant, std::decay_t<_Tother> >::value > >
+        template < typename _Tother, typename = enable_if_t< !is_same< variant, decay_t<_Tother> >::value > >
         constexpr variant& operator=(_Tother&& rhs)
         {
             _Base::_StorageTraits::template assign_fwd<variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>(this->_storage(), _Base::_StoredIndex, std::forward<_Tother>(rhs));

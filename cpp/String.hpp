@@ -4,7 +4,7 @@
 #include "CString.hpp"
 #include "Math.hpp"
 #include "Allocator.hpp"
-
+#include "_IoOverload.hpp"
 #include "StringView.hpp"
 
 namespace hsd
@@ -636,6 +636,72 @@ namespace hsd
         return val;
     }
     
+    template <typename T = char>
+    inline void _parse(pair<const char*, usize>& str, basic_string<char>& val)
+    {
+        val = move(basic_string<char>(str.first, str.second));
+    }
+
+    template <typename T = wchar>
+    inline void _parse(pair<const wchar*, usize>& str, basic_string<char>& val)
+    {
+        val = move(basic_string<wchar>(str.first, str.second));
+    }
+
+    template <typename T = wchar>
+    inline void _parse(pair<const wchar*, usize>& str, basic_string<wchar>& val)
+    {
+        val = move(basic_string<wchar>(str.first, str.second));
+    }
+
+    template <string_literal str>
+    inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
+    {
+        return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val.c_str());
+    }
+
+    template <wstring_literal str>
+    inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
+    {
+        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val.c_str());
+    }
+
+    template <wstring_literal str>
+    inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
+    {
+        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%ls").data, val.c_str());
+    }
+
+    template <string_literal str>
+    inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
+    {
+        fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+    }
+
+    template <string_literal str>
+    inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
+    {
+        fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+    }
+
+    template <wstring_literal str>
+    inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
+    {
+        fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+    }
+
+    template <wstring_literal str>
+    inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
+    {
+        fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+    }
+
+    template <wstring_literal str>
+    inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
+    {
+        fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val.c_str());
+    }
+
     template <typename HashType, typename CharT>
     struct hash<HashType, basic_string<CharT>>
     {

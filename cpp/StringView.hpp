@@ -4,8 +4,7 @@
 #include "CString.hpp"
 #include "Result.hpp"
 #include "Hash.hpp"
-
-#include <ostream>
+#include "_IoOverload.hpp"
 
 namespace hsd
 {
@@ -62,7 +61,14 @@ namespace hsd
             return _data[index];
         }
 
-        // TODO: at
+        constexpr auto at(usize index) const
+            -> Result< reference<const CharT>, bad_access >
+        {
+            if(index >= _size)
+                return bad_access{};
+
+            return {_data[index]};
+        }
 
         constexpr bool operator==(basic_string_view rhs) const {
             return _size == rhs._size and cstring_utils::compare(
@@ -74,9 +80,85 @@ namespace hsd
             return !(*this == rhs);
         }
 
-        // TODO: < <= > >=
-        // TODO: find
-        // TODO: rfind
+        constexpr bool operator<(const basic_string_view& rhs) const
+        {
+            return cstring_utils::compare(
+                _data, rhs._data, 
+                hsd::math::min(_size, rhs._size)
+            ) == -1;
+        }
+
+        constexpr bool operator<=(const basic_string_view& rhs) const
+        {
+            return operator<(rhs) && operator==(rhs);
+        }
+
+        constexpr bool operator>(const basic_string_view& rhs) const
+        {
+            return cstring_utils::compare(_data, rhs._data, 
+                hsd::math::min(_size, rhs._size)) == 1;
+        }
+
+        constexpr bool operator>=(const basic_string_view& rhs) const
+        {
+            return operator>(rhs) && operator==(rhs);
+        }
+        
+        constexpr usize find(char letter) const
+        {
+            auto* _find_res = cstring_utils::find(_data, letter);
+
+            if(_find_res == nullptr)
+            {
+                return npos;
+            }
+            else
+            {
+                return static_cast<usize>(_find_res - _data);
+            }
+        }
+
+        constexpr usize find(const basic_string_view& other) const
+        {
+            auto* _find_res = cstring_utils::find(_data, other._data);
+
+            if(_find_res == nullptr)
+            {
+                return npos;
+            }
+            else
+            {
+                return static_cast<usize>(_find_res - _data);
+            }
+        }
+
+        constexpr usize rfind(char letter) const
+        {
+            auto* _find_res = cstring_utils::rfind(_data, letter);
+
+            if(_find_res == nullptr)
+            {
+                return npos;
+            }
+            else
+            {
+                return static_cast<usize>(_find_res - _data);
+            }
+        }
+
+        constexpr usize rfind(const basic_string_view& other) const
+        {
+            auto* _find_res = cstring_utils::rfind(_data, other._data);
+
+            if(_find_res == nullptr)
+            {
+                return npos;
+            }
+            else
+            {
+                return static_cast<usize>(_find_res - _data);
+            }
+        }
 
         constexpr usize size() const
         {
@@ -114,14 +196,43 @@ namespace hsd
             const usize max_length = _size - start;
             return basic_string_view(_data + start, math::min(len, max_length));
         }
-
-        // I/O
-        friend std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, basic_string_view v) {
-            for (CharT ch : v)
-                os.put(ch);
-            return os;
-        }
     };
+
+    template <string_literal str>
+    inline i32 _write(const basic_string_view<char>& val, pair<char*, usize> dest)
+    {
+        return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val.data());
+    }
+
+    template <wstring_literal str>
+    inline i32 _write(const basic_string_view<char>& val, pair<wchar*, usize> dest)
+    {
+        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val.data());
+    }
+
+    template <wstring_literal str>
+    inline i32 _write(const basic_string_view<wchar>& val, pair<wchar*, usize> dest)
+    {
+        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%ls").data, val.data());
+    }
+
+    template <string_literal str>
+    static inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
+    {
+        fprintf(file_buf, basic_string_literal(str, "%s").data, val.data());
+    }
+
+    template <wstring_literal str>
+    static inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
+    {
+        fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.data());
+    }
+
+    template <wstring_literal str>
+    static inline void _print(const basic_string_view<wchar>& val, FILE* file_buf = stdout)
+    {
+        fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val.data());
+    }
 
     template <typename HashType, typename CharT>
     struct hash<HashType, basic_string_view<CharT>>

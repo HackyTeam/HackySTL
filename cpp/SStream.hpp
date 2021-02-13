@@ -99,11 +99,6 @@ namespace hsd
             _size = _capacity - _size + _last_len;
 		}
 
-        basic_string<CharT> to_string()
-        {
-            return basic_string<CharT>(_data);
-        }
-
 		void pop_back()
         {
             _data[--_size] = '\0';

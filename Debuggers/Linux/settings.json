@@ -86,7 +86,8 @@
         "strstream": "cpp",
         "complex": "cpp",
         "cfenv": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "source_location": "cpp"
     },
     "cSpell.words": [
         "IRWXA",

@@ -17,7 +17,7 @@ struct test
 };
 
 template <hsd::string_literal str>
-static void _print(test& t, FILE* ptr = stdout)
+inline void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
@@ -32,7 +32,7 @@ static void _print(test& t, FILE* ptr = stdout)
 }
 
 template <hsd::wstring_literal str>
-static void _print(test& t, FILE* ptr = stdout)
+inline void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
@@ -47,7 +47,7 @@ static void _print(test& t, FILE* ptr = stdout)
     }
 }
 
-static void _parse(hsd::pair<const char*, hsd::usize>& str, test& t)
+inline void _parse(hsd::pair<const char*, hsd::usize>& str, test& t)
 {
     sscanf(str.first, "%d%d%lf", &t.a, &t.b, &t.d);
 }
@@ -58,7 +58,7 @@ int main()
     hsd::i32 x, z;
     hsd::f32 y;
     hsd::io::print<L"hello, {} and other words\n">(123.2);
-    str.write_data<L"hello, {} and other words\n">(123.2);
+    str.write_data<L"hello, {} and other words\n">(hsd::string("123.2"));
     
     hsd::io::err_print<L"{}\n">(test{});
     hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});

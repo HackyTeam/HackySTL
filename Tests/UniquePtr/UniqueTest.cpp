@@ -2,6 +2,7 @@
 
 struct base
 {
+    int a, b, c, d;
     virtual void overload() = 0;
     virtual ~base() {}
 };
@@ -9,6 +10,7 @@ struct base
 struct derived
     : public base
 {
+    int e, f, g, h;
     virtual void overload() override
     {}
 };

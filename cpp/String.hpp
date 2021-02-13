@@ -478,22 +478,21 @@ namespace hsd
             {
                 // To handle _capacity = 0 case
                 usize _new_capacity = _capacity ? _capacity : 1;
-                allocator<CharT> _alloc;
 
                 while (_new_capacity < new_cap)
                     _new_capacity += (_new_capacity + 1) / 2;
 
                 // Allocate space for NUL byte
-                auto* _new_buf = _alloc.allocate(_new_capacity + 1).unwrap();
+                auto* _new_buf = new CharT[_new_capacity + 1];
+                _new_buf[_new_capacity] = 0;
                 
                 for (usize _index = 0; _index < _size; ++_index)
                 {
                     auto& _value = _data[_index];
-                    construct_at(&_new_buf[_index], move(_value));
-                    _value.~CharT();
+                    _new_buf[_index] =  move(_value);
                 }
 
-                _alloc.deallocate(_data, _capacity + 1).unwrap();
+                delete[] _data;
                 _data = _new_buf;
                 _capacity = _new_capacity;
             }

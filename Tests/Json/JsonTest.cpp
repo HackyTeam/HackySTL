@@ -75,7 +75,7 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v) {
             hsd::io::print<L"false">();
             break;
         case hsd::JsonValueType::Number:
-            hsd::io::print<"{}">(v.as<hsd::JsonNumber>().value());
+            hsd::io::print<L"{}">(v.as<hsd::JsonNumber>().value());
             break;
         case hsd::JsonValueType::String:
             // TODO: Escape?

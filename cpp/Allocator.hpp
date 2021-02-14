@@ -178,20 +178,28 @@ namespace hsd
     template <typename T>
     class allocator
     {
+    private:
+        usize _type_size = sizeof(T);
+        std::align_val_t _alignment = static_cast<std::align_val_t>(alignof(T));
+        
+        template <typename U>
+        friend class allocator;
+
     protected:
         T* _data = nullptr;
 
     public:
         using pointer_type = T*;
         using value_type = T;
-        HSD_CONSTEXPR allocator() = default;
-        HSD_CONSTEXPR allocator(const allocator&) = delete;
-        HSD_CONSTEXPR allocator(allocator&&) = delete;
+        HSD_CONSTEXPR allocator() {}
+        HSD_CONSTEXPR allocator(const allocator& other)
+            : _type_size{other._type_size}, _alignment{other._alignment}
+        {}
 
         template <typename U>
-        HSD_CONSTEXPR allocator(const allocator<U>&) = delete;
-        template <typename U>
-        HSD_CONSTEXPR allocator(allocator<U>&&) = delete;
+        HSD_CONSTEXPR allocator(const allocator<U>& other)
+            : _type_size{other._type_size}, _alignment{other._alignment}
+        {}
 
         [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
@@ -202,7 +210,11 @@ namespace hsd
             }
             else
             {
-                return static_cast<pointer_type>(::operator new(size * sizeof(T)));
+                #ifdef __cpp_aligned_new
+                return static_cast<pointer_type>(::operator new(size * _type_size, _alignment));
+                #else
+                return static_cast<pointer_type>(::operator new(size * _type_size));
+                #endif
             }
         }
 
@@ -215,7 +227,12 @@ namespace hsd
             }
             else
             {
-                ::operator delete(ptr);
+                #ifdef __cpp_sized_deallocation
+                ::operator delete(ptr, size * _type_size, _alignment);
+                #else
+                ::operator delete(ptr, _alignment);
+                #endif
+
                 return {};
             }
         }

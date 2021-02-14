@@ -475,9 +475,9 @@ namespace hsd
                 }
                 else
                 {
-                    i64 _rez = static_cast<i64>(value);
+                    i64 _res = static_cast<i64>(value);
 
-                    return static_cast<T>(_rez + (value < 0 && 
+                    return static_cast<T>(_res + (value > 0 && 
                         constexpr_math::mod(value, static_cast<T>(1)) != 0)
                     );
                 }
@@ -878,11 +878,11 @@ namespace hsd
         {
             if(std::is_constant_evaluated())
             {
-                return constexpr_math::log2(value);
+                return constexpr_math::log(value);
             }
             else
             {
-                return std::log2(value);
+                return std::log(value);
             }
         }
 

@@ -33,9 +33,10 @@ void print_prefix(hsd::vector<hsd::wstring_view>& path);
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);
 
 int main() {
-    setlocale(LC_ALL, "en_US.UTF-8");
+    setlocale(LC_ALL, "C.UTF-8");
     hsd::JsonStream<hsd::wchar> lexer;
     // Lex the string
+    //lexer.lex(s_test_string).unwrap();
     lexer.lex_file(test_filename).unwrap();
     lexer.push_eot().unwrap();
 

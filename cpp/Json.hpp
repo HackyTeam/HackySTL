@@ -3,6 +3,8 @@
 /// @brief JSON stream parser
 
 #include <queue>
+#include <cstdio>
+#include <cwchar>
 
 #include "Types.hpp"
 #include "String.hpp"
@@ -13,20 +15,31 @@
 
 namespace hsd {
     namespace json_detail {
+        template <typename CharT, auto GetC>
+        inline auto read_file_impl(std::FILE* stream) {
+            constexpr usize buf_size = 1024;
+            static CharT s_buf[buf_size];
+
+            usize size;
+            for (size = 0; size < buf_size; ) {
+                auto c = GetC(stream);
+                if (c == EOF)
+                    break;
+                s_buf[size++] = c;
+            }
+            return basic_string_view<CharT>(s_buf, size);
+        }
+
         template <typename CharT>
-        inline auto read_character(FILE* stream)
-        {
-            if constexpr(is_same<CharT, char>::value)
-            {
-                return fgetc(stream);
-            }
-            else if(is_same<CharT, wchar>::value)
-            {
-                return fgetwc(stream);
-            }
+        inline auto read_file(std::FILE* stream) {
+            if constexpr (is_same<CharT, char>::value)
+                return read_file_impl<CharT, &std::fgetc>(stream);
+            else if constexpr(is_same<CharT, wchar>::value)
+                return read_file_impl<CharT, &std::fgetwc>(stream);
+            else
+                static_assert(is_same<CharT, char>::value or is_same<CharT, wchar>::value, "File IO only implemented for char & wchar");
         }
     } // namespace json_detail
-    
 
     enum class JsonToken {
         Null, True, False,
@@ -190,121 +203,23 @@ namespace hsd {
         // If an error occurs, the rest of buffer can be passed in
         Result<void, JsonError> lex_file(string_view filename) {
             static const char* const s_keywords[] = {"null", "true", "false"};
-            auto* stream = fopen(filename.data(), "r");
-            auto read_ch = json_detail::read_character<CharT>;
+            std::FILE* stream = std::fopen(filename.data(), "r");
+            if (!stream)
+                return JsonError("Couldn't open file", static_cast<usize>(-1));
+            auto& read_chunk = json_detail::read_file<CharT>;
 
-            for (auto _value = read_ch(stream); _value != EOF; _value = read_ch(stream)) {
-                CharT ch = static_cast<CharT>(_value);
-                ++pos;
-                _reparse:
-                if (current_token == JsonToken::Empty) {
-                    if (basic_cstring<CharT>::iswhitespace(ch))
-                        continue;
-                    switch (ch) {
-                        #define CASE_CH(ch, tok) \
-                            case static_cast<CharT>(ch): \
-                                tokens.push(tok); \
-                                break;
-
-                        CASE_CH('[', JsonToken::BArray)
-                        CASE_CH(']', JsonToken::EArray)
-                        CASE_CH('{', JsonToken::BObject)
-                        CASE_CH('}', JsonToken::EObject)
-                        CASE_CH(',', JsonToken::Comma)
-                        CASE_CH(':', JsonToken::Colon)
-                        #undef CASE_CH
-
-                        case static_cast<CharT>('n'):
-                            current_token = JsonToken::Null;
-                            token_kw = s_keywords[0];
-                            ++token_position;
-                            break;
-                        case static_cast<CharT>('t'):
-                            current_token = JsonToken::True;
-                            token_kw = s_keywords[1];
-                            ++token_position;
-                            break;
-                        case static_cast<CharT>('f'):
-                            current_token = JsonToken::False;
-                            token_kw = s_keywords[2];
-                            ++token_position;
-                            break;
-                        case static_cast<CharT>('"'):
-                            current_token = JsonToken::String;
-                            break;
-                        default:
-                            // Only ASCII numbers supported
-                            if (ch == static_cast<CharT>('-') or ch == static_cast<CharT>('+') or
-                                (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9')))
-                            {
-                                current_token = JsonToken::Number;
-                                if (ch != static_cast<CharT>('+') and ch != static_cast<CharT>('-'))
-                                    token_str.push_back('+'); // Explicit sign for parse_i
-                                token_str.push_back(ch);
-                                ++token_position;
-                            } else {
-                                tokens.push(JsonToken::Error);
-                                return JsonError("Syntax error: unexpected character", pos);
-                            }
-                    }
-                } else {
-                    if (token_kw) {
-                        if (ch != static_cast<CharT>(token_kw[token_position])) {
-                            // Error and recover
-                            tokens.push(JsonToken::Error);
-                            current_token = JsonToken::Empty;
-                            token_position = 0;
-                            token_kw = nullptr;
-                            return JsonError("Syntax error: unexpected character", pos);
-                        }
-                        ++token_position;
-                        if (token_kw[token_position] == 0) {
-                            tokens.push(current_token);
-                            current_token = JsonToken::Empty;
-                            token_position = 0;
-                            token_kw = nullptr;
-                        }
-                    } else if (current_token == JsonToken::String) {
-                        // handle escape sequences
-                        if (ch == static_cast<CharT>('"')) {
-                            tokens.push(current_token);
-                            qtok_string.push(move(token_str));
-                            current_token = JsonToken::Empty;
-                            token_position = 0;
-                            token_str.clear();
-                        } else {
-                            ++token_position;
-                            token_str.push_back(ch);
-                        }
-                    } else if (current_token == JsonToken::Number) {
-                        if (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9')) {
-                            token_position++;
-                            token_str.push_back(ch);
-                        } else {
-                            tokens.push(current_token);
-                            qtok_number.push(basic_cstring<CharT>::parse_i(token_str.c_str()));
-                            current_token = JsonToken::Empty;
-                            token_position = 0;
-                            token_str.clear();
-
-                            goto _reparse;
-                        }
-                    }
+            while (true) {
+                auto chunk = read_chunk(stream);
+                if (chunk.size() == 0)
+                    break;
+                auto res = lex(chunk);
+                if (!res) {
+                    std::fclose(stream);
+                    return res.unwrap_err();
                 }
             }
-            if(ferror(stream))
-            {
-                fclose(stream);
-                return JsonError("Error while reading a file", pos);
-            }
-            else if(feof(stream))
-            {
-                fclose(stream);
-                return {};
-            }
-
-            fclose(stream);
-            return JsonError("Undefined Behaviour", pos);
+            std::fclose(stream);
+            return {};
         }
 
         // End the stream of tokens

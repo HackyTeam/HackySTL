@@ -16,7 +16,7 @@
 namespace hsd {
     namespace json_detail {
         template <typename CharT, auto GetC>
-        inline auto read_file_impl(std::FILE* stream) {
+        inline auto read_file_impl(FILE* stream) {
             constexpr usize buf_size = 1024;
             static CharT s_buf[buf_size];
 
@@ -31,13 +31,18 @@ namespace hsd {
         }
 
         template <typename CharT>
-        inline auto read_file(std::FILE* stream) {
+        inline auto read_file(FILE* stream) {
             if constexpr (is_same<CharT, char>::value)
-                return read_file_impl<CharT, &std::fgetc>(stream);
+                return read_file_impl<CharT, &fgetc>(stream);
+            #if defined(HSD_PLATFORM_POSIX)
             else if constexpr(is_same<CharT, wchar>::value)
-                return read_file_impl<CharT, &std::fgetwc>(stream);
+                return read_file_impl<CharT, &fgetwc>(stream);
             else
                 static_assert(is_same<CharT, char>::value or is_same<CharT, wchar>::value, "File IO only implemented for char & wchar");
+            #else
+            else
+                static_assert(is_same<CharT, char>::value, "File IO only implemented for char on windows");
+            #endif
         }
     } // namespace json_detail
 
@@ -203,7 +208,7 @@ namespace hsd {
         // If an error occurs, the rest of buffer can be passed in
         Result<void, JsonError> lex_file(string_view filename) {
             static const char* const s_keywords[] = {"null", "true", "false"};
-            std::FILE* stream = std::fopen(filename.data(), "r");
+            auto* stream = fopen(filename.data(), "r");
             if (!stream)
                 return JsonError("Couldn't open file", static_cast<usize>(-1));
             auto& read_chunk = json_detail::read_file<CharT>;

@@ -3,12 +3,12 @@
 #include <Json.hpp>
 #include <Io.hpp>
 
-static const hsd::wchar* s_test_string =
-LR"json({
+/*static const char* s_test_string =
+R"json({
     "Cow": "milk",
     "gold": 5000,
     "primes": [2, 3, 5, 7, 11, 13, 23],
-    "Unicode": "‏蛋‎‎‎‎‎‎‎‎‎‎‎‎‎‎‎",
+    "Unicode": "蛋",
     "MontyPython": "import pickle",
     "LoS": [
         {
@@ -25,7 +25,7 @@ LR"json({
         "age": [10, 20]
     },
     "primitives": [null, true, false]
-})json";
+})json"; */
 
 static const char* test_filename = "Tests/Json/TestFile.json";
 
@@ -33,7 +33,6 @@ void print_prefix(hsd::vector<hsd::wstring_view>& path);
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);
 
 int main() {
-    setlocale(LC_ALL, "C.UTF-8");
     hsd::JsonStream<hsd::wchar> lexer;
     // Lex the string
     //lexer.lex(s_test_string).unwrap();

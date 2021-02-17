@@ -263,13 +263,31 @@ namespace hsd {
         template <typename Class>
         Class& as() {return static_cast<Class&>(*this); }
 
-        template <typename CharT>
-        JsonString<CharT>& as_str() {return static_cast<JsonString<CharT>&>(*this); }
-
         template <typename Class>
-        Result<Class&, runtime_error> try_as(JsonValueType t) {
-            return type() == t ? static_cast<Class&>(*this) : runtime_error("Cast to wrong type");
+        Result<reference<Class>, runtime_error> try_as(JsonValueType t) {
+            if (type() == t)
+            {
+                return {static_cast<Class&>(*this)};
+            }
+            else
+            {
+                return runtime_error("Cast to wrong type");
+            }
         }
+
+        template <typename CharT>
+        basic_string_view<CharT> as_str();
+
+        i32 as_num();
+        bool as_bool();
+
+        template <typename CharT>
+        JsonValue& access(const basic_string_view<CharT>& key);
+
+        template <typename CharT, usize N>
+        JsonValue& access(const CharT (&key)[N]);
+
+        JsonValue& access(usize index);
     };
 
     // Streaming pending value, todo
@@ -349,6 +367,49 @@ namespace hsd {
             return _values;
         }
     };
+
+    template <typename CharT>
+    basic_string_view<CharT> JsonValue::as_str() { 
+        return try_as<JsonString<CharT>>(JsonValueType::String).unwrap().value(); 
+    }
+
+    i32 JsonValue::as_num() { 
+        return try_as<JsonNumber>(JsonValueType::Number).unwrap().value(); 
+    }
+
+    bool JsonValue::as_bool() { 
+        if (type() == JsonValueType::True)
+        {
+            return true;
+        }
+        else if (type() == JsonValueType::False)
+        {
+            return false;
+        }
+
+        // throw
+        Result<bool, runtime_error> res = runtime_error{"Cast to wrong type"};
+        return res.unwrap();
+    }
+
+    template <typename CharT>
+    JsonValue& JsonValue::access(const basic_string_view<CharT>& key)
+    {
+        auto& _map = try_as<JsonObject<CharT>>(JsonValueType::Object).unwrap().values();
+        return *_map.at(key).unwrap();
+    }
+
+    template <typename CharT, usize N>
+    JsonValue& JsonValue::access(const CharT (&key)[N])
+    {
+        return access<CharT>({key, N - 1});
+    }
+
+    JsonValue& JsonValue::access(usize index)
+    {
+        auto& _arr = try_as<JsonArray>(JsonValueType::Array).unwrap().values();
+        return *_arr.at(index).unwrap();
+    }
 
     template <typename CharT>
     class JsonTokenIterator {

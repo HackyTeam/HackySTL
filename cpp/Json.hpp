@@ -13,15 +13,19 @@
 #include "UniquePtr.hpp"
 #include "UnorderedMap.hpp"
 
-namespace hsd {
-    namespace json_detail {
+namespace hsd
+{
+    namespace json_detail
+    {
         template <typename CharT, auto GetC>
-        inline auto read_file_impl(FILE* stream) {
+        inline auto read_file_impl(FILE* stream)
+        {
             constexpr usize buf_size = 1024;
             static CharT s_buf[buf_size];
 
             usize size;
-            for (size = 0; size < buf_size; ) {
+            for (size = 0; size < buf_size;)
+            {
                 auto c = GetC(stream);
                 if (c == EOF)
                     break;
@@ -31,11 +35,12 @@ namespace hsd {
         }
 
         template <typename CharT>
-        inline auto read_file(FILE* stream) {
+        inline auto read_file(FILE* stream)
+        {
             if constexpr (is_same<CharT, char>::value)
                 return read_file_impl<CharT, &fgetc>(stream);
             #if defined(HSD_PLATFORM_POSIX)
-            else if constexpr(is_same<CharT, wchar>::value)
+            else if constexpr (is_same<CharT, wchar>::value)
                 return read_file_impl<CharT, &fgetwc>(stream);
             else
                 static_assert(is_same<CharT, char>::value or is_same<CharT, wchar>::value, "File IO only implemented for char & wchar");
@@ -46,26 +51,28 @@ namespace hsd {
         }
     } // namespace json_detail
 
-    enum class JsonToken {
-        Null, True, False,
-        Number, String,
-        BArray, EArray, BObject, EObject,
-        Comma, Colon,
+    enum class JsonToken
+    {
+        Null, True, False, Number, String, BArray, 
+        EArray, BObject, EObject, Comma, Colon,
 
         Eof = -1,
         Error = -2,
         Empty = -3 // For internal purposes
     };
 
-    class JsonError : public runtime_error {
+    class JsonError : public runtime_error
+    {
         hsd::string str;
+
     public:
         usize position;
 
         JsonError(const char* msg, usize pos)
             : runtime_error(msg), position(pos) {}
 
-        const char* operator()() {
+        const char* operator()()
+        {
             if (str.size() != 0)
                 return str.c_str();
 
@@ -74,7 +81,8 @@ namespace hsd {
     };
 
     template <typename CharT>
-    class JsonStream {
+    class JsonStream
+    {
         using vstr = basic_string_view<CharT>;
         using str = basic_string<CharT>;
 
@@ -89,32 +97,39 @@ namespace hsd {
         usize pos = 0;
 
     public:
-        std::queue<JsonToken>& get_tokens() {return tokens; }
-        str pop_string() {
+        std::queue<JsonToken>& get_tokens() { return tokens; }
+        str pop_string()
+        {
             str s = move(qtok_string.front());
             qtok_string.pop();
             return s;
         }
-        i32 pop_number() {
+        i32 pop_number()
+        {
             i32 n = qtok_number.front();
             qtok_number.pop();
             return n;
         }
 
         // If an error occurs, the rest of buffer can be passed in
-        Result<void, JsonError> lex(vstr frag) {
+        Result<void, JsonError> lex(vstr frag)
+        {
             static const char* const s_keywords[] = {"null", "true", "false"};
-            for (CharT ch : frag) {
+            for (CharT ch : frag)
+            {
                 ++pos;
+                
                 _reparse:
-                if (current_token == JsonToken::Empty) {
+                if (current_token == JsonToken::Empty)
+                {
                     if (basic_cstring<CharT>::iswhitespace(ch))
                         continue;
-                    switch (ch) {
-                        #define CASE_CH(ch, tok) \
-                            case static_cast<CharT>(ch): \
-                                tokens.push(tok); \
-                                break;
+                    switch (ch)
+                    {
+                        #define CASE_CH(ch, tok)    \
+                        case static_cast<CharT>(ch):\
+                            tokens.push(tok);       \
+                            break;
 
                         CASE_CH('[', JsonToken::BArray)
                         CASE_CH(']', JsonToken::EArray)
@@ -152,14 +167,20 @@ namespace hsd {
                                     token_str.push_back('+'); // Explicit sign for parse_i
                                 token_str.push_back(ch);
                                 ++token_position;
-                            } else {
+                            }
+                            else
+                            {
                                 tokens.push(JsonToken::Error);
                                 return JsonError("Syntax error: unexpected character", pos);
                             }
                     }
-                } else {
-                    if (token_kw) {
-                        if (ch != static_cast<CharT>(token_kw[token_position])) {
+                }
+                else
+                {
+                    if (token_kw)
+                    {
+                        if (ch != static_cast<CharT>(token_kw[token_position]))
+                        {
                             // Error and recover
                             tokens.push(JsonToken::Error);
                             current_token = JsonToken::Empty;
@@ -168,29 +189,40 @@ namespace hsd {
                             return JsonError("Syntax error: unexpected character", pos);
                         }
                         ++token_position;
-                        if (token_kw[token_position] == 0) {
+                        if (token_kw[token_position] == 0)
+                        {
                             tokens.push(current_token);
                             current_token = JsonToken::Empty;
                             token_position = 0;
                             token_kw = nullptr;
                         }
-                    } else if (current_token == JsonToken::String) {
+                    }
+                    else if (current_token == JsonToken::String)
+                    {
                         // handle escape sequences
-                        if (ch == static_cast<CharT>('"')) {
+                        if (ch == static_cast<CharT>('"'))
+                        {
                             tokens.push(current_token);
                             qtok_string.push(move(token_str));
                             current_token = JsonToken::Empty;
                             token_position = 0;
                             token_str.clear();
-                        } else {
+                        }
+                        else
+                        {
                             ++token_position;
                             token_str.push_back(ch);
                         }
-                    } else if (current_token == JsonToken::Number) {
-                        if (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9')) {
+                    }
+                    else if (current_token == JsonToken::Number)
+                    {
+                        if (ch >= static_cast<CharT>('0') and ch <= static_cast<CharT>('9'))
+                        {
                             token_position++;
                             token_str.push_back(ch);
-                        } else {
+                        }
+                        else
+                        {
                             tokens.push(current_token);
                             qtok_number.push(basic_cstring<CharT>::parse_i(token_str.c_str()));
                             current_token = JsonToken::Empty;
@@ -206,19 +238,24 @@ namespace hsd {
         }
 
         // If an error occurs, the rest of buffer can be passed in
-        Result<void, JsonError> lex_file(string_view filename) {
+        Result<void, JsonError> lex_file(string_view filename)
+        {
             static const char* const s_keywords[] = {"null", "true", "false"};
             auto* stream = fopen(filename.data(), "r");
+            
             if (!stream)
                 return JsonError("Couldn't open file", static_cast<usize>(-1));
+            
             auto& read_chunk = json_detail::read_file<CharT>;
 
-            while (true) {
+            while (true)
+            {
                 auto chunk = read_chunk(stream);
                 if (chunk.size() == 0)
                     break;
                 auto res = lex(chunk);
-                if (!res) {
+                if (!res)
+                {
                     std::fclose(stream);
                     return res.unwrap_err();
                 }
@@ -228,43 +265,48 @@ namespace hsd {
         }
 
         // End the stream of tokens
-        Result<void, JsonError> push_eot() {
+        Result<void, JsonError> push_eot()
+        {
             ++pos;
-            if (current_token == JsonToken::Number) {
+            
+            if (current_token == JsonToken::Number)
+            {
                 tokens.push(current_token);
                 qtok_number.push(basic_cstring<CharT>::parse_i(token_str.c_str()));
                 current_token = JsonToken::Empty;
                 token_position = 0;
                 token_str.clear();
             }
-            if (current_token != JsonToken::Empty) {
+            if (current_token != JsonToken::Empty)
+            {
                 tokens.push(JsonToken::Error);
                 return JsonError("Syntax error: unexpected end of transmission", pos);
             }
+            
             tokens.push(JsonToken::Eof);
             return {};
         }
     };
 
-    enum class JsonValueType {
-        Null, True, False, Number, String, Object, Array,
+    enum class JsonValueType
+    {
+        Null, True, False, Number,
+        String, Object, Array
     };
 
-    // forward declaration
-    template <typename CharT>
-    class JsonString;
-
-    class JsonValue {
+    class JsonValue
+    {
     public:
         virtual ~JsonValue() = default;
         virtual JsonValueType type() const noexcept = 0;
-        virtual bool is_complete() const noexcept {return true; };
+        virtual bool is_complete() const noexcept { return true; };
 
         template <typename Class>
-        Class& as() {return static_cast<Class&>(*this); }
+        Class& as() { return static_cast<Class&>(*this); }
 
         template <typename Class>
-        Result<reference<Class>, runtime_error> try_as(JsonValueType t) {
+        Result<reference<Class>, runtime_error> try_as(JsonValueType t)
+        {
             if (type() == t)
             {
                 return {static_cast<Class&>(*this)};
@@ -276,46 +318,51 @@ namespace hsd {
         }
 
         template <typename CharT>
-        basic_string_view<CharT> as_str();
-
-        i32 as_num();
-        bool as_bool();
+        Result<basic_string_view<CharT>, runtime_error> as_str();
+        Result<i32, runtime_error> as_num();
+        Result<bool, runtime_error> as_bool();
 
         template <typename CharT>
-        JsonValue& access(const basic_string_view<CharT>& key);
+        Result<reference<JsonValue>, runtime_error> access(const basic_string_view<CharT>& key);
+        Result<reference<JsonValue>, runtime_error> access(usize index);
 
-        template <typename CharT, usize N>
-        JsonValue& access(const CharT (&key)[N]);
-
-        JsonValue& access(usize index);
+        template <typename CharT>
+        JsonValue& operator[](const basic_string_view<CharT>& key);
+        JsonValue& operator[](usize index);
     };
 
     // Streaming pending value, todo
-    class JsonPendingValue : public JsonValue {
-        bool is_complete() const noexcept override {return false; }
+    class JsonPendingValue : public JsonValue
+    {
+        bool is_complete() const noexcept override { return false; }
     };
 
-    class JsonPrimitive : public JsonValue {
+    class JsonPrimitive : public JsonValue
+    {
         JsonValueType t; // only Null, True & False allowed
 
         JsonPrimitive(JsonValueType t) : t(t) {}
+
     public:
-        JsonValueType type() const noexcept override {
+        JsonValueType type() const noexcept override
+        {
             return t;
         }
 
-        static JsonPrimitive mk_null()  {return {JsonValueType::Null }; }
-        static JsonPrimitive mk_true()  {return {JsonValueType::True }; }
-        static JsonPrimitive mk_false() {return {JsonValueType::False}; }
+        static JsonPrimitive mk_null() { return {JsonValueType::Null}; }
+        static JsonPrimitive mk_true() { return {JsonValueType::True}; }
+        static JsonPrimitive mk_false() { return {JsonValueType::False}; }
     };
 
-    class JsonNumber : public JsonValue {
+    class JsonNumber : public JsonValue
+    {
         i32 _value;
 
     public:
         explicit JsonNumber(i32 v) : _value(v) {}
 
-        JsonValueType type() const noexcept override {
+        JsonValueType type() const noexcept override
+        {
             return JsonValueType::Number;
         }
 
@@ -323,61 +370,90 @@ namespace hsd {
     };
 
     template <typename CharT>
-    class JsonString : public JsonValue {
+    class JsonString : public JsonValue
+    {
         basic_string<CharT> _value;
 
     public:
         explicit JsonString(basic_string<CharT>&& v) : _value(move(v)) {}
 
-        JsonValueType type() const noexcept override {
+        JsonValueType type() const noexcept override
+        {
             return JsonValueType::String;
         }
 
         basic_string_view<CharT> value() const { return static_cast<basic_string_view<CharT>>(_value); }
     };
 
-    class JsonArray : public JsonValue {
+    class JsonArray : public JsonValue
+    {
         vector<unique_ptr<JsonValue>> _values;
 
     public:
         JsonArray(vector<unique_ptr<JsonValue>>&& v) : _values(move(v)) {}
 
-        JsonValueType type() const noexcept override {
+        JsonValueType type() const noexcept override
+        {
             return JsonValueType::Array;
         }
 
-        auto& values() {
+        auto &values()
+        {
             return _values;
         }
     };
 
     template <typename CharT> // XXX?
-    class JsonObject : public JsonValue {
+    class JsonObject : public JsonValue
+    {
         unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> _values;
 
     public:
         JsonObject(unordered_map<basic_string<CharT>, unique_ptr<JsonValue>>&& v)
             : _values(move(v)) {}
 
-        JsonValueType type() const noexcept override {
+        JsonValueType type() const noexcept override
+        {
             return JsonValueType::Object;
         }
 
-        auto& values() {
+        auto &values()
+        {
             return _values;
         }
     };
 
     template <typename CharT>
-    basic_string_view<CharT> JsonValue::as_str() { 
-        return try_as<JsonString<CharT>>(JsonValueType::String).unwrap().value(); 
+    Result<basic_string_view<CharT>, runtime_error> JsonValue::as_str()
+    {
+        auto _res = try_as<JsonString<CharT>>(JsonValueType::String);
+
+        if (_res)
+        {
+            return _res.unwrap().value();
+        }
+        else
+        {
+            return _res.unwrap_err();
+        }
     }
 
-    i32 JsonValue::as_num() { 
-        return try_as<JsonNumber>(JsonValueType::Number).unwrap().value(); 
+    Result<i32, runtime_error> JsonValue::as_num()
+    {
+        auto _res = try_as<JsonNumber>(JsonValueType::Number);
+
+        if (_res)
+        {
+            return _res.unwrap().value();
+        }
+        else
+        {
+            return _res.unwrap_err();
+        }
     }
 
-    bool JsonValue::as_bool() { 
+    Result<bool, runtime_error> JsonValue::as_bool()
+    {
         if (type() == JsonValueType::True)
         {
             return true;
@@ -388,77 +464,104 @@ namespace hsd {
         }
 
         // throw
-        Result<bool, runtime_error> res = runtime_error{"Cast to wrong type"};
-        return res.unwrap();
+        return runtime_error{"Cast to wrong type"};
     }
 
     template <typename CharT>
-    JsonValue& JsonValue::access(const basic_string_view<CharT>& key)
+    Result<reference<JsonValue>, runtime_error> JsonValue::access(const basic_string_view<CharT>& key)
     {
-        auto& _map = try_as<JsonObject<CharT>>(JsonValueType::Object).unwrap().values();
-        return *_map.at(key).unwrap();
+        auto _res = try_as<JsonObject<CharT>>(JsonValueType::Object);
+
+        if(_res)
+        {
+            return *_res.unwrap().values().at(key).unwrap();
+        }
+
+        return _res.unwrap_err();
     }
 
-    template <typename CharT, usize N>
-    JsonValue& JsonValue::access(const CharT (&key)[N])
+    Result<reference<JsonValue>, runtime_error> JsonValue::access(usize index)
     {
-        return access<CharT>({key, N - 1});
-    }
+        auto _res = try_as<JsonArray>(JsonValueType::Array);
 
-    JsonValue& JsonValue::access(usize index)
-    {
-        auto& _arr = try_as<JsonArray>(JsonValueType::Array).unwrap().values();
-        return *_arr.at(index).unwrap();
+        if(_res)
+        {
+            return *_res.unwrap().values().at(index).unwrap();
+        }
+
+        return _res.unwrap_err();
     }
 
     template <typename CharT>
-    class JsonTokenIterator {
+    JsonValue& JsonValue::operator[](const basic_string_view<CharT>& key)
+    {
+        return access(key).unwrap();
+    }
+
+    JsonValue& JsonValue::operator[](usize index)
+    {
+        return access(index).unwrap();
+    }
+
+    template <typename CharT>
+    class JsonTokenIterator
+    {
         JsonStream<CharT>& _stream;
+
     public:
         JsonTokenIterator(JsonStream<CharT>& stream)
             : _stream(stream) {}
-        
-        JsonToken next() {
+
+        JsonToken next()
+        {
             JsonToken tk = _stream.get_tokens().front();
             _stream.get_tokens().pop();
             return tk;
         }
 
-        JsonToken peek() {
+        JsonToken peek()
+        {
             return _stream.get_tokens().front();
         }
 
-        void skip() {
+        void skip()
+        {
             _stream.get_tokens().pop();
         }
 
-        bool empty() const {
+        bool empty() const
+        {
             return _stream.get_tokens().empty();
         }
 
-        auto next_number() {
+        auto next_number()
+        {
             return _stream.pop_number();
         }
 
-        auto next_string() {
+        auto next_string()
+        {
             return _stream.pop_string();
         }
     };
 
     template <typename CharT>
-    class JsonParser {
+    class JsonParser
+    {
         JsonTokenIterator<CharT> stream;
 
     public:
         JsonParser(JsonStream<CharT>& s) : stream(s) {}
 
-        Result<unique_ptr<JsonValue>, JsonError> parse_next() {
+        Result<unique_ptr<JsonValue>, JsonError> parse_next()
+        {
             if (stream.empty())
                 //return JsonPendingValue::make();
                 return JsonError("Work in progress: pending values not supported", 0);
 
             JsonToken tok = stream.next();
-            switch (tok) {
+            switch (tok)
+            {
                 case JsonToken::Eof:
                     return JsonError("Unexpected EOF", 0);
                 case JsonToken::Null:
@@ -471,20 +574,24 @@ namespace hsd {
                     return make_unique<JsonNumber>(stream.next_number());
                 case JsonToken::String:
                     return make_unique<JsonString<CharT>>(stream.next_string());
-                case JsonToken::BArray: {
+                case JsonToken::BArray:
+                {
                     vector<unique_ptr<JsonValue>> array;
                     if (stream.empty())
-                        _partial_arr:
+                    _partial_arr:
                         return JsonError("Work in progress: partial arrays", 0);
-                    if (stream.peek() != JsonToken::EArray) {
-                        while (true) {
+                    if (stream.peek() != JsonToken::EArray)
+                    {
+                        while (true)
+                        {
                             auto r = parse_next();
                             if (!r)
                                 return r;
                             array.push_back(r.expect());
                             if (stream.empty())
                                 goto _partial_arr;
-                            if (stream.peek() == JsonToken::EArray) {
+                            if (stream.peek() == JsonToken::EArray)
+                            {
                                 stream.skip();
                                 break;
                             }
@@ -494,13 +601,18 @@ namespace hsd {
                     }
                     return make_unique<JsonArray>(move(array));
                 }
-                case JsonToken::BObject: {
+                case JsonToken::BObject:
+                {
                     unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> map;
                     if (stream.empty())
+                    {
                         _partial_obj:
                         return JsonError("Work in progress: partial objects", 0);
-                    if (stream.peek() != JsonToken::EObject) {
-                        while (true) {
+                    }
+                    if (stream.peek() != JsonToken::EObject)
+                    {
+                        while (true)
+                        {
                             if (stream.next() != JsonToken::String)
                                 return JsonError("Syntax error: expected string name", 0);
                             auto name = stream.next_string();
@@ -508,11 +620,14 @@ namespace hsd {
                                 goto _partial_obj;
                             if (stream.next() != JsonToken::Colon)
                                 return JsonError("Syntax error: expected a colon", 0);
+                            
                             auto r = parse_next();
                             if (!r)
                                 return r;
+
                             map.emplace(move(name), r.expect());
-                            if (stream.peek() == JsonToken::EObject) {
+                            if (stream.peek() == JsonToken::EObject)
+                            {
                                 stream.skip();
                                 break;
                             }
@@ -526,7 +641,7 @@ namespace hsd {
                 }
                 default:
                     return JsonError("Syntax error: unexpected token", static_cast<usize>(tok));
-            }
+                }
         }
     };
 }

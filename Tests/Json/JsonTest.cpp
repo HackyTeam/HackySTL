@@ -30,7 +30,7 @@ LR"json({
 void print_prefix(hsd::vector<hsd::wstring_view>& path);
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);
 
-int main() 
+int main()
 {
     hsd::JsonStream<hsd::wchar> lexer;
     // Lex the string
@@ -49,23 +49,24 @@ int main()
     print_value(path, *value);
 }
 
-void print_prefix(hsd::vector<hsd::wstring_view>& path) 
+void print_prefix(hsd::vector<hsd::wstring_view>& path)
 {
     if (path.size() == 0)
         hsd::io::print<L"<root>">();
-    else {
+    else
+    {
         for (auto part : path)
             hsd::io::print<L"{}:">(part);
     }
     hsd::io::print<L" ">();
 }
 
-void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v) 
+void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
 {
     print_prefix(path);
     hsd::JsonValueType type = v.type();
-    
-    switch (type) 
+
+    switch (type)
     {
         case hsd::JsonValueType::Null:
             hsd::io::print<L"null">();
@@ -89,26 +90,27 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
         case hsd::JsonValueType::Object:
             hsd::io::print<L"object">();
             break;
-    }
+        }
     hsd::io::print<L"\n">();
 
-    if (type == hsd::JsonValueType::Array) 
+    if (type == hsd::JsonValueType::Array)
     {
         auto& vec = v.as<hsd::JsonArray>().values();
         hsd::usize idx = 0;
-        
-        for (auto it = vec.begin(), end = vec.end(); it != end; ++it, ++idx) 
+
+        for (auto it = vec.begin(), end = vec.end(); it != end; ++it, ++idx)
         {
             auto s = hsd::to_wstring(idx);
             path.push_back(static_cast<hsd::wstring_view>(s));
             print_value(path, *(*it));
             path.pop_back();
         }
-    } 
-    else if (type == hsd::JsonValueType::Object) 
+    }
+    else if (type == hsd::JsonValueType::Object)
     {
         auto& map = v.as<hsd::JsonObject<hsd::wchar>>().values();
-        for (auto& kv : map) 
+        
+        for (auto& kv : map)
         {
             path.push_back(static_cast<hsd::wstring_view>(kv.first));
             print_value(path, *kv.second);

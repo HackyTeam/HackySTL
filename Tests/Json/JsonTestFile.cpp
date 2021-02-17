@@ -7,6 +7,7 @@ static const char* test_filename = "Tests/Json/TestFile.json";
 
 int main() 
 {
+    using namespace hsd::string_literals;
     setlocale(LC_ALL, "en_US.UTF-8");
     hsd::JsonStream<hsd::wchar> lexer;
     
@@ -21,5 +22,5 @@ int main()
     // Assert that the whole object is complete
     assert(value->is_complete());
     
-    auto res = value->access(L"LoS").access(0).access(L"age").as_num();
+    auto res = (*value)[L"LoS"_sv][0][L"age"_sv].as_num().unwrap();
 }

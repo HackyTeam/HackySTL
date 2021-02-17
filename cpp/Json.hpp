@@ -424,7 +424,7 @@ namespace hsd
     };
 
     template <typename CharT>
-    Result<basic_string_view<CharT>, runtime_error> JsonValue::as_str()
+    inline Result<basic_string_view<CharT>, runtime_error> JsonValue::as_str()
     {
         auto _res = try_as<JsonString<CharT>>(JsonValueType::String);
 
@@ -438,7 +438,7 @@ namespace hsd
         }
     }
 
-    Result<i32, runtime_error> JsonValue::as_num()
+    inline Result<i32, runtime_error> JsonValue::as_num()
     {
         auto _res = try_as<JsonNumber>(JsonValueType::Number);
 
@@ -452,7 +452,7 @@ namespace hsd
         }
     }
 
-    Result<bool, runtime_error> JsonValue::as_bool()
+    inline Result<bool, runtime_error> JsonValue::as_bool()
     {
         if (type() == JsonValueType::True)
         {
@@ -468,7 +468,7 @@ namespace hsd
     }
 
     template <typename CharT>
-    Result<reference<JsonValue>, runtime_error> JsonValue::access(const basic_string_view<CharT>& key)
+    inline Result<reference<JsonValue>, runtime_error> JsonValue::access(const basic_string_view<CharT>& key)
     {
         auto _res = try_as<JsonObject<CharT>>(JsonValueType::Object);
 
@@ -480,7 +480,7 @@ namespace hsd
         return _res.unwrap_err();
     }
 
-    Result<reference<JsonValue>, runtime_error> JsonValue::access(usize index)
+    inline Result<reference<JsonValue>, runtime_error> JsonValue::access(usize index)
     {
         auto _res = try_as<JsonArray>(JsonValueType::Array);
 
@@ -493,12 +493,12 @@ namespace hsd
     }
 
     template <typename CharT>
-    JsonValue& JsonValue::operator[](const basic_string_view<CharT>& key)
+    inline JsonValue& JsonValue::operator[](const basic_string_view<CharT>& key)
     {
         return access(key).unwrap();
     }
 
-    JsonValue& JsonValue::operator[](usize index)
+    inline JsonValue& JsonValue::operator[](usize index)
     {
         return access(index).unwrap();
     }

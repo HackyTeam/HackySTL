@@ -49,6 +49,11 @@ namespace hsd
             : _data(str), _size(size)
         {}
 
+        template <usize N>
+        constexpr basic_string_view(const CharT (&str)[N])
+            : _data(str), _size(N - 1)
+        {}
+
         constexpr void reset()
         {
             _data = nullptr;
@@ -197,6 +202,34 @@ namespace hsd
             return basic_string_view(_data + start, math::min(len, max_length));
         }
     };
+
+    namespace string_literals
+    {
+        constexpr basic_string_view<char> operator""_sv(const char* str, usize size)
+        {
+            return basic_string_view<char>{str, size};
+        }
+
+        constexpr basic_string_view<char8> operator""_sv(const char8* str, usize size)
+        {
+            return basic_string_view<char8>{str, size};
+        }
+
+        constexpr basic_string_view<char16> operator""_sv(const char16* str, usize size)
+        {
+            return basic_string_view<char16>{str, size};
+        }
+
+        constexpr basic_string_view<char32> operator""_sv(const char32* str, usize size)
+        {
+            return basic_string_view<char32>{str, size};
+        }
+
+        constexpr basic_string_view<wchar> operator""_sv(const wchar* str, usize size)
+        {
+            return basic_string_view<wchar>{str, size};
+        }
+    } // namespace string_literals
 
     template <string_literal str>
     inline i32 _write(const basic_string_view<char>& val, pair<char*, usize> dest)

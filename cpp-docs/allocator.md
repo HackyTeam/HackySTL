@@ -5,6 +5,26 @@ Implemented in header [Allocator.hpp](../cpp/Allocator.hpp)
 
 ## Allocators:
 
+### Error type:
+#### Definition:
+```cpp
+class allocator_error
+{
+private:
+    const char* _err = nullptr;
+    
+public:
+    HSD_CONSTEXPR allocator_error(const char* error)
+        : _err{error}
+    {}
+    
+    const char* operator()() const
+    {
+        return _err;
+    }
+};
+```
+
 ### Buffered allocator
 #### Definition:
 ```cpp
@@ -41,7 +61,7 @@ struct block
 | `print_buffer` | `N/A` | `void` | If it is compiled in debug mode this method is enabled and prints the buffer in a matrix configuration |
 
 
-#### Example
+#### Example:
 
 ```cpp
 #include <Allocator.hpp>
@@ -134,7 +154,7 @@ Allocates memory on the heap allocation `::operator new`
 | `allocate` | `usize size` | `Result<Type*, allocator_error>` | Allocates a block with a size of `type_size * size` and with an `alignment` on the heap |
 | `deallocate` | `Type* ptr`, `usize size` | `Result<void, allocator_error>` | Deallocates a block from the heap using the `size`, `type_size` and `alignment` as helping parameters |
 
-#### Example
+#### Example:
 
 ```cpp
 #include <Allocator.hpp>
@@ -220,7 +240,7 @@ It is a wrapper around `stack_array` which can be used at compile time
 | `constexpr_allocator` | `constexpr_allocator&&` | `/*implementation defined*/` | Move constructor (deleted) |
 | `limit` | `N/A` | `usize` | Returns the `MaxSize` template parameter |
 
-#### Example
+#### Example:
 
 ```cpp
 #include <Allocator.hpp>

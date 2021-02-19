@@ -49,7 +49,7 @@ namespace hsd
 
         hsd::unique_ptr<_any_base> clone() const override 
         {
-            return hsd::make_unique<_any_derived, allocator>(_value);
+            return hsd::make_unique<_any_derived>(_value);
         }
 
         #ifdef HSD_ANY_ENABLE_TYPEINFO

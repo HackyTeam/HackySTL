@@ -1,7 +1,7 @@
 # Utilities support
 
 ## Basic utilities introduced in the library
-Implemented in header [Utility.hpp](../../cpp/Utility.hpp)
+Implemented in header [Utility.hpp](../cpp/Utility.hpp)
 
 | Function | Arguments | Return type | Description |
 | :------- | :-------- | :---------- | :---------- |

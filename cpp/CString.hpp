@@ -84,11 +84,15 @@ namespace hsd
 					static_cast<CharT>(0x3000),
 					static_cast<CharT>(0) // Terminator
 				};
+
 				constexpr usize size = std::extent_v<decltype(chars)>;
 				hsd::stack_array<CharT, size> r;
 				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+
 				return r;
-			} else {
+			} 
+			else 
+			{
 				constexpr CharT chars[] = {
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
@@ -100,9 +104,11 @@ namespace hsd
 					static_cast<CharT>(0xA0),
 					static_cast<CharT>(0) // Terminator
 				};
+
 				constexpr usize size = std::extent_v<decltype(chars)>;
 				hsd::stack_array<CharT, size> r;
 				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+				
 				return r;
 			}
 		}

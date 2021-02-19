@@ -94,11 +94,18 @@
         "addressof",
         "alignas",
         "clientv",
+        "constexpr",
         "ctim",
+        "deallocate",
+        "deallocates",
+        "hindex",
         "hintv",
         "isize",
         "qookie",
+        "struct",
+        "uchar",
         "usize",
+        "vindex",
         "wprint",
         "wsstream"
     ]

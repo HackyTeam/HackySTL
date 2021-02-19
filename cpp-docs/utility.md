@@ -16,6 +16,6 @@ Implemented in header [Utility.hpp](../../cpp/Utility.hpp)
 | `copy` | `InIter first`, `InIter last`, `OutIter dest` | `OutIter` | Sequentially copies the values in the range of `first -> last` to the destination, `dest` |
 | `copy_n` | `InIter first`, `usize n`, `OutIter dest` | `OutIter` | Sequentially copies the values in the range of `0 -> n` to the destination, `dest` |
 | `copy_if` | `InIter first`, `InIter last`, `OutIter dest`, `Predicate pred` | `OutIter` | Sequentially copies the values in the range of `first -> last` to the destination, `dest` if the predicate, `pred` is evaluated to `true` |
-| `set` | `InIter first`, `InIter last`, `Type val` | void | Sequentially sets the values in the range of `first -> last` with a defined value, `val` |
+| `set` | `InIter first`, `InIter last`, `Type val` | `void` | Sequentially sets the values in the range of `first -> last` with a defined value, `val` |
 | `begin` | `Type (&arr)[Count]` | `Type*` | Gets the address of the first element of an array |
 | `end` | `Type (&arr)[Count]` | `Type*` | Gets the address of the last element of an array |

@@ -46,8 +46,8 @@ struct block
 #### Public members:
 | Member | Value/Type |
 | :----- | :--------- |
-| pointer_type | `Type*` |
-| value_type | `Type` |
+| `pointer_type` | `Type*` |
+| `value_type` | `Type` |
 
 #### Member functions:
 | Method | Arguments | Return type | Description |
@@ -138,8 +138,8 @@ class allocator;
 #### Public members:
 | Member | Value/Type |
 | :----- | :--------- |
-| pointer_type | `Type*` |
-| value_type | `Type` |
+| `pointer_type` | `Type*` |
+| `value_type` | `Type` |
 
 #### Description:
 Allocates memory on the heap allocation `::operator new`
@@ -226,8 +226,8 @@ class constexpr_allocator;
 #### Public members:
 | Member | Value/Type |
 | :----- | :--------- |
-| pointer_type | `stack_array<Type, MaxSize>` |
-| value_type | `Type` |
+| `pointer_type` | `stack_array<Type, MaxSize>` |
+| `value_type` | `Type` |
 
 #### Description:
 It is a wrapper around `stack_array` which can be used at compile time

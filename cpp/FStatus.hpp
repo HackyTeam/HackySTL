@@ -164,21 +164,26 @@ namespace hsd
             inline auto permissions() const
                 -> Result<fs_permissions, runtime_error>
             {
-                return fs_permissions{
-                    .can_owner_read           = (_status.st_mode & S_IRUSR) == S_IRUSR,
-                    .can_owner_write          = (_status.st_mode & S_IWUSR) == S_IWUSR,
-                    .can_owner_exec           = (_status.st_mode & S_IXUSR) == S_IXUSR,
-                    .can_owner_do_everything  = (_status.st_mode & S_IRWXU) == S_IRWXU,
-                    .can_group_read           = (_status.st_mode & S_IRGRP) == S_IRGRP,
-                    .can_group_write          = (_status.st_mode & S_IWGRP) == S_IWGRP,
-                    .can_group_exec           = (_status.st_mode & S_IXGRP) == S_IXGRP,
-                    .can_group_do_everything  = (_status.st_mode & S_IRWXG) == S_IRWXG,
-                    .can_others_read          = (_status.st_mode & S_IROTH) == S_IROTH,
-                    .can_others_write         = (_status.st_mode & S_IWOTH) == S_IWOTH,
-                    .can_others_exec          = (_status.st_mode & S_IXOTH) == S_IXOTH,
-                    .can_others_do_everything = (_status.st_mode & S_IRWXO) == S_IRWXO,
-                    .can_all_do_everything    = (_status.st_mode & S_IRWXA) == S_IRWXA
-                };
+                if(_exists == true)
+                {
+                    return fs_permissions{
+                        .can_owner_read           = (_status.st_mode & S_IRUSR) == S_IRUSR,
+                        .can_owner_write          = (_status.st_mode & S_IWUSR) == S_IWUSR,
+                        .can_owner_exec           = (_status.st_mode & S_IXUSR) == S_IXUSR,
+                        .can_owner_do_everything  = (_status.st_mode & S_IRWXU) == S_IRWXU,
+                        .can_group_read           = (_status.st_mode & S_IRGRP) == S_IRGRP,
+                        .can_group_write          = (_status.st_mode & S_IWGRP) == S_IWGRP,
+                        .can_group_exec           = (_status.st_mode & S_IXGRP) == S_IXGRP,
+                        .can_group_do_everything  = (_status.st_mode & S_IRWXG) == S_IRWXG,
+                        .can_others_read          = (_status.st_mode & S_IROTH) == S_IROTH,
+                        .can_others_write         = (_status.st_mode & S_IWOTH) == S_IWOTH,
+                        .can_others_exec          = (_status.st_mode & S_IXOTH) == S_IXOTH,
+                        .can_others_do_everything = (_status.st_mode & S_IRWXO) == S_IRWXO,
+                        .can_all_do_everything    = (_status.st_mode & S_IRWXA) == S_IRWXA
+                    };
+                }
+
+                return runtime_error{"File/Directory not found"};
             }
 
             inline auto size() const

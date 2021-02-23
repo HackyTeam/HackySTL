@@ -52,9 +52,9 @@ struct block
 #### Member functions:
 | Method | Arguments | Return type | Description |
 | :----- | :-------- | :---------- | :---------- |
-| `buffered_allocator` | `uchar* buf`, `usize size` | `/*implementation defined*/` | Sets the internal buffer for allocations and size |
-| `buffered_allocator` | `const buffered_allocator& other` | `/*implementation defined*/` | Copy constructor |
-| `buffered_allocator` | `buffered_allocator&& other` | `/*implementation defined*/` | Move constructor |
+| `buffered_allocator` | `uchar* buf`, `usize size` | `/*compiler defined*/` | Sets the internal buffer for allocations and size |
+| `buffered_allocator` | `const buffered_allocator& other` | `/*compiler defined*/` | Copy constructor |
+| `buffered_allocator` | `buffered_allocator&& other` | `/*compiler defined*/` | Move constructor |
 | `operator=` | `const buffered_allocator<UType>& rhs` | `buffered_allocator&` | Copy attribution |
 | `allocate` | `usize size` | `Result<Type*, allocator_error>` | Allocates a block with a size of `sizeof(Type) * size` inside the buffer |
 | `deallocate` | `Type* ptr`, `usize` | `Result<void, allocator_error>` | Deallocates a block with a size defined is its structured inside the buffer |

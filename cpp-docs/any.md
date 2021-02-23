@@ -29,10 +29,10 @@ It is an data type which can hold *any* type imaginable thanks to some polymorph
 
 | Function | Arguments | Return type | Description |
 | :------- | :-------- | :---------- | :---------- |
-| `any` | `N/A` | `/*implementation defined*/` | Constructs an empty type |
-| `any` | `(Copyable) Type other` | `/*implementation defined*/` | Constructs a new object by value with the condition of the value being able to copy |
-| `any` | `const any& other` | `/*implementation defined*/` | Copy constructor |
-| `any` | `any&& other` | `/*implementation defined*/` | Move constructor |
+| `any` | `N/A` | `/*compiler defined*/` | Constructs an empty type |
+| `any` | `(Copyable) Type other` | `/*compiler defined*/` | Constructs a new object by value with the condition of the value being able to copy |
+| `any` | `const any& other` | `/*compiler defined*/` | Copy constructor |
+| `any` | `any&& other` | `/*compiler defined*/` | Move constructor |
 | `operator=` | `any rhs` | `any` | Copy attribution |
 | `cast_to` | `N/A` | `Result<Type, bad_any_cast>` | Cast the underlying type to the new type, `Type` if it stores the good one, if it isn't it raises an `bad_any_cast` error |
 | `cast_if` | `N/A` | `Type*` | Returns the address of the value stored by the underlying type if it is the good one, if it isn't it returns `null` |

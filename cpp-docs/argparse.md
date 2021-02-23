@@ -18,9 +18,9 @@ It is a stream which contains a range of values from `argv` and it's values will
 #### Member functions:
 | Method | Arguments | Return type | Description |
 | :----- | :-------- | :---------- | :---------- |
-| `parser_stream` | `N/A` | `/*implementation defined*/` | Default constructor, initialized the argument buffer |
-| `parser_stream` | `const parser_stream&` | `/*implementation defined*/` | Copy constructor (deleted) |
-| `parser_stream` | `parser_stream&&` | `/*implementation defined*/` | Move constructor (deleted) |
+| `parser_stream` | `N/A` | `/*compiler defined*/` | Default constructor, initialized the argument buffer |
+| `parser_stream` | `const parser_stream&` | `/*compiler defined*/` | Copy constructor (deleted) |
+| `parser_stream` | `parser_stream&&` | `/*compiler defined*/` | Move constructor (deleted) |
 | `operator=` | `const parser_stream&` | `parser_stream&` | attribution (deleted) |
 | `operator=` | `parser_stream&&` | `parser_stream&` | attribution (deleted) |
 | `set_data` | `Args&... args` | `Result<void, runtime_error>` | Parses the value hold in the argument buffer and set the values `args...` according to their type |
@@ -31,7 +31,7 @@ It is a stream which contains a range of values from `argv` and it's values will
 
 #### Definition:
 ```cpp
-class argument_parser
+class argument_parser;
 ```
 
 #### Description:
@@ -40,9 +40,9 @@ Splits the arguments into `parser_stream`s of different length which will be pas
 #### Member functions:
 | Method | Arguments | Return type | Description |
 | :----- | :-------- | :---------- | :---------- |
-| `argument_parser` | `const string_view& info` | `/*implementation defined*/` | Adds the first information into the dedicated buffer |
-| `argument_parser` | `const argument_parser&` | `/*implementation defined*/` | Copy constructor (deleted) |
-| `argument_parser` | `argument_parser&&` | `/*implementation defined*/` | Move constructor (deleted) |
+| `argument_parser` | `const string_view& info` | `/*compiler defined*/` | Adds the first information into the dedicated buffer |
+| `argument_parser` | `const argument_parser&` | `/*compiler defined*/` | Copy constructor (deleted) |
+| `argument_parser` | `argument_parser&&` | `/*compiler defined*/` | Move constructor (deleted) |
 | `operator=` | `const argument_parser&` | `argument_parser&` | attribution (deleted) |
 | `operator=` | `argument_parser&&` | `argument_parser&` | attribution (deleted) |
 | `add` | `const string_view& argument`, `usize num_args`, `function<void(parser_stream&)>&& func`, `const string_view& help`| `void` | Adds an argument with the following informations: what flag is, how many arguments can take, a function `func` responsible for parsing the stream mentioned earlier and helpful informations about that flag |

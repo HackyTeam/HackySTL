@@ -268,7 +268,7 @@ namespace hsd
             {
                 // this in the only situation when
                 // .erase() will "throw" because
-                // there is now fast way to check
+                // there is no fast way to check
                 // if it belongs to this list or not
                 return runtime_error{"Accessed an null element"};
             }
@@ -291,10 +291,7 @@ namespace hsd
                         pos._iterator && _back_iter != end();
                 };
                 
-                for(_back_iter = begin(); _check_iter(); _back_iter++)
-                {
-
-                }
+                for(_back_iter = begin(); _check_iter(); _back_iter++) {}
 
                 if(_back_iter == end())
                 {
@@ -436,9 +433,9 @@ namespace hsd
             return _head;
         }
 
-        constexpr iterator begin() const
+        constexpr const_iterator begin() const
         {
-            return _head;
+            return cbegin();
         }
 
         constexpr iterator end()
@@ -446,29 +443,19 @@ namespace hsd
             return iterator(nullptr);
         }
 
-        constexpr iterator end() const
+        constexpr const_iterator end() const
         {
-            return iterator(nullptr);
-        }
-
-        constexpr const_iterator cbegin()
-        {
-            return begin();
+            return cend();
         }
 
         constexpr const_iterator cbegin() const
         {
-            return begin();
-        }
-
-        constexpr const_iterator cend()
-        {
-            return end();
+            return _head;
         }
 
         constexpr const_iterator cend() const
         {
-            return end();
+            return iterator(nullptr);
         }
     };
 } // namespace hsd

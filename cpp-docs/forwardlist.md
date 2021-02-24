@@ -25,10 +25,10 @@ class forward_list;
 | `forward_list` | `const forward_list& other` | `/*compiler defined*/` | Copy constructor |
 | `forward_list` | `forward_list&& other` | `/*compiler defined*/` | Move constructor |
 | `~forward_list` | `N/A` | `/*compiler defined*/` | Destructor |
-| `operator=` | `const Type (&arr)[N]` | `/*compiler defined*/` | Copy array attribution |
-| `operator=` | `Type (&&arr)[N]` | `/*compiler defined*/` | Move array attribution |
-| `operator=` | `const forward_list& other` | `/*compiler defined*/` | Copy attribution |
-| `operator=` | `forward_list&& other` | `/*compiler defined*/` | Move attribution |
+| `operator=` | `const Type (&arr)[N]` | `forward_list&` | Copy array attribution |
+| `operator=` | `Type (&&arr)[N]` | `forward_list&` | Move array attribution |
+| `operator=` | `const forward_list& other` | `forward_list&` | Copy attribution |
+| `operator=` | `forward_list&& other` | `forward_list&` | Move attribution |
 | `erase` | `const_iterator pos` | `Result<iterator, runtime_error>` | Removes an element at the position `pos` from the list |
 | `push_back` | `const Type& value` | `void` | Adds an element to the back of the list by copy |
 | `push_back` | `Type&& value` | `void` | Adds an element to the back of the list by move |

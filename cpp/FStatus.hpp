@@ -16,18 +16,18 @@ namespace hsd
 
         enum class fs_perms_mask
         {
-            owner_read   = S_IRUSR,     
-            owner_write  = S_IWUSR,    
-            owner_exec   = S_IXUSR,     
-            owner_all    = S_IRWXU,        
-            group_read   = S_IRGRP,        
-            group_write  = S_IWGRP,    
-            group_exec   = S_IXGRP,        
-            group_all    = S_IRWXG,      
-            others_read  = S_IROTH,    
-            others_write = S_IWOTH,   
-            others_exec  = S_IXOTH,    
-            others_all   = S_IRWXO,     
+            owner_read   = S_IRUSR,
+            owner_write  = S_IWUSR,
+            owner_exec   = S_IXUSR,
+            owner_all    = S_IRWXU,
+            group_read   = S_IRGRP,
+            group_write  = S_IWGRP,
+            group_exec   = S_IXGRP,    
+            group_all    = S_IRWXG,  
+            others_read  = S_IROTH,
+            others_write = S_IWOTH,
+            others_exec  = S_IXOTH,
+            others_all   = S_IRWXO,
             all_perms    = S_IRWXA
         };
 
@@ -66,9 +66,9 @@ namespace hsd
             bool _exists = false;
 
         public:
-            inline fs_status(const char* filename)
+            inline fs_status(const char* pathname)
             {
-                _exists = lstat(filename, &_status) != -1;
+                _exists = lstat(pathname, &_status) != -1;
             }
 
             inline bool operator==(const fs_status& rhs) const

@@ -30,7 +30,7 @@ class function<ResultType(Args...)>; // Specification
 ### Non-member functions:
 | Function | Arguments | Return type | Description |
 | :------- | :-------- | :---------- | :---------- |
-| `bind` | `FunctionType func`, (`Type&(&) value`, )`Arguments&&.../hsd::tuple<Arguments&&...> args` | Binds (an objects and) the arguments to the function `func` |
+| `bind` | `FunctionType func`, (`Type&(&) value`, )`Arguments&&.../hsd::tuple<Arguments&&...> args` | Binds (an object and) the arguments to the function `func` |
 
 ### Example:
 ```cpp

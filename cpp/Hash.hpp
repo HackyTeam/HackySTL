@@ -4,14 +4,15 @@
 
 namespace hsd
 {
-    template <typename HashType, typename T = void>
+    template < typename HashType, typename T = void >
     struct hash
     {
         // this is an alias for HashType
         using ResultType = HashType;
     };
 
-    template <typename HashType, typename T> requires(std::input_iterator<T>)
+    template < typename HashType, typename T >
+    requires (std::input_iterator<T>)
     struct hash<HashType, T>
     {
         using ResultType = HashType;
@@ -44,7 +45,8 @@ namespace hsd
             return hash;
         }
 
-        static constexpr ResultType get_hash(T begin, T end) requires(std::forward_iterator<T>)
+        static constexpr ResultType get_hash(T begin, T end)
+        requires (std::forward_iterator<T>)
         {
             HashType offset_basis = 0;
             HashType prime = 0;
@@ -72,7 +74,8 @@ namespace hsd
         }
     };
 
-    template <typename HashType, typename T> requires (is_integral<T>::value)
+    template < typename HashType, typename T >
+    requires (is_integral<T>::value)
     struct hash<HashType, T>
     {
         using ResultType = HashType;

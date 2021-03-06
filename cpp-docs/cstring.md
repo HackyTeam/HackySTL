@@ -37,7 +37,7 @@ Reimplementation of C's `string.h` header for string manipulation using C++20 fe
 | `find_rev` | `const CharType* str`, `const CharType* substr` | `const CharType*` | Searches through `str` for the first `substr` occurrences in reverse |
 | `find_rev` | `const CharType* str`, `CharType* letter` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse |
 | `find_rev` | `const CharType* str`, `const CharType* substr`, `usize pos` | `const CharType*` | Searches through `str` for the first `substr` occurrences in reverse from a given position |
-| `find_rev` | `const CharType* str`, `CharType* letter`, `usize pos` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse from a give position |
+| `find_rev` | `const CharType* str`, `CharType letter`, `usize pos` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse from a give position |
 | `length` | `const CharType* str` | `usize` | Measures the length of the string from 0 to where the null terminator is |
 | `upper` | `CharType* str` | `const CharType*` | Transforms the lower ascii characters (a-z) to the upper ones (A-Z) |
 | `lower` | `CharType* str` | `const CharType*` | Transforms the upper ascii characters (A-Z) to the lower ones (a-z) |

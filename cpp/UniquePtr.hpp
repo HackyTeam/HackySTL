@@ -151,7 +151,7 @@ namespace hsd
                 if constexpr (is_array<T>::value)
                 {
                     for (usize i = 0, size = _value.get_size(); i < size; ++i)
-                        _destroy_inplace(get()[size-i]);
+                        _destroy_inplace(get()[size - i]);
                 }
                 else
                 {

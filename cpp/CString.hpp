@@ -84,11 +84,15 @@ namespace hsd
 					static_cast<CharT>(0x3000),
 					static_cast<CharT>(0) // Terminator
 				};
+
 				constexpr usize size = std::extent_v<decltype(chars)>;
 				hsd::stack_array<CharT, size> r;
 				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+
 				return r;
-			} else {
+			} 
+			else 
+			{
 				constexpr CharT chars[] = {
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
@@ -100,9 +104,11 @@ namespace hsd
 					static_cast<CharT>(0xA0),
 					static_cast<CharT>(0) // Terminator
 				};
+
 				constexpr usize size = std::extent_v<decltype(chars)>;
 				hsd::stack_array<CharT, size> r;
 				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
+				
 				return r;
 			}
 		}
@@ -222,7 +228,7 @@ public:
         	return str;
         }
 
-	    static HSD_CONSTEXPR const CharT* reverse(const CharT* str, usize size = 0)
+	    static HSD_CONSTEXPR CharT* reverse(const CharT* str, usize size = 0)
 	    {
 	    	usize _begin = 0;
 	        usize _end = size - 1;
@@ -593,22 +599,16 @@ public:
 			return _buf;
 		}
 		
-		static HSD_CONSTEXPR CharT* to_string(const CharT* str)
+		static HSD_CONSTEXPR CharT* to_string(const CharT* str, usize len = 0)
 		{
-			usize _len = length(str);
+			usize _len = len;
+			
+			if(len == 0)
+				_len = length(str);
+
 			CharT* _buf = new CharT[_len + 1];
 
 			for (usize _index = 0; _index <= _len; _index++)
-				_buf[_index] = static_cast<CharT>(str[_index]);
-
-			return _buf;
-		}
-
-		static HSD_CONSTEXPR CharT* to_string(const CharT* str, usize len)
-		{
-			CharT* _buf = new CharT[len + 1];
-
-			for (usize _index = 0; _index <= len; _index++)
 				_buf[_index] = static_cast<CharT>(str[_index]);
 
 			return _buf;
@@ -622,9 +622,9 @@ public:
 			return _buf;
 		}
 
-		static constexpr i32 parse_i(const CharT* str)
+		static constexpr isize parse_i(const CharT* str)
 		{
-			i32 _num = 0;
+			isize _num = 0;
 			bool _negative = false;
 
 			for(; *str != '\0' && !_is_number(*str); str++);
@@ -653,10 +653,10 @@ public:
 			return _num;
 		}
 
-		static constexpr f32 parse_f(const CharT* str)
+		static constexpr f64 parse_f(const CharT* str)
 		{
-		    float _round_num = 0;
-			float _point_num = 0;
+		    f64 _round_num = 0;
+			f64 _point_num = 0;
 			bool _negative = false;
 			usize _num_len = 0;
 

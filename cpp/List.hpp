@@ -298,7 +298,7 @@ namespace hsd
             {
                 // this in the only situation when
                 // .erase() will "throw" because
-                // there is now fast way to check
+                // there is no fast way to check
                 // if it belongs to this list or not
                 return runtime_error{"Accessed an null element"};
             }

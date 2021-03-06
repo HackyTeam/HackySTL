@@ -1,4 +1,5 @@
 #include <ArgParse.hpp>
+#include <String.hpp>
 
 int main(int argc, const char** argv)
 {

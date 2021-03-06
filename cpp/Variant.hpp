@@ -1,7 +1,5 @@
 #pragma once
 
-#include <type_traits>
-
 #include "_XUtility.hpp"
 #include "Utility.hpp"
 #include "Result.hpp"

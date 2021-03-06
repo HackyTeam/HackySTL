@@ -108,10 +108,6 @@ namespace hsd
 
                         if(_free_size >= size * sizeof(T))
                         {
-                            memset(
-                                reinterpret_cast<uchar*>(_block_back) + 
-                                sizeof(usize) + 1u, 0, _free_size
-                            );
                             _block_back->size = _free_size;
                             _block_back->in_use = true;
                             return reinterpret_cast<T*>(_block_back->data);
@@ -159,6 +155,7 @@ namespace hsd
             return {};
         }
 
+        #ifndef NDEBUG
         void print_buffer() const
         {
             usize _vlen = static_cast<usize>(math::sqrt(static_cast<f64>(_size)));
@@ -169,10 +166,11 @@ namespace hsd
                 for (usize _vindex = 0; _vindex < _vlen; _vindex++)
                     printf("%02x ", _buf[_hindex * _hlen + _vindex]);
 
-                puts("");
+                putc('\n', stdout);
             }
             
         }
+        #endif
     };
 
     template <typename T>
@@ -191,7 +189,7 @@ namespace hsd
     public:
         using pointer_type = T*;
         using value_type = T;
-        HSD_CONSTEXPR allocator() {}
+        HSD_CONSTEXPR allocator() = default;
         HSD_CONSTEXPR allocator(const allocator& other)
             : _type_size{other._type_size}, _alignment{other._alignment}
         {}
@@ -200,6 +198,14 @@ namespace hsd
         HSD_CONSTEXPR allocator(const allocator<U>& other)
             : _type_size{other._type_size}, _alignment{other._alignment}
         {}
+
+        template <typename U>
+        HSD_CONSTEXPR allocator& operator=(const allocator<U>& rhs)
+        {
+            _type_size = rhs._type_size;
+            _alignment = rhs._alignment;
+            return *this;
+        }
 
         [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >

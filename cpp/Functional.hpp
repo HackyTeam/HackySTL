@@ -124,6 +124,7 @@ namespace hsd
         }
 
         template <typename Func>
+        requires (func_detail::IsFunction<Func, ResultType, Args...>)
         HSD_CONSTEXPR function& operator=(Func&& func)
         {
             reset();
@@ -134,6 +135,7 @@ namespace hsd
         HSD_CONSTEXPR function& operator=(NullType)
         {
             reset();
+            return *this;
         }
 
         constexpr auto operator()(Args&&... args) 
@@ -149,9 +151,7 @@ namespace hsd
         }
 
         constexpr auto operator()(Args&&... args) 
-            -> Result<
-                func_detail::store_ref_t<ResultType>, 
-                func_detail::bad_function >
+            -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {
             if(_func_impl == nullptr)
@@ -174,9 +174,7 @@ namespace hsd
         }
 
         constexpr auto operator()(Args&&... args) const
-            -> Result<
-                const func_detail::store_ref_t<ResultType>, 
-                func_detail::bad_function >
+            -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {
             if(_func_impl == nullptr)

@@ -3,6 +3,7 @@
 #include "UnorderedMap.hpp"
 #include "Functional.hpp"
 #include "_SStreamDetail.hpp"
+#include "StringView.hpp"
 
 namespace hsd
 {
@@ -41,9 +42,9 @@ namespace hsd
             return {};
         }
 
-        void emplace(const char* arg)
+        void emplace(const string_view& arg)
         {
-            _args_buf.emplace_back(arg, cstring::length(arg));
+            _args_buf.emplace_back(arg.data(), arg.size());
         }
 
         void clear()
@@ -57,11 +58,11 @@ namespace hsd
     private:
         using function_type = function<void(hsd::parser_stream&)>;
         using action_type = pair<function_type, usize>;
-        unordered_map<const char*, action_type> _actions;
-        vector<const char*> _informations;
+        unordered_map<string_view, action_type> _actions;
+        vector<string_view> _informations;
 
     public:
-        inline argument_parser(const char* info)
+        inline argument_parser(const string_view& info)
         {
             _informations.emplace_back(info);
         }
@@ -72,8 +73,8 @@ namespace hsd
         inline argument_parser& operator=(argument_parser&&) = delete;
         inline ~argument_parser() = default;
 
-        inline void add(const char* argument, usize num_args,
-            function_type&& func, const char* help)
+        inline void add(const string_view& argument, usize num_args,
+            function_type&& func, const string_view& help)
         {
             _actions.emplace(argument, func, num_args);
             _informations.emplace_back(help);
@@ -89,7 +90,7 @@ namespace hsd
                 cstring::compare(argv[1], "--help") == 0)
             {
                 for(auto& _tips : _informations)
-                    puts(_tips);
+                    puts(_tips.data());
             }
             else
             {

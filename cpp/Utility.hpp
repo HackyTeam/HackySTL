@@ -6,8 +6,13 @@
 
 namespace hsd
 {
-    #define HSD_ENABLE_IF(...) hsd::enable_if_t<(__VA_ARGS__), hsd::i32> = 0
-    #define HSD_DISABLE_IF(...) hsd::disable_if_t<(__VA_ARGS__), hsd::i32> = 0
+    #define HSD_CPP17_NOT_REQUIRES(Cond) hsd::disable_if_t<Cond, hsd::i32> = 0
+    #define HSD_CPP17_REQUIRES(Cond) hsd::enable_if_t<Cond, hsd::i32> = 0
+
+    #define HSD_ENABLE_IF_ALL(...) HSD_CPP17_REQUIRES(hsd::conjunction<(__VA_ARGS__)>::value)
+    #define HSD_DISABLE_IF_ALL(...) HSD_CPP17_NOT_REQUIRES(hsd::conjunction<(__VA_ARGS__)>::value)
+    #define HSD_ENABLE_IF_SOME(...) HSD_CPP17_REQUIRES(hsd::disjunction<(__VA_ARGS__)>::value)
+    #define HSD_DISABLE_IF_SOME(...) HSD_CPP17_NOT_REQUIRES(hsd::disjunction<(__VA_ARGS__)>::value)
 
     template <typename T>
     static constexpr remove_reference_t<T>&& move(T&& val)

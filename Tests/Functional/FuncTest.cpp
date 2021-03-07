@@ -17,6 +17,11 @@ struct counter {
     {
         return c++;
     }
+
+    int call()
+    {
+        return 33;
+    }
 };
 
 int main()
@@ -31,8 +36,11 @@ int main()
         hsd::function f = func;
         auto f2 = f;
         f3 = hsd::bind(func, hsd::make_tuple(5));
+        auto f22 = hsd::bind(&counter::call, b);
+        printf("%d\n", f22());
     }
 
+    std::placeholders::_1;
     printf("%d\n", f3().unwrap());
     hsd::function my_counter = counter(1);
     my_counter().unwrap();

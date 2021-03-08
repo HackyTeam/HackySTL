@@ -1,5 +1,5 @@
 <p align = 'left'>
-  <img src='https://media.discordapp.net/attachments/809063919409823754/818158211265855608/HackySTLlogo2.png'>
+  <img src='https://cdn.discordapp.com/attachments/809046217370763274/818426647753654302/HackySTLlogo2.png'>
 </p>
 
 This is a multilingual project which discards any backwards compatibility 

@@ -15,7 +15,7 @@ int main()
         }
         
         // because newline will be sent as well
-        if(buf.to_string() == "exit\n")
+        if(hsd::cstring::compare(buf.c_str(), "exit\n") == 0)
             break;
 
         if(code != hsd::net::received_state::ok)

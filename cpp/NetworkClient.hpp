@@ -187,7 +187,7 @@ namespace hsd
 
                     if(_protocol == net::protocol_type::ipv4)
                     {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
+                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
@@ -195,7 +195,7 @@ namespace hsd
                     }
                     else
                     {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
+                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);

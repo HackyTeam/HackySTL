@@ -7,7 +7,7 @@ int main()
     while(true)
     {
         hsd::io::print<"> ">();
-        auto state = client.respond<"{}">(hsd::io::read_line().unwrap().to_string());
+        auto state = client.respond<"{}">(hsd::io::read_line().unwrap().c_str());
 
         if(state == hsd::net::received_state::err)
             continue;

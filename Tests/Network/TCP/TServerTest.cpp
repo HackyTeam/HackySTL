@@ -14,7 +14,7 @@ int main()
             server.respond<"GET / HTTP/1.0\r\n\r\n">();
         }
         
-        if(buf.to_string() == "exit")
+        if(hsd::cstring::compare(buf.c_str(), "exit") == 0)
             break;
 
         if(code != hsd::net::received_state::ok)

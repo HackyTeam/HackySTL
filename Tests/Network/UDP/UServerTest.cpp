@@ -3,6 +3,7 @@
 int main()
 {
     hsd::udp::server server{hsd::net::protocol_type::ipv4, 48000, "0.0.0.0"};
+    char raw_buf[1024];
 
     while(true)
     {
@@ -11,10 +12,16 @@ int main()
         if(code == hsd::net::received_state::ok)
         {
             hsd::io::print<"CLIENT> {}">(buf.data());
-            server.respond<"Good\n">();
+            
+            // Copy the data to a buffer
+            hsd::usize length = hsd::cstring::length(buf.c_str());
+            hsd::cstring::copy(raw_buf, buf.c_str(), length - 1);
+            raw_buf[length - 1] = '\0';
+
+            server.respond<"{}\n">(static_cast<const char*>(raw_buf));
         }
         
-        // because newline will be sent as well
+        // Because newline will be sent as well
         if(hsd::cstring::compare(buf.c_str(), "exit\n") == 0)
             break;
 

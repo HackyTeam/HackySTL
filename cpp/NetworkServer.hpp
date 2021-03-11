@@ -77,7 +77,7 @@ namespace hsd
             sockaddr_in6 _hintv6{};
             sockaddr_in _hintv4{};
             socklen_t _len = sizeof(sockaddr_in);
-            net::protocol_type _protocol = net::protocol_type::ipv4;
+            net::protocol_type _protocol;
             hsd::sstream _net_buf{4095};
 
             void _clear_buf()
@@ -86,18 +86,17 @@ namespace hsd
             }
 
         public:
-            server() = default;
-            
-            ~server()
-            {
-                respond<"">();
-            }
-
-            server(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+            server(net::protocol_type protocol = net::protocol_type::ipv4, 
+                uint16_t port = 54000, const char* ip_addr = "0.0.0.0")
                 : _sock{protocol, port, ip_addr}, _protocol{protocol}
             {
                 if(_protocol == net::protocol_type::ipv6)
                     _len = sizeof(sockaddr_in6);
+            }
+
+            ~server()
+            {
+                respond<"">();
             }
 
             hsd::pair< hsd::sstream&, net::received_state > receive()
@@ -164,7 +163,7 @@ namespace hsd
     {
         namespace server_detail
         {
-            class socket
+            class socket_support
             {
             private:
                 i32 _listening = 0;
@@ -173,17 +172,13 @@ namespace hsd
                 net::protocol_type _protocol;
 
             public:
-                socket()
-                {
-                    switch_to(net::protocol_type::ipv4, 54000, "0.0.0.0");
-                }
-
-                socket(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                socket_support(net::protocol_type protocol = net::protocol_type::ipv4, 
+                    uint16_t port = 54000, const char* ip_addr = "0.0.0.0")
                 {
                     switch_to(protocol, port, ip_addr);
                 }
 
-                ~socket()
+                ~socket_support()
                 {
                     close();
                 }
@@ -224,41 +219,41 @@ namespace hsd
                 }
             };
 
-            class socket2
+            class socket
             {
             private:
-                socket _sock;
-                i32 _socket2_sock = 0;
-                sockaddr_in _socket2v4;
-                sockaddr_in6 _socket2v6;
+                socket_support _sock;
+                i32 _sock_value = 0;
+                sockaddr_in _sock_hintv4;
+                sockaddr_in6 _sock_hintv6;
                 socklen_t _size = 0;
-                string _host{1024};
-                string _service{31};
+                string _host{NI_MAXHOST - 1};
+                string _service{NI_MAXSERV - 1};
 
             public:
-                socket2()
+                socket()
                 {
                     switch_to(net::protocol_type::ipv4, 54000, "0.0.0.0");
                 }
 
-                socket2(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                socket(net::protocol_type protocol, uint16_t port, const char* ip_addr)
                 {
                     switch_to(protocol, port, ip_addr);
                 }
 
-                ~socket2()
+                ~socket()
                 {
                     close();
                 }
 
                 void close()
                 {
-                    ::close(_socket2_sock);
+                    ::close(_sock_value);
                 }
 
                 i32 get_sock()
                 {
-                    return _socket2_sock;
+                    return _sock_value;
                 }
 
                 void switch_to(net::protocol_type protocol, uint16_t port, const char* ip_addr)
@@ -269,34 +264,34 @@ namespace hsd
 
                     if(protocol == net::protocol_type::ipv4)
                     {
-                        _size = sizeof(_socket2v4);
-                        _socket2_sock = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_socket2v4), &_size);
+                        _size = sizeof(_sock_hintv4);
+                        _sock_value = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_sock_hintv4), &_size);
 
-                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v4), sizeof(_socket2v4), 
+                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_sock_hintv4), sizeof(_sock_hintv4), 
                             _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
-                            io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v4.sin_port));
+                            io::print<"{} connected on port {}\n">(ip_addr, ntohs(_sock_hintv4.sin_port));
                         }
                         else
                         {
-                            inet_ntop(static_cast<i32>(protocol), &_socket2v4.sin_addr, _host.data(), NI_MAXHOST);
-                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v4.sin_port));
+                            inet_ntop(static_cast<i32>(protocol), &_sock_hintv4.sin_addr, _host.data(), NI_MAXHOST);
+                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_sock_hintv4.sin_port));
                         }
                     }
                     else
                     {
-                        _size = sizeof(_socket2v6);
-                        _socket2_sock = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_socket2v6), &_size);
+                        _size = sizeof(_sock_hintv6);
+                        _sock_value = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_sock_hintv6), &_size);
 
-                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_socket2v6), sizeof(_socket2v6), 
+                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_sock_hintv6), sizeof(_sock_hintv6), 
                                 _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
                             io::print<"{} connected on port {}\n">(ip_addr, _service.data());
                         }
                         else
                         {
-                            inet_ntop(static_cast<i32>(protocol), &_socket2v6.sin6_addr, _host.data(), NI_MAXHOST);
-                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_socket2v6.sin6_port));
+                            inet_ntop(static_cast<i32>(protocol), &_sock_hintv6.sin6_addr, _host.data(), NI_MAXHOST);
+                            hsd::io::print<"{} connected on port {}\n">(ip_addr, ntohs(_sock_hintv6.sin6_port));
                         }
                     }
 
@@ -308,7 +303,7 @@ namespace hsd
         class server
         {
         private:
-            server_detail::socket2 _sock;
+            server_detail::socket _sock;
             hsd::sstream _net_buf{4095};
 
             void _clear_buf()

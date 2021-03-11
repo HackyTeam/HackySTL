@@ -178,7 +178,7 @@ namespace hsd
     {
     private:
         usize _type_size = sizeof(T);
-        std::align_val_t _alignment = static_cast<std::align_val_t>(alignof(T));
+        usize _alignment = alignof(T);
         
         template <typename U>
         friend class allocator;
@@ -217,7 +217,7 @@ namespace hsd
             else
             {
                 #ifdef __cpp_aligned_new
-                return static_cast<pointer_type>(::operator new(size * _type_size, _alignment));
+                return static_cast<pointer_type>(::operator new(size * _type_size, static_cast<std::align_val_t>(_alignment)));
                 #else
                 return static_cast<pointer_type>(::operator new(size * _type_size));
                 #endif
@@ -234,9 +234,9 @@ namespace hsd
             else
             {
                 #ifdef __cpp_sized_deallocation
-                ::operator delete(ptr, size * _type_size, _alignment);
+                ::operator delete(ptr, size * _type_size, static_cast<std::align_val_t>(_alignment));
                 #else
-                ::operator delete(ptr, _alignment);
+                ::operator delete(ptr, static_cast<std::align_val_t>(_alignment));
                 #endif
 
                 return {};

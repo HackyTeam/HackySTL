@@ -2,12 +2,12 @@
 
 int main()
 {
-    hsd::udp::client client{hsd::net::protocol_type::ipv4, 443, "https://www.discord.com"};
+    hsd::udp::client client{hsd::net::protocol_type::ipv4, 48000, "127.0.0.1"};
 
     while(true)
     {
         hsd::io::print<"> ">();
-        auto state = client.respond<"{}">(hsd::io::read_line().expect().c_str());
+        auto state = client.respond<"{}">(hsd::io::read_line().unwrap().c_str());
 
         if(state == hsd::net::received_state::err)
             continue;

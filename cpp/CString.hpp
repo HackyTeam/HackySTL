@@ -747,9 +747,22 @@ public:
 			char* ptr = dest;
 
 			for(; *src; dest++, src++)
-			{
 				*dest = *src;
-			}
+			
+			return ptr;
+		}
+
+		static constexpr CharT* copy_until(CharT* dest, const CharT* src, CharT letter)
+		{
+			if (dest == nullptr)
+				return nullptr;
+
+			char* ptr = dest;
+
+			for(; *src != '\0' && *src != letter; dest++, src++)
+				*dest = *src;
+			
+			*dest = '\0';
 			return ptr;
 		}
 

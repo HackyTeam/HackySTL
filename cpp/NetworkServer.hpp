@@ -3,8 +3,6 @@
 #include "_NetworkDetail.hpp"
 #include "Io.hpp"
 
-#ifdef HSD_PLATFORM_POSIX
-
 namespace hsd
 {
     namespace udp
@@ -14,38 +12,48 @@ namespace hsd
             class socket
             {
             private:
+                #if defined(HSD_PLATFORM_POSIX)
                 i32 _listening = 0;
+                #else
+                SOCKET _listening = 0;
+                #endif
+
                 sockaddr_in6 _hintv6{};
                 sockaddr_in _hintv4{};
                 net::protocol_type _protocol;
 
             public:
-                socket()
+                inline socket(net::protocol_type protocol = net::protocol_type::ipv4, 
+                    u16 port = 54000, const char* ip_addr = "0.0.0.0")
                 {
-                    switch_to(net::protocol_type::ipv4, 54000, "0.0.0.0");
-                }
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    network_detail::init_winsock();
+                    #endif
 
-                socket(net::protocol_type protocol, uint16_t port, const char* ip_addr)
-                {
                     switch_to(protocol, port, ip_addr);
                 }
 
-                ~socket()
+                inline ~socket()
                 {
                     close();
                 }
 
-                void close()
+                inline void close()
                 {
+                    #if defined(HSD_PLATFORM_POSIX)
                     ::close(_listening);
+                    #else
+                    ::closesocket(_listening);
+                    #endif
                 }
 
-                i32 get_listening()
+                inline i32 get_listening()
                 {
                     return _listening;
                 }
 
-                void switch_to(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                inline void switch_to(net::protocol_type protocol, 
+                    u16 port, const char* ip_addr)
                 {
                     close();
                     _protocol = protocol;
@@ -80,26 +88,26 @@ namespace hsd
             net::protocol_type _protocol;
             hsd::sstream _net_buf{4095};
 
-            void _clear_buf()
+            inline void _clear_buf()
             {
                 memset(_net_buf.data(), '\0', 4096);
             }
 
         public:
-            server(net::protocol_type protocol = net::protocol_type::ipv4, 
-                uint16_t port = 54000, const char* ip_addr = "0.0.0.0")
+            inline server(net::protocol_type protocol = net::protocol_type::ipv4, 
+                u16 port = 54000, const char* ip_addr = "0.0.0.0")
                 : _sock{protocol, port, ip_addr}, _protocol{protocol}
             {
                 if(_protocol == net::protocol_type::ipv6)
                     _len = sizeof(sockaddr_in6);
             }
 
-            ~server()
+            inline ~server()
             {
                 respond<"">();
             }
 
-            hsd::pair< hsd::sstream&, net::received_state > receive()
+            inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = 0;
@@ -131,7 +139,7 @@ namespace hsd
             }
 
             template< string_literal fmt, typename... Args >
-            net::received_state respond(Args&&... args)
+            inline net::received_state respond(Args&&... args)
             {
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
@@ -166,34 +174,48 @@ namespace hsd
             class socket_support
             {
             private:
+                #if defined(HSD_PLATFORM_POSIX)
                 i32 _listening = 0;
+                #else
+                SOCKET _listening = 0;
+                #endif
+                
                 sockaddr_in6 _hintv6;
                 sockaddr_in _hintv4;
                 net::protocol_type _protocol;
 
             public:
-                socket_support(net::protocol_type protocol = net::protocol_type::ipv4, 
-                    uint16_t port = 54000, const char* ip_addr = "0.0.0.0")
+                inline socket_support(net::protocol_type protocol = net::protocol_type::ipv4, 
+                    u16 port = 54000, const char* ip_addr = "0.0.0.0")
                 {
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    network_detail::init_winsock();
+                    #endif
+                    
                     switch_to(protocol, port, ip_addr);
                 }
 
-                ~socket_support()
+                inline ~socket_support()
                 {
                     close();
                 }
 
-                void close()
+                inline void close()
                 {
+                    #if defined(HSD_PLATFORM_POSIX)
                     ::close(_listening);
+                    #else
+                    ::closesocket(_listening);
+                    #endif
                 }
 
-                i32 get_listener()
+                inline i32 get_listener()
                 {
                     return _listening;
                 }
 
-                void switch_to(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                inline void switch_to(net::protocol_type protocol, 
+                    u16 port, const char* ip_addr)
                 {
                     close();
                     _protocol = protocol;
@@ -222,8 +244,13 @@ namespace hsd
             class socket
             {
             private:
-                socket_support _sock;
+                #if defined(HSD_PLATFORM_POSIX)
                 i32 _sock_value = 0;
+                #else
+                SOCKET _sock_value = 0;
+                #endif
+
+                socket_support _sock;
                 sockaddr_in _sock_hintv4;
                 sockaddr_in6 _sock_hintv6;
                 socklen_t _size = 0;
@@ -231,32 +258,37 @@ namespace hsd
                 string _service{NI_MAXSERV - 1};
 
             public:
-                socket()
+                inline socket()
                 {
                     switch_to(net::protocol_type::ipv4, 54000, "0.0.0.0");
                 }
 
-                socket(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                inline socket(net::protocol_type protocol, u16 port, const char* ip_addr)
                 {
                     switch_to(protocol, port, ip_addr);
                 }
 
-                ~socket()
+                inline ~socket()
                 {
                     close();
                 }
 
-                void close()
+                inline void close()
                 {
+                    #if defined(HSD_PLATFORM_POSIX)
                     ::close(_sock_value);
+                    #else
+                    ::closesocket(_sock_value);
+                    #endif
                 }
 
-                i32 get_sock()
+                inline i32 get_sock()
                 {
                     return _sock_value;
                 }
 
-                void switch_to(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+                inline void switch_to(net::protocol_type protocol, 
+                    u16 port, const char* ip_addr)
                 {
                     _sock.switch_to(protocol, port, ip_addr);
                     memset(_host.data(), '\0', NI_MAXHOST);
@@ -306,20 +338,20 @@ namespace hsd
             server_detail::socket _sock;
             hsd::sstream _net_buf{4095};
 
-            void _clear_buf()
+            inline void _clear_buf()
             {
                 memset(_net_buf.data(), '\0', 4096);
             }
 
         public:
-            server() = default;
-            ~server() = default;
+            inline server() = default;
+            inline ~server() = default;
 
-            server(net::protocol_type protocol, uint16_t port, const char* ip_addr)
+            inline server(net::protocol_type protocol, u16 port, const char* ip_addr)
                 : _sock{protocol, port, ip_addr}
             {}
 
-            hsd::pair< hsd::sstream&, net::received_state > receive()
+            inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
                 isize _response = recv(_sock.get_sock(), 
@@ -342,7 +374,7 @@ namespace hsd
             }
 
             template < string_literal fmt, typename... Args >
-            net::received_state respond(Args&&... args)
+            inline net::received_state respond(Args&&... args)
             {
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
@@ -361,5 +393,3 @@ namespace hsd
         };
     } // namespace tcp
 } // namespace hsd
-
-#endif

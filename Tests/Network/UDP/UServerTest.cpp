@@ -11,14 +11,11 @@ int main()
         
         if(code == hsd::net::received_state::ok)
         {
-            hsd::io::print<"CLIENT> {}">(buf.data());
+            hsd::io::print<"CLIENT> {}\n">(buf.data());
             
             // Copy the data to a buffer
-            hsd::usize length = hsd::cstring::length(buf.c_str());
-            hsd::cstring::copy(raw_buf, buf.c_str(), length - 1);
-            raw_buf[length - 1] = '\0';
-
-            server.respond<"{}\n">(static_cast<const char*>(raw_buf));
+            hsd::cstring::copy(raw_buf, buf.c_str());
+            server.respond<"{}">(static_cast<const char*>(raw_buf));
         }
         
         // Because newline will be sent as well

@@ -30,7 +30,7 @@ namespace hsd
                 {
                     return runtime_error{"Input requirements not satisfied"};
                 }
-            }while(_u8io_buf.c_str()[0] == '\n');
+            } while (_u8io_buf.c_str()[0] == '\n');
 
             return {_u8io_buf};
         }
@@ -41,7 +41,7 @@ namespace hsd
             {
                 _u8io_buf.reset_data();
                 scanf("%s", _u8io_buf.data());
-            }while(_u8io_buf.c_str()[0] == '\n');
+            } while (_u8io_buf.c_str()[0] == '\n');
 
             return _u8io_buf;
         }

@@ -36,7 +36,7 @@ namespace hsd
 			thread::native_id_type _id;
 
 			id(thread::native_id_type id) 
-				: _id{static_cast<u64>(id)}
+				: _id{id}
 			{}
 		};
 
@@ -67,16 +67,28 @@ namespace hsd
 				return hsd::forward<T>(t);
 			};
 
+			#if defined(HSD_PLATFORM_POSIX)
 			hsd::i32 ready = 0;
+			#else
+			hsd::u64 ready = 0;
+			#endif
 
 			struct thread_data 
 			{
+				#if defined(HSD_PLATFORM_POSIX)
 				hsd::i32* ready;
+				#else
+				hsd::u64* ready;
+				#endif
 
 				hsd::decay_t<F> func;
 				hsd::tuple<decay_t<Args>...> args;
 
-				static void* enter_thread(void* arg) 
+				#if defined(HSD_PLATFORM_POSIX)
+				static void* enter_thread(void* arg)
+				#else
+				static DWORD enter_thread(void* arg)
+				#endif
 				{
 					auto td = hsd::move(*reinterpret_cast<thread_data*>(arg));
 
@@ -84,13 +96,16 @@ namespace hsd
 					#if defined(HSD_PLATFORM_POSIX)
 					__atomic_store_n(td.ready, 1, __ATOMIC_RELEASE);
 					#elif defined(HSD_PLATFORM_WINDOWS)
-					InterlockedIncrement(td.ready);
-					WakeOnAddressSingle(td.ready);
+					InterlockedIncrementRelease(td.ready);
 					#endif
 					
 					hsd::apply(td.func, td.args);
 
+					#if defined(HSD_PLATFORM_POSIX)
 					return nullptr;
+					#else
+					return 0ul;
+					#endif
 				}
 			} td {
 				&ready,
@@ -110,9 +125,7 @@ namespace hsd
 			_handle = CreateThread(nullptr, 0, thread_data::enter_thread, &td, 0, &native_id);
 			// if (!_handle) raise error
 
-			i32 compare = 0;
-			WaitOnAddress(&ready, &compare, sizeof(i32), INFINITE);
-
+			while (!InterlockedCompareExchangeAcquire(&ready, 0, 1));
 			_id = id{native_id};
 			#endif
 		}

@@ -218,8 +218,8 @@ namespace hsd
 
 				static DWORD enter_thread(void* arg) 
 				{
-					auto td = hsd::move(*reinterpret_cast<thread_data*>(arg));
-					hsd::apply(td.func, td.args);
+					auto* td = reinterpret_cast<thread_data*>(arg);
+					hsd::apply(td->func, td->args);
 	
 					return 0ul;
 				}

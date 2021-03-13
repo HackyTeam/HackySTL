@@ -231,9 +231,7 @@ namespace hsd
 			};
 
 			_handle = CreateThread(
-				nullptr, 1024, 
-        		thread_data::enter_thread,
-        		_td, 0, &_id
+				nullptr, 0, thread_data::enter_thread, _td, 0, &_id
 			); 
 		}
 	

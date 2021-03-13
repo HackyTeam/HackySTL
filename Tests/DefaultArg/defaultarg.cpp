@@ -16,7 +16,7 @@ extern "C" hsd::function<int()> f;
 //static auto funcer = make_defaultcall<int()>(f);
 hsd::defaultcall_t adder(&add, 3, 4);
 static auto bopper = hsd::defaultcall_t(bop, 3, 4);
-static auto funcer = hsd::defaultcall_t(f);
+static auto funcer = hsd::defaultcall_t(hsd::forward<hsd::function<int()>>(f));
 
 int main() 
 {

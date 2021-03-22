@@ -40,7 +40,6 @@ int main()
         printf("%d\n", f22());
     }
 
-    std::placeholders::_1;
     printf("%d\n", f3().unwrap());
     hsd::function my_counter = counter(1);
     my_counter().unwrap();

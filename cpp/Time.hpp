@@ -12,7 +12,7 @@ namespace hsd
     {
     private:
         using time_ptr = tm*;
-        isize _epoch_time;
+        time_t _epoch_time;
         time_ptr _time;
 
     public:
@@ -105,12 +105,12 @@ namespace hsd
 
         friend clock operator-(const clock& lhs, const clock& rhs)
         {
-            return clock{lhs._clk - rhs._clk};
+            return clock{static_cast<clock_t>(lhs._clk - rhs._clk)};
         }
 
         friend clock operator+(const clock& lhs, const clock& rhs)
         {
-            return clock{lhs._clk + rhs._clk};
+            return clock{static_cast<clock_t>(lhs._clk + rhs._clk)};
         }
 
         bool operator==(const clock& rhs)
@@ -160,7 +160,7 @@ namespace hsd
 
         clock restart()
         {
-            clock _old_clk{_clk};
+            clock _old_clk{static_cast<clock_t>(_clk)};
             _clk = ::clock();
             return *this - _old_clk;
         }

@@ -78,18 +78,18 @@ namespace hsd
                 construct_at(&this->_data[_index], rhs[_index]);
         }
 
-        HSD_CONSTEXPR vector(const vector& rhs)
+        HSD_CONSTEXPR vector(const vector& other)
         requires (!std::is_copy_constructible_v<Allocator<T>>)
-            : _size(rhs._size), _capacity(rhs._capacity)
+            : _size(other._size), _capacity(other._capacity)
         {
             if constexpr(is_same<decltype(this->_data), T*>::value)
-                this->_data = this->allocate(rhs._capacity).unwrap();
+                this->_data = this->allocate(other._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                construct_at(&this->_data[_index], rhs[_index]);
+                construct_at(&this->_data[_index], other[_index]);
         }
 
-        constexpr vector(vector&& other) noexcept
+        HSD_CONSTEXPR vector(vector&& other)
         requires (std::is_move_constructible_v<Allocator<T>>)
             : Allocator<T>(move(other))
         {
@@ -98,7 +98,7 @@ namespace hsd
             swap(_capacity, other._capacity);
         }
 
-        constexpr vector(vector&& other) noexcept
+        HSD_CONSTEXPR vector(vector&& other)
         requires (!std::is_move_constructible_v<Allocator<T>>)
         {
             swap(this->_data, other._data);
@@ -165,7 +165,7 @@ namespace hsd
             return *this;
         }
 
-        HSD_CONSTEXPR vector& operator=(vector&& rhs) noexcept
+        HSD_CONSTEXPR vector& operator=(vector&& rhs)
         {
             clear();
             
@@ -263,22 +263,22 @@ namespace hsd
             return *this;
         }
 
-        constexpr auto& operator[](usize index) noexcept
+        constexpr auto& operator[](usize index)
         {
             return at_unchecked(index);
         }
 
-        constexpr auto& operator[](usize index) const noexcept
+        constexpr auto& operator[](usize index) const
         {
             return at_unchecked(index);
         }
 
-        constexpr auto& front() noexcept
+        constexpr auto& front(
         {
             return *begin();
         }
 
-        constexpr auto& front() const noexcept
+        constexpr auto& front() const
         {
             return *begin();
         }
@@ -288,7 +288,7 @@ namespace hsd
             return *(begin() + size() - 1);
         }
 
-        constexpr auto& back() const noexcept
+        constexpr auto& back() const
         {
             return *(begin() + size() - 1);
         }
@@ -326,12 +326,12 @@ namespace hsd
             return {this->_data[index]};
         }
 
-        constexpr auto& at_unchecked(usize index) noexcept
+        constexpr auto& at_unchecked(usize index)
         {
             return this->_data[index];
         }
 
-        constexpr const auto& at_unchecked(usize index) const noexcept
+        constexpr const auto& at_unchecked(usize index) const
         {
             return this->_data[index];
         }
@@ -564,7 +564,6 @@ namespace hsd
         {
             return cbegin() + size();
         }
-
     };
 
     template <hsd::usize N>

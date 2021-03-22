@@ -708,6 +708,12 @@ namespace hsd
         constexpr auto try_add_pointer(int) -> type_identity< typename remove_reference<T>::type* >;
         template <typename T>
         constexpr auto try_add_pointer(...) -> type_identity<T>;
+
+        template <typename T> 
+        T&& declval(int);
+
+        template <typename T>
+        T declval(long);
     } // namespace sfinae
 
     template <typename T>
@@ -731,6 +737,9 @@ namespace hsd
                 typename remove_cv<U>::type>::type
                 >::type;
     };
+
+    template <typename T>
+    auto declval() -> decltype(sfinae::declval<T>(0));
 
     template < typename Condition, typename Value >
     using ResolvedType = typename enable_if< Condition::value, Value >::type;

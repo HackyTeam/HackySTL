@@ -239,11 +239,11 @@ namespace hsd
         return [=, value{move(value)}]() mutable {
             if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
             {
-                return (value.*func)(args...).unwrap();
+                return (value.*func)(forward<Args>(args)...).unwrap();
             }
             else
             {
-                return (value.*func)(args...);
+                return (value.*func)(forward<Args>(args)...);
             }
         };
     }
@@ -274,11 +274,11 @@ namespace hsd
         return [=, &value]{
             if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
             {
-                return (value.*func)(args...).unwrap();
+                return (value.*func)(forward<Args>(args)...).unwrap();
             }
             else
             {
-                return (value.*func)(args...);
+                return (value.*func)(forward<Args>(args)...);
             }
         };
     }
@@ -309,11 +309,11 @@ namespace hsd
         return [=]{
             if constexpr(requires {func(std::declval<Args>()...).unwrap();})
             {
-                return func(args...).unwrap();
+                return func(forward<Args>(args)...).unwrap();
             }
             else
             {
-                return func(args...);
+                return func(forward<Args>(args)...);
             }
         };
     }

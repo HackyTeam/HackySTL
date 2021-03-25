@@ -273,7 +273,7 @@ namespace hsd
             return at_unchecked(index);
         }
 
-        constexpr auto& front(
+        constexpr auto& front()
         {
             return *begin();
         }

@@ -412,7 +412,7 @@ namespace hsd
                 constexpr asmv_base& operator=(asmv_base const&) = default;
             };
             template <typename... _Ts>
-            using asmv_for = conditional< conjunction<std::is_trivially_move_assignable<_Ts>...>::value,
+            using asmv_for = conditional< conjunction< std::is_trivially_move_assignable<_Ts>... >::value,
                                         cscp_for<_Ts...>, asmv_base<_Ts...> >::type;
 
             template <typename... _Ts>
@@ -459,7 +459,7 @@ namespace hsd
         template <typename _Ty>
         struct _type_for
         {
-            using type = decltype(variant_detail::_select_overload_for<_Tfirst, _Trest...>::get(std::declval<_Ty>()));
+            using type = decltype(variant_detail::_select_overload_for<_Tfirst, _Trest...>::get(declval<_Ty>()));
         };
 
     public:
@@ -485,7 +485,9 @@ namespace hsd
         template < typename _Tother, typename = enable_if_t< !is_same< variant, decay_t<_Tother> >::value > >
         constexpr variant& operator=(_Tother&& rhs)
         {
-            _Base::_StorageTraits::template assign_fwd<variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>(this->_storage(), _Base::_StoredIndex, std::forward<_Tother>(rhs));
+            _Base::_StorageTraits::template assign_fwd<
+                variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value
+            >(this->_storage(), _Base::_StoredIndex, forward<_Tother>(rhs));
             return *this;
         }
 
@@ -558,9 +560,10 @@ namespace hsd
         constexpr _Ty& emplace_one(_Ty&& value)
         {
             _destroy();
-            constexpr usize _Idx = variant_detail::_variant_index< std::remove_cv_t<remove_reference<_Ty>>, _Tfirst, _Trest... >::value;
+            constexpr usize _Idx = variant_detail::_variant_index<
+                remove_cv_t<remove_reference<_Ty>>, _Tfirst, _Trest... >::value;
             this->_StoredIndex = _Idx;
-            _StorageTraits::construct_fwd<_Idx>(this->_storage(), std::forward<_Ty>(value));
+            _StorageTraits::construct_fwd<_Idx>(this->_storage(), forward<_Ty>(value));
         }
 
         template <typename _Ty>

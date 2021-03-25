@@ -4,7 +4,6 @@
 
 #include "../Tuple.hpp"
 #include "../Functional.hpp"
-#include <utility>
 
 namespace hsd
 {
@@ -23,7 +22,8 @@ namespace hsd
     constexpr auto default_cast(defaultcall_t<Result(Args...), F> const& c, default_t);
 
     template <typename F, typename Result, typename... Args>
-    struct defaultcall_t<Result(Args...), F>{
+    struct defaultcall_t<Result(Args...), F>
+    {
         tuple<Args...> default_args;
         F func;
         constexpr defaultcall_t(F&& func, Args&&... args) 

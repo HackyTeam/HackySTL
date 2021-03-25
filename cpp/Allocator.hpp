@@ -41,8 +41,8 @@ namespace hsd
         // thanks qookie
         struct block 
         {
-            usize size{};
             bool in_use{};
+            usize size{};
             uchar data[];
         };
 

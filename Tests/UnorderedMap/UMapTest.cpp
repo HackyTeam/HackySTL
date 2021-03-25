@@ -38,8 +38,8 @@ static auto check_erase()
 
 int main()
 {
-    hsd::heap_array<hsd::uchar, 3072> buf{};
-    hsd::buffered_umap<hsd::i32, hsd::i32> map{{buf.data(), 3072}};
+    hsd::heap_array<hsd::uchar, 4096> buf{};
+    hsd::buffered_umap<hsd::i32, hsd::i32> map{{buf.data(), buf.size()}};
 
     check_erase();
     puts("============");

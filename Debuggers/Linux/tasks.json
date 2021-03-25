@@ -7,6 +7,7 @@
             "args": [
                 "-g",
                 "-std=c++20",
+                "-Wpadded",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
@@ -32,6 +33,7 @@
             "args": [
                 "-g",
                 //"-fsanitize=address",
+                //"-Wpadded",
                 "-std=c++20",
                 "${file}",
                 "-I${workspaceFolder}/cpp",

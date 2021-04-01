@@ -97,6 +97,8 @@
         "basic",
         "clientv",
         "constexpr",
+        "crbegin",
+        "crend",
         "cstr",
         "cstring",
         "ctim",

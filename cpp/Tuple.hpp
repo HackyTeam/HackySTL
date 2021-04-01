@@ -46,38 +46,39 @@ namespace hsd
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
-            auto _add = [&]<usize... Ints>(index_sequence<Ints...>) 
-                -> tuple<T, Args...> 
+            return [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                [](auto... args) {
-                    static_assert(is_same_tuple<tuple<T, Args...>, tuple<decltype(args)...>>::value);
+                [](auto... args) 
+                {
+                    static_assert(
+                        is_same_tuple<
+                            tuple<T, Args...>, 
+                            tuple<decltype(args)...>
+                        >::value
+                    );
                 }(get<0>(), rhs.template get<Ints>()...);
 
-                return make_tuple<T, Args...>(
-                    get<0>(), rhs.template get<Ints>()...
-                );
-            };
-
-            return _add(index_sequence_for<T>{}, index_sequence_for<Args...>{});
+                return make_tuple<T, Args...>(get<0>(), rhs.template get<Ints>()...);
+            }(index_sequence_for<T>{}, index_sequence_for<Args...>{});
         }
 
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
-            auto _add = [&]<usize... Ints>(
-                index_sequence<Ints...>
-            ) -> tuple<T, Args...> {
-
-                [](auto... args) {
-                    static_assert(is_same_tuple<tuple<T, Args...>, tuple<decltype(args)...>>::value);
+            return [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                [](auto... args) 
+                {
+                    static_assert(
+                        is_same_tuple<
+                            tuple<T, Args...>, 
+                            tuple<decltype(args)...>
+                        >::value
+                    );
                 }(get<0>(), rhs.template get<Ints>()...);
 
-                return make_tuple<T, Args...>(
-                    get<0>(), rhs.template get<Ints>()...
-                );
-            };
-
-            return _add(index_sequence_for<Args...>{});
+                return make_tuple<T, Args...>(get<0>(), rhs.template get<Ints>()...);
+            }(index_sequence_for<Args...>{});
         }
 
         template <usize N> requires (N == 0)
@@ -92,7 +93,7 @@ namespace hsd
             return _first;
         }
 
-        static constexpr usize size()
+        static consteval usize size()
         {
             return 1;
         }
@@ -126,39 +127,44 @@ namespace hsd
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) 
         {
-            auto _add = [&]< usize... Ints1, usize... Ints2 >(
-                index_sequence<Ints1...>, index_sequence<Ints2...>
-            ) -> tuple<T, Rest..., Args...> {
-
-                [](auto... args) {
-                    static_assert(is_same_tuple<tuple<T, Rest..., Args...>, tuple<decltype(args)...>>::value);
+            return [&]< usize... Ints1, usize... Ints2 >
+                (index_sequence<Ints1...>, index_sequence<Ints2...>) 
+            {
+                [](auto... args) 
+                {
+                    static_assert(
+                        is_same_tuple<
+                            tuple<T, Rest..., Args...>, 
+                            tuple<decltype(args)...>
+                        >::value
+                    );
                 }(get<Ints1>()..., rhs.template get<Ints2>()...);
 
                 return make_tuple<T, Rest..., Args...>(
                     get<Ints1>()..., rhs.template get<Ints2>()...
                 );
-            };
-
-            return _add(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
+            }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
         }
 
         template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
-            auto _add = [&]< usize... Ints1, usize... Ints2 >(
-                index_sequence<Ints1...>, index_sequence<Ints2...>
-            ) -> tuple<T, Rest..., Args...> {
-
+            return [&]< usize... Ints1, usize... Ints2 >
+                (index_sequence<Ints1...>, index_sequence<Ints2...>)
+            {
                 [](auto... args) {
-                    static_assert(is_same_tuple<tuple<T, Rest..., Args...>, tuple<decltype(args)...>>::value);
+                    static_assert(
+                        is_same_tuple<
+                            tuple<T, Rest..., Args...>, 
+                            tuple<decltype(args)...>
+                        >::value
+                    );
                 }(get<Ints1>()..., rhs.template get<Ints2>()...);
 
                 return make_tuple<T, Rest..., Args...>(
                     get<Ints1>()..., rhs.template get<Ints2>()...
                 );
-            };
-
-            return _add(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
+            }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
         }
 
         template <usize N>
@@ -187,7 +193,7 @@ namespace hsd
             }
         }
 
-        static constexpr usize size()
+        static consteval usize size()
         {
             return 1 + sizeof...(Rest);
         }

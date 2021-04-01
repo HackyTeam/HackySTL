@@ -356,6 +356,11 @@ namespace hsd
             _buckets.clear();
         }
 
+        constexpr usize size() const
+        {
+            return _data.size();
+        }
+
         constexpr iterator begin()
         {
             return _data.begin();
@@ -384,6 +389,36 @@ namespace hsd
         constexpr const_iterator cend() const
         {
             return _data.cend();
+        }
+
+        constexpr iterator rbegin()
+        {
+            return _data.rbegin();
+        }
+
+        constexpr const_iterator rbegin() const
+        {
+            return crbegin();
+        }
+
+        constexpr iterator rend()
+        {
+            return _data.rend();
+        }
+
+        constexpr const_iterator rend() const
+        {
+            return crend();
+        }
+
+        constexpr const_iterator crbegin() const
+        {
+            return _data.crbegin();
+        }
+
+        constexpr const_iterator crend() const
+        {
+            return _data.crend();
         }
     };
 

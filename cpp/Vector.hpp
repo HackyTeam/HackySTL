@@ -564,6 +564,36 @@ namespace hsd
         {
             return cbegin() + size();
         }
+
+        constexpr iterator rbegin()
+        {
+            return end() - 1;
+        }
+
+        constexpr iterator rend()
+        {
+            return begin() - 1;
+        }
+
+        constexpr const_iterator rbegin() const
+        {
+            return crbegin();
+        }
+
+        constexpr const_iterator rend() const
+        {
+            return crend();
+        }
+
+        constexpr const_iterator crbegin() const
+        {
+            return cend() - 1;
+        }
+
+        constexpr const_iterator crend() const
+        {
+            return cbegin() - 1;
+        }
     };
 
     template <hsd::usize N>

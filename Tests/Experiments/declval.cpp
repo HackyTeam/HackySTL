@@ -10,6 +10,4 @@ struct foo {
 //decltype(foo{}.x) a;
 decltype(hsd::declval<foo>().x) a;
 
-int main()
-{
-}
+int main() {}

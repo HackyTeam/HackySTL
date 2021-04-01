@@ -330,20 +330,12 @@ namespace hsd
 
         constexpr void push_back(const T& value)
         {
-            if(empty())
-            {
-                _head._iterator = new typename iterator::list_impl(value);
-                _tail = _head;
-            }
-            else
-                _tail.push_back(value);
-
-            _size++;
+            emplace_back(value);
         }
 
         constexpr void push_back(T&& value)
         {
-            emplace_back(forward<T>(value));
+            emplace_back(move(value));
         }
 
         template <typename... Args>
@@ -376,26 +368,12 @@ namespace hsd
 
         constexpr void push_front(const T& value)
         {
-            if(empty())
-            {
-                _head._iterator = new typename iterator::list_impl(value);
-                _tail = _head;
-            }
-            else
-                _head.push_front(value);
+            emplace_front(value);
         }
 
         constexpr void push_front(T&& value)
         {
-            if(empty())
-            {
-                _head._iterator = new typename iterator::list_impl(hsd::move(value));
-                _tail = _head;
-            }
-            else
-                _head.push_front(hsd::move(value));
-
-            _size++;
+            emplace_front(move(value));
         }
 
         template <typename... Args>
@@ -472,24 +450,44 @@ namespace hsd
             return {nullptr};
         }
 
-        constexpr const_iterator cbegin()
-        {
-            return begin();
-        }
-
         constexpr const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        constexpr const_iterator cend() const
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        constexpr iterator rbegin()
         {
-            return end();
+            return _tail;
+        }
+
+        constexpr iterator rbegin() const
+        {
+            return _tail;
+        }
+
+        constexpr iterator rend()
+        {
+            return {nullptr};
+        }
+
+        constexpr iterator rend() const
+        {
+            return {nullptr};
+        }
+
+        constexpr const_iterator crbegin() const
+        {
+            return rbegin();
+        }
+
+        constexpr const_iterator crend() const
+        {
+            return rend();
         }
     };
 } // namespace hsd

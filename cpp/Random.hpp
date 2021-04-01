@@ -88,12 +88,12 @@ namespace hsd
             if constexpr(word_size == 64)
             {
                 auto _multiplier = static_cast<f64>(_result) / limits<UType>::max;
-                return (to - from) * _multiplier + from;
+                return static_cast<RetType>((to - from) * _multiplier + from);
             }
             else
             {
                 auto _multiplier = static_cast<f32>(_result) / limits<UType>::max;
-                return (to - from) * _multiplier + from;
+                return static_cast<RetType>((to - from) * _multiplier + from);
             }
         }
         

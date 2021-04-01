@@ -734,8 +734,9 @@ namespace hsd
             typename conditional< 
                 is_function<U>::value,
                 typename add_pointer<U>::type,
-                typename remove_cv<U>::type>::type
-                >::type;
+                typename remove_cv<U>::type
+            >::type
+        >::type;
     };
 
     template <typename T>

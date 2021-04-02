@@ -197,6 +197,22 @@ namespace hsd
                         }
                     }
 
+                    constexpr auto take(usize quantity) const
+                        -> Result<forward, runtime_error> 
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return forward{_begin, _result_iter, _view_size - _index};
+                        }
+                    }
+
                     constexpr usize size() const
                     {
                         return _view_size;
@@ -262,6 +278,22 @@ namespace hsd
                         }
                     }
 
+                    constexpr auto take(usize quantity) const
+                        -> Result<reverse, runtime_error> 
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return reverse{_begin, _result_iter, _view_size - _index};
+                        }
+                    }
+
                     constexpr usize size() const
                     {
                         return _view_size;
@@ -323,6 +355,22 @@ namespace hsd
                             iter_type _result_iter = _begin;
                             for(; _index < quantity; _index++, _result_iter++);
                             return random{_result_iter, _end, _view_size - _index};
+                        }
+                    }
+
+                    constexpr auto take(usize quantity) const
+                        -> Result<random, runtime_error> 
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return random{_begin, _result_iter, _view_size - _index};
                         }
                     }
 
@@ -421,6 +469,126 @@ namespace hsd
                     return (lhs | forward).drop(rhs._count).unwrap();
                 }
             };
+
+            template <typename FuncType>
+            class drop_while
+            {
+            private:
+                FuncType _func;
+
+            public:
+                drop_while(FuncType func)
+                    : _func(hsd::forward<FuncType>(func))
+                {}
+
+                template <views::IsView U>
+                constexpr friend auto operator|(const U& lhs, const drop_while& rhs)
+                requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+                {
+                    vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
+
+                    if constexpr(requires{rhs._func(*lhs.begin()).unwrap();})
+                    {
+                        auto _iter = lhs.begin();
+                        for(; _iter != lhs.end() && 
+                            rhs._func(*_iter).unwrap(); _iter++);
+
+                        for(; _iter != lhs.end(); _iter++)
+                        {
+                            _vec.emplace_back(*_iter);
+                        }
+                    }
+                    else
+                    {
+                        auto _iter = lhs.begin();
+                        for(; _iter != lhs.end() && 
+                            rhs._func(*_iter); _iter++);
+
+                        for(; _iter != lhs.end(); _iter++)
+                        {
+                            _vec.emplace_back(*_iter);
+                        }
+                    }
+
+                    return _vec;
+                }
+
+                template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
+                constexpr friend auto operator|(const U& lhs, const drop_while& rhs)
+                requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+                {
+                    return lhs | views::forward | rhs;
+                }
+            };
+
+            class take
+            {
+            private:
+                usize _count;
+
+            public:
+                constexpr take(usize count)
+                    : _count{count}
+                {}
+
+                template <IsView U>
+                constexpr friend auto operator|(const U& lhs, const take& rhs)
+                {
+                    return lhs.take(rhs._count).unwrap();
+                }
+
+                template <typename U>
+                constexpr friend auto operator|(const U& lhs, const take& rhs)
+                requires (IsForwardContainer<U> && !IsView<U>)
+                {
+                    return (lhs | forward).take(rhs._count).unwrap();
+                }
+            };
+
+            template <typename FuncType>
+            class take_while
+            {
+            private:
+                FuncType _func;
+
+            public:
+                take_while(FuncType func)
+                    : _func(hsd::forward<FuncType>(func))
+                {}
+
+                template <views::IsView U>
+                constexpr friend auto operator|(const U& lhs, const take_while& rhs)
+                requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+                {
+                    vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
+
+                    if constexpr(requires{rhs._func(*lhs.begin()).unwrap();})
+                    {
+                        for(auto _iter = lhs.begin(); _iter != lhs.end() 
+                            && rhs._func(*_iter).unwrap(); _iter++)
+                        {
+                            _vec.emplace_back(*_iter);
+                        }
+                    }
+                    else
+                    {
+                        for(auto _iter = lhs.begin(); _iter != lhs.end() 
+                            && rhs._func(*_iter); _iter++)
+                        {
+                            _vec.emplace_back(*_iter);
+                        }
+                    }
+
+                    return _vec;
+                }
+
+                template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
+                constexpr friend auto operator|(const U& lhs, const take_while& rhs)
+                requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+                {
+                    return lhs | views::forward | rhs;
+                }
+            };
         } // namespace views
         
         template <typename FuncType>
@@ -439,7 +607,6 @@ namespace hsd
             requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
-                _vec.reserve(lhs.size());
 
                 for(auto& _value : lhs)
                 {
@@ -483,7 +650,6 @@ namespace hsd
                 remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
-                _vec.reserve(lhs.size());
 
                 for(auto& _value : lhs)
                 {

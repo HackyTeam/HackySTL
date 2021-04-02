@@ -42,8 +42,6 @@ namespace hsd
             }*_iterator = nullptr;
 
             friend class list<T>;
-            HSD_CONSTEXPR iterator() {}
-            constexpr iterator(hsd::NullType) {}
 
             constexpr T* get()
             {
@@ -124,7 +122,10 @@ namespace hsd
                 
                 delete _element;
             }
+
         public:
+            HSD_CONSTEXPR iterator() {}
+            constexpr iterator(hsd::NullType) {}
 
             HSD_CONSTEXPR iterator(const iterator& other)
             {

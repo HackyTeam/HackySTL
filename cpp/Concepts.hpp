@@ -100,4 +100,7 @@ namespace hsd
 
     template <typename T>
     concept IsContainer = IsForwardContainer<T> || IsReverseContainer<T>;
+
+    template <typename T>
+    concept IsBidirectionalContainer = IsForwardContainer<T> && IsReverseContainer<T>;
 } // namespace hsd

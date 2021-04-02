@@ -10,6 +10,7 @@ int main()
         puts("hsd::vector:");
         constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
         constexpr auto square = [](auto val){ return val * val; };
+        constexpr auto less = [](auto val){ return val < 5; };
         hsd::vector vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
         puts("Forward:");
@@ -22,11 +23,26 @@ int main()
         for(auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"{} ">(val);
 
+        puts("\nForward, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nForward, took 3 elements:");
+
+        for(auto& val : vals | hsd::views::take(3))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nForward, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::take_while(less))
+            hsd::io::print<"{} ">(val);
+
         puts("\nForward, filtred:");
 
         for(auto& val : vals | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
-        
+
         puts("\nForward, transformed:");
 
         for(auto& val : vals | hsd::ranges::transform(square))
@@ -40,6 +56,21 @@ int main()
         puts("\nReversed, dropped 5 elements:");
 
         for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, took 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, filtred:");
@@ -60,6 +91,21 @@ int main()
         puts("\nRandom, dropped 2 elements:");
 
         for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nRandom, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nRandom, took 2 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nRandom, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, filtred:");
@@ -79,6 +125,7 @@ int main()
         puts("hsd::list:");
         constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
         constexpr auto square = [](auto val){ return val * val; };
+        constexpr auto less = [](auto val){ return val < 5; };
         hsd::list vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
         puts("Forward:");
@@ -89,6 +136,21 @@ int main()
         puts("\nForward, dropped 3 elements:");
 
         for(auto& val : vals | hsd::views::drop(3))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nForward, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nForward, took 3 elements:");
+
+        for(auto& val : vals | hsd::views::take(3))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nForward, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, filtred:");
@@ -111,6 +173,21 @@ int main()
         for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
             hsd::io::print<"{} ">(val);
 
+        puts("\nReversed, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, took 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
+            hsd::io::print<"{} ">(val);
+
         puts("\nReversed, filtred:");
 
         for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
@@ -131,6 +208,21 @@ int main()
         for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"{} ">(val);
 
+        puts("\nRandom, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nRandom, took 2 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nRandom, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
+            hsd::io::print<"{} ">(val);
+
         puts("\nRandom, filtred:");
 
         for(auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
@@ -147,6 +239,7 @@ int main()
     {
         puts("hsd::unordered_map:");
         using namespace hsd::string_literals;
+        constexpr auto less = [](const auto& val){ return val.second < 5; };
         constexpr auto is_even = [](const auto& val){ return (val.second & 1) == 0; };
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };
 
@@ -173,6 +266,21 @@ int main()
         for(auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
+        puts("\nForward, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::drop_while(less))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nForward, took 3 elements:");
+
+        for(auto& val : vals | hsd::views::take(3))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nForward, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::take_while(less))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
         puts("\nForward, filtred:");
 
         for(auto& val : vals | hsd::ranges::filter(is_even))
@@ -193,6 +301,21 @@ int main()
         for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
+        puts("\nReversed, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nReversed, took 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nReversed, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
         puts("\nReversed, filtred:");
 
         for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
@@ -211,6 +334,21 @@ int main()
         puts("\nRandom, dropped 2 elements:");
 
         for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nRandom, dropped until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nRandom, took 2 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nRandom, took until 5 elements:");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, filtred:");

@@ -3,6 +3,7 @@
 #include "Types.hpp"
 #include "Concepts.hpp"
 #include "Random.hpp"
+#include "Vector.hpp"
 
 namespace hsd
 {
@@ -12,7 +13,6 @@ namespace hsd
         {
             namespace views_detail
             {
-
                 template <ReverseIterable T>
                 class reverse_iterator
                 {
@@ -110,7 +110,7 @@ namespace hsd
                     T _iter;
                     T _origin;
                     usize _index;
-                    mt19937_64 engine{};
+                    static inline mt19937_64 engine{};
                 
                 public:
                     constexpr random_iterator(T iter, usize index)
@@ -172,6 +172,8 @@ namespace hsd
                     {}
                     
                 public:
+                    using iter_value_type = T;
+
                     template <IsForwardContainer U>
                     constexpr forward(const U& container)
                         : _view_size{container.size()}, 
@@ -193,6 +195,11 @@ namespace hsd
                             for(; _index < quantity; _index++, _result_iter++);
                             return forward{_result_iter, _end, _view_size - _index};
                         }
+                    }
+
+                    constexpr usize size() const
+                    {
+                        return _view_size;
                     }
 
                     constexpr auto begin()
@@ -230,6 +237,8 @@ namespace hsd
                     {}
 
                 public:
+                    using iter_value_type = T;
+
                     template <IsReverseContainer U>
                     constexpr reverse(const U& container)
                         : _view_size{container.size()}, 
@@ -251,6 +260,11 @@ namespace hsd
                             for(; _index < quantity; _index++, _result_iter++);
                             return reverse{_result_iter, _end, _view_size - _index};
                         }
+                    }
+
+                    constexpr usize size() const
+                    {
+                        return _view_size;
                     }
 
                     constexpr auto begin()
@@ -288,6 +302,8 @@ namespace hsd
                     {}
 
                 public:
+                    using iter_value_type = T;
+
                     template <IsForwardContainer U>
                     constexpr random(const U& container)
                         : _view_size{container.size()}, _begin{container.begin(), 0}, 
@@ -308,6 +324,11 @@ namespace hsd
                             for(; _index < quantity; _index++, _result_iter++);
                             return random{_result_iter, _end, _view_size - _index};
                         }
+                    }
+
+                    constexpr usize size() const
+                    {
+                        return _view_size;
                     }
 
                     constexpr auto begin()
@@ -366,6 +387,12 @@ namespace hsd
                 };
             } // namespace views_detail
             
+            template <typename T>
+            concept IsView = (
+                IsSame<T, views_detail::forward<typename T::iter_value_type>> ||
+                IsSame<T, views_detail::reverse<typename T::iter_value_type>> ||
+                IsSame<T, views_detail::random<typename T::iter_value_type>>
+            );
 
             static constexpr views_detail::_forward forward = {};
             static constexpr views_detail::_reverse reverse = {};
@@ -381,18 +408,106 @@ namespace hsd
                     : _count{count}
                 {}
 
-                constexpr friend auto operator|(const auto& lhs, const drop& rhs)
+                template <IsView U>
+                constexpr friend auto operator|(const U& lhs, const drop& rhs)
                 {
                     return lhs.drop(rhs._count).unwrap();
                 }
 
-                constexpr friend auto operator|(
-                    const IsForwardContainer auto& lhs, const drop& rhs)
+                template <typename U>
+                constexpr friend auto operator|(const U& lhs, const drop& rhs)
+                requires (IsForwardContainer<U> && !IsView<U>)
                 {
                     return (lhs | forward).drop(rhs._count).unwrap();
                 }
             };
         } // namespace views
+        
+        template <typename FuncType>
+        class filter
+        {
+        private:
+            FuncType _func;
+
+        public:
+            filter(FuncType func)
+                : _func(hsd::forward<FuncType>(func))
+            {}
+
+            template <views::IsView U>
+            constexpr friend auto operator|(const U& lhs, const filter& rhs)
+            requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+            {
+                vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
+                _vec.reserve(lhs.size());
+
+                for(auto& _value : lhs)
+                {
+                    if constexpr(requires{rhs._func(_value).unwrap();})
+                    {
+                        if(rhs._func(_value).unwrap())
+                            _vec.emplace_back(_value);
+                    }
+                    else
+                    {
+                        if(rhs._func(_value))
+                            _vec.emplace_back(_value);
+                    }
+                }
+
+                return _vec;
+            }
+
+            template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
+            constexpr friend auto operator|(const U& lhs, const filter& rhs)
+            requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
+            {
+                return lhs | views::forward | rhs;
+            }
+        };
+
+        template <typename FuncType>
+        class transform
+        {
+        private:
+            FuncType _func;
+
+        public:
+            transform(FuncType func)
+                : _func(hsd::forward<FuncType>(func))
+            {}
+
+            template <views::IsView U>
+            constexpr friend auto operator|(const U& lhs, const transform& rhs)
+            requires (InvocableRet<
+                remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
+            {
+                vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
+                _vec.reserve(lhs.size());
+
+                for(auto& _value : lhs)
+                {
+                    if constexpr(requires{rhs._func(_value).unwrap();})
+                    {
+                        _vec.emplace_back(rhs._func(_value).unwrap());
+                    }
+                    else
+                    {
+                        _vec.emplace_back(rhs._func(_value));
+                    }
+                }
+
+                return _vec;
+            }
+
+            template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
+            constexpr friend auto operator|(const U& lhs, const transform& rhs)
+            requires (InvocableRet<
+                remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
+            {
+                return lhs | views::forward | rhs;
+            }
+        };
     } // namespace ranges
 
     namespace views = ranges::views;    

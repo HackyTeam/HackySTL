@@ -6,7 +6,8 @@ static int func(int a)
     return a;
 }
 
-static void func2(auto& val)
+template <typename T>
+static void func2(T& val)
 {
 }
 

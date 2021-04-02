@@ -2,6 +2,7 @@
 
 #include "Tuple.hpp"
 #include "Result.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
@@ -9,16 +10,10 @@ namespace hsd
     
     namespace func_detail
     {
-        template < typename Func, typename... Args >
-        concept Invocable = requires(Func func, Args... args) 
-        {
-            func(args...);
-        };
-
         template < typename Func, typename Res, typename... Args >
         concept IsFunction = (
             !is_same<Func, function<Res(Args...)>>::value && 
-            Invocable<Func, Args...>
+            InvocableRet<Res, Func, Args...>
         );
 
         struct bad_function

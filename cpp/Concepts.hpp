@@ -35,6 +35,18 @@ namespace hsd
     template <typename T, typename U>
     concept IsSame = is_same<T, U>::value;
 
+    template < typename Func, typename... Args >
+    concept Invocable = requires(Func func, Args... args) 
+    {
+        func(args...);
+    };
+
+    template < typename RetType, typename Func, typename... Args >
+    concept InvocableRet = ( 
+        requires(Func func, Args... args){ {func(args...)} -> IsSame<RetType>; } ||
+        requires(Func func, Args... args){ {func(args...).unwrap()} -> IsSame<RetType>; }
+    );
+
     template <typename T>
     concept BasicIterable = (
         requires(T value) { *value; }  &&

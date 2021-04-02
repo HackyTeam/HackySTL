@@ -788,6 +788,9 @@ namespace hsd
     using remove_cv_t = typename remove_cv<T>::type;
 
     template <typename T>
+    using remove_cvref_t = typename remove_cv<typename remove_reference<T>::type>::type;
+
+    template <typename T>
     using remove_const_t = typename remove_const<T>::type;
 
     template <typename T>

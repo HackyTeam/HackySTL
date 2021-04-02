@@ -3,7 +3,6 @@
 #include "Types.hpp"
 #include "Concepts.hpp"
 #include "Random.hpp"
-#include <time.h>
 
 namespace hsd
 {
@@ -13,6 +12,7 @@ namespace hsd
         {
             namespace views_detail
             {
+
                 template <ReverseIterable T>
                 class reverse_iterator
                 {
@@ -132,7 +132,7 @@ namespace hsd
                     {
                         auto tmp = *this;
                         operator++();
-                        return operator++();
+                        return tmp;
                     }
 
                     constexpr friend bool operator==(
@@ -157,117 +157,241 @@ namespace hsd
                         return *_iter;
                     }
                 };
-            } // namespace views_detail
 
-            template <ForwardIterable T>
-            class forward
-            {
-            private:
-                views_detail::forward_iterator<T> _begin;
-                views_detail::forward_iterator<T> _end;
-            
-            public:
+                template <ForwardIterable T>
+                class forward
+                {
+                private:
+                    using iter_type = typename views_detail::forward_iterator<T>;
+                    usize _view_size = 0;
+                    iter_type _begin;
+                    iter_type _end;
+                
+                    constexpr forward(const iter_type& begin, const iter_type& end, usize view_size)
+                        : _view_size{view_size}, _begin{begin}, _end{end}
+                    {}
+                    
+                public:
+                    template <IsForwardContainer U>
+                    constexpr forward(const U& container)
+                        : _view_size{container.size()}, 
+                        _begin{container.begin()}, 
+                        _end{container.end()}
+                    {}
+
+                    constexpr auto drop(usize quantity) const
+                        -> Result<forward, runtime_error>
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return forward{_result_iter, _end, _view_size - _index};
+                        }
+                    }
+
+                    constexpr auto begin()
+                    {
+                        return _begin;
+                    }
+
+                    constexpr const auto begin() const
+                    {
+                        return _begin;
+                    }
+
+                    constexpr auto end()
+                    {
+                        return _end;
+                    }
+
+                    constexpr const auto end() const
+                    {
+                        return _end;
+                    }
+                };
+                
+                template <ReverseIterable T>
+                class reverse
+                {
+                private:
+                    using iter_type = views_detail::reverse_iterator<T>;
+                    usize _view_size = 0;
+                    iter_type _begin;
+                    iter_type _end;
+                
+                    constexpr reverse(const iter_type& begin, const iter_type& end, usize view_size)
+                        : _view_size{view_size}, _begin{begin}, _end{end}
+                    {}
+
+                public:
+                    template <IsReverseContainer U>
+                    constexpr reverse(const U& container)
+                        : _view_size{container.size()}, 
+                        _begin{container.rbegin()}, 
+                        _end{container.rend()}
+                    {}
+
+                    constexpr auto drop(usize quantity) const
+                        -> Result<reverse, runtime_error> 
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return reverse{_result_iter, _end, _view_size - _index};
+                        }
+                    }
+
+                    constexpr auto begin()
+                    {
+                        return _begin;
+                    }
+
+                    constexpr const auto begin() const
+                    {
+                        return _begin;
+                    }
+
+                    constexpr auto end()
+                    {
+                        return _end;
+                    }
+
+                    constexpr const auto end() const
+                    {
+                        return _end;
+                    }
+                };
+
+                template <ForwardIterable T>
+                class random
+                {
+                private:
+                    using iter_type = views_detail::random_iterator<T>;
+                    usize _view_size = 0;
+                    iter_type _begin;
+                    iter_type _end;
+                
+                    constexpr random(const iter_type& begin, const iter_type& end, usize view_size)
+                        : _view_size{view_size}, _begin{begin}, _end{end}
+                    {}
+
+                public:
+                    template <IsForwardContainer U>
+                    constexpr random(const U& container)
+                        : _view_size{container.size()}, _begin{container.begin(), 0}, 
+                        _end{container.end(), container.size()}
+                    {}
+
+                    constexpr auto drop(usize quantity) const
+                        -> Result<random, runtime_error>
+                    {
+                        if(quantity > _view_size)
+                        {
+                            return runtime_error{"Dropping out of bounds"};
+                        }
+                        else
+                        {
+                            usize _index = 0;
+                            iter_type _result_iter = _begin;
+                            for(; _index < quantity; _index++, _result_iter++);
+                            return random{_result_iter, _end, _view_size - _index};
+                        }
+                    }
+
+                    constexpr auto begin()
+                    {
+                        return _begin;
+                    }
+
+                    constexpr const auto begin() const
+                    {
+                        return _begin;
+                    }
+
+                    constexpr auto end()
+                    {
+                        return _end;
+                    }
+
+                    constexpr const auto end() const
+                    {
+                        return _end;
+                    }
+                };
+
                 template <IsForwardContainer U>
-                constexpr forward(const U& container)
-                    : _begin{container.begin()}, _end{container.end()}
-                {}
-
-                constexpr auto begin()
-                {
-                    return _begin;
-                }
-
-                constexpr const auto begin() const
-                {
-                    return _begin;
-                }
-
-                constexpr auto end()
-                {
-                    return _end;
-                }
-
-                constexpr const auto end() const
-                {
-                    return _end;
-                }
-            };
-            
-            template <ReverseIterable T>
-            class reverse
-            {
-            private:
-                views_detail::reverse_iterator<T> _begin;
-                views_detail::reverse_iterator<T> _end;
-            
-            public:
+                forward(const U& container) -> forward<decltype(container.end())>;
                 template <IsReverseContainer U>
-                constexpr reverse(const U& container)
-                    : _begin{container.rbegin()}, _end{container.rend()}
-                {}
+                reverse(const U& container) -> reverse<decltype(container.rend())>;
+                template <IsForwardContainer U>
+                random(const U& container) -> random<decltype(container.end())>;
 
-                constexpr auto begin()
+                struct _forward
                 {
-                    return _begin;
-                }
+                    template <IsForwardContainer U>
+                    constexpr friend auto operator|(const U& rhs, const _forward&)
+                    {
+                        return forward{rhs};
+                    }
+                };
 
-                constexpr const auto begin() const
+                struct _reverse
                 {
-                    return _begin;
-                }
+                    template <IsReverseContainer U>
+                    constexpr friend auto operator|(const U& rhs, const _reverse&)
+                    {
+                        return reverse{rhs};
+                    }
+                };
 
-                constexpr auto end()
+                struct _random
                 {
-                    return _end;
-                }
+                    template <IsForwardContainer U>
+                    constexpr friend auto operator|(const U& rhs, const _random&)
+                    {
+                        return random{rhs};
+                    }
+                };
+            } // namespace views_detail
+            
 
-                constexpr const auto end() const
-                {
-                    return _end;
-                }
-            };
+            static constexpr views_detail::_forward forward = {};
+            static constexpr views_detail::_reverse reverse = {};
+            static constexpr views_detail::_random random = {};
 
-            template <ForwardIterable T>
-            class random
+            class drop
             {
             private:
-                views_detail::random_iterator<T> _begin;
-                views_detail::random_iterator<T> _end;
-            
+                usize _count;
+
             public:
-                template <IsForwardContainer U>
-                constexpr random(const U& container)
-                    : _begin{container.begin(), 0}, 
-                    _end{container.end(), container.size()}
+                constexpr drop(usize count)
+                    : _count{count}
                 {}
 
-                constexpr auto begin()
+                constexpr friend auto operator|(const auto& lhs, const drop& rhs)
                 {
-                    return _begin;
+                    return lhs.drop(rhs._count).unwrap();
                 }
 
-                constexpr const auto begin() const
+                constexpr friend auto operator|(
+                    const IsForwardContainer auto& lhs, const drop& rhs)
                 {
-                    return _begin;
-                }
-
-                constexpr auto end()
-                {
-                    return _end;
-                }
-
-                constexpr const auto end() const
-                {
-                    return _end;
+                    return (lhs | forward).drop(rhs._count).unwrap();
                 }
             };
-
-            template <IsForwardContainer U>
-            forward(const U& container) -> forward<decltype(container.end())>;
-            template <IsReverseContainer U>
-            reverse(const U& container) -> reverse<decltype(container.rend())>;
-            template <IsForwardContainer U>
-            random(const U& container) -> random<decltype(container.end())>;
         } // namespace views
     } // namespace ranges
 

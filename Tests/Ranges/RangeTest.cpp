@@ -10,17 +10,32 @@ int main()
         puts("hsd::vector:");
         hsd::vector vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
-        for(auto& val : hsd::views::forward(vals))
+        for(auto& val : vals)
             hsd::io::print<"{} ">(val);
 
         puts("");
 
-        for(auto& val : hsd::views::reverse(vals))
+        for(auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"{} ">(val);
 
         puts("");
 
-        for(auto& val : hsd::views::random(vals))
+        for(auto& val : vals | hsd::views::reverse)
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random)
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"{} ">(val);
 
         puts("");
@@ -30,17 +45,32 @@ int main()
         puts("hsd::list:");
         hsd::list vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
-        for(auto& val : hsd::views::forward(vals))
+        for(auto& val : vals)
             hsd::io::print<"{} ">(val);
 
         puts("");
 
-        for(auto& val : hsd::views::reverse(vals))
+        for(auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"{} ">(val);
 
         puts("");
 
-        for(auto& val : hsd::views::random(vals))
+        for(auto& val : vals | hsd::views::reverse)
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random)
+            hsd::io::print<"{} ">(val);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"{} ">(val);
 
         puts("");
@@ -62,17 +92,32 @@ int main()
             hsd::pair{"tenth"_sv, 10}
         }};
 
-        for(auto& val : hsd::views::forward(vals))
+        for(auto& val : vals)
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("");
 
-        for(auto& val : hsd::views::reverse(vals))
+        for(auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("");
 
-        for(auto& val : hsd::views::random(vals))
+        for(auto& val : vals | hsd::views::reverse)
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random)
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("");
+
+        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("");

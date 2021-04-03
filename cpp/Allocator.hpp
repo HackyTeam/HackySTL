@@ -212,14 +212,15 @@ namespace hsd
         {
             if(size > limits<usize>::max / sizeof(T))
             {
-                return allocator_detail::allocator_error{"Bad length for allocation"};
+                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
             }
             else
             {
                 #ifdef __cpp_aligned_new
-                return static_cast<pointer_type>(::operator new(size * _type_size, static_cast<std::align_val_t>(_alignment)));
+                return {static_cast<pointer_type>(::operator new(
+                    size * _type_size, static_cast<std::align_val_t>(_alignment))), ok_value{}};
                 #else
-                return static_cast<pointer_type>(::operator new(size * _type_size));
+                return {static_cast<pointer_type>(::operator new(size * _type_size)), ok_value{}};
                 #endif
             }
         }

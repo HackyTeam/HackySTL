@@ -1,5 +1,3 @@
-// This file is UTF-8
-
 #include <Json.hpp>
 #include <Io.hpp>
 

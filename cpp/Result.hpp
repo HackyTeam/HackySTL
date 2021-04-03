@@ -62,6 +62,9 @@ namespace hsd
             return "Acessed an uninitialized value";
         }
     };
+
+    struct ok_value {};
+    struct err_value {};
     
     class runtime_error
     {
@@ -97,13 +100,13 @@ namespace hsd
 
         template <typename T>
         requires (std::is_constructible_v<Ok, T&&>)
-        HSD_CONSTEXPR Result(T&& value)
+        HSD_CONSTEXPR Result(T&& value, ok_value = {})
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
         template <typename T>
         requires (std::is_constructible_v<Err, T&&>)
-        HSD_CONSTEXPR Result(T&& value)
+        HSD_CONSTEXPR Result(T&& value, err_value = {})
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 

@@ -2,7 +2,6 @@
 
 #include "Result.hpp"
 #include "CString.hpp"
-#include "Math.hpp"
 #include "Allocator.hpp"
 #include "_IoOverload.hpp"
 #include "StringView.hpp"
@@ -210,7 +209,7 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                hsd::math::min(_size, rhs._size)
+                _size < rhs._size ? _size : rhs._size
             ) == 0;
         }
 
@@ -223,7 +222,7 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                hsd::math::min(_size, rhs._size)
+                _size < rhs._size ? _size : rhs._size
             ) == -1;
         }
 
@@ -235,7 +234,7 @@ namespace hsd
         inline bool operator>(const basic_string& rhs) const
         {
             return _str_utils::compare(_data, rhs._data, 
-                hsd::math::min(_size, rhs._size)) == 1;
+                (_size < rhs._size ? _size : rhs._size) == 1;
         }
 
         inline bool operator>=(const basic_string& rhs) const

@@ -89,7 +89,7 @@ namespace hsd
         {
             return cstring_utils::compare(
                 _data, rhs._data, 
-                hsd::math::min(_size, rhs._size)
+                _size < rhs._size ? _size : rhs._size
             ) == -1;
         }
 
@@ -101,7 +101,8 @@ namespace hsd
         constexpr bool operator>(const basic_string_view& rhs) const
         {
             return cstring_utils::compare(_data, rhs._data, 
-                hsd::math::min(_size, rhs._size)) == 1;
+                (_size < rhs._size ? _size : rhs._size) == 1
+            );
         }
 
         constexpr bool operator>=(const basic_string_view& rhs) const
@@ -199,7 +200,7 @@ namespace hsd
                 return out_of_range{};
 
             const usize max_length = _size - start;
-            return basic_string_view(_data + start, math::min(len, max_length));
+            return basic_string_view(_data + start, len < max_length ? len : max_length);
         }
     };
 

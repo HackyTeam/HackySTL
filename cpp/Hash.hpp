@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
@@ -12,7 +13,7 @@ namespace hsd
     };
 
     template < typename HashType, typename T >
-    requires (std::input_iterator<T>)
+    requires (ForwardIterable<T> || ReverseIterable<T>)
     struct hash<HashType, T>
     {
         using ResultType = HashType;
@@ -46,7 +47,7 @@ namespace hsd
         }
 
         static constexpr ResultType get_hash(T begin, T end)
-        requires (std::forward_iterator<T>)
+        requires (ForwardIterable<T>)
         {
             HashType offset_basis = 0;
             HashType prime = 0;

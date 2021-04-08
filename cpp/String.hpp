@@ -234,7 +234,7 @@ namespace hsd
         inline bool operator>(const basic_string& rhs) const
         {
             return _str_utils::compare(_data, rhs._data, 
-                (_size < rhs._size ? _size : rhs._size) == 1;
+                (_size < rhs._size ? _size : rhs._size) == 1);
         }
 
         inline bool operator>=(const basic_string& rhs) const

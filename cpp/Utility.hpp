@@ -38,19 +38,6 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
-    template < typename T, typename... Args >
-    static constexpr void construct_at(T* ptr, Args&&... args)
-    {
-        if constexpr(std::is_move_assignable_v<T>)
-        {
-            (*ptr) = T(forward<Args>(args)...);
-        }
-        else
-        {
-            new (ptr) T(forward<Args>(args)...);
-        }
-    }
-
     template <class T, class U = T>
     static constexpr T exchange(T& target, U&& new_val) noexcept
     {

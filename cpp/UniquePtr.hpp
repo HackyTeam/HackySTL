@@ -41,11 +41,11 @@ namespace hsd
                 : Allocator<value_type>(alloc), _size{size}
             {
                 this->_data = this->allocate(size).unwrap();
-                construct_at(this->_data);
+                alloc_type::construct_at(this->_data);
 
                 for(usize _index = 0; _index < size; _index++)
                 {
-                    construct_at(&this->_data[_index]);
+                    alloc_type::construct_at(&this->_data[_index]);
                 }
             }
 
@@ -286,7 +286,7 @@ namespace hsd
     {
         Allocator<remove_array_t<T>> _alloc;
         auto _ptr = _alloc.allocate(1).unwrap();
-        construct_at(_ptr, forward<Args>(args)...);
+        _alloc.construct_at(_ptr, forward<Args>(args)...);
         return unique_ptr<T, Allocator>(_ptr);
     }
 
@@ -298,7 +298,7 @@ namespace hsd
     {
         Allocator<remove_array_t<T>> _alloc;
         auto& _ptr = _alloc.allocate(1).unwrap();
-        construct_at(&_ptr[0], forward<Args>(args)...);
+        _alloc.construct_at(&_ptr[0], forward<Args>(args)...);
         return unique_ptr<T, Allocator>(_ptr);
     }
 
@@ -308,7 +308,7 @@ namespace hsd
     make_unique(Allocator<U>& alloc, Args&&... args)
     {
         auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
-        construct_at(_ptr, forward<Args>(args)...);
+        alloc.construct_at(_ptr, forward<Args>(args)...);
         return unique_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
     }
 

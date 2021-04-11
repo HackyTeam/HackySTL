@@ -41,11 +41,11 @@ namespace hsd
                     : Allocator<value_type>(alloc), _size{size}
                 {
                     this->_data = this->allocate(size);
-                    std::construct_at(this->_data);
+                    alloc_type::construct_at(this->_data);
 
                     for(usize _index = 0; _index < size; _index++)
                     {
-                        std::construct_at(&this->_data[_index]);
+                        alloc_type::construct_at(&this->_data[_index]);
                     }
                 }
 
@@ -464,7 +464,7 @@ namespace hsd
         {
             Allocator<remove_array_t<T>> _alloc;
             auto* _ptr = _alloc.allocate(1).unwrap();
-            construct_at(_ptr, forward<Args>(args)...);
+            _alloc.construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr);
         }
 
@@ -473,7 +473,7 @@ namespace hsd
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
-            construct_at(_ptr, forward<Args>(args)...);
+            _alloc.construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr, static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
         }
 

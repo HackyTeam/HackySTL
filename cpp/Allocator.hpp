@@ -76,6 +76,12 @@ namespace hsd
             _size = other._size;
         }
 
+        template <typename... Args>
+        static constexpr void construct_at(T* ptr, Args&&... args)
+        {
+            new (ptr) T(forward<Args>(args)...);
+        }
+
         [[nodiscard]] constexpr auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
         {
@@ -243,6 +249,12 @@ namespace hsd
                 return {};
             }
         }
+
+        template <typename... Args>
+        static constexpr void construct_at(T* ptr, Args&&... args)
+        {
+            new (ptr) T(forward<Args>(args)...);
+        }
     };
 
     template < typename T, usize MaxSize >
@@ -263,6 +275,12 @@ namespace hsd
         static constexpr usize limit()
         {
             return MaxSize;
+        }
+
+        template <typename... Args>
+        static constexpr void construct_at(T* ptr, Args&&... args)
+        {
+            (*ptr) = T(forward<Args>(args)...);
         }
     };
 } // namespace hsd

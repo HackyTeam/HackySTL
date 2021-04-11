@@ -75,7 +75,7 @@ namespace hsd
                 this->_data = this->allocate(rhs._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                construct_at(&this->_data[_index], rhs[_index]);
+                Allocator<T>::construct_at(&this->_data[_index], rhs[_index]);
         }
 
         HSD_CONSTEXPR vector(const vector& other)
@@ -86,7 +86,7 @@ namespace hsd
                 this->_data = this->allocate(other._capacity).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                construct_at(&this->_data[_index], other[_index]);
+                Allocator<T>::construct_at(&this->_data[_index], other[_index]);
         }
 
         HSD_CONSTEXPR vector(vector&& other)
@@ -114,7 +114,7 @@ namespace hsd
                 this->_data = this->allocate(N).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                construct_at(&this->_data[_index], arr[_index]);
+                Allocator<T>::construct_at(&this->_data[_index], arr[_index]);
         }
 
         template <usize N>
@@ -125,7 +125,7 @@ namespace hsd
                 this->_data = this->allocate(N).unwrap();
 
             for (usize _index = 0; _index < _size; ++_index)
-                construct_at(&this->_data[_index], move(arr[_index]));
+                Allocator<T>::construct_at(&this->_data[_index], move(arr[_index]));
         }
 
         HSD_CONSTEXPR vector& operator=(const vector& rhs)
@@ -136,7 +136,7 @@ namespace hsd
                 reserve(rhs._size);
                 
                 for (usize _index = 0; _index < rhs._size; ++_index)
-                    construct_at(&this->_data[_index], rhs[_index]);
+                    Allocator<T>::construct_at(&this->_data[_index], rhs[_index]);
                 
                 _size = rhs._size;
             }
@@ -156,7 +156,7 @@ namespace hsd
                 else if (rhs._size > _size)
                 {
                     for (; _index < rhs._size; ++_index)
-                        construct_at(&this->_data[_index], rhs[_index]);
+                        Allocator<T>::construct_at(&this->_data[_index], rhs[_index]);
                 }
 
                 _size = rhs._size;
@@ -194,7 +194,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    construct_at(&this->_data[_index], arr[_index]);
+                    Allocator<T>::construct_at(&this->_data[_index], arr[_index]);
                 
                 _size = N;
             }
@@ -215,7 +215,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        construct_at(&this->_data[_index], arr[_index]);
+                        Allocator<T>::construct_at(&this->_data[_index], arr[_index]);
                 }
                 
                 _size = N;
@@ -233,7 +233,7 @@ namespace hsd
                 reserve(N);
                 
                 for (usize _index = 0; _index < N; ++_index)
-                    construct_at(&this->_data[_index], move(arr[_index]));
+                    Allocator<T>::construct_at(&this->_data[_index], move(arr[_index]));
                 
                 _size = N;
             }
@@ -254,7 +254,7 @@ namespace hsd
                 else if (N > _size)
                 {
                     for (; _index < N; ++_index)
-                        construct_at(&this->_data[_index], move(arr[_index]));
+                        Allocator<T>::construct_at(&this->_data[_index], move(arr[_index]));
                 }
 
                 _size = N;
@@ -364,7 +364,7 @@ namespace hsd
                     for (usize _index = 0; _index < _size; ++_index)
                     {
                         auto& _value = at_unchecked(_index);
-                        construct_at(&_new_buf[_index], move(_value));
+                        Allocator<T>::construct_at(&_new_buf[_index], move(_value));
                         _value.~T();
                     }
 
@@ -412,7 +412,7 @@ namespace hsd
                     for (; _index < _size; ++_index)
                     {
                         auto& _value = at_unchecked(_index);
-                        construct_at(&_new_buf[_index], move(_value));
+                        Allocator<T>::construct_at(&_new_buf[_index], move(_value));
                         _value.~T();
                     }
                     for (; _index < new_size; ++_index)
@@ -422,18 +422,18 @@ namespace hsd
                             if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
                                 std::is_copy_constructible_v<Allocator<T>>)
                             {
-                                construct_at(&_new_buf[_index], 
+                                Allocator<T>::construct_at(&_new_buf[_index], 
                                     static_cast<Allocator<T>>(*this)
                                 );
                             }
                             else
                             {
-                                construct_at(&_new_buf[_index]);
+                                Allocator<T>::construct_at(&_new_buf[_index]);
                             }
                         }
                         else
                         {
-                            construct_at(&_new_buf[_index]);
+                            Allocator<T>::construct_at(&_new_buf[_index]);
                         }
                     }
 
@@ -453,18 +453,18 @@ namespace hsd
                         if constexpr(std::is_base_of_v<Allocator<typename T::value_type>, T> &&
                             std::is_copy_constructible_v<Allocator<T>>)
                         {
-                            construct_at(&this->_data[_index], 
+                            Allocator<T>::construct_at(&this->_data[_index], 
                                 static_cast<Allocator<T>>(*this)
                             );
                         }
                         else
                         {
-                            construct_at(&this->_data[_index]);
+                            Allocator<T>::construct_at(&this->_data[_index]);
                         }
                     }
                     else
                     {
-                        construct_at(&this->_data[_index]);
+                        Allocator<T>::construct_at(&this->_data[_index]);
                     }
                 }
                 
@@ -493,7 +493,7 @@ namespace hsd
         HSD_CONSTEXPR void emplace_back(Args&&... args)
         {
             reserve(_size + 1);
-            construct_at(&this->_data[_size], forward<Args>(args)...);
+            Allocator<T>::construct_at(&this->_data[_size], forward<Args>(args)...);
             ++_size;
         }
 

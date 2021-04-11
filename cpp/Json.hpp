@@ -323,6 +323,10 @@ namespace hsd
         Result<bool, runtime_error> as_bool();
 
         template <typename CharT>
+        auto& as_object();
+        auto& as_array();
+
+        template <typename CharT>
         Result<reference<JsonValue>, runtime_error> access(const basic_string_view<CharT>& key);
         Result<reference<JsonValue>, runtime_error> access(usize index);
 
@@ -465,6 +469,17 @@ namespace hsd
 
         // throw
         return runtime_error{"Cast to wrong type"};
+    }
+
+    inline auto& JsonValue::as_array()
+    {
+        return try_as<JsonArray>(JsonValueType::Array).unwrap().values();
+    }
+
+    template <typename CharT>
+    inline auto& JsonValue::as_object()
+    {
+        return try_as<JsonObject<CharT>>(JsonValueType::Object).unwrap().values();
     }
 
     template <typename CharT>

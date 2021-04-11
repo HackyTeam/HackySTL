@@ -41,7 +41,7 @@ namespace hsd
     template < typename T, typename... Args >
     static constexpr void construct_at(T* ptr, Args&&... args)
     {
-        if(std::is_constant_evaluated())
+        if constexpr(std::is_move_assignable_v<T>)
         {
             (*ptr) = T(forward<Args>(args)...);
         }

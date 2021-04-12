@@ -308,7 +308,7 @@ namespace hsd
             }
             else
             {
-                return _clk.tv_nsec;
+                return static_cast<u64>(_clk.tv_nsec);
             }
         }
 
@@ -324,7 +324,8 @@ namespace hsd
 
         f64 to_seconds()
         {
-            return _clk.tv_nsec / 1'000'000'000.0 + _clk.tv_sec;
+            return _clk.tv_nsec / 1'000'000'000.0 + 
+                static_cast<f64>(_clk.tv_sec);
         }
 
         precise_clock restart()

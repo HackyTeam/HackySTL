@@ -27,9 +27,11 @@ namespace hsd
             for (size = 0; size < buf_size;)
             {
                 auto c = GetC(stream);
+                
                 if (c == EOF)
                     break;
-                s_buf[size++] = c;
+
+                s_buf[size++] = static_cast<CharT>(c);
             }
             return basic_string_view<CharT>(s_buf, size);
         }
@@ -224,7 +226,9 @@ namespace hsd
                         else
                         {
                             tokens.push(current_token);
-                            qtok_number.push(basic_cstring<CharT>::parse_i(token_str.c_str()));
+                            qtok_number.push(
+                                static_cast<i32>(basic_cstring<CharT>::parse_i(token_str.c_str()))
+                            );
                             current_token = JsonToken::Empty;
                             token_position = 0;
                             token_str.clear();
@@ -272,7 +276,9 @@ namespace hsd
             if (current_token == JsonToken::Number)
             {
                 tokens.push(current_token);
-                qtok_number.push(basic_cstring<CharT>::parse_i(token_str.c_str()));
+                qtok_number.push(
+                    static_cast<i32>(basic_cstring<CharT>::parse_i(token_str.c_str()))
+                );
                 current_token = JsonToken::Empty;
                 token_position = 0;
                 token_str.clear();
@@ -345,7 +351,7 @@ namespace hsd
     {
         JsonValueType t; // only Null, True & False allowed
 
-        JsonPrimitive(JsonValueType t) : t(t) {}
+        JsonPrimitive(JsonValueType _t) : t(_t) {}
 
     public:
         JsonValueType type() const noexcept override

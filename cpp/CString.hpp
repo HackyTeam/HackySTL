@@ -482,7 +482,7 @@ public:
 
 			for(; num != 0; num /= 10)
 			{
-				_buf[--_len] = '0' + (num % 10);
+				_buf[--_len] = '0' + static_cast<CharT>(num % 10);
 			}
 
 			return _buf;

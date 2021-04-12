@@ -59,8 +59,8 @@ namespace hsd
 
             for(UType _i = 1; _i < state_size; _i++)
             {
-                _mt[_i] = init_multiplier * _mt[_i - 1] ^ 
-                    (_mt[_i - 1] >> (word_size - 2)) + _i;
+                _mt[_i] = init_multiplier * (_mt[_i - 1] ^ 
+                    (_mt[_i - 1] >> (word_size - 2))) + _i;
             }
         }
 
@@ -87,13 +87,13 @@ namespace hsd
 
             if constexpr(word_size == 64)
             {
-                auto _multiplier = static_cast<f64>(_result) / limits<UType>::max;
-                return static_cast<RetType>((to - from) * _multiplier + from);
+                auto _multiplier = static_cast<f64>(_result) / static_cast<f64>(limits<UType>::max);
+                return (to - from) * static_cast<RetType>(_multiplier) + from;
             }
             else
             {
-                auto _multiplier = static_cast<f32>(_result) / limits<UType>::max;
-                return static_cast<RetType>((to - from) * _multiplier + from);
+                auto _multiplier = static_cast<f32>(_result) / static_cast<f32>(limits<UType>::max);
+                return (to - from) * static_cast<RetType>(_multiplier) + from;
             }
         }
         

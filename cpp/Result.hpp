@@ -110,29 +110,29 @@ namespace hsd
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 
-        HSD_CONSTEXPR Result(const Result& other)
+        Result(const Result& other)
             : _initialized{other._initialized}
         {
             if(_initialized)
             {
-                construct_at(&_ok_data, other._ok_data);
+                new(&_ok_data) Ok(other._ok_data);
             }
             else
             {
-                construct_at(&_err_data, other._err_data);
+                new(&_err_data) Err(other._err_data);
             }
         }
 
-        HSD_CONSTEXPR Result(Result&& other)
+        Result(Result&& other)
             : _initialized{other._initialized}
         {
             if(_initialized)
             {
-                construct_at(&_ok_data, move(other._ok_data));
+                new(&_ok_data) Ok(move(other._ok_data));
             }
             else
             {
-                construct_at(&_err_data, move(other._err_data));
+                new(&_err_data) Err(move(other._err_data));
             }
         }
 

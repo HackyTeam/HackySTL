@@ -473,7 +473,7 @@ namespace hsd
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
-            _alloc.construct_at(_ptr, forward<Args>(args)...);
+            alloc.construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr, static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
         }
 

@@ -15,7 +15,7 @@ int main()
             
             // Copy the data to a buffer
             hsd::cstring::copy(raw_buf, buf.c_str());
-            server.respond<"{}">(static_cast<const char*>(raw_buf));
+            server.respond<"{}">(raw_buf);
         }
         
         // Because newline will be sent as well

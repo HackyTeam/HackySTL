@@ -11,7 +11,7 @@ int main()
         
         auto& stream_ref = hsd::io::read_line().unwrap();
         hsd::cstring::copy_until(raw_buf, stream_ref.c_str(), '\n');
-        auto state = client.respond<"{}">(static_cast<const char*>(raw_buf));
+        auto state = client.respond<"{}">(raw_buf);
 
         if(state == hsd::net::received_state::err)
             continue;

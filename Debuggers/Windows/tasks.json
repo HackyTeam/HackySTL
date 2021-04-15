@@ -11,7 +11,8 @@
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.exe"
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
+                "-lws2_32"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

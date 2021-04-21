@@ -89,12 +89,12 @@ namespace hsd
                     _status.st_blksize      == rhs._status.st_blksize      &&
                     _status.st_blocks       == rhs._status.st_blocks       &&
                     #elif defined(HSD_PLATFORM_WINDOWS)
-                    _status.st_atime == rhs._status.st_atime               &&
-                    _status.st_ctime == rhs._status.st_ctime               &&
-                    _status.st_mtime == rhs._status.st_mtime               &&
-                    _status.st_atime  == rhs._status.st_atime              &&
-                    _status.st_ctime  == rhs._status.st_ctime              &&
-                    _status.st_mtime  == rhs._status.st_mtime              &&
+                    _status.st_atime        == rhs._status.st_atime        &&
+                    _status.st_ctime        == rhs._status.st_ctime        &&
+                    _status.st_mtime        == rhs._status.st_mtime        &&
+                    _status.st_atime        == rhs._status.st_atime        &&
+                    _status.st_ctime        == rhs._status.st_ctime        &&
+                    _status.st_mtime        == rhs._status.st_mtime        &&
                     #endif
                     _status.st_nlink        == rhs._status.st_nlink        &&
                     _status.st_mode         == rhs._status.st_mode         &&

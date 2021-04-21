@@ -58,8 +58,8 @@ namespace hsd
 		thread(F&& func, Args&&... args) 
 		{
 			#if defined(HSD_PLATFORM_POSIX)
-			pthread_attr_t attr;
-			pthread_attr_init(&attr);
+			pthread_attr_t _attr;
+			pthread_attr_init(&_attr);
 			#endif
 
 			auto decay_copy = []<typename T>(T&& t) -> decay_t<T>
@@ -68,9 +68,9 @@ namespace hsd
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
-			hsd::i32 ready = 0;
+			hsd::i32 _ready = 0;
 			#else
-			hsd::u64 ready = 0;
+			hsd::u64 _ready = 0;
 			#endif
 
 			struct thread_data 
@@ -107,26 +107,28 @@ namespace hsd
 					return 0ul;
 					#endif
 				}
-			} td {
-				&ready,
+			} _td {
+				&_ready,
 				decay_copy(hsd::forward<F>(func)),
 				hsd::make_tuple(decay_copy(hsd::forward<Args>(args))...)
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
-			/*i32 err = */pthread_create(&_handle, &attr, thread_data::enter_thread, &td);
-			// if (err) raise error
+			i32 _res = pthread_create(&_handle, &attr, thread_data::enter_thread, &td);
+			
+			if (_res) abort();
 
 			// Spinlock time
-			while (!__atomic_load_n(&ready, __ATOMIC_ACQUIRE));
+			while (!__atomic_load_n(&_ready, __ATOMIC_ACQUIRE));
 			_id = id{static_cast<native_id_type>(_handle)};
 			#elif defined(HSD_PLATFORM_WINDOWS)
-			native_id_type native_id;
-			_handle = CreateThread(nullptr, 0, thread_data::enter_thread, &td, 0, &native_id);
-			// if (!_handle) raise error
+			native_id_type _native_id;
+			_handle = CreateThread(nullptr, 0, thread_data::enter_thread, &_td, 0, &_native_id);
+			
+			if (!_handle) abort();
 
-			while (!InterlockedCompareExchangeAcquire(&ready, 0, 1));
-			_id = id{native_id};
+			while (!InterlockedCompareExchangeAcquire(&_ready, 0, 1));
+			_id = id{_native_id};
 			#endif
 		}
 
@@ -196,7 +198,7 @@ namespace hsd
 		}
 	
 	private:
-		native_handle_type _handle { };
-		id _id { };
+		native_handle_type _handle{};
+		id _id{};
 	}; // struct thread
 } // namespace hsd

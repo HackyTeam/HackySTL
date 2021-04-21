@@ -9,7 +9,7 @@ namespace hsd
     class tuple
     {
     public:
-        static constexpr usize size()
+        static consteval usize size()
         {
             return sizeof...(T);
         }
@@ -27,7 +27,7 @@ namespace hsd
         T _first;       
 
     public:
-        tuple() = default;
+        constexpr tuple() = default;
 
         constexpr tuple(const T& first) 
             : _first{first}
@@ -44,47 +44,21 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr auto operator+(const tuple<Args...>& rhs) 
-        {
-            return [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                [](auto... args) 
-                {
-                    static_assert(
-                        is_same_tuple<
-                            tuple<T, Args...>, 
-                            tuple<decltype(args)...>
-                        >::value
-                    );
-                }(get<0>(), rhs.template get<Ints>()...);
-
-                return make_tuple<T, Args...>(get<0>(), rhs.template get<Ints>()...);
-            }(index_sequence_for<T>{}, index_sequence_for<Args...>{});
-        }
-
-        template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
             return [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                [](auto... args) 
-                {
+                [](auto... args) {
                     static_assert(
                         is_same_tuple<
                             tuple<T, Args...>, 
                             tuple<decltype(args)...>
-                        >::value
+                        >::value, "Invalid concatenation"
                     );
                 }(get<0>(), rhs.template get<Ints>()...);
 
                 return make_tuple<T, Args...>(get<0>(), rhs.template get<Ints>()...);
             }(index_sequence_for<Args...>{});
-        }
-
-        template <usize N> requires (N == 0)
-        constexpr auto get() 
-        {
-            return _first;
         }
 
         template <usize N> requires (N == 0)
@@ -107,7 +81,7 @@ namespace hsd
         tuple<Rest...> _rest;        
 
     public:
-        tuple() = default;
+        constexpr tuple() = default;
 
         constexpr tuple(const T& first, const Rest&... rest) 
             : _first(first), _rest(rest...)
@@ -125,28 +99,6 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr auto operator+(const tuple<Args...>& rhs) 
-        {
-            return [&]< usize... Ints1, usize... Ints2 >
-                (index_sequence<Ints1...>, index_sequence<Ints2...>) 
-            {
-                [](auto... args) 
-                {
-                    static_assert(
-                        is_same_tuple<
-                            tuple<T, Rest..., Args...>, 
-                            tuple<decltype(args)...>
-                        >::value
-                    );
-                }(get<Ints1>()..., rhs.template get<Ints2>()...);
-
-                return make_tuple<T, Rest..., Args...>(
-                    get<Ints1>()..., rhs.template get<Ints2>()...
-                );
-            }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
-        }
-
-        template <typename... Args>
         constexpr auto operator+(const tuple<Args...>& rhs) const
         {
             return [&]< usize... Ints1, usize... Ints2 >
@@ -157,7 +109,7 @@ namespace hsd
                         is_same_tuple<
                             tuple<T, Rest..., Args...>, 
                             tuple<decltype(args)...>
-                        >::value
+                        >::value, "Invalid concatenation"
                     );
                 }(get<Ints1>()..., rhs.template get<Ints2>()...);
 
@@ -165,19 +117,6 @@ namespace hsd
                     get<Ints1>()..., rhs.template get<Ints2>()...
                 );
             }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
-        }
-
-        template <usize N>
-        constexpr auto get() 
-        {
-            if constexpr(N == 0)
-            {
-                return _first;
-            }
-            else
-            {
-                return _rest.template get<N - 1>();
-            }
         }
 
         template <usize N>

@@ -281,8 +281,7 @@ namespace hsd
     template <typename T, template <typename> typename Allocator = allocator, typename... Args>
     requires (std::is_default_constructible_v<Allocator<uchar>> && 
         is_same<typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object 
-    make_unique(Args&&... args)
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
         auto _ptr = _alloc.allocate(1).unwrap();
@@ -293,8 +292,7 @@ namespace hsd
     template <typename T, template <typename> typename Allocator = allocator, typename... Args>
     requires (std::is_default_constructible_v<Allocator<uchar>> && 
         !is_same<typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object 
-    make_unique(Args&&... args)
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
         auto& _ptr = _alloc.allocate(1).unwrap();
@@ -303,9 +301,8 @@ namespace hsd
     }
 
     template <typename T, template <typename> typename Allocator = allocator, typename U, typename... Args>
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object make_unique(Allocator<U>& alloc, Args&&... args)
     requires (!std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::single_object 
-    make_unique(Allocator<U>& alloc, Args&&... args)
     {
         auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
         alloc.construct_at(_ptr, forward<Args>(args)...);
@@ -313,9 +310,8 @@ namespace hsd
     }
 
     template <typename T, template <typename> typename Allocator = allocator>
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::array make_unique(usize size)
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::array
-    make_unique(usize size)
     {
         Allocator<remove_array_t<T>> _alloc;
         auto* _ptr = _alloc.allocate(size).unwrap();
@@ -323,13 +319,11 @@ namespace hsd
     }
 
     template <typename T, template <typename> typename Allocator = allocator, typename U>
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::array
-    make_unique(Allocator<U>& alloc, usize size)
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::array make_unique(Allocator<U>& alloc, usize size)
     {
         return unique_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), size);
     }
 
     template <typename T, typename U, template <typename> typename Allocator = allocator, typename... Args>
-    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::invalid_type 
-    make_unique(const Allocator<U>&, Args&&...) = delete;
+    static HSD_CONSTEXPR typename MakeUniq<T, Allocator>::invalid_type make_unique(const Allocator<U>&, Args&&...) = delete;
 } // namespace hsd

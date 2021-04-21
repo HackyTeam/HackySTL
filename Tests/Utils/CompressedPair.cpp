@@ -19,7 +19,7 @@ int main() {
     static_assert(sizeof(a) == sizeof(hsd::pair<int, float>));
     static_assert(sizeof(c) == sizeof(int));
     static_assert(sizeof(d) == sizeof(int));
-    static_assert(sizeof(e) == sizeof(empty));
+    static_assert(sizeof(e) == sizeof(empty) * 2);
     // it fails because e has a size of 1
     // there is no such thing as sizeof(something) == 0
 

@@ -46,7 +46,7 @@ namespace hsd
         template < typename T, T To, T Prev, T... Next >
         struct make_inverse_sequence_helper
             : hsd::conditional_t< Prev == To, integer_sequence< T, Next... >, 
-            make_inverse_sequence_helper< T, To, Prev + 1, Prev + 1, Next... >>
+            make_inverse_sequence_helper< T, To, Prev + 1, Prev, Next... >>
         {};
 
         template <usize Size>

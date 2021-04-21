@@ -93,7 +93,8 @@ namespace hsd
         }
 
         template <typename T>
-        HSD_CONSTEXPR auto cast_to() const -> Result<T, bad_any_cast>
+        HSD_CONSTEXPR auto cast_to() const
+            -> Result<reference<T>, bad_any_cast>
         {
             using type = typename std::remove_pointer<T>::type;
 

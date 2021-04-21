@@ -70,7 +70,7 @@ namespace hsd
         : public false_type 
     {};
 
-    template < typename T, usize size >
+    template <typename T, usize size>
     struct is_array<T[size]>
         : public true_type 
     {};
@@ -80,7 +80,7 @@ namespace hsd
         : public true_type 
     {};
 
-    template < typename, typename >
+    template <typename, typename>
     struct is_same 
         : public false_type
     {};
@@ -379,17 +379,17 @@ namespace hsd
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const> 
+            struct is_function<Ret(Args..., ...) const> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile>
+            struct is_function<Ret(Args..., ...) volatile>
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile>
+            struct is_function<Ret(Args..., ...) const volatile>
                 : true_type
             {};
         } // namespace cv
@@ -402,42 +402,42 @@ namespace hsd
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) &> 
+            struct is_function<Ret(Args..., ...) &> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const &> 
+            struct is_function<Ret(Args..., ...) const &> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile &> 
+            struct is_function<Ret(Args..., ...) volatile &> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile &> 
+            struct is_function<Ret(Args..., ...) const volatile &> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) &&> 
+            struct is_function<Ret(Args..., ...) &&> 
                 : true_type 
             {};
             
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const &&> 
+            struct is_function<Ret(Args..., ...) const &&> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile &&> 
+            struct is_function<Ret(Args..., ...) volatile &&> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile &&> 
+            struct is_function<Ret(Args..., ...) const volatile &&> 
                 : true_type 
             {};
         } // namespace ref
@@ -450,62 +450,62 @@ namespace hsd
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) noexcept> 
+            struct is_function<Ret(Args..., ...) noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const noexcept> 
+            struct is_function<Ret(Args..., ...) const noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile noexcept>
+            struct is_function<Ret(Args..., ...) volatile noexcept>
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile noexcept>
+            struct is_function<Ret(Args..., ...) const volatile noexcept>
                 : true_type
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) & noexcept> 
+            struct is_function<Ret(Args..., ...) & noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const & noexcept> 
+            struct is_function<Ret(Args..., ...) const & noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile & noexcept> 
+            struct is_function<Ret(Args..., ...) volatile & noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile & noexcept> 
+            struct is_function<Ret(Args..., ...) const volatile & noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) && noexcept> 
+            struct is_function<Ret(Args..., ...) && noexcept> 
                 : true_type 
             {};
             
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const && noexcept> 
+            struct is_function<Ret(Args..., ...) const && noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) volatile && noexcept> 
+            struct is_function<Ret(Args..., ...) volatile && noexcept> 
                 : true_type 
             {};
 
             template < typename Ret, typename... Args >
-            struct is_function<Ret(Args...,...) const volatile && noexcept> 
+            struct is_function<Ret(Args..., ...) const volatile && noexcept> 
                 : true_type 
             {};
         } // namespace noexp

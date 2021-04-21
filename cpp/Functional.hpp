@@ -337,4 +337,4 @@ namespace hsd
     
     template < typename Func, typename Op = decltype(&Func::operator()) > 
     function(Func) -> function<typename helper::as_function<Op>::type>;
-}
+} // namespace hsd

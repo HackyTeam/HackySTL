@@ -53,7 +53,7 @@ int main()
     for(auto& _it : map)
         printf("%d\n", _it.first);
 
-    constexpr auto map2 = gen_map<10>();
+    constexpr auto map2 = gen_map<100>();
 
     printf("========\n%d\n========\n", map2[49]);
 

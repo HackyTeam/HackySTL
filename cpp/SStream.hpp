@@ -122,7 +122,7 @@ namespace hsd
 
         usize capacity() const
         {
-            return _size;
+            return _capacity;
         }
 
         usize size() const

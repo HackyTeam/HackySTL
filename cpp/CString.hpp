@@ -55,7 +55,7 @@ namespace hsd
 		{
 			if constexpr (sizeof(CharT) >= sizeof(char16))
 			{
-				constexpr const CharT chars[] = {
+				return stack_array{
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
 					static_cast<CharT>(0x0B),
@@ -84,16 +84,10 @@ namespace hsd
 					static_cast<CharT>(0x3000),
 					static_cast<CharT>(0) // Terminator
 				};
-
-				constexpr usize size = std::extent_v<decltype(chars)>;
-				hsd::stack_array<CharT, size> r;
-				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
-
-				return r;
 			} 
 			else 
 			{
-				constexpr CharT chars[] = {
+				return stack_array{
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
 					static_cast<CharT>(0x0B),
@@ -104,15 +98,9 @@ namespace hsd
 					static_cast<CharT>(0xA0),
 					static_cast<CharT>(0) // Terminator
 				};
-
-				constexpr usize size = std::extent_v<decltype(chars)>;
-				hsd::stack_array<CharT, size> r;
-				hsd::copy(hsd::begin(chars), hsd::end(chars), r.begin());
-				
-				return r;
 			}
 		}
-public:
+	public:
 		static constexpr const auto whitespace_chars_arr = _get_whitespace_chars();
 		static constexpr const CharT* whitespace_chars = whitespace_chars_arr.data();
 

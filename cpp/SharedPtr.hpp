@@ -131,8 +131,8 @@ namespace hsd
 
                 HSD_CONSTEXPR storage& operator=(storage&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);
-                    this->get_allocator() = move(rhs.get_allocator());                    
+                    this->get_allocator() = move(rhs.get_allocator());
+                    this->_data = exchange(rhs._data, nullptr);                    
                     swap(this->_size, rhs._size);
                     return *this;
                 }
@@ -149,8 +149,8 @@ namespace hsd
                 template <typename U = T>
                 HSD_CONSTEXPR storage& operator=(storage<U, Allocator>&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);
-                    this->get_allocator() = move(rhs.get_allocator());                
+                    this->get_allocator() = move(rhs.get_allocator()); 
+                    this->_data = exchange(rhs._data, nullptr);               
                     swap(this->_size, rhs._size);
                     return *this;
                 }

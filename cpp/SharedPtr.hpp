@@ -123,6 +123,7 @@ namespace hsd
 
                 HSD_CONSTEXPR storage& operator=(const storage& rhs)
                 {
+                    this->get_allocator() = rhs.get_allocator();
                     this->_data = rhs._data;
                     this->_size = rhs._size;
                     return *this;
@@ -130,7 +131,8 @@ namespace hsd
 
                 HSD_CONSTEXPR storage& operator=(storage&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);                    
+                    this->_data = exchange(rhs._data, nullptr);
+                    this->get_allocator() = move(rhs.get_allocator());                    
                     swap(this->_size, rhs._size);
                     return *this;
                 }
@@ -138,6 +140,7 @@ namespace hsd
                 template <typename U = T>
                 HSD_CONSTEXPR storage& operator=(const storage<U, Allocator>& rhs)
                 {
+                    this->get_allocator() = rhs.get_allocator();
                     this->_data = rhs._data;
                     this->_size = rhs._size;
                     return *this;
@@ -146,12 +149,18 @@ namespace hsd
                 template <typename U = T>
                 HSD_CONSTEXPR storage& operator=(storage<U, Allocator>&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);                    
+                    this->_data = exchange(rhs._data, nullptr);
+                    this->get_allocator() = move(rhs.get_allocator());                
                     swap(this->_size, rhs._size);
                     return *this;
                 }
 
                 constexpr Allocator<value_type>& get_allocator()
+                {
+                    return *this;
+                }
+
+                constexpr const Allocator<value_type>& get_allocator() const
                 {
                     return *this;
                 }
@@ -261,6 +270,11 @@ namespace hsd
                 }
 
                 constexpr Allocator<usize>& get_allocator()
+                {
+                    return *this;
+                }
+
+                constexpr const Allocator<usize>& get_allocator() const
                 {
                     return *this;
                 }
@@ -473,7 +487,7 @@ namespace hsd
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
-            alloc.construct_at(_ptr, forward<Args>(args)...);
+            Allocator<remove_array_t<T>>::construct_at(_ptr, forward<Args>(args)...);
             return shared_ptr<T, Allocator>(_ptr, static_cast<Allocator<remove_array_t<T>>>(alloc), 1);
         }
 

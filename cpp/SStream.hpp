@@ -17,7 +17,7 @@ namespace hsd
 		using iterator = CharT*;
         using const_iterator = const CharT*;
         basic_sstream(const basic_sstream&) = delete;
-        basic_sstream& operator=(const basic_sstream& other) = delete;
+        basic_sstream& operator=(const basic_sstream&) = delete;
 
         basic_sstream(usize size)
         {
@@ -106,12 +106,8 @@ namespace hsd
 
         void clear()
         {
-            if(_data != nullptr)
-                delete[] _data;
-    
-            _data = new CharT[1];
-            _data[0] = '\0';
-            _capacity = 0;
+            while(size() != 0)
+                pop_back();
         }
 
         void reset_data()

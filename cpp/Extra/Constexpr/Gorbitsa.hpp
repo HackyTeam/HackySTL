@@ -122,7 +122,7 @@ namespace hsd
         else 
         {
             constexpr uint8_t op = arr_elem_v<Prog, PC>;
-            constexpr uint8_t arg = arr_elem_v<Prog, PC+1>;
+            constexpr uint8_t arg = arr_elem_v<Prog, PC + 1>;
 
             if constexpr (op == 'G')
                 return run_impl<PC + 2, arr_elem_v<Ram, arg>, Ram, Out, Prog>();

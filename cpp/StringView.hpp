@@ -76,7 +76,8 @@ namespace hsd
         }
 
         constexpr bool operator==(basic_string_view rhs) const {
-            return _size == rhs._size and cstring_utils::compare(
+            return _size == rhs._size && 
+            cstring_utils::compare(
                 _data, rhs._data, _size
             ) == 0;
         }
@@ -89,25 +90,40 @@ namespace hsd
         {
             return cstring_utils::compare(
                 _data, rhs._data, 
-                _size < rhs._size ? _size : rhs._size
+                _size < rhs._size ? 
+                _size : rhs._size
             ) == -1;
         }
 
         constexpr bool operator<=(const basic_string_view& rhs) const
         {
-            return operator<(rhs) && operator==(rhs);
+            auto _comp_rez = 
+            cstring_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == -1 || _comp_rez == 0;
         }
 
         constexpr bool operator>(const basic_string_view& rhs) const
         {
-            return cstring_utils::compare(_data, rhs._data, 
-                (_size < rhs._size ? _size : rhs._size) == 1
-            );
+            return cstring_utils::compare(
+                _data, rhs._data, 
+                (_size < rhs._size ? 
+                _size : rhs._size)
+            ) == 1;
         }
 
         constexpr bool operator>=(const basic_string_view& rhs) const
         {
-            return operator>(rhs) && operator==(rhs);
+            auto _comp_rez = 
+            cstring_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == 1 || _comp_rez == 0;
         }
         
         constexpr usize find(char letter) const

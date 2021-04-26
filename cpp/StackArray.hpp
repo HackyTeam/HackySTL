@@ -44,17 +44,6 @@ namespace hsd
             return {_array[index]};
         }
 
-        template < usize U, usize L >
-        constexpr auto gen_range()
-        {
-            static_assert(L - U <= N, "Out of range\n");
-
-            return [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                return stack_array<T, L - U>{_array[Ints]...};
-            }(make_index_sequence<L - U>{});
-        }
-
         constexpr usize size() const
         {
             return N;

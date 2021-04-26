@@ -11,12 +11,4 @@ int main()
     {
         printf("%d\n", i);
     }
-
-    auto harr2 = harr.gen_range<0, 3>();
-    puts("=======");
-
-    for(auto i : harr2)
-    {
-        printf("%d\n", i);
-    }
 }

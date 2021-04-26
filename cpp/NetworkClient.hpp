@@ -147,8 +147,10 @@ namespace hsd
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                isize _response  = sendto(_sock.get_listening(), _net_buf.data(), 
-                    _net_buf.size(), 0, _sock.get_hint(), _len);
+                isize _response  = sendto(
+                    _sock.get_listening(), _net_buf.data(), 
+                    _net_buf.size(), 0, _sock.get_hint(), _len
+                );
                     
                 if(_response == static_cast<isize>(net::received_state::err))
                 {

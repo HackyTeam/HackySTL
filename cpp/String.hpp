@@ -209,7 +209,8 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                _size < rhs._size ? _size : rhs._size
+                _size < rhs._size ? 
+                _size : rhs._size
             ) == 0;
         }
 
@@ -222,24 +223,38 @@ namespace hsd
         {
             return _str_utils::compare(
                 _data, rhs._data, 
-                _size < rhs._size ? _size : rhs._size
+                _size < rhs._size ? 
+                _size : rhs._size
             ) == -1;
         }
 
         inline bool operator<=(const basic_string& rhs) const
         {
-            return operator<(rhs) && operator==(rhs);
+            auto _comp_rez = _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == -1 || _comp_rez == 0;
         }
 
         inline bool operator>(const basic_string& rhs) const
         {
-            return _str_utils::compare(_data, rhs._data, 
-                (_size < rhs._size ? _size : rhs._size) == 1);
+            return _str_utils::compare(
+                _data, rhs._data, 
+                (_size < rhs._size ? 
+                _size : rhs._size)
+            ) == 1;
         }
 
         inline bool operator>=(const basic_string& rhs) const
         {
-            return operator>(rhs) && operator==(rhs);
+            auto _comp_rez = _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == 1 || _comp_rez == 0;
         }
 
         inline auto at(usize index)

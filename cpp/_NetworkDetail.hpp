@@ -61,17 +61,25 @@ namespace hsd
         #if defined(HSD_PLATFORM_WINDOWS)
         inline void init_winsock()
         {
-            WSAData data;
-	        WORD ver = MAKEWORD(2, 2);
-	        int wsResult = WSAStartup(ver, &data);
-	        
-            if (wsResult != 0)
-	        {
-	        	hsd::io::err_print<
-                    "Can't start Winsock, here's"
-                    " a irrelevant number #{}\n"
-                >(wsResult);
-	        }
+            static bool _is_init = false;
+            
+            if(_is_init == false)
+            {
+                WSAData _data;
+	            WORD _ver = MAKEWORD(2, 2);
+	            i32 _ws_result = WSAStartup(_ver, &_data);
+    
+                if (_ws_result != 0)
+	            {
+	            	hsd::io::err_print<
+                        "Can't start Winsock, here's"
+                        " a irrelevant number #{}\n"
+                    >(_ws_result);
+                    return;
+	            }
+
+                _is_init = true;
+            }
         }
         #endif
     } // namespace network_detail

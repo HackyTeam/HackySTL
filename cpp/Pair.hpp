@@ -4,7 +4,7 @@
 
 namespace hsd
 {
-    template< typename T1, typename T2 >
+    template <typename T1, typename T2>
     struct pair
     {
         T1 first;
@@ -49,30 +49,30 @@ namespace hsd
         }
     };
 
-    template< typename T1, typename T2 > pair(const T1&, const T2&) 
+    template <typename T1, typename T2> pair(const T1&, const T2&) 
         -> pair<decay_t<T1>, decay_t<T2>>;
-    template< typename T1, typename T2 > requires (!is_const<T1>::value)
+    template <typename T1, typename T2> requires (!is_const<T1>::value)
         pair(T1&&, const T2&) -> pair<decay_t<T1>, decay_t<T2>>;
-    template< typename T1, typename T2 > requires (is_const<T1>::value)
+    template <typename T1, typename T2> requires (is_const<T1>::value)
         pair(T1&&, const T2&) -> pair<const decay_t<T1>, decay_t<T2>>;
-    template< typename T1, typename T2 > requires (!is_const<T2>::value)
+    template <typename T1, typename T2> requires (!is_const<T2>::value)
         pair(const T1&, T2&&) -> pair<decay_t<T1>, decay_t<T2>>;
-    template< typename T1, typename T2 > requires (is_const<T2>::value)
+    template <typename T1, typename T2> requires (is_const<T2>::value)
         pair(const T1&, T2&&) -> pair<decay_t<T1>, const decay_t<T2>>;
 
-    template< typename T1, typename T2 > 
+    template <typename T1, typename T2> 
     requires (!is_const<T1>::value && !is_const<T2>::value)
         pair(T1&&, T2&&) -> pair<decay_t<T1>, decay_t<T2>>;
 
-    template< typename T1, typename T2 > 
+    template <typename T1, typename T2> 
     requires (is_const<T1>::value && !is_const<T2>::value)
         pair(T1&&, T2&&) -> pair<const decay_t<T1>, decay_t<T2>>;
 
-    template< typename T1, typename T2 > 
+    template <typename T1, typename T2> 
     requires (!is_const<T1>::value && is_const<T2>::value)
         pair(T1&&, T2&&)-> pair<decay_t<T1>, const decay_t<T2>>;
 
-    template< typename T1, typename T2 >
+    template <typename T1, typename T2>
     requires (is_const<T1>::value && is_const<T2>::value)
         pair(T1&&, T2&&) -> pair<const decay_t<T1>, const decay_t<T2>>;
 } // namespace hsd

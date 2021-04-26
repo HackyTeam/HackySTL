@@ -70,4 +70,12 @@ namespace hsd
     using f32 = float;
     
     using NullType = decltype(nullptr);
+
+    namespace trivial_literals
+    {
+        usize operator""_sz(u64 value)
+        {
+            return static_cast<usize>(value);
+        }
+    } // namespace trivial_type_literals
 } // namespace hsd

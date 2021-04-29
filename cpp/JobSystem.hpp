@@ -28,7 +28,7 @@ namespace hsd
     };
 */
 
-    enum PRIO
+    enum class PRIO
     {
         HIGH = 0,
         NORM,
@@ -76,8 +76,8 @@ namespace hsd
             {
                 running.store(true);
 
-                auto numcores = hsd::thread::hardware_concurrency();
-                numcores = 4;
+                auto numcores = hsd::thread::hardware_concurrency(); // <- this function is not yet implemented, and always returns 0
+                numcores = 4;   // Temporary
 
                 for(auto i = 0; i < 4; i++)
                 {
@@ -122,15 +122,15 @@ namespace hsd
                 switch(p)
                 {
                     case hsd::PRIO::HIGH:
-                        high_priority.emplace(std::forward<Job>(j));
+                        high_priority.emplace(hsd::forward<Job>(j));
                         counter++;
                         return;
                     case hsd::PRIO::NORM:
-                        normal_priority.emplace(std::forward<Job>(j));
+                        normal_priority.emplace(hsd::forward<Job>(j));
                         counter++;
                         return;
                     case hsd::PRIO::LOW:
-                        low_priority.emplace(std::forward<Job>(j));
+                        low_priority.emplace(hsd::forward<Job>(j));
                         counter++;
                         return;
                 }

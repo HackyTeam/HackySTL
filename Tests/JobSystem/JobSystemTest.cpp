@@ -1,12 +1,11 @@
 #define JOB_SYSTEM_COMP_UNIT
 #include <JobSystem.hpp>
 
-//#include <Io.hpp>
-#include <iostream>
+#include <Io.hpp>
 
 void print()
 {
-    std::cout << "Hello World\n"; //hsd::io::print<L"hello, and other words\n">();
+    hsd::io::print<L"hello, and other words\n">();
 }
 
 int main()

@@ -13,9 +13,11 @@ namespace hsd
         template<typename T>
         struct Slot
         {
+
+
             void destroy()
             {
-                reinterpret_cast<T*>(&storage)->~T();
+                storage.~T();
             }
 
             ~Slot()
@@ -23,7 +25,7 @@ namespace hsd
                 destroy();
             }
 
-            std::atomic<size_t> ticket = {0};
+            std::atomic<usize> ticket = {0};
 
             T storage;
         };
@@ -40,12 +42,13 @@ namespace hsd
     class MPMCQueue
     {
     public:
-        MPMCQueue() = delete;
-        MPMCQueue(size_t capacity)  :   capacity(capacity)
+        MPMCQueue(usize capacity)  :   capacity(capacity)
         {
             if(capacity < 1)
             {
-                throw std::invalid_argument("MPMC capacity is less than 1");
+                //This is UB
+                puts("Capacity is less than 1, this is UB, and an error");
+                abort();
             }
             allocation.resize(capacity + 1);
         }
@@ -55,7 +58,36 @@ namespace hsd
 
         bool try_emplace(T&& v)
         {
-            
+            auto head = m_head.load();
+
+            for( ; ;)
+            {
+                auto& slot = allocation.at_unchecked(mod(head));
+
+                if(turn(head) * 2 == slot.ticket.load())
+                {
+                    if(m_head.compare_exchange_strong(head, head + 1))
+                    {
+                        slot.storage = hsd::forward<T>(v);
+
+                        slot.ticket.store(turn(head) * 2 + 1);
+
+                        return true;
+                    }
+                }
+                else
+                {
+                    auto const prevHead = head;
+                    head = m_head.load();
+
+                    if(head == prevHead)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
         }
         bool try_pop(T& v)
         {
@@ -68,7 +100,7 @@ namespace hsd
                 {
                     if(m_tail.compare_exchange_strong(tail, tail + 1))
                     {
-                        v = std::move(slot);
+                        v = hsd::move(slot.storage);
 
                         slot.destroy();
                         slot.ticket.store(turn(tail) * 2 + 2);
@@ -113,14 +145,14 @@ namespace hsd
                 //wait until condition is satisfied
             }
 
-            v = std::move(slot.storage);
+            v = hsd::move(slot.storage);
             slot.destroy();
 
             slot.ticket.store(turn(tail) * 2 + 2);
         }
 
     private:
-        size_t capacity;
+        usize capacity;
 
         vector<priv::Slot<T>> allocation;
 

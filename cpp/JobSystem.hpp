@@ -12,15 +12,19 @@ namespace hsd
     struct Job;
 
     using JobFn = void(*)(Job);
-    using Counter = std::atomic<size_t>;
+    using Counter = std::atomic<usize>;
 
+    // A Job. Has a function ptr and a pointer to data to pass as args
     struct Job
     {
         JobFn task;
         void** data = nullptr;
+
     };
 
+/// @TODO: Change from using a void** to pass args (which is super bad and unsafe), to this JobData struct
 /*
+    // A packed list of arguments for a function in a job
     template<u8 numargs, typename T>
     struct JobData
     {
@@ -77,9 +81,9 @@ namespace hsd
                 running.store(true);
 
                 auto numcores = hsd::thread::hardware_concurrency(); // <- this function is not yet implemented, and always returns 0
-                numcores = 4;   // Temporary
+                numcores = 4;   // Temporary // @TODO: implement ^ functions
 
-                for(auto i = 0; i < 4; i++)
+                for(auto i = 0; i < numcores; i++)
                 {
                     threads.emplace_back(hsd::thread(&JobSystem::thread_function, this));
                 }
@@ -111,12 +115,12 @@ namespace hsd
                 }
                 return -1;*/
             }
-
+            // Returns a Job which may be scheduled.
             static Job createJob(hsd::JobFn jfunct, void** data = nullptr)
             {
                 return Job{jfunct, data};
             }
-
+            // Schedules a job to be added to the queue. Optionally accepts a priority for the job
             void scheduleJob(Job& j, hsd::PRIO p = hsd::PRIO::NORM)
             {
                 switch(p)
@@ -135,7 +139,7 @@ namespace hsd
                         return;
                 }
             }
-
+            // Wait until the number of remaining tasks is equal to or below the ``target``, the second argument will use the caller thread to execute jobs as well if set to ``true``
             void wait(int target = 0, bool useCurrentThread = true)
             {
                 while(counter.load() > target)
@@ -166,6 +170,7 @@ namespace hsd
         };
     }
 
+    // Global Job System. It is not recommended to make a new one, as the threads last for the lifetime of the program (global)
     static inline priv::JobSystem JobSys;
     
 }

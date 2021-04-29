@@ -130,7 +130,7 @@ namespace hsd
                 //wait until condition is satisfied
             }
             
-            slot.storage = v;
+            slot.storage = hsd::forward<T>(v);
 
             slot.ticket.store(turn(head) * 2 + 1);
         }

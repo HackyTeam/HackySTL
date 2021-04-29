@@ -732,6 +732,36 @@ namespace hsd
     {};
 
     template <typename T>
+    struct remove_pointer
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_pointer<T*>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_pointer<T* const>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_pointer<T* volatile>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct remove_pointer<T* const volatile>
+    {
+        using type = T;
+    };
+
+    template <typename T>
     struct decay 
     {
     private:
@@ -811,6 +841,12 @@ namespace hsd
 
     template <typename T>
     using remove_reference_t = typename remove_reference<T>::type;
+
+    template <typename T>
+    using remove_pointer_t = typename remove_pointer<T>::type;
+
+    template <typename T>
+    using add_pointer_t = typename add_pointer<T>::type;
 
     template <typename T>
     using decay_t = typename decay<T>::type;

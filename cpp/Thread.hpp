@@ -4,6 +4,7 @@
 #include "Tuple.hpp"
 
 #if defined(HSD_PLATFORM_POSIX)
+#include <unistd.h>
 #include <pthread.h>
 #include <cstdlib>
 #elif defined(HSD_PLATFORM_WINDOWS)
@@ -165,9 +166,15 @@ namespace hsd
 			return _handle;
 		}
 
-		static u32 hardware_concurrency() 
+		static auto hardware_concurrency() 
 		{
-			return 0;
+			#ifdef _WIN32
+		    SYSTEM_INFO info;
+		    GetSystemInfo(&info);
+		    return info.dwNumberOfProcessors;
+			#else
+		    return sysconf(_SC_NPROCESSORS_ONLN);
+			#endif
 		}
 
 		void detach() 

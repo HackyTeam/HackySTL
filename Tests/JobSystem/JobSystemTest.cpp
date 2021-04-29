@@ -22,7 +22,7 @@ void foo(int a, float b)
 int main()
 {
     // Generic example with no parameters
-    hsd::Job j = hsd::JobSys.createJob([](hsd::Job j) 
+    hsd::Job j = hsd::job_system.create_job([](hsd::Job j) 
     {
         print();
     });
@@ -30,11 +30,11 @@ int main()
     // Schedules 100 jobs
     for(int i = 0; i < 100; i++)
     {
-        hsd::JobSys.scheduleJob(j);
+        hsd::job_system.schedule_job(j);
     }
     
     // Pauses current function of the caller until all jobs are done
-    hsd::JobSys.wait();
+    hsd::job_system.wait();
 
 //                              \\//
 
@@ -44,7 +44,7 @@ int main()
 
     void* data[] = { &x, &y };
 
-    j = hsd::JobSys.createJob([](hsd::Job j)    // Technically could just be a fnptr, but a lambda is more readable here
+    j = hsd::job_system.create_job([](hsd::Job j)    // Technically could just be a fnptr, but a lambda is more readable here
     {
         // Get the variables from the data array
         auto& s = *static_cast<int*>(j.data[0]);    //Can be mutable
@@ -54,4 +54,11 @@ int main()
         foo(s, t);
 
     }, data);
+
+    for(int i = 0; i < 10; ++i)
+    {
+        hsd::job_system.schedule_job(j);
+    }
+
+    hsd::job_system.wait();
 }

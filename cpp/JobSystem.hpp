@@ -166,10 +166,6 @@ namespace hsd
         };
     }
 
-    extern priv::JobSystem JobSys;
+    static inline priv::JobSystem JobSys;
     
 }
-
-#ifdef JOB_SYSTEM_COMP_UNIT
-hsd::priv::JobSystem JobSys;
-#endif

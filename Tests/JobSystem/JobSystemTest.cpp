@@ -1,4 +1,3 @@
-#define JOB_SYSTEM_COMP_UNIT
 #include <JobSystem.hpp>
 
 #include <Io.hpp>
@@ -10,15 +9,15 @@ void print()
 
 int main()
 {
-    hsd::Job j = JobSys.createJob([](hsd::Job j) 
+    hsd::Job j = hsd::JobSys.createJob([](hsd::Job j) 
     {
         print();
     });
 
     for(int i = 0; i < 100; i++)
     {
-        JobSys.scheduleJob(j);
+        hsd::JobSys.scheduleJob(j);
     }
     
-    JobSys.wait();
+    hsd::JobSys.wait();
 }

@@ -157,7 +157,10 @@ namespace hsd
     requires (std::is_member_function_pointer_v<Func>)
     static constexpr auto apply_impl(Func&& func, T&& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
-        return (value.*func)(args.template get<Is>()...);
+        if constexpr(is_pointer<T>::value)
+            return (value->*func)(args.template get<Is>()...);
+        else
+            return (value.*func)(args.template get<Is>()...);
     }
     
     template < typename Func, typename T, typename... Args >
@@ -171,7 +174,10 @@ namespace hsd
     requires (std::is_member_function_pointer_v<Func>)
     static constexpr auto apply_impl(Func&& func, T& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
-        return (value.*func)(args.template get<Is>()...);
+        if constexpr(is_pointer<T>::value)
+            return (value->*func)(args.template get<Is>()...);
+        else
+            return (value.*func)(args.template get<Is>()...);
     }
     
     template < typename Func, typename T, typename... Args >

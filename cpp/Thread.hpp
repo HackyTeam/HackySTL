@@ -114,7 +114,7 @@ namespace hsd
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
-			i32 _res = pthread_create(&_handle, &attr, thread_data::enter_thread, &td);
+			i32 _res = pthread_create(&_handle, &_attr, thread_data::enter_thread, &_td);
 			
 			if (_res) abort();
 

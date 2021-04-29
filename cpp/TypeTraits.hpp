@@ -90,7 +90,7 @@ namespace hsd
         : public true_type
     {};
 
-    template <typename T> 
+    template <typename> 
     struct is_const                
         : public false_type
     {};
@@ -136,6 +136,16 @@ namespace hsd
         
         template <>
         struct is_void<void>
+            : public true_type
+        {};
+
+        template <typename>
+        struct is_pointer
+            : public false_type
+        {};
+    
+        template <typename T>
+        struct is_pointer<T*>
             : public true_type
         {};
 
@@ -777,6 +787,9 @@ namespace hsd
 
     template <typename T>
     using is_void = helper::is_void< typename remove_cv<T>::type >;
+
+    template <typename T>
+    using is_pointer = helper::is_pointer< typename remove_cv<T>::type >;
 
     template < bool Cond, typename IfTrue, typename IfFalse >
     using conditional_t = typename conditional< Cond, IfTrue, IfFalse >::type;

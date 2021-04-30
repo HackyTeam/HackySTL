@@ -9,15 +9,13 @@
 namespace hsd
 {
     
-    using counter = hsd::atomic_usize;
+    using counter = atomic_usize;
 
     namespace priv
     {
-        template<typename T>
+        template <typename T>
         struct slot
         {
-
-
             void destroy()
             {
                 storage.~T();
@@ -27,8 +25,34 @@ namespace hsd
             {
                 destroy();
             }
-            hsd::atomic_usize ticket = {0};
 
+            slot(const slot& other)
+                : storage{other.storage}
+            {
+                ticket.store(other.ticket.load());
+            }
+
+            slot(slot&& other)
+                : storage{move(other.storage)}
+            {
+                ticket.store(other.ticket.load());
+            }
+
+            slot& operator=(const slot& rhs)
+            {
+                ticket.store(rhs.ticket.load());
+                storage = rhs.storage;
+                return *this;
+            }
+
+            slot& operator=(slot&& rhs)
+            {
+                ticket.store(rhs.ticket.load());
+                storage = move(rhs.storage);
+                return *this;
+            }
+
+            atomic_usize ticket = {0};
             T storage;
         };
     }
@@ -44,7 +68,8 @@ namespace hsd
     class MPMCQueue
     {
     public:
-        MPMCQueue(usize capacity)  :   _capacity(capacity)
+        MPMCQueue(usize capacity)
+            : _capacity(capacity)
         {
             if(_capacity < 1)
             {
@@ -52,17 +77,17 @@ namespace hsd
                 puts("Capacity is less than 1, this is UB, and an error\n");
                 abort();
             }
-            _allocation.resize(_capacity + 1);
+            _allocation.reserve(_capacity + 1);
         }
 
         MPMCQueue(const MPMCQueue&) = delete;
         MPMCQueue& operator=(const MPMCQueue&) = delete;
 
-        bool try_emplace(T&& v)
+        bool try_emplace(T&& value)
         {
             auto head = _head.load();
 
-            for( ; ;)
+            for(;;)
             {
                 auto& slot = _allocation.at_unchecked(mod(head));
 
@@ -70,10 +95,8 @@ namespace hsd
                 {
                     if(_head.compare_exchange_strong(head, head + 1))
                     {
-                        slot.storage = hsd::forward<T>(v);
-
+                        slot.storage = forward<T>(value);
                         slot.ticket.store(turn(head) * 2 + 1);
-
                         return true;
                     }
                 }
@@ -91,19 +114,20 @@ namespace hsd
 
             return false;
         }
-        bool try_pop(T& v)
+
+        bool try_pop(T& value)
         {
             auto tail = _tail.load();
 
-            for( ; ; )
+            for(;;)
             {
                 auto& slot = _allocation.at_unchecked(mod(tail));
+
                 if(turn(tail) * 2 + 1 ==  slot.ticket.load())
                 {
                     if(_tail.compare_exchange_strong(tail, tail + 1))
                     {
-                        v = hsd::move(slot.storage);
-
+                        value = move(slot.storage);
                         slot.destroy();
                         slot.ticket.store(turn(tail) * 2 + 2);
                         return true;
@@ -113,6 +137,7 @@ namespace hsd
                 {
                     auto const prevTail = tail;
                     tail = _tail.load();
+
                     if(tail == prevTail)
                     {
                         return false;
@@ -121,47 +146,44 @@ namespace hsd
             }
         }
 
-        void emplace(T&& v)
+        void emplace(T&& value)
         {
             auto const head = _head.fetch_add(1);
-
             auto& slot = _allocation.at_unchecked(mod(head));
 
-            while(turn(head) * 2 != slot.ticket.load())
-            {
-                //wait until condition is satisfied
-            }
+            while(turn(head) * 2 != slot.ticket.load());
             
-            slot.storage = hsd::forward<T>(v);
-
+            slot.storage = forward<T>(value);
             slot.ticket.store(turn(head) * 2 + 1);
         }
-        void pop(T& v)
+        void pop(T& value)
         {
             auto const tail = _tail.fetch_add(1);
-            
             auto& slot = _allocation.at_unchecked(mod(tail));
 
-            while(turn(tail) * 2 + 1 != slot.ticket.load())
-            {
-                //wait until condition is satisfied
-            }
+            while(turn(tail) * 2 + 1 != slot.ticket.load());
 
-            v = hsd::move(slot.storage);
+            value = move(slot.storage);
             slot.destroy();
-
             slot.ticket.store(turn(tail) * 2 + 2);
         }
 
     private:
         usize _capacity;
 
-        vector<priv::Slot<T>> _allocation;
+        vector<priv::slot<T>> _allocation;
 
-        hsd::atomic_usize _head = {0};
-        hsd::atomic_usize _tail = {0};
+        atomic_usize _head = {0};
+        atomic_usize _tail = {0};
 
-        constexpr size_t mod(size_t i) const noexcept { return i % capacity; }
-        constexpr size_t turn(size_t i) const noexcept { return i / capacity; }
+        constexpr usize mod(usize number) const
+        {
+            return number % _capacity; 
+        }
+
+        constexpr usize turn(usize number) const
+        {
+            return number / _capacity;
+        }
     };
 }

@@ -193,7 +193,7 @@ namespace hsd
 			hsd::swap(_id, other._id);
 		}
 
-		id get_id() 
+		id get_id() const
 		{
 			return id{_id};
 		}

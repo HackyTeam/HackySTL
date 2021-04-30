@@ -234,11 +234,17 @@ namespace hsd
         return [=, value{move(value)}]() mutable {
             if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
             {
-                return (value.*func)(forward<Args>(args)...).unwrap();
+                if constexpr(is_pointer<T>::value)
+                    return (value->*func)(forward<Args>(args)...).unwrap();
+                else
+                    return (value.*func)(forward<Args>(args)...).unwrap();
             }
             else
             {
-                return (value.*func)(forward<Args>(args)...);
+                if constexpr(is_pointer<T>::value)
+                    return (value->*func)(forward<Args>(args)...);
+                else
+                    return (value.*func)(forward<Args>(args)...);
             }
         };
     }
@@ -252,11 +258,33 @@ namespace hsd
             {
                 if constexpr(requires {(value.*func)(std::declval<Args>()...).unwrap();})
                 {
-                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...).unwrap();
+                    if constexpr(is_pointer<T>::value)
+                    {
+                        return (value->*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        ).unwrap();
+                    }
+                    else
+                    {
+                        return (value.*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        ).unwrap();
+                    }
                 }
                 else
                 {
-                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...);
+                    if constexpr(is_pointer<T>::value)
+                    {
+                        return (value->*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        );
+                    }
+                    else
+                    {
+                        return (value.*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        );
+                    }
                 }
             }(hsd::index_sequence_for<Args...>{});
         };
@@ -269,11 +297,17 @@ namespace hsd
         return [=, &value]{
             if constexpr(requires {value.*(func(std::declval<Args>()...)).unwrap();})
             {
-                return (value.*func)(forward<Args>(args)...).unwrap();
+                if constexpr(is_pointer<T>::value)
+                    return (value->*func)(forward<Args>(args)...).unwrap();
+                else
+                    return (value.*func)(forward<Args>(args)...).unwrap();
             }
             else
             {
-                return (value.*func)(forward<Args>(args)...);
+                if constexpr(is_pointer<T>::value)
+                    return (value->*func)(forward<Args>(args)...);
+                else
+                    return (value.*func)(forward<Args>(args)...);
             }
         };
     }
@@ -287,11 +321,33 @@ namespace hsd
             {
                 if constexpr(requires {(value.*func)(std::declval<Args>()...).unwrap();})
                 {
-                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...).unwrap();
+                    if constexpr(is_pointer<T>::value)
+                    {
+                        return (value->*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        ).unwrap();
+                    }
+                    else
+                    {
+                        return (value.*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        ).unwrap();
+                    }
                 }
                 else
                 {
-                    return (value.*func)(hsd::forward<Args>(args.template get<Ints>())...);
+                    if constexpr(is_pointer<T>::value)
+                    {
+                        return (value->*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        );
+                    }
+                    else
+                    {
+                        return (value.*func)(
+                            hsd::forward<Args>(args.template get<Ints>())...
+                        );
+                    }
                 }
             }(hsd::index_sequence_for<Args...>{});
         };

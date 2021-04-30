@@ -22,13 +22,13 @@ void foo(int a, float b)
 int main()
 {
     // Generic example with no parameters
-    hsd::Job j = hsd::job_system.create_job([](hsd::Job j) 
+    hsd::Job j = hsd::job_system.create_job([](hsd::Job) 
     {
         print();
     });
 
-    // Schedules 100 jobs
-    for(int i = 0; i < 100; i++)
+    // Schedules 10 jobs
+    for(int i = 0; i < 10; i++)
     {
         hsd::job_system.schedule_job(j);
     }

@@ -2,7 +2,7 @@
 
 #include "Thread.hpp"
 #include "MPMCQueue.hpp"
-
+#include "Functional.hpp"
 
 namespace hsd
 {
@@ -42,45 +42,47 @@ namespace hsd
         class JobSystem
         {
         private:
-            hsd::counter _counter = {0};
-            hsd::atomic_bool _running = {false};
+            counter _counter = {0};
+            atomic_bool _running = {false};
 
             MPMCQueue<Job> _high_priority;
             MPMCQueue<Job> _normal_priority;
             MPMCQueue<Job> _low_priority;
 
-            hsd::vector<hsd::thread> _threads;
+            vector<thread> _threads;
 
             void thread_function()
             {
-                hsd::Job job;
+                Job _job;
                 while(_running.load())
                 {
-                    if(_high_priority.try_pop(job))
+                    if(_high_priority.try_pop(_job))
                     {
-                        job.task(job);
+                        _job.task(_job);
                     }
-                    else if(_normal_priority.try_pop(job))
+                    else if(_normal_priority.try_pop(_job))
                     {
-                        job.task(job);
+                        _job.task(_job);
                     }
-                    else if(_low_priority.try_pop(job))
+                    else if(_low_priority.try_pop(_job))
                     {
-                        job.task(job);
+                        _job.task(_job);
                     }
                 }
             }
 
         public:
-            JobSystem() : _high_priority(512), _normal_priority(512), _low_priority(512)
+            JobSystem()
+                : _high_priority(512), 
+                _normal_priority(512), 
+                _low_priority(512)
             {
                 _running.store(true);
+                auto _numcores = thread::hardware_concurrency(); 
 
-                auto numcores = hsd::thread::hardware_concurrency(); 
-
-                for(auto i = 0; i < numcores; i++)
+                for(auto _index = 0; _index < _numcores; _index++)
                 {
-                    _threads.emplace_back(hsd::thread(&JobSystem::thread_function, this));
+                    _threads.emplace_back(bind(&JobSystem::thread_function, this));
                 }
             }
 
@@ -95,66 +97,76 @@ namespace hsd
             }
 
             //Returns the id of the caller from the threadpool index [0, max), and returns -1 if the caller isn't in the threadpool
-            i8 get_current_thread() const
+            usize get_current_thread() const
             {
-                auto id = hsd::this_thread::get_id();
-                for(auto i = 0; i < _threads.size(); i++)
+                auto _this_thread_id = this_thread::get_id();
+                for(usize _index = 0; _index < _threads.size(); _index++)
                 {
-                    if(id == _threads.at(i).unwrap().get_id())
+                    if(_this_thread_id == _threads[_index].get_id())
                     {
-                        return i;
+                        return _index;
                     }
                 }
+
                 return -1;
             }
+
             // Returns a Job which may be scheduled.
-            static Job create_job(hsd::job_fn jobfunction, void** data = nullptr)
+            static Job create_job(job_fn jobfunction, void** data = nullptr)
             {
-                return Job{jobfunction, data};
+                return Job{
+                    .task = jobfunction,
+                    .data = data
+                };
             }
+
             // Schedules a job to be added to the queue. Optionally accepts a priority for the job
-            void schedule_job(Job& j, hsd::PRIO p = hsd::PRIO::NORM)
+            void schedule_job(Job& job, PRIO priority = PRIO::NORM)
             {
-                switch(p)
+                switch(priority)
                 {
-                    case hsd::PRIO::HIGH:
-                        _high_priority.emplace(hsd::forward<Job>(j));
+                    case PRIO::HIGH:
+                        _high_priority.emplace(forward<Job>(job));
                         _counter++;
                         return;
-                    case hsd::PRIO::NORM:
-                        _normal_priority.emplace(hsd::forward<Job>(j));
+                    case PRIO::NORM:
+                        _normal_priority.emplace(forward<Job>(job));
                         _counter++;
                         return;
-                    case hsd::PRIO::LOW:
-                        _low_priority.emplace(hsd::forward<Job>(j));
+                    case PRIO::LOW:
+                        _low_priority.emplace(forward<Job>(job));
                         _counter++;
+                        return;
+                    default:
                         return;
                 }
             }
-            // Wait until the number of remaining tasks is equal to or below the ``target``, the second argument will use the caller thread to execute jobs as well if set to ``true``
-            void wait(int target = 0, bool use_current_thread = true)
+            // Wait until the number of remaining tasks
+            // is equal to or below the `target`, the
+            // second argument will use the caller thread
+            // to execute jobs as well if set to `true`
+            void wait(ulong target = 0, bool use_current_thread = true)
             {
                 while(_counter.load() > target)
                 {
                     if(use_current_thread)
                     {
-                        Job job;
-                        if(_high_priority.try_pop(job))
+                        Job _job;
+                        if(_high_priority.try_pop(_job))
                         {
-                            job.task(job);
+                            _job.task(_job);
                             _counter--;
                         }
-                        else if(_normal_priority.try_pop(job))
+                        else if(_normal_priority.try_pop(_job))
                         {
-                            job.task(job);
+                            _job.task(_job);
                             _counter--;
                         }
-                        else if(_low_priority.try_pop(job))
+                        else if(_low_priority.try_pop(_job))
                         {
-                            job.task(job);
+                            _job.task(_job);
                             _counter--;
                         }
-
                     }
                 }
             }

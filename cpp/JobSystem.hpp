@@ -1,18 +1,14 @@
 #pragma once
 
 #include "Thread.hpp"
-#include "Functional.hpp"
-#include "Vector.hpp"
 #include "MPMCQueue.hpp"
 
-#include <atomic>
 
 namespace hsd
 {
     struct Job;
 
     using job_fn = void(*)(Job);
-    using counter = std::atomic<usize>;
 
     // A Job. Has a function ptr and a pointer to data to pass as args
     struct Job
@@ -47,7 +43,7 @@ namespace hsd
         {
         private:
             hsd::counter _counter = {0};
-            std::atomic_bool _running = {false};
+            hsd::atomic_bool _running = {false};
 
             MPMCQueue<Job> _high_priority;
             MPMCQueue<Job> _normal_priority;
@@ -80,8 +76,7 @@ namespace hsd
             {
                 _running.store(true);
 
-                auto numcores = hsd::thread::hardware_concurrency(); // <- this function is not yet implemented, and always returns 0
-                numcores = 4;   // Temporary // @TODO: implement ^ functions
+                auto numcores = hsd::thread::hardware_concurrency(); 
 
                 for(auto i = 0; i < numcores; i++)
                 {

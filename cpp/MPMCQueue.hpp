@@ -1,13 +1,16 @@
 #pragma once
 
-#include <atomic>
 #include <new>
 
 #include "Vector.hpp"
+#include "Atomic.hpp"
 
 
 namespace hsd
 {
+    
+    using counter = hsd::atomic_usize;
+
     namespace priv
     {
         template<typename T>
@@ -24,8 +27,7 @@ namespace hsd
             {
                 destroy();
             }
-
-            std::atomic<usize> ticket = {0};
+            hsd::atomic_usize ticket = {0};
 
             T storage;
         };
@@ -44,10 +46,10 @@ namespace hsd
     public:
         MPMCQueue(usize capacity)  :   _capacity(capacity)
         {
-            if(capacity < 1)
+            if(_capacity < 1)
             {
                 //This is UB
-                puts("Capacity is less than 1, this is UB, and an error");
+                puts("Capacity is less than 1, this is UB, and an error\n");
                 abort();
             }
             _allocation.resize(_capacity + 1);
@@ -156,8 +158,8 @@ namespace hsd
 
         vector<priv::Slot<T>> _allocation;
 
-        std::atomic<size_t> _head = {0};
-        std::atomic<size_t> _tail = {0};
+        hsd::atomic_usize _head = {0};
+        hsd::atomic_usize _tail = {0};
 
         constexpr size_t mod(size_t i) const noexcept { return i % capacity; }
         constexpr size_t turn(size_t i) const noexcept { return i / capacity; }

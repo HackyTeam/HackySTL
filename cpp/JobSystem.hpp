@@ -94,21 +94,18 @@ namespace hsd
                 }
             }
 
-            //Returns the id of the caller from the threadpool index [0, max), and returns -1 if the caller isn't in the list
+            //Returns the id of the caller from the threadpool index [0, max), and returns -1 if the caller isn't in the threadpool
             i8 get_current_thread() const
             {
-                return -1; //hsd::thread::this_thread::id is not implemented as an equivalent to the std version,
-                           //therefore, this currently cannot be implemented
-
-                /*auto& id = hsd::thread::get_id();
-                for(auto i = 0; i < threads.size(); i++)
+                auto id = hsd::this_thread::get_id();
+                for(auto i = 0; i < _threads.size(); i++)
                 {
-                    if(id == threads.at(i).get_id())
+                    if(id == _threads.at(i).unwrap().get_id())
                     {
                         return i;
                     }
                 }
-                return -1;*/
+                return -1;
             }
             // Returns a Job which may be scheduled.
             static Job create_job(hsd::job_fn jobfunction, void** data = nullptr)

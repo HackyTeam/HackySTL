@@ -18,7 +18,7 @@ namespace hsd
 	private:
 		#if defined(HSD_PLATFORM_POSIX)
 		using native_id_type = u64;
-		#elif defined(HSD_PLATFORM_WINDOWS)
+		#else
 		using native_id_type = DWORD;
 		#endif
 	public:
@@ -43,7 +43,7 @@ namespace hsd
 
 		#if defined(HSD_PLATFORM_POSIX)
 		using native_handle_type = pthread_t;
-		#elif defined(HSD_PLATFORM_WINDOWS)
+		#else
 		using native_handle_type = HANDLE;
 		#endif
 
@@ -108,10 +108,13 @@ namespace hsd
 					return 0ul;
 					#endif
 				}
-			} _td {
-				&_ready,
-				decay_copy(hsd::forward<F>(func)),
-				hsd::make_tuple(decay_copy(hsd::forward<Args>(args))...)
+			}; 
+			
+			auto _td = thread_data
+			{
+				.ready = &_ready,
+				.func = decay_copy(hsd::forward<F>(func)),
+				.args = hsd::make_tuple(decay_copy(hsd::forward<Args>(args))...)
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
@@ -122,14 +125,14 @@ namespace hsd
 			// Spinlock time
 			while (!__atomic_load_n(&_ready, __ATOMIC_ACQUIRE));
 			_id = id{static_cast<native_id_type>(_handle)};
-			#elif defined(HSD_PLATFORM_WINDOWS)
+			#else
 			native_id_type _native_id;
 			_handle = CreateThread(nullptr, 0, thread_data::enter_thread, &_td, 0, &_native_id);
 			
 			if (!_handle) abort();
 
 			while (!InterlockedCompareExchangeAcquire(&_ready, 0, 1));
-			_id = id{_native_id};
+			_id = id{static_cast<native_id_type>(_native_id)};
 			#endif
 		}
 
@@ -152,13 +155,22 @@ namespace hsd
 			hsd::swap(_id, other._id);
 		}
 
-		id get_id() 
+		static id get_id() 
 		{
-			return id{_id};
+			#if defined(HSD_PLATFORM_POSIX)
+			return id{
+				static_cast<native_id_type>(pthread_self())
+			};
+			#else
+			return id{
+				static_cast<native_id_type>(GetCurrentThreadId())
+			};
+			#endif
 		}
 
-		bool joinable() {
-			return get_id() != id{};
+		bool joinable() 
+		{
+			return _id != id{};
 		}
 
 		native_handle_type native_handle() 
@@ -168,7 +180,7 @@ namespace hsd
 
 		static auto hardware_concurrency() 
 		{
-			#ifdef _WIN32
+			#if defined(HSD_PLATFORM_WINDOWS)
 		    SYSTEM_INFO info;
 		    GetSystemInfo(&info);
 		    return info.dwNumberOfProcessors;
@@ -182,7 +194,7 @@ namespace hsd
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_detach(_handle);
 			_handle = 0;
-			#elif defined(HSD_PLATFORM_WINDOWS)
+			#else
 			CloseHandle(_handle);
 			_handle = nullptr;
 			#endif
@@ -195,7 +207,7 @@ namespace hsd
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_join(_handle, nullptr);
 			_handle = 0;
-			#elif defined(HSD_PLATFORM_WINDOWS)
+			#else
 			WaitForSingleObject(_handle, INFINITE);
 			CloseHandle(_handle);
 			_handle = nullptr;

@@ -170,15 +170,6 @@ namespace hsd
             clock _new_clk;
             return _new_clk - *this;
         }
-
-        template < typename Func, typename... Args >
-        static void sleep_for(f32 seconds, Func&& handle, Args&&... args)
-        {
-            clock _clk;
-
-            while(_clk.elapsed_time().to_seconds() < seconds)
-                handle(forward<Args>(args)...);
-        }
     };
 
     class precise_clock
@@ -339,15 +330,6 @@ namespace hsd
         {
             precise_clock _new_clk;
             return _new_clk - *this;
-        }
-
-        template < typename Func, typename... Args >
-        static void sleep_for(f32 seconds, Func&& handle, Args&&... args)
-        {
-            precise_clock _clk;
-
-            while(_clk.elapsed_time().to_seconds() < seconds)
-                handle(forward<Args>(args)...);
         }
     };
 } // namespace hsd

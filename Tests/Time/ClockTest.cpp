@@ -5,7 +5,6 @@
 int main()
 {
     hsd::precise_clock c1;
-    hsd::precise_clock::sleep_for(3.5f, []{});
     const hsd::u32 iterations = 4'000'000;
     c1.restart();
 

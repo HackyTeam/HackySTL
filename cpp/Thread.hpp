@@ -2,45 +2,83 @@
 
 #include "Utility.hpp"
 #include "Tuple.hpp"
+#include "Result.hpp"
 
 #if defined(HSD_PLATFORM_POSIX)
 #include <unistd.h>
 #include <pthread.h>
 #include <cstdlib>
+#include <time.h>
+#include <errno.h>
+#include <string.h>
 #elif defined(HSD_PLATFORM_WINDOWS)
 #include <windows.h>
 #endif
 
 namespace hsd 
 {
+	#if defined(HSD_PLATFORM_POSIX)
+	using native_id_type = u64;
+	#else
+	using native_id_type = DWORD;
+	#endif
+	
+	struct id 
+	{	
+		id() = default;
+
+		id(native_id_type id) 
+			: _id{id}
+		{}
+
+		friend bool operator==(id lhs, id rhs) 
+		{
+			return lhs._id == rhs._id;
+		}
+
+	private:
+		native_id_type _id;
+	};
+
+	struct this_thread
+	{
+		static id get_id() 
+		{
+			#if defined(HSD_PLATFORM_POSIX)
+			return id{
+				static_cast<native_id_type>(pthread_self())
+			};
+			#else
+			return id{
+				static_cast<native_id_type>(GetCurrentThreadId())
+			};
+			#endif
+		}
+
+		static Result<void, runtime_error> sleep_for(f32 seconds)
+		{
+			#if defined(HSD_PLATFORM_WINDOWS)
+			    Sleep(seconds * 1000); // milliseconds
+			#else /* posix */
+    		auto frac = seconds - static_cast<i32>(seconds);
+    		timespec ts{
+    		    .tv_sec = static_cast<i32>(seconds),
+    		    .tv_nsec = static_cast<long>(frac * 1'000'000'000.f)
+    		};
+
+    		while (nanosleep(&ts, &ts) == -1)
+			{
+        		if (errno != EINTR)
+					return runtime_error{strerror(errno)};
+			}
+			#endif
+
+			return {};
+		}
+	};
+
 	struct thread 
 	{
-	private:
-		#if defined(HSD_PLATFORM_POSIX)
-		using native_id_type = u64;
-		#else
-		using native_id_type = DWORD;
-		#endif
-	public:
-		struct id 
-		{
-			friend thread;
-
-			id() = default;
-
-			friend bool operator==(id lhs, id rhs) 
-			{
-				return lhs._id == rhs._id;
-			}
-
-		private:
-			thread::native_id_type _id;
-
-			id(thread::native_id_type id) 
-				: _id{id}
-			{}
-		};
-
 		#if defined(HSD_PLATFORM_POSIX)
 		using native_handle_type = pthread_t;
 		#else
@@ -155,17 +193,9 @@ namespace hsd
 			hsd::swap(_id, other._id);
 		}
 
-		static id get_id() 
+		id get_id() 
 		{
-			#if defined(HSD_PLATFORM_POSIX)
-			return id{
-				static_cast<native_id_type>(pthread_self())
-			};
-			#else
-			return id{
-				static_cast<native_id_type>(GetCurrentThreadId())
-			};
-			#endif
+			return id{_id};
 		}
 
 		bool joinable() 

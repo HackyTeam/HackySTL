@@ -5,11 +5,13 @@
  
 hsd::atomic_flag lock{};
  
-void f(hsd::i32 n)
+void thread_func(hsd::i32 n)
 {
-    for (hsd::i32 cnt = 0; cnt < 100; ++cnt) {
-        while(hsd::atomic_flag_test_and_set_explicit(&lock, hsd::memory_order_acquire))
-             ; // spin until the lock is acquired
+    for (hsd::i32 cnt = 0; cnt < 100; ++cnt)
+    {
+        // spin until the lock is acquired
+        while(hsd::atomic_flag_test_and_set_explicit(&lock, hsd::memory_order_acquire));
+
         hsd::io::print<"Output from thread {}\n">(n);
         hsd::atomic_flag_clear_explicit(&lock, hsd::memory_order_release);
     }
@@ -17,11 +19,15 @@ void f(hsd::i32 n)
  
 int main()
 {
-    hsd::vector<hsd::thread> v;
-    for (int n = 0; n < 10; ++n) {
-        v.emplace_back(f, n);
+    hsd::vector<hsd::thread> vec;
+
+    for (int index = 0; index < 10; index++)
+    {
+        vec.emplace_back(thread_func, index);
     }
-    for (auto& t : v) {
-        t.join();
+
+    for (auto& thread_val : vec)
+    {
+        thread_val.join();
     }
 }

@@ -5,9 +5,11 @@
             "label": "C/C++: clang++ build active file",
             "command": "/usr/bin/clang++",
             "args": [
-                "-g",
+                "-O3",
                 "-std=c++20",
                 "-fsanitize=address",
+                "-Wall",
+                "-Wextra",
                 "-Wpadded",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
@@ -33,7 +35,9 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-g",
-                "-fsanitize=address",
+                //"-fsanitize=address",
+                "-Wall",
+                "-Wextra",
                 //"-Wpadded",
                 "-fconcepts-diagnostics-depth=5",
                 "-std=c++20",

@@ -19,7 +19,8 @@ static void print_val(T& val)
     std::cout << val << '\n';
 }
 
-static void print(hsd::safe_shared_ptr<S, hsd::buffered_allocator> ptr)
+static void print(
+    hsd::safe_shared_ptr<S, hsd::buffered_allocator> ptr)
 {
     print_val(ptr->_a);
     print_val(ptr->_b);
@@ -50,12 +51,17 @@ int main()
     hsd::uchar buf[128]{};
     hsd::buffered_allocator<int> alloc{buf, 128};
 
-    hsd::safe_shared_ptr elm = hsd::safe_make_shared<S>(alloc, 12, 'c', 4.3f, "str");
+    hsd::safe_shared_ptr elm = 
+        hsd::safe_make_shared<S>(alloc, 12, 'c', 4.3f, "str");
+    
     hsd::safe_shared_ptr elm2 = elm;
     print(elm);
     print(elm2);
     elm2 = hsd::move(elm);
-    hsd::safe_shared_ptr<base> elm3 = hsd::safe_make_shared<derived>();
+
+    hsd::safe_shared_ptr<base> elm3 = 
+        hsd::safe_make_shared<derived>();
+    
     hsd::safe_shared_ptr<base> elm4;
     elm4 = elm3;
     elm4 = hsd::move(elm3);

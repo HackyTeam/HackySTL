@@ -35,7 +35,7 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-g",
-                //"-fsanitize=address",
+                "-fsanitize=address",
                 "-Wall",
                 "-Wextra",
                 //"-Wpadded",

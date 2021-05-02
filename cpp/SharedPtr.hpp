@@ -1028,52 +1028,52 @@ namespace hsd
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto unsafe_make_shared(Args&&... args)
+    static HSD_CONSTEXPR auto make_unsafe_shared(Args&&... args)
     {
         return non_atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto safe_make_shared(Args&&... args)
+    static HSD_CONSTEXPR auto make_safe_shared(Args&&... args)
     {
         return atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args >
-    static HSD_CONSTEXPR auto unsafe_make_shared(Allocator<U>& alloc, Args&&... args)
+    static HSD_CONSTEXPR auto make_unsafe_shared(Allocator<U>& alloc, Args&&... args)
     {
         return non_atomic_types::make_shared<T, Allocator, U, Args...>(alloc, forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args >
-    static HSD_CONSTEXPR auto safe_make_shared(Allocator<U>& alloc, Args&&... args)
+    static HSD_CONSTEXPR auto make_safe_shared(Allocator<U>& alloc, Args&&... args)
     {
         return atomic_types::make_shared<T, Allocator, U, Args...>(alloc, forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto unsafe_make_shared(usize size)
+    static HSD_CONSTEXPR auto make_unsafe_shared(usize size)
     {
         return non_atomic_types::make_shared<T, Allocator>(size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto safe_make_shared(usize size)
+    static HSD_CONSTEXPR auto make_safe_shared(usize size)
     {
         return atomic_types::make_shared<T, Allocator>(size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U >
-    static HSD_CONSTEXPR auto unsafe_make_shared(Allocator<U>& alloc, usize size)
+    static HSD_CONSTEXPR auto make_unsafe_shared(Allocator<U>& alloc, usize size)
     {
         return non_atomic_types::make_shared<T, Allocator, U>(alloc, size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U >
-    static HSD_CONSTEXPR auto safe_make_shared(Allocator<U>& alloc, usize size)
+    static HSD_CONSTEXPR auto make_safe_shared(Allocator<U>& alloc, usize size)
     {
         return atomic_types::make_shared<T, Allocator, U>(alloc, size);
     }

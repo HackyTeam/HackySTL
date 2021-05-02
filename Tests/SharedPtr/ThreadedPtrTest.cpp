@@ -16,7 +16,7 @@ struct S
 
 static inline hsd::atomic_flag lock{};
 static inline hsd::safe_shared_ptr<S> elm = 
-    hsd::safe_make_shared<S>(12, 'c', 4.3f, "str");
+    hsd::make_safe_shared<S>(12, 'c', 4.3f, "str");
 
 static void print(hsd::safe_shared_ptr<S> ptr)
 {
@@ -31,12 +31,10 @@ void thread_func()
     for (hsd::i32 count = 0; count < 1; count++)
     {
         // spin until the lock is acquired
-        while(hsd::atomic_flag_test_and_set_explicit(&lock, hsd::memory_order_acquire));
+        while(lock.test_and_set(hsd::memory_order_acquire));
 
         print(elm);
-        hsd::atomic_flag_clear_explicit(
-            &lock, hsd::memory_order_release
-        );
+        lock.clear(hsd::memory_order_release);
     }
 }
 

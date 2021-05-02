@@ -26,6 +26,10 @@ namespace hsd
                 destroy();
             }
 
+            slot() requires (std::is_default_constructible_v<T>)
+                : storage{}
+            {}
+
             slot(const slot& other)
                 : storage{other.storage}
             {
@@ -77,7 +81,7 @@ namespace hsd
                 puts("Capacity is less than 1, this is UB, and an error\n");
                 abort();
             }
-            _allocation.reserve(_capacity + 1);
+            _allocation.resize(_capacity + 1);
         }
 
         MPMCQueue(const MPMCQueue&) = delete;
@@ -149,17 +153,18 @@ namespace hsd
         void emplace(T&& value)
         {
             auto const head = _head.fetch_add(1);
-            auto& slot = _allocation.at_unchecked(mod(head));
+            auto& slot = _allocation.at(mod(head)).unwrap();
 
             while(turn(head) * 2 != slot.ticket.load());
             
             slot.storage = forward<T>(value);
             slot.ticket.store(turn(head) * 2 + 1);
         }
+
         void pop(T& value)
         {
             auto const tail = _tail.fetch_add(1);
-            auto& slot = _allocation.at_unchecked(mod(tail));
+            auto& slot = _allocation.at(mod(tail)).unwrap();
 
             while(turn(tail) * 2 + 1 != slot.ticket.load());
 

@@ -103,6 +103,7 @@
         "cstr",
         "cstring",
         "ctim",
+        "ctmath",
         "deallocate",
         "deallocates",
         "hindex",

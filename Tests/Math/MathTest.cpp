@@ -1,5 +1,4 @@
 #include <Math.hpp>
-#include <stdio.h>
 #include <Io.hpp>
 
 int main()
@@ -93,10 +92,41 @@ int main()
         hsd::f64 val2 = std::sin(5.0);
         hsd::io::print<"sin: {} {}\n">(val1, val2);
     }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::cos(5.0);
+        hsd::f64 val2 = std::cos(5.0);
+        hsd::io::print<"cos: {} {}\n">(val1, val2);
+    }
     
     {
         constexpr hsd::f64 val1 = hsd::math::tan(5.0);
         hsd::f64 val2 = std::tan(5.0);
         hsd::io::print<"tan: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::asin(0.323);
+        hsd::f64 val2 = std::asin(0.323);
+        hsd::io::print<"asin: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::acos(0.323);
+        hsd::f64 val2 = std::acos(0.323);
+        hsd::io::print<"acos: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::atan(5.0);
+        hsd::f64 val2 = std::atan(5.0);
+        hsd::io::print<"atan: {} {}\n">(val1, val2);
+    }
+
+    {
+        // still no bit_cast support, thanks gcc
+        constexpr hsd::f64 val1 = hsd::math::atan2(0.0, -0.0001);
+        hsd::f64 val2 = std::atan2(0.0, -0.0001);
+        hsd::io::print<"atan2: {} {}\n">(val1, val2);
     }
 }

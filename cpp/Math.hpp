@@ -37,6 +37,10 @@ namespace hsd
         constexpr auto midpoint(T* a, T* b);
         template <IsNumber T>
         static constexpr auto abs(const T& value);
+        template <IsNumber T>
+        static constexpr auto atan(T value);
+        template <IsNumber T>
+        static constexpr auto sqrt(T value);
 
         namespace constexpr_math
         {
@@ -44,10 +48,10 @@ namespace hsd
             static constexpr auto floor(const T& value);
             template <IsNumber T>
             static constexpr auto exp(T value);
-            template <typename T>
+            template <IsNumber T>
             static constexpr auto log(T value);
 
-            namespace detail
+            namespace ctmath_detail
             {
                 template <IsNumber T>
                 static constexpr auto sgn(const T& value)
@@ -395,13 +399,13 @@ namespace hsd
                         static_cast<T>(find_exponent(value, 0));
                 }
 
-                template <typename T>
+                template <IsNumber T>
                 static constexpr auto pow_dbl(const T& base, const T& exp_term)
                 {
                     return constexpr_math::exp(exp_term * constexpr_math::log(base));
                 }
 
-                template <typename T1, IsFloat T2>
+                template <IsNumber T1, IsFloat T2>
                 static constexpr auto pow_type_check(const T1& base, const T2& exp_term)
                 {
                     using ReturnType = std::common_type_t<T1, T2>;
@@ -419,18 +423,275 @@ namespace hsd
                     }
                 }
 
-                template <typename T1, IsIntegral T2>
+                template <IsNumber T1, IsIntegral T2>
                 static constexpr auto pow_type_check(const T1& base, const T2& exp_term)
                     -> std::common_type_t<T1, T2>
                 {
                     return pow_integral(base, exp_term);
                 }
-            }
+
+                template <usize Order, IsNumber T>
+                static constexpr auto atan_series_order_calc(const T& value, const T& value_pow)
+                {
+                    return ( 
+                        static_cast<T>(1) / (static_cast<T>((Order - 1) * 4 - 1) * value_pow ) - 
+                        static_cast<T>(1) / (static_cast<T>((Order - 1) * 4 + 1) * value_pow * value)
+                    );
+                }
+                
+                template <usize Order, usize MaxOrder, IsNumber T>
+                static constexpr auto atan_series_order(const T& value, const T& value_pow)
+                {
+                    if constexpr(Order == 1)
+                    {
+                        return (
+                            static_cast<T>(math::constants::pi / 2) - static_cast<T>(1) / value + 
+                            atan_series_order<Order + 1, MaxOrder>(value * value, pow(value, 3))
+                        );
+                    }
+                    else if constexpr(Order < MaxOrder)
+                    {
+                        return (
+                            atan_series_order_calc<Order>(value, value_pow) + 
+                            atan_series_order<Order + 1, MaxOrder>(value, value_pow * value * value)
+                        );
+                    }
+                    else if constexpr(Order == MaxOrder)
+                    {
+                        return atan_series_order_calc<Order>(value, value_pow);
+                    }
+                    else
+                    {
+                        return limits<T>::nan;
+                    }
+                }
+                
+                template <IsNumber T>
+                static constexpr auto atan_series_main(const T& value)
+                {
+                    if(value < static_cast<T>(3))          return atan_series_order<1, 10>(value, value);
+                    else if(value < static_cast<T>(4))     return atan_series_order<1, 9>(value, value);
+                    else if(value < static_cast<T>(5))     return atan_series_order<1, 8>(value, value);
+                    else if(value < static_cast<T>(7))     return atan_series_order<1, 7>(value, value);
+                    else if(value < static_cast<T>(11))    return atan_series_order<1, 6>(value, value);
+                    else if(value < static_cast<T>(25))    return atan_series_order<1, 5>(value, value);
+                    else if(value < static_cast<T>(100))   return atan_series_order<1, 4>(value, value);
+                    else if(value < static_cast<T>(1000))  return atan_series_order<1, 3>(value, value);
+                    else                                   return atan_series_order<1, 2>(value, value);
+                }
+                
+                template <usize Depth, usize MaxDepth, IsNumber T>
+                static constexpr auto atan_cf_recur(const T& value)
+                {
+                    if constexpr(Depth < MaxDepth)
+                    {
+                        return static_cast<T>(2 * Depth - 1) + Depth * Depth * 
+                        value / atan_cf_recur<Depth + 1, MaxDepth>(value);
+                    }
+                    else
+                    {
+                        return static_cast<T>(2 * Depth - 1);
+                    }           
+                }
+                
+                template <IsNumber T>
+                static constexpr auto atan_cf_main(const T& value)
+                {
+                    if(value < static_cast<T>(0.5))         return value / atan_cf_recur<1, 15>(value * value); 
+                    else if(value < static_cast<T>(1))      return value / atan_cf_recur<1, 25>(value * value); 
+                    else if(value < static_cast<T>(1.5))    return value / atan_cf_recur<1, 35>(value * value); 
+                    else if(value < static_cast<T>(2))      return value / atan_cf_recur<1, 45>(value * value); 
+                    else                                    return value / atan_cf_recur<1, 52>(value * value);
+                }
+                
+                template <IsNumber T>
+                static constexpr auto atan_begin(const T& value)
+                {
+                    if(value > static_cast<T>(2.5))
+                    {
+                        return static_cast<T>(atan_series_main(value));
+                    }
+                    else
+                    {
+                        return static_cast<T>(atan_cf_main(value));
+                    }
+                }
+                
+                template <IsFloat T>
+                static constexpr auto atan_check(const T& value)
+                {
+                    if(value == limits<T>::nan)
+                    {
+                        return value;
+                    }
+                    else if(limits<T>::epsilon > abs(value))
+                    {
+                        return static_cast<T>(0);
+                    }
+                    else if(value < static_cast<T>(0))
+                    {
+                        return -atan_begin(-value);
+                    }
+                    else
+                    {
+                        return atan_begin(value);
+                    }
+                }
+
+                template <IsFloat T>
+                static constexpr auto asin_compute(const T& value)
+                {
+                    if(value > static_cast<T>(1))
+                    {
+                        return limits<T>::nan;
+                    }
+                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    {
+                        return static_cast<T>(math::constants::pi / 2);
+                    }
+                    else if(limits<T>::epsilon > abs(value))
+                    {
+                        return static_cast<T>(0);
+                    }
+                    else
+                    {
+                        return atan(value / sqrt(static_cast<T>(1) - value * value));
+                    }
+                }
+
+                template <IsFloat T>
+                static constexpr auto asin_check(const T& value)
+                {
+                    if(value == limits<T>::nan)
+                    {
+                        return value;
+                    }
+                    else if(value < static_cast<T>(0))
+                    {
+                        return -asin_compute(-value);
+                    }
+                    else
+                    {
+                        return asin_compute(value);
+                    }
+                }
+
+                template <IsFloat T>
+                constexpr auto acos_compute(const T& value)
+                {
+                    if (abs(value) > static_cast<T>(1))
+                    {
+                        return limits<T>::nan;
+                    }
+                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    {
+                        return static_cast<T>(0);
+                    }
+                    else if(limits<T>::epsilon > abs(value))
+                    {
+                        return static_cast<T>(math::constants::pi / 2);
+                    }
+                    else
+                    {
+                        return atan(sqrt(static_cast<T>(1) - value * value) / value);
+                    }
+                }
+
+                template <IsFloat T>
+                constexpr auto acos_check(const T& value)
+                {
+                    using math::constants::pi;
+
+                    if(value == limits<T>::nan)
+                    {
+                        return value;
+                    }
+                    else if(value > static_cast<T>(0))
+                    {
+                        return acos_compute(value);
+                    }
+                    else
+                    {
+                        return static_cast<T>(pi / 2) - 
+                            acos_compute(-value);
+                    }
+                }
+
+                template <IsFloat T>
+                constexpr auto atan2_compute(const T& y, const T& x)
+                {
+                    using math::constants::pi;
+
+                    if(y == limits<T>::nan || x == limits<T>::nan)
+                    {
+                        return limits<T>::nan;
+                    }
+                    else if(limits<T>::epsilon > abs(x))
+                    {
+                        if(limits<T>::epsilon > abs(y))
+                        {
+                            if(y < static_cast<T>(0))
+                            {
+                                if(x < static_cast<T>(0))
+                                {
+                                    return -static_cast<T>(pi / 2);
+                                }
+                                else
+                                {
+                                    return -static_cast<T>(0);
+                                }
+                            }
+                            else if(x < static_cast<T>(0))
+                            {
+                                return static_cast<T>(pi / 2);
+                            }
+                            else
+                            {
+                                return static_cast<T>(0);
+                            }
+                        }
+                        else if(y > static_cast<T>(0))
+                        {
+                            return static_cast<T>(pi / 2);
+                        }
+                        else
+                        {
+                            return -static_cast<T>(pi / 2);
+                        }
+                    }
+                    else if(x < static_cast<T>(0))
+                    {
+                        if(y < static_cast<T>(0))
+                        {
+                            return atan(y / x) - static_cast<T>(pi);
+                        }
+                        else
+                        {
+                            return atan(y / x) + static_cast<T>(pi);
+                        }
+                    }
+                    else
+                    {
+                        return atan(y / x);
+                    }
+                }
+
+                template <IsNumber T1, IsNumber T2>
+                constexpr auto atan2_type_check(const T1& y, const T2& x)
+                {
+                    using RetType = std::common_type_t<T1, T2>;
+
+                    return atan2_compute(
+                        static_cast<RetType>(y), 
+                        static_cast<RetType>(x)
+                    );
+                }
+            } // namespace ctmath_detail
 
             template <IsFloat T>
             static constexpr auto mod(const T& value, const T& factor)
             {
-                if(detail::invlaid_case(value))
+                if(ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -444,7 +705,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto floor(const T& value)
             {
-                if(detail::invlaid_case(value))
+                if(ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -460,7 +721,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto ceil(const T& value)
             {
-                if(detail::invlaid_case(value))
+                if(ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -477,7 +738,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto round(const T& value)
             {
-                if(detail::invlaid_case(value))
+                if(ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -504,7 +765,7 @@ namespace hsd
                 }
                 else
                 {
-                    return value < 0 ? -detail::tan_begin(-value) : detail::tan_begin(value);
+                    return value < 0 ? -ctmath_detail::tan_begin(-value) : ctmath_detail::tan_begin(value);
                 }
             }
 
@@ -538,7 +799,7 @@ namespace hsd
                 }
                 else
                 {
-                    return detail::sin_compute(constexpr_math::tan(value / static_cast<T>(2)));
+                    return ctmath_detail::sin_compute(constexpr_math::tan(value / static_cast<T>(2)));
                 }
             }
 
@@ -572,11 +833,11 @@ namespace hsd
                 }
                 else
                 {
-                    return detail::cos_compute(constexpr_math::tan(value / static_cast<T>(2)));
+                    return ctmath_detail::cos_compute(constexpr_math::tan(value / static_cast<T>(2)));
                 }
             }
 
-            template <typename T>
+            template <IsNumber T>
             static constexpr auto log(T value)
             {
                 if(value == limits<T>::nan || value < static_cast<T>(0))
@@ -599,16 +860,16 @@ namespace hsd
                 {
                     if(value < static_cast<T>(0.5) || value > static_cast<T>(1.5))
                     {
-                        return detail::log_breakup(value);
+                        return ctmath_detail::log_breakup(value);
                     }
                     else
                     {
-                        return detail::log_main(value);
+                        return ctmath_detail::log_main(value);
                     }
                 }  
             }
 
-            template <typename T>
+            template <IsNumber T>
             static constexpr auto log2(T value)
             {
                 if(value == limits<T>::nan || value < static_cast<T>(0))
@@ -633,7 +894,7 @@ namespace hsd
                 }  
             }
 
-            template <typename T>
+            template <IsNumber T>
             static constexpr auto log10(T value)
             {
                 if(value == limits<T>::nan || value < static_cast<T>(0))
@@ -675,36 +936,60 @@ namespace hsd
                 }
                 else if(math::abs(value) < static_cast<T>(2))
                 {
-                    return static_cast<T>(detail::exp_cf(value));
+                    return static_cast<T>(ctmath_detail::exp_cf(value));
                 }
                 else
                 {
-                    return static_cast<T>(detail::exp_split(value));
+                    return static_cast<T>(ctmath_detail::exp_split(value));
                 }
             }
 
-            template <typename T1, typename T2>
+            template <IsNumber T1, IsNumber T2>
             static constexpr auto pow(T1 base, T2 exp_term)
             {
-                return detail::pow_type_check(base,exp_term);
+                return ctmath_detail::pow_type_check(base, exp_term);
             }
 
             template <IsFloat T>
             static constexpr auto sqrt(const T& value)
             {
-                auto s = static_cast<T>(1.0);
+                auto mid_val = static_cast<T>(1.0);
 
                 if(value <= static_cast<T>(-0.0))
                 {
                     return limits<T>::nan;
                 }
-                for(usize i = 0; i < 10; i++)
+                for(usize count = 0; count < 10; count++)
                 {
-                    auto e = value / s;
-                    s = midpoint(s, e);
+                    auto euler = value / mid_val;
+                    mid_val = midpoint(mid_val, euler);
                 }
 
-                return s;
+                return mid_val;
+            }
+
+            template <IsNumber T>
+            static constexpr auto atan(T value)
+            {
+                return ctmath_detail::atan_check(value);
+            }
+
+            template <IsNumber T>
+            static constexpr auto asin(T value)
+            {
+                return ctmath_detail::asin_check(value);
+            }
+
+            template <IsNumber T>
+            static constexpr auto acos(T value)
+            {
+                return ctmath_detail::acos_check(value);
+            }
+
+            template <IsNumber T1, IsNumber T2>
+            constexpr auto atan2(const T1& y, const T2& x)
+            {
+                return ctmath_detail::atan2_type_check(y, x);
             }
         } // namespace constexpr_math
 
@@ -864,7 +1149,59 @@ namespace hsd
             }
         }
 
-        template <typename T>
+        template <IsNumber T>
+        static constexpr auto atan(T value)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::atan(value);
+            }
+            else
+            {
+                return std::atan(value);
+            }
+        }
+
+        template <IsNumber T>
+        static constexpr auto asin(T value)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::asin(value);
+            }
+            else
+            {
+                return std::asin(value);
+            }
+        }
+
+        template <IsNumber T>
+        static constexpr auto acos(T value)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::acos(value);
+            }
+            else
+            {
+                return std::acos(value);
+            }
+        }
+
+        template <IsNumber T1, IsNumber T2>
+        constexpr auto atan2(const T1 y, const T2 x)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::atan2(y, x);
+            }
+            else
+            {
+                return std::atan2(y, x);
+            }
+        }
+
+        template <IsNumber T>
         static constexpr auto log(T value)
         {
             if(std::is_constant_evaluated())
@@ -877,7 +1214,7 @@ namespace hsd
             }
         }
 
-        template <typename T>
+        template <IsNumber T>
         static constexpr auto log2(T value)
         {
             if(std::is_constant_evaluated())
@@ -890,7 +1227,7 @@ namespace hsd
             } 
         }
 
-        template <typename T>
+        template <IsNumber T>
         static constexpr auto log10(T value)
         {
             if(std::is_constant_evaluated())
@@ -929,7 +1266,7 @@ namespace hsd
             }
         }
         
-        template < typename T1, typename T2 >
+        template <IsNumber T1, IsNumber T2>
         static constexpr auto pow(T1 base, T2 exp_term)
         {
             if(std::is_constant_evaluated())

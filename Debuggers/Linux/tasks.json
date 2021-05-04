@@ -36,8 +36,8 @@
             "args": [
                 "-g",
                 "-fsanitize=address",
-                "-Wall",
-                "-Wextra",
+                //"-Wall",
+                //"-Wextra",
                 //"-Wpadded",
                 "-fconcepts-diagnostics-depth=5",
                 "-std=c++20",

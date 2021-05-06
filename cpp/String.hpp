@@ -15,11 +15,10 @@ namespace hsd
     {
     private:
         using _str_utils = basic_cstring<CharT>;
-        const static inline CharT _s_empty = static_cast<CharT>(0);
+        static constexpr CharT _s_empty = 0;
         CharT* _data = nullptr;
         usize _size = 0;
         usize _capacity = 0;
-
 
         inline void _reset()
         {
@@ -108,6 +107,7 @@ namespace hsd
         template <typename RhsCharT> requires(std::is_convertible_v<RhsCharT, CharT>)
         inline basic_string& operator=(const basic_string<RhsCharT>& rhs)
         {
+            // URGENT UNICODE CONVERSION NEEDED
             _reset();
             _size = rhs.size();
             _capacity = _size;
@@ -121,7 +121,8 @@ namespace hsd
             _reset();
             _size = rhs.size();
             _capacity = _size;
-            _data = _str_utils::to_string(rhs._data, _size);
+            _data = new CharT[_size + 1]{};
+            copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
 
@@ -309,7 +310,7 @@ namespace hsd
             }
         }
 
-        inline usize find(CharT str, usize pos = 0) const
+        inline usize find(CharT letter, usize pos = 0) const
         {
             if(pos >= _size)
             {
@@ -318,7 +319,7 @@ namespace hsd
             else
             {
                 const CharT* _find_addr = _str_utils::find(
-                    &_data[pos], str
+                    &_data[pos], letter
                 );
 
                 if(_find_addr == nullptr)
@@ -425,7 +426,7 @@ namespace hsd
         inline auto erase(const_iterator pos)
             -> Result<iterator, bad_access>
         {
-            return erase_for(pos, pos);
+            return erase_for(pos, pos + 1);
         }
 
         inline auto erase_for(const_iterator from, const_iterator to)
@@ -437,14 +438,72 @@ namespace hsd
             usize _current_pos = static_cast<usize>(from - begin());
             usize _last_pos = static_cast<usize>(to - begin());
 
-            for(usize _index = 0; _index < _size - _last_pos + 1; _index++)
+            for(usize _index = 0; _index < _capacity - _last_pos + 1; _index++)
             {
                 this->_data[_current_pos + _index] = 
-                    move(this->_data[_last_pos + _index + 1]);
+                    move(this->_data[_last_pos + _index]);
             }
 
             _size -= static_cast<usize>(to - from) + 1;
-            return begin() + _current_pos;
+            return begin() + _last_pos;
+        }
+    
+        inline void reserve(usize new_cap)
+        {
+            if (new_cap > _capacity)
+            {
+                // To handle _capacity = 0 case
+                usize _new_capacity = _capacity ? _capacity : 1;
+
+                while (_new_capacity < new_cap)
+                    _new_capacity += (_new_capacity + 1) / 2;
+
+                // Allocate space for NULL byte
+                auto* _new_buf = new CharT[_new_capacity + 1];
+                _new_buf[_new_capacity] = 0;
+                
+                for (usize _index = 0; _index < _size; ++_index)
+                {
+                    auto& _value = _data[_index];
+                    _new_buf[_index] = move(_value);
+                }
+
+                delete[] _data;
+                _data = _new_buf;
+                _capacity = _new_capacity;
+            }
+        }
+
+        template <typename... Args>
+        inline void emplace_back(Args&&... args)
+        {
+            reserve(_size + 1);
+            _data[_size] = CharT{forward<Args>(args)...};
+            _data[++_size] = '\0';
+        }
+
+        inline void push_back(const CharT& val)
+        {
+            emplace_back(val);
+        }
+
+        inline void push_back(CharT&& val)
+        {
+            emplace_back(move(val));
+        }
+
+        inline void clear()
+        {
+            if (_size != 0)
+            {
+                _data[0] = '\0';
+                _size = 0;
+            }
+        }
+
+        inline void pop_back()
+        {
+            _data[--_size] = '\0';
         }
 
         inline CharT& front()
@@ -465,73 +524,6 @@ namespace hsd
         inline usize capacity() const
         {
             return _capacity;
-        }
-
-        template < usize Pos, usize Count >
-        inline auto gen_range()
-            -> Result<basic_string<CharT>, out_of_range>
-        {
-            if(Pos + Count > _size)
-                return out_of_range{};
-    
-            return basic_string(&_data[Pos], Count);
-        }
-
-        inline void clear()
-        {
-            if (_size)
-            {
-                _data[0] = '\0';
-                _size = 0;
-            }
-        }
-    
-        inline void reserve(usize new_cap)
-        {
-            if (new_cap > _capacity)
-            {
-                // To handle _capacity = 0 case
-                usize _new_capacity = _capacity ? _capacity : 1;
-
-                while (_new_capacity < new_cap)
-                    _new_capacity += (_new_capacity + 1) / 2;
-
-                // Allocate space for NUL byte
-                auto* _new_buf = new CharT[_new_capacity + 1];
-                _new_buf[_new_capacity] = 0;
-                
-                for (usize _index = 0; _index < _size; ++_index)
-                {
-                    auto& _value = _data[_index];
-                    _new_buf[_index] =  move(_value);
-                }
-
-                delete[] _data;
-                _data = _new_buf;
-                _capacity = _new_capacity;
-            }
-        }
-
-        inline void push_back(const CharT& val)
-        {
-            if(_capacity > _size)
-            {
-                _data[_size] = val;
-                _data[++_size] = '\0';
-                return;
-            }
-            else
-            {
-                usize new_size = _size ? _size * 2 : 1;
-                reserve(new_size);
-                _data[_size] = val;
-                _data[++_size] = '\0';
-            }
-        }
-
-        inline void pop_back()
-        {
-            _data[--_size] = '\0';
         }
 
         inline iterator data()

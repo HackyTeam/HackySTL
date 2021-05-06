@@ -521,15 +521,30 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
+			if(_point_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
 			for(; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + (_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
-			const CharT* _round_buf = to_string(_round_num);
-			hsd::move(_round_buf, _round_buf + _len, _buf);
-			delete[] _round_buf;
+			
+			if(_round_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+			for(; _round_num != 0; _round_num /= 10)
+			{
+				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
+			}
+			if(_negative)
+			{
+				_buf[--_len] = '-';
+			}
+
 			return _buf;
 		}
 
@@ -548,15 +563,30 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
+			if(_point_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
 			for(; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + (_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
-			const CharT* _round_buf = to_string(_round_num);
-			hsd::move(_round_buf, _round_buf + _len, _buf);
-			delete[] _round_buf;
+			
+			if(_round_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+			for(; _round_num != 0; _round_num /= 10)
+			{
+				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
+			}
+			if(_negative)
+			{
+				_buf[--_len] = '-';
+			}
+
 			return _buf;
 		}
 
@@ -575,29 +605,29 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
+			if(_point_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
 			for(; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
-			const CharT* _round_buf = to_string(_round_num);
-			hsd::move(_round_buf, _round_buf + _len, _buf);
-			delete[] _round_buf;
-			return _buf;
-		}
-		
-		static HSD_CONSTEXPR CharT* to_string(const CharT* str, usize len = 0)
-		{
-			usize _len = len;
 			
-			if(len == 0)
-				_len = length(str);
-
-			CharT* _buf = new CharT[_len + 1];
-
-			for (usize _index = 0; _index <= _len; _index++)
-				_buf[_index] = static_cast<CharT>(str[_index]);
+			if(_round_num == 0)
+			{
+				_buf[--_len] = '0';
+			}
+			for(; _round_num != 0; _round_num /= 10)
+			{
+				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
+			}
+			if(_negative)
+			{
+				_buf[--_len] = '-';
+			}
 
 			return _buf;
 		}

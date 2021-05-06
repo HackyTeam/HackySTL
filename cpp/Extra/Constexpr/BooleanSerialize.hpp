@@ -29,7 +29,7 @@ namespace hsd {
         }
     };
 
-    template <Number v>
+    template <BinaryNumber v>
     constexpr auto number_value() {
         constexpr usize bits = number_bits_v<v>;
         proxy_bitset<bits> s;
@@ -48,7 +48,7 @@ namespace hsd {
     struct serialize_value<bit::one>
         : literal_constant<bool, 1> {};
 
-    template <Number v>
+    template <BinaryNumber v>
     struct serialize_value<v>
         : literal_constant<proxy_bitset<number_bits_v<v> >, number_value<v>()> {};
 }

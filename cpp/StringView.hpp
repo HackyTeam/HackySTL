@@ -98,11 +98,11 @@ namespace hsd
         constexpr bool operator<=(const basic_string_view& rhs) const
         {
             auto _comp_rez = 
-            cstring_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            );
+                cstring_utils::compare(
+                    _data, rhs._data, 
+                    _size < rhs._size ? 
+                    _size : rhs._size
+                );
             return _comp_rez == -1 || _comp_rez == 0;
         }
 

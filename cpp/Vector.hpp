@@ -293,19 +293,39 @@ namespace hsd
             return *(begin() + size() - 1);
         }
 
-        constexpr auto erase(const_iterator pos)
+        inline auto erase(const_iterator pos)
             -> Result<iterator, bad_access>
         {
-            if(pos < begin() || pos > end())
+            return erase_for(pos, pos + 1);
+        }
+
+        inline auto erase_for(const_iterator from, const_iterator to)
+            -> Result<iterator, bad_access>
+        {
+            if(from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
 
-            usize _current_pos = static_cast<usize>(pos - begin());
+            if(to == end())
+            {
+                for(; from != end(); from++)
+                    from->~T();
+    
+                return end();
+            }
+            else
+            {
+                usize _current_pos = static_cast<usize>(from - begin());
+                usize _last_pos = static_cast<usize>(to - begin());
 
-            for(usize _index = _current_pos; _index < _size - 1; _index++)
-                this->_data[_index] = move(this->_data[_index + 1]);
+                for(usize _index = 0; _index < _capacity - _last_pos; _index++)
+                {
+                    this->_data[_current_pos + _index] = 
+                        move(this->_data[_last_pos + _index]);
+                }
 
-            _size--;
-            return begin() + _current_pos;
+                _size -= static_cast<usize>(to - from) + 1;
+                return begin() + _last_pos;
+            }
         }
 
         constexpr auto at(usize index)

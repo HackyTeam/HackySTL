@@ -15,7 +15,7 @@ namespace hsd
     {
     private:
         using _str_utils = basic_cstring<CharT>;
-        static constexpr CharT _s_empty = 0;
+        static inline const CharT _s_empty = 0;
         CharT* _data = nullptr;
         usize _size = 0;
         usize _capacity = 0;
@@ -101,18 +101,6 @@ namespace hsd
             _capacity = _size;
             _data = new CharT[_size + 1]{};
             _str_utils::copy(_data, rhs, _size);
-            return *this;
-        }
-
-        template <typename RhsCharT> requires(std::is_convertible_v<RhsCharT, CharT>)
-        inline basic_string& operator=(const basic_string<RhsCharT>& rhs)
-        {
-            // URGENT UNICODE CONVERSION NEEDED
-            _reset();
-            _size = rhs.size();
-            _capacity = _size;
-            _data = new CharT[_size + 1]{};
-            copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
 
@@ -423,6 +411,95 @@ namespace hsd
             }
         }
 
+        inline bool starts_with(CharT letter) const
+        {
+            if(_data != nullptr)
+                return _data[0] == letter;
+
+            return false;
+        }
+
+        inline bool starts_with(const CharT* str) const
+        {
+            if(_data != nullptr)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        inline bool starts_with(const basic_string& str) const
+        {
+            if(_data != nullptr)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        inline bool contains(CharT letter) const
+        {
+            if(_data != nullptr)
+                return find(letter) != npos;
+
+            return false;
+        }
+
+        inline bool contains(const CharT* str) const
+        {
+            if(_data != nullptr)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        inline bool contains(const basic_string& str) const
+        {
+            if(_data != nullptr)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        inline bool ends_with(CharT letter) const
+        {
+            if(_data != nullptr)
+                return _data[size() - 1] == letter;
+
+            return false;
+        }
+
+        inline bool ends_with(const CharT* str) const
+        {
+            usize _len = cstring::length(str);
+
+            if(_data != nullptr)
+                return rfind(str) == size() - _len;
+
+            return false;
+        }
+
+        inline bool ends_with(const basic_string& str) const
+        {
+            if(_data != nullptr)
+                return rfind(str) == size() - str.size();
+
+            return false;
+        }
+
+        inline auto sub_string(usize from, usize count)
+            -> Result<basic_string, bad_access>
+        {
+            if(from > size() || from + count > size())
+                return bad_access{};
+
+            return basic_string{_data + from, count};
+        }
+
+        inline auto sub_string(usize from)
+            -> Result<basic_string, bad_access>
+        {
+            return sub_string(from, size() - from);
+        }
+
         inline auto erase(const_iterator pos)
             -> Result<iterator, bad_access>
         {
@@ -663,49 +740,49 @@ namespace hsd
     template <string_literal str>
     inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
     {
-        return snprintf(dest.first, dest.second, basic_string_literal(str, "%s").data, val.c_str());
+        return snprintf(dest.first, dest.second, (str + "%s").data, val.c_str());
     }
 
     template <wstring_literal str>
     inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
     {
-        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%s").data, val.c_str());
+        return swprintf(dest.first, dest.second, (str + L"%s").data, val.c_str());
     }
 
     template <wstring_literal str>
     inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
     {
-        return swprintf(dest.first, dest.second, basic_string_literal(str, L"%ls").data, val.c_str());
+        return swprintf(dest.first, dest.second, (str + L"%ls").data, val.c_str());
     }
 
     template <string_literal str>
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
-        fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+        fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
     template <string_literal str>
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
-        fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+        fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
     template <wstring_literal str>
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
-        fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+        fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
     template <wstring_literal str>
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
-        fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+        fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
     template <wstring_literal str>
     inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
     {
-        fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val.c_str());
+        fwprintf(file_buf, (str + L"%ls").data, val.c_str());
     }
 
     template <typename HashType, typename CharT>

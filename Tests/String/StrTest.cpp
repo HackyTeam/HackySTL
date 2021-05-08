@@ -214,5 +214,49 @@ int main()
         hsd::io::print<"{}\n">(str);
     }
 
+    // contains, starts/ends_with
+    {
+        hsd::io::print<"\n\"contains, starts/ends_with\":\n">();
+        hsd::string str = "Test String";
+
+        hsd::io::print<"Starts with letter:\n">();
+        hsd::io::print<"{}\n">(str.starts_with('T'));
+        hsd::io::print<"{}\n">(str.starts_with('E'));
+        hsd::io::print<"Starts with sequence:\n">();
+        hsd::io::print<"{}\n">(str.starts_with("Tes"));
+        hsd::io::print<"{}\n">(str.starts_with("Ter"));
+        hsd::io::print<"Starts with string:\n">();
+        hsd::io::print<"{}\n">(str.starts_with(hsd::string{"Tes"}));
+        hsd::io::print<"{}\n">(str.starts_with(hsd::string{"Ter"}));
+        hsd::io::print<"Contains letter:\n">();
+        hsd::io::print<"{}\n">(str.contains('t'));
+        hsd::io::print<"{}\n">(str.contains('q'));
+        hsd::io::print<"Contains sequence:\n">();
+        hsd::io::print<"{}\n">(str.contains("Str"));
+        hsd::io::print<"{}\n">(str.contains("Ste"));
+        hsd::io::print<"Contains string:\n">();
+        hsd::io::print<"{}\n">(str.contains(hsd::string{"Str"}));
+        hsd::io::print<"{}\n">(str.contains(hsd::string{"Ste"}));
+        hsd::io::print<"Ends with letter:\n">();
+        hsd::io::print<"{}\n">(str.ends_with('g'));
+        hsd::io::print<"{}\n">(str.ends_with('e'));
+        hsd::io::print<"Ends with sequence:\n">();
+        hsd::io::print<"{}\n">(str.ends_with("ing"));
+        hsd::io::print<"{}\n">(str.ends_with("ind"));
+        hsd::io::print<"Ends with string:\n">();
+        hsd::io::print<"{}\n">(str.ends_with(hsd::string{"ing"}));
+        hsd::io::print<"{}\n">(str.ends_with(hsd::string{"ind"}));
+    }
+
+    // sub_string
+    {
+        hsd::io::print<"\n\"sub_string\":\n">();
+        hsd::string str = "Test String";
+
+        hsd::io::print<"{}\n">(str.sub_string(5, 3).unwrap());
+        hsd::io::print<"{}\n">(str.sub_string(5).unwrap());
+        hsd::io::print<"{}\n">(str.sub_string(4, 8).unwrap_err()());
+    }
+
     return 0;
 }

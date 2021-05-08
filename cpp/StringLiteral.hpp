@@ -10,18 +10,30 @@ namespace hsd
         CharT data[N]{};
         using char_type = CharT;
 
-        consteval basic_string_literal() {}
+        consteval basic_string_literal() = default;
 
         consteval basic_string_literal(const CharT (&str)[N])
         {
             copy_n(str, N, data);
         }
 
-        template <usize L1, usize L2>
-        consteval basic_string_literal(const basic_string_literal<CharT, L1>& strr, const CharT (&strl)[L2])
+        template <usize N2>
+        consteval auto operator+(
+            const basic_string_literal<CharT, N2>& rhs) const
         {
-            copy_n(strr.data, L1, data);
-            copy_n(strl, L2, (data + L1 - 1));
+            basic_string_literal<CharT, N + N2> _str;
+            copy_n(data, N, _str.data);
+            copy_n(rhs.data, N2, (_str.data + N - 1));
+            return _str;
+        }
+
+        template <usize N2>
+        consteval auto operator+(const CharT (&rhs)[N2]) const
+        {
+            basic_string_literal<CharT, N + N2> _str;
+            copy_n(data, N, _str.data);
+            copy_n(rhs, N2, (_str.data + N - 1));
+            return _str;
         }
 
         consteval basic_string_literal(const CharT* str, usize len)
@@ -35,9 +47,15 @@ namespace hsd
         }
     };
 
-    template <typename CharT, usize L1, usize L2>
-    basic_string_literal(const basic_string_literal<CharT, L1>, const CharT (&str)[L2])
-        -> basic_string_literal<CharT, L1 + L2>;
+    template <typename CharT, usize N1, usize N2>
+    static consteval auto operator+(const CharT (&lhs)[N1], 
+        const basic_string_literal<CharT, N2>& rhs)
+    {
+        basic_string_literal<CharT, N1 + N2> _str;
+        copy_n(lhs, N1, _str.data);
+        copy_n(rhs.data, N2, (_str.data + N1 - 1));
+        return _str;
+    }
 
     template <usize N>
     using string_literal = basic_string_literal<char, N>;

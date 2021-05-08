@@ -133,7 +133,7 @@ namespace hsd
             return *this;
         }
 
-        constexpr auto operator()(Args&&... args) 
+        constexpr auto operator()(Args... args) 
             -> Result<
                 func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
@@ -145,7 +145,7 @@ namespace hsd
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
 
-        constexpr auto operator()(Args&&... args) 
+        constexpr auto operator()(Args... args) 
             -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {
@@ -156,7 +156,7 @@ namespace hsd
             return {};
         }
 
-        constexpr auto operator()(Args&&... args) const
+        constexpr auto operator()(Args... args) const
             -> Result<
                 const func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
@@ -168,7 +168,7 @@ namespace hsd
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
 
-        constexpr auto operator()(Args&&... args) const
+        constexpr auto operator()(Args... args) const
             -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {

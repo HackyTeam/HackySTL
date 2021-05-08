@@ -121,8 +121,8 @@ namespace hsd
         }
         else 
         {
-            constexpr uint8_t op = arr_elem_v<Prog, PC>;
-            constexpr uint8_t arg = arr_elem_v<Prog, PC + 1>;
+            constexpr char op = arr_elem_v<Prog, PC>;
+            constexpr char arg = arr_elem_v<Prog, PC + 1>;
 
             if constexpr (op == 'G')
                 return run_impl<PC + 2, arr_elem_v<Ram, arg>, Ram, Out, Prog>();
@@ -188,7 +188,7 @@ namespace hsd
         else 
         {
     		return run_impl<
-                0, 0, typename arr_makefill<uint8_t, 0, 256>::type, 
+                0, 0, typename arr_makefill<char, 0, 256>::type, 
                 integer_sequence<u8>, integer_sequence<u8, c...> >();
     	}
     }

@@ -182,6 +182,80 @@ namespace hsd
             }
         }
 
+        constexpr bool starts_with(CharT letter) const
+        {
+            if(_data != nullptr)
+                return _data[0] == letter;
+
+            return false;
+        }
+
+        constexpr bool starts_with(const CharT* str) const
+        {
+            if(_data != nullptr)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        constexpr bool starts_with(const basic_string_view& str) const
+        {
+            if(_data != nullptr)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        constexpr bool contains(CharT letter) const
+        {
+            if(_data != nullptr)
+                return find(letter) != npos;
+
+            return false;
+        }
+
+        constexpr bool contains(const CharT* str) const
+        {
+            if(_data != nullptr)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        constexpr bool contains(const basic_string_view& str) const
+        {
+            if(_data != nullptr)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        constexpr bool ends_with(CharT letter) const
+        {
+            if(_data != nullptr)
+                return _data[size() - 1] == letter;
+
+            return false;
+        }
+
+        constexpr bool ends_with(const CharT* str) const
+        {
+            usize _len = cstring::length(str);
+
+            if(_data != nullptr)
+                return rfind(str) == size() - _len;
+
+            return false;
+        }
+
+        constexpr bool ends_with(const basic_string_view& str) const
+        {
+            if(_data != nullptr)
+                return rfind(str) == size() - str.size();
+
+            return false;
+        }
+
         constexpr usize size() const
         {
             return _size;
@@ -220,7 +294,7 @@ namespace hsd
         }
     };
 
-    namespace string_literals
+    namespace string_view_literals
     {
         constexpr basic_string_view<char> operator""_sv(const char* str, usize size)
         {
@@ -246,7 +320,7 @@ namespace hsd
         {
             return basic_string_view<wchar>{str, size};
         }
-    } // namespace string_literals
+    } // namespace string_view_literals
 
     template <string_literal str>
     inline i32 _write(const basic_string_view<char>& val, pair<char*, usize> dest)
@@ -267,19 +341,19 @@ namespace hsd
     }
 
     template <string_literal str>
-    static inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
+    inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.data());
     }
 
     template <wstring_literal str>
-    static inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
+    inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.data());
     }
 
     template <wstring_literal str>
-    static inline void _print(const basic_string_view<wchar>& val, FILE* file_buf = stdout)
+    inline void _print(const basic_string_view<wchar>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%ls").data, val.data());
     }

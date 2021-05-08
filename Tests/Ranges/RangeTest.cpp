@@ -238,7 +238,7 @@ int main()
 
     {
         puts("hsd::unordered_map:");
-        using namespace hsd::string_literals;
+        using namespace hsd::string_view_literals;
         constexpr auto less = [](const auto& val){ return val.second < 5; };
         constexpr auto is_even = [](const auto& val){ return (val.second & 1) == 0; };
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };

@@ -3,7 +3,9 @@
 #include <Json.hpp>
 #include <Io.hpp>
 
-static const hsd::wchar s_test_string[] =
+using namespace hsd::string_view_literals;
+
+static constexpr auto s_test_string =
 LR"json({
     "Cow": "milk",
     "gold": 5000,
@@ -25,7 +27,7 @@ LR"json({
         "age": [10, 20]
     },
     "primitives": [null, true, false]
-})json";
+})json"_sv;
 
 void print_prefix(hsd::vector<hsd::wstring_view>& path);
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);

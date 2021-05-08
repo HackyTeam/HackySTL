@@ -100,7 +100,7 @@ namespace hsd
 
             if(auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
-                return static_cast<T>(p_base->_value);
+                return p_base->_value;
             }
             else
             {

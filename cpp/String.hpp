@@ -719,6 +719,34 @@ namespace hsd
         return val;
     }
     
+    namespace string_literals
+    {
+        inline basic_string<char> operator""_s(const char* str, usize size)
+        {
+            return basic_string<char>{str, size};
+        }
+
+        inline basic_string<char8> operator""_s(const char8* str, usize size)
+        {
+            return basic_string<char8>{str, size};
+        }
+
+        inline basic_string<char16> operator""_s(const char16* str, usize size)
+        {
+            return basic_string<char16>{str, size};
+        }
+
+        inline basic_string<char32> operator""_s(const char32* str, usize size)
+        {
+            return basic_string<char32>{str, size};
+        }
+
+        inline basic_string<wchar> operator""_s(const wchar* str, usize size)
+        {
+            return basic_string<wchar>{str, size};
+        }
+    } // namespace string_literals
+
     template <typename T = char>
     inline void _parse(pair<const char*, usize>& str, basic_string<char>& val)
     {

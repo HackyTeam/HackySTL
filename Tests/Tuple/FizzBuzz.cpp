@@ -20,7 +20,7 @@ struct FizzGame
     hsd::tuple<Ts...> bases;
     hsd::u32 x = 0;
 
-    FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}
+    FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}    
 
     void operator*()
     {

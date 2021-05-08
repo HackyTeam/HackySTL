@@ -5,7 +5,7 @@ static const char* test_filename = "Tests/Json/TestFile.json";
 
 int main() 
 {
-    using namespace hsd::string_literals;
+    using namespace hsd::string_view_literals;
     setlocale(LC_ALL, "en_US.UTF-8");
     hsd::JsonStream<hsd::wchar> lexer;
     

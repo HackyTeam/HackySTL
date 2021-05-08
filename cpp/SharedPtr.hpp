@@ -316,7 +316,8 @@ namespace hsd
 
                     if(*_count == 0)
                     {
-                        if (get() != nullptr) {
+                        if (get() != nullptr) 
+                        {
                             if constexpr (is_array<T>::value)
                             {
                                 for (usize i = 0, size = _value.get_size(); i < size; ++i)
@@ -411,6 +412,26 @@ namespace hsd
                 _value = move(rhs._value);
                 _count = move(rhs._count);
                 return *this;
+            }
+
+            constexpr bool operator==(const shared_ptr& rhs) const
+            {
+                return get() == rhs.get();
+            }
+
+            constexpr bool operator!=(const shared_ptr& rhs) const
+            {
+                return get() == rhs.get();
+            }
+
+            constexpr bool operator==(NullType) const
+            {
+                return get() == nullptr;
+            }
+
+            constexpr bool operator!=(NullType) const
+            {
+                return get() == nullptr;
             }
 
             constexpr auto* get()
@@ -918,6 +939,26 @@ namespace hsd
                 _value = move(rhs._value);
                 _count = move(rhs._count);
                 return *this;
+            }
+
+            constexpr bool operator==(const shared_ptr& rhs) const
+            {
+                return get() == rhs.get();
+            }
+
+            constexpr bool operator!=(const shared_ptr& rhs) const
+            {
+                return get() == rhs.get();
+            }
+
+            constexpr bool operator==(NullType) const
+            {
+                return get() == nullptr;
+            }
+
+            constexpr bool operator!=(NullType) const
+            {
+                return get() == nullptr;
             }
 
             constexpr auto* get()

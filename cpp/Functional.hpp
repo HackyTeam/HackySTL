@@ -3,6 +3,7 @@
 #include "Tuple.hpp"
 #include "Result.hpp"
 #include "Concepts.hpp"
+#include "SharedPtr.hpp"
 
 namespace hsd
 {
@@ -65,36 +66,27 @@ namespace hsd
             }
         };
         
-        callable_base* _func_impl = nullptr;
+        safe_shared_ptr<callable_base> _func_impl{};
 
         HSD_CONSTEXPR void reset()
         {
-            if(_func_impl != nullptr)
-            {
-                if(_func_impl->_instances == 1)
-                {
-                    delete _func_impl;
-                    _func_impl = nullptr;
-                }
-                else
-                    _func_impl->_instances--;
-            }
+            _func_impl = nullptr;
         }
+
     public:
-        function() = default;
+        HSD_CONSTEXPR function() = default;
+        HSD_CONSTEXPR function(NullType) {}
 
         template <typename Func>
         requires (func_detail::IsFunction<Func, ResultType, Args...>)
         HSD_CONSTEXPR function(Func);
 
-        constexpr function(const function&);
+        HSD_CONSTEXPR function(const function&);
 
-        constexpr function(function&& other)
+        HSD_CONSTEXPR function(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
         }
-
-        constexpr function(NullType) {}
 
         HSD_CONSTEXPR ~function()
         {
@@ -105,14 +97,10 @@ namespace hsd
         {
             reset();
             _func_impl = other._func_impl;
-            
-            if(_func_impl != nullptr)
-                _func_impl->instances++;
-            
             return *this;
         }
 
-        constexpr function& operator=(function&& other)
+        HSD_CONSTEXPR function& operator=(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
             return *this;
@@ -123,7 +111,7 @@ namespace hsd
         HSD_CONSTEXPR function& operator=(Func&& func)
         {
             reset();
-            _func_impl = new callable<Func>(forward<Func>(func));
+            _func_impl = make_safe_shared<callable<Func>>(forward<Func>(func));
             return *this;
         }
 
@@ -211,12 +199,9 @@ namespace hsd
     }
 
     template < typename Res, typename... Args >
-    constexpr function<Res(Args...)>::function(const function& other)
+    HSD_CONSTEXPR function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
-        
-        if(_func_impl != nullptr)
-            _func_impl->_instances++;
     }
 
     template < typename Res, typename... Args >
@@ -224,7 +209,7 @@ namespace hsd
     requires (func_detail::IsFunction<Func, Res, Args...>)
     HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
     {
-        _func_impl = new callable<Func>(func);
+        _func_impl = make_safe_shared<callable<Func>>(func);
     }
 
     template < typename Func, typename T, typename... Args >

@@ -47,7 +47,6 @@ namespace hsd
     private:
         struct callable_base
         {
-            usize _instances = 1;
             virtual ResultType operator()(Args&&...) = 0;
             virtual ~callable_base() {}
         };

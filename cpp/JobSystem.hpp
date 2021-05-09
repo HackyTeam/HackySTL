@@ -8,12 +8,12 @@ namespace hsd
 {
     struct Job;
 
-    using job_fn = void(*)(Job);
+    using job_fn = function<void(Job)>;
 
     // A Job. Has a function ptr and a pointer to data to pass as args
     struct Job
     {
-        job_fn task;
+        job_fn task = nullptr;
         void** data = nullptr;
 
     };
@@ -58,15 +58,18 @@ namespace hsd
                 {
                     if(_high_priority.try_pop(_job))
                     {
-                        _job.task(_job);
+                        _job.task(_job).unwrap();
+                        _counter--;
                     }
                     else if(_normal_priority.try_pop(_job))
                     {
-                        _job.task(_job);
+                        _job.task(_job).unwrap();
+                        _counter--;
                     }
                     else if(_low_priority.try_pop(_job))
                     {
-                        _job.task(_job);
+                        _job.task(_job).unwrap();
+                        _counter--;
                     }
                 }
             }
@@ -78,9 +81,9 @@ namespace hsd
                 _low_priority(512)
             {
                 _running.store(true);
-                auto _numcores = thread::hardware_concurrency(); 
+                usize _numcores = thread::hardware_concurrency(); 
 
-                for(auto _index = 0; _index < _numcores; _index++)
+                for(usize _index = 0; _index < _numcores; _index++)
                 {
                     _threads.emplace_back(bind(&JobSystem::thread_function, this));
                 }
@@ -97,14 +100,14 @@ namespace hsd
             }
 
             //Returns the id of the caller from the threadpool index [0, max), and returns -1 if the caller isn't in the threadpool
-            usize get_current_thread() const
+            isize get_current_thread() const
             {
                 auto _this_thread_id = this_thread::get_id();
                 for(usize _index = 0; _index < _threads.size(); _index++)
                 {
                     if(_this_thread_id == _threads[_index].get_id())
                     {
-                        return _index;
+                        return static_cast<isize>(_index);
                     }
                 }
 
@@ -121,20 +124,20 @@ namespace hsd
             }
 
             // Schedules a job to be added to the queue. Optionally accepts a priority for the job
-            void schedule_job(Job& job, PRIO priority = PRIO::NORM)
+            void schedule_job(Job job, PRIO priority = PRIO::NORM)
             {
                 switch(priority)
                 {
                     case PRIO::HIGH:
-                        _high_priority.emplace(forward<Job>(job));
+                        _high_priority.emplace(move(job));
                         _counter++;
                         return;
                     case PRIO::NORM:
-                        _normal_priority.emplace(forward<Job>(job));
+                        _normal_priority.emplace(move(job));
                         _counter++;
                         return;
                     case PRIO::LOW:
-                        _low_priority.emplace(forward<Job>(job));
+                        _low_priority.emplace(move(job));
                         _counter++;
                         return;
                     default:
@@ -154,17 +157,17 @@ namespace hsd
                         Job _job;
                         if(_high_priority.try_pop(_job))
                         {
-                            _job.task(_job);
+                            _job.task(_job).unwrap();
                             _counter--;
                         }
                         else if(_normal_priority.try_pop(_job))
                         {
-                            _job.task(_job);
+                            _job.task(_job).unwrap();
                             _counter--;
                         }
                         else if(_low_priority.try_pop(_job))
                         {
-                            _job.task(_job);
+                            _job.task(_job).unwrap();
                             _counter--;
                         }
                     }
@@ -174,7 +177,9 @@ namespace hsd
         };
     }
 
-    // Global Job System. It is not recommended to make a new one, as the threads last for the lifetime of the program (global)
+    // Global Job System. It is not recommended
+    // to make a new one, as the threads last
+    // for the lifetime of the program (global)
     static inline priv::JobSystem job_system;
     
 }

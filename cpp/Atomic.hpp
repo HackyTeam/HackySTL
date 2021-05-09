@@ -1,3 +1,4 @@
+#pragma once
 #include "TypeTraits.hpp"
 
 #include <stddef.h>

@@ -4,7 +4,9 @@
 
 void print()
 {
-    hsd::io::print<L"hello, and other words\n">();
+    hsd::io::print<L"hello, and other words {}\n">(
+        hsd::job_system.get_current_thread()
+    );
 }
 
 // Example function that takes args
@@ -14,7 +16,7 @@ void foo(int a, float b)
 
     z = (a & (a + 1)) + b - z/a;
     
-    hsd::io::print<L"Result: {}">(z);
+    hsd::io::print<L"Result: {}\n">(z);
 
     return;
 }
@@ -28,7 +30,7 @@ int main()
     });
 
     // Schedules 10 jobs
-    for(int i = 0; i < 10; i++)
+    for(hsd::i32 i = 0; i < 10; i++)
     {
         hsd::job_system.schedule_job(j);
     }
@@ -37,25 +39,24 @@ int main()
     hsd::job_system.wait();
 
 //                              \\//
-
     //Example where args are passed
-    int x = 10;
-    float y = 5.942f;
+    hsd::i32 x = 10;
+    hsd::f32 y = 5.942f;
 
     void* data[] = { &x, &y };
 
     j = hsd::job_system.create_job([](hsd::Job j)    // Technically could just be a fnptr, but a lambda is more readable here
     {
         // Get the variables from the data array
-        auto& s = *static_cast<int*>(j.data[0]);    //Can be mutable
-        auto t = *static_cast<float*>(j.data[1]);   // Or a copy
+        auto& s = *static_cast<hsd::i32*>(j.data[0]);    //Can be mutable
+        auto t = *static_cast<hsd::f32*>(j.data[1]);   // Or a copy
 
         // Passing the values into the function
         foo(s, t);
 
     }, data);
 
-    for(int i = 0; i < 10; ++i)
+    for(hsd::i32 i = 0; i < 10; ++i)
     {
         hsd::job_system.schedule_job(j);
     }

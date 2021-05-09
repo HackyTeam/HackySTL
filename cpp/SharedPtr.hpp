@@ -303,7 +303,7 @@ namespace hsd
         {
         private:
             shared_detail::storage<T, Allocator> _value;
-            shared_detail::counter<Allocator> _count;
+            shared_detail::counter<Allocator> _count{};
 
             template <typename U, template <typename> typename Alloc>
             friend class shared_ptr;
@@ -750,7 +750,7 @@ namespace hsd
                     *this->_data = 1;
                 }
 
-                HSD_CONSTEXPR counter(usize* ptr)
+                HSD_CONSTEXPR counter(atomic_usize* ptr)
                 requires (std::is_default_constructible_v<Allocator<usize>>)
                 {
                     this->_data = ptr;
@@ -831,7 +831,7 @@ namespace hsd
         {
         private:
             shared_detail::storage<T, Allocator> _value;
-            shared_detail::counter<Allocator> _count;
+            shared_detail::counter<Allocator> _count{};
 
             template <typename U, template <typename> typename Alloc>
             friend class shared_ptr;

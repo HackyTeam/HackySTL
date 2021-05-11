@@ -93,21 +93,21 @@ namespace hsd
 
             for(;;)
             {
-                auto& slot = _allocation.at_unchecked(mod(head));
+                auto& slot = _allocation[mod(head)];
 
-                if(turn(head) * 2 == slot.ticket.load())
+                if(turn(head) * 2 == slot.ticket.load(hsd::memory_order_acquire))
                 {
                     if(_head.compare_exchange_strong(head, head + 1))
                     {
                         slot.storage = forward<T>(value);
-                        slot.ticket.store(turn(head) * 2 + 1);
+                        slot.ticket.store(turn(head) * 2 + 1, hsd::memory_order_release);
                         return true;
                     }
                 }
                 else
                 {
                     auto const prevHead = head;
-                    head = _head.load();
+                    head = _head.load(hsd::memory_order_acquire);
 
                     if(head == prevHead)
                     {
@@ -125,22 +125,22 @@ namespace hsd
 
             for(;;)
             {
-                auto& slot = _allocation.at_unchecked(mod(tail));
+                auto& slot = _allocation[mod(tail)];
 
-                if(turn(tail) * 2 + 1 ==  slot.ticket.load())
+                if(turn(tail) * 2 + 1 ==  slot.ticket.load(hsd::memory_order_acquire))
                 {
                     if(_tail.compare_exchange_strong(tail, tail + 1))
                     {
                         value = move(slot.storage);
                         slot.destroy();
-                        slot.ticket.store(turn(tail) * 2 + 2);
+                        slot.ticket.store(turn(tail) * 2 + 2, hsd::memory_order_release);
                         return true;
                     }
                 }
                 else
                 {
                     auto const prevTail = tail;
-                    tail = _tail.load();
+                    tail = _tail.load(hsd::memory_order_acquire);
 
                     if(tail == prevTail)
                     {
@@ -155,10 +155,10 @@ namespace hsd
             auto const head = _head.fetch_add(1);
             auto& slot = _allocation.at(mod(head)).unwrap();
 
-            while(turn(head) * 2 != slot.ticket.load());
+            while(turn(head) * 2 != slot.ticket.load(hsd::memory_order_acquire));
             
             slot.storage = forward<T>(value);
-            slot.ticket.store(turn(head) * 2 + 1);
+            slot.ticket.store(turn(head) * 2 + 1, hsd::memory_order_release);
         }
 
         void pop(T& value)
@@ -166,11 +166,11 @@ namespace hsd
             auto const tail = _tail.fetch_add(1);
             auto& slot = _allocation.at(mod(tail)).unwrap();
 
-            while(turn(tail) * 2 + 1 != slot.ticket.load());
+            while(turn(tail) * 2 + 1 != slot.ticket.load(hsd::memory_order_acquire));
 
             value = move(slot.storage);
             slot.destroy();
-            slot.ticket.store(turn(tail) * 2 + 2);
+            slot.ticket.store(turn(tail) * 2 + 2, hsd::memory_order_release);
         }
 
     private:

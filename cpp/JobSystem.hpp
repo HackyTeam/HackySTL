@@ -32,9 +32,7 @@ namespace hsd
     {
         HIGH = 0,
         NORM,
-        LOW,
-
-        NUM_PRIORITIES = 3
+        LOW
     };
 
     namespace priv
@@ -140,10 +138,9 @@ namespace hsd
                         _low_priority.emplace(move(job));
                         _counter++;
                         return;
-                    default:
-                        return;
                 }
             }
+
             // Wait until the number of remaining tasks
             // is equal to or below the `target`, the
             // second argument will use the caller thread
@@ -181,5 +178,4 @@ namespace hsd
     // to make a new one, as the threads last
     // for the lifetime of the program (global)
     static inline priv::JobSystem job_system;
-    
 }

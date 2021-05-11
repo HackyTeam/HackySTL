@@ -7,7 +7,7 @@
 namespace hsd
 {
 
-	enum class memory_order : int
+	enum class memory_order : i32
 	{
 		relaxed = __ATOMIC_RELAXED,
 		consume = __ATOMIC_CONSUME,

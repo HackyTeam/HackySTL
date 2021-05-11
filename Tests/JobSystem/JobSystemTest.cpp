@@ -14,7 +14,7 @@ void foo(int a, float b)
 {
     auto z = a / b;
 
-    z = (a & (a + 1)) + b - z/a;
+    z = (a & (a + 1)) + b - z / a;
     
     hsd::io::print<L"Result: {}\n">(z);
 
@@ -45,16 +45,19 @@ int main()
 
     void* data[] = { &x, &y };
 
-    j = hsd::job_system.create_job([](hsd::Job j)    // Technically could just be a fnptr, but a lambda is more readable here
-    {
-        // Get the variables from the data array
-        auto& s = *static_cast<hsd::i32*>(j.data[0]);    //Can be mutable
-        auto t = *static_cast<hsd::f32*>(j.data[1]);   // Or a copy
+    j = hsd::job_system.create_job(
+        // Technically could just be a fnptr, but a lambda is more readable here
+        [](hsd::Job j)    
+        {
+            // Get the variables from the data array
+            auto& s = *static_cast<hsd::i32*>(j.data[0]);  // Can be mutable
+            auto t = *static_cast<hsd::f32*>(j.data[1]);   // Or a copy
 
-        // Passing the values into the function
-        foo(s, t);
+            // Passing the values into the function
+            foo(s, t);
 
-    }, data);
+        }, data
+    );
 
     for(hsd::i32 i = 0; i < 10; ++i)
     {

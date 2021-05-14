@@ -127,14 +127,18 @@ namespace hsd
 
         bool only_write()
         {
-            return (cstring::compare(_file_mode, "w") == 0
-            || cstring::compare(_file_mode, "wb") == 0);
+            return (
+                cstring::compare(_file_mode, "w") == 0 || 
+                cstring::compare(_file_mode, "wb") == 0
+            );
         }
 
         bool only_read()
         {
-            return (cstring::compare(_file_mode, "r") == 0
-            || cstring::compare(_file_mode, "rb") == 0);
+            return (
+                cstring::compare(_file_mode, "r") == 0 || 
+                cstring::compare(_file_mode, "rb") == 0
+            );
         }
 
     public:

@@ -33,9 +33,9 @@ Reimplementation of C's `string.h` header for string manipulation using C++20 fe
 | :------- | :-------- | :---------- | :---------- |
 | `iswhitespace` | `CharType ch` | `bool` | Checks if `ch` is a whitespace character by the unicode standards |
 | `find` | `const CharType* str`, `const CharType* substr` | `const CharType*` | Searches through `str` for the first `substr` occurrences |
-| `find` | `const CharType* str`, `CharType* letter` | `const CharType*` | Searches through `str` for the first `letter` occurrences |
+| `find` | `const CharType* str`, `CharType letter` | `const CharType*` | Searches through `str` for the first `letter` occurrences |
 | `find_rev` | `const CharType* str`, `const CharType* substr` | `const CharType*` | Searches through `str` for the first `substr` occurrences in reverse |
-| `find_rev` | `const CharType* str`, `CharType* letter` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse |
+| `find_rev` | `const CharType* str`, `CharType letter` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse |
 | `find_rev` | `const CharType* str`, `const CharType* substr`, `usize pos` | `const CharType*` | Searches through `str` for the first `substr` occurrences in reverse from a given position |
 | `find_rev` | `const CharType* str`, `CharType letter`, `usize pos` | `const CharType*` | Searches through `str` for the first `letter` occurrences in reverse from a give position |
 | `length` | `const CharType* str` | `usize` | Measures the length of the string from 0 to where the null terminator is |
@@ -89,12 +89,26 @@ struct PseudoString
 int main()
 {
     PseudoString test = "Test string";
-    hsd::io::print<"Finding \'r\' in \"{}\": {}\n">(test._cstr, hsd::cstring::find(test._cstr, 'r'));
-    hsd::io::print<"Finding \"str\" in \"{}\": {}\n">(test._cstr, hsd::cstring::find(test._cstr, "str"));
-    hsd::io::print<"Finding \'r\' in reverse in \"{}\": \"{}\"\n">(test._cstr, hsd::cstring::find_rev(test._cstr, 'r'));
-    hsd::io::print<"Finding \"str\"in reverse in \"{}\": \"{}\"\n">(test._cstr, hsd::cstring::find_rev(test._cstr, "str"));
-    hsd::io::print<"Lowering the string: \"{}\"\n">(hsd::cstring::lower(test._cstr));
-    hsd::io::print<"Uprearing the string: \"{}\"\n">(hsd::cstring::upper(test._cstr));
-    hsd::io::print<"Reversing the string: \"{}\"\n">(hsd::cstring::reverse(test._cstr, _test._length + 1));
+    hsd::io::print<"Finding \'r\' in \"{}\": {}\n">(
+        test._cstr, hsd::cstring::find(test._cstr, 'r')
+    );
+    hsd::io::print<"Finding \"str\" in \"{}\": {}\n">(
+        test._cstr, hsd::cstring::find(test._cstr, "str")
+    );
+    hsd::io::print<"Finding \'r\' in reverse in \"{}\": \"{}\"\n">(
+        test._cstr, hsd::cstring::find_rev(test._cstr, 'r')
+    );
+    hsd::io::print<"Finding \"str\"in reverse in \"{}\": \"{}\"\n">(
+        test._cstr, hsd::cstring::find_rev(test._cstr, "str")
+    );
+    hsd::io::print<"Lowering the string: \"{}\"\n">(
+        hsd::cstring::lower(test._cstr)
+    );
+    hsd::io::print<"Uprearing the string: \"{}\"\n">(
+        hsd::cstring::upper(test._cstr)
+    );
+    hsd::io::print<"Reversing the string: \"{}\"\n">(
+        hsd::cstring::reverse(test._cstr, _test._length + 1)
+    );
 }
 ```

@@ -102,7 +102,7 @@ namespace hsd
 
         void print_stack()
         {
-            for(auto it = rbegin(); it != rend(); it--)
+            for(auto it = _stack.rbegin(); it != _stack.rend(); it--)
             {
                 fprintf(
                     stderr, "Info: %s:%zu\n\tFunction: %s\n",
@@ -115,16 +115,6 @@ namespace hsd
         detail::source_location& get() noexcept
         {
             return _stack.back();
-        }
-
-        stack_iterator rbegin() noexcept
-        {
-            return _stack.end() - 1;
-        }
-
-        stack_iterator rend() noexcept
-        {
-            return _stack.begin() - 1;
         }
     };
 
@@ -163,16 +153,6 @@ namespace hsd
         detail::profiler_value& get() noexcept
         {
             return _stack.back();
-        }
-
-        iterator rbegin() noexcept
-        {
-            return _stack.end() - 1;
-        }
-
-        iterator rend() noexcept
-        {
-            return _stack.begin() - 1;
         }
     };
 

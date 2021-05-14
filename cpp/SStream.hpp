@@ -135,36 +135,6 @@ namespace hsd
         {
             return _data;
         }
-    
-        iterator begin()
-        {
-            return data();
-        }
-
-        iterator begin() const
-        {
-            return cbegin();
-        }
-
-        iterator end()
-        {
-            return begin() + size();
-        }
-
-        const_iterator end() const
-        {
-            return cend();
-        }
-
-        const_iterator cbegin() const
-        {
-            return c_str();
-        }
-
-        const_iterator cend() const
-        {
-            return cbegin() + size();
-        }
     };
     
     using sstream = basic_sstream<char>;

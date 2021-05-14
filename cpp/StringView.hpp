@@ -281,10 +281,18 @@ namespace hsd
             return _data + _size;
         }
 
-        // TODO: rbegin, rend (requires hsd::reverse_iterator)
+        constexpr const_iterator rbegin() const
+        {
+            return _data + _size - 1;
+        }
+
+        constexpr const_iterator rend() const
+        {
+            return _data - 1;
+        }
 
         constexpr Result<basic_string_view, out_of_range>
-        substring(usize start, usize len) const
+        sub_string(usize start, usize len) const
         {
             if (start >= _size)
                 return out_of_range{};

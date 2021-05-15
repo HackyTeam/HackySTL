@@ -165,4 +165,28 @@ int main()
         hsd::f64 val2 = std::atanh(0.22);
         hsd::io::print<"atanh: {} {}\n">(val1, val2);
     }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::lgamma(5.0);
+        hsd::f64 val2 = std::lgamma(5.0);
+        hsd::io::print<"lgamma: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::tgamma(5.33);
+        hsd::f64 val2 = std::tgamma(5.33);
+        hsd::io::print<"tgamma: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::lbeta(5.0, 3.0);
+        hsd::f64 val2 = std::log(std::beta(5.0, 3.0));
+        hsd::io::print<"lbeta: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::beta(5.0, 7.0);
+        hsd::f64 val2 = std::beta(5.0, 7.0);
+        hsd::io::print<"beta: {} {}\n">(val1, val2);
+    }
 }

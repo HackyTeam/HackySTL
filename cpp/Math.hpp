@@ -17,6 +17,7 @@ namespace hsd
         {
             static constexpr f128 pi = 3.14159265358979323846264338327950288l;
             static constexpr f128 euler = 2.71828182845904523536028747135266249l;
+            static constexpr f128 log_sqrt_pi = 0.91893853320467274178032973640561763l;
             static constexpr f128 ln_table[9] = {
                 0.6931471805599453094172321214581765680755l,
                 1.0986122886681096913952452369225257046475l,
@@ -48,12 +49,16 @@ namespace hsd
 
         namespace constexpr_math
         {
+            template <IsNumber T>
+            static constexpr auto factorial(usize size);
             template <IsFloat T>
             static constexpr auto floor(const T& value);
             template <IsNumber T>
             static constexpr auto exp(T value);
             template <IsNumber T>
             static constexpr auto log(T value);
+            template <IsNumber T>
+            static constexpr auto lgamma(const T& value);
 
             namespace ctmath_detail
             {
@@ -848,7 +853,130 @@ namespace hsd
                     }
                         
                 }
+
+                template <IsFloat T>
+                static constexpr auto lgamma_coef_term(const T& value)
+                {
+                    return (     
+                        0.99999999999999709182l                     + 
+                        57.156235665862923517l      / (value + 1)   -
+                        59.597960355475491248l      / (value + 2)   + 
+                        14.136097974741747174l      / (value + 3)   -
+                        0.49191381609762019978l     / (value + 4)   + 
+                        0.33994649984811888699e-4l  / (value + 5)   +
+                        0.46523628927048575665e-4l  / (value + 6)   - 
+                        0.98374475304879564677e-4l  / (value + 7)   +
+                        0.15808870322491248884e-3l  / (value + 8)   - 
+                        0.21026444172410488319e-3l  / (value + 9)   +
+                        0.21743961811521264320e-3l  / (value + 10)  - 
+                        0.16431810653676389022e-3l  / (value + 11)  +
+                        0.84418223983852743293e-4l  / (value + 12)  -
+                        0.26190838401581408670e-4l  / (value + 13)  +
+                        0.36899182659531622704e-5L  / (value + 14) 
+                    );  
+                }
+                
+                template <IsFloat T>
+                static constexpr auto lgamma_term_2(const T& value)
+                {
+                    return (
+                        static_cast<T>(constants::log_sqrt_pi) + 
+                        log(static_cast<T>(lgamma_coef_term(value)))
+                    );
+                }
+                
+                template <IsNumber T>
+                static constexpr auto lgamma_term_1(const T& value)
+                {   
+                    constexpr f128 _key_gamma = 5.2421875l;
+                    return ( 
+                        (value + static_cast<T>(0.5l)) * 
+                        log(value + static_cast<T>(_key_gamma)) - 
+                        (value + static_cast<T>(_key_gamma))
+                    );
+                }
+                
+                template <IsFloat T>
+                static constexpr auto lgamma_begin(const T& value)
+                {   
+                    return lgamma_term_1(value) + lgamma_term_2(value);
+                }
+                
+                template <IsFloat T>
+                static constexpr auto lgamma_check(const T& value)
+                {
+                    if(value == limits<T>::nan)
+                    {
+                        return value;
+                    }
+                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    {
+                        return static_cast<T>(0);
+                    }
+                    else if(limits<T>::epsilon > value)
+                    {
+                        return limits<T>::infinity;
+                    }
+                    else
+                    {
+                        return lgamma_begin(value - static_cast<T>(1));
+                    }
+                }
+
+                template <IsFloat T>
+                static constexpr auto tgamma_check(const T& value)
+                {
+                    if(value == limits<T>::nan)
+                    {
+                        return value;
+                    }
+                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    {
+                        return static_cast<T>(1);
+                    }
+                    else if(limits<T>::epsilon > abs(value))
+                    {
+                        return limits<T>::infinity;
+                    }
+                    else if(value < static_cast<T>(0))
+                    { 
+                        if(limits<T>::epsilon > abs(value - find_whole(value)))
+                        {
+                            return limits<T>::nan;
+                        }
+                        else
+                        {
+                            return tgamma_check(
+                                value + static_cast<T>(1)
+                            ) / value;
+                        }
+                    }
+                    else
+                    {
+                        if(static_cast<u64>(value) == value)
+                        {
+                            return factorial<T>(
+                                static_cast<usize>(value) - 1
+                            );
+                        }
+                        else
+                        {
+                            return exp(lgamma(value));
+                        }
+                    }
+                }
             } // namespace ctmath_detail
+
+            template <IsNumber T>
+            static constexpr auto factorial(usize size)
+            {
+                T _result = 1;
+
+                for(usize _index = size; _index >= 2; _index--)
+                    _result *= static_cast<T>(_index);
+
+                return _result;
+            }
 
             template <IsFloat T>
             static constexpr auto mod(const T& value, const T& factor)
@@ -1188,6 +1316,33 @@ namespace hsd
             static constexpr auto atanh(const T& value)
             {
                 return ctmath_detail::atanh_check(value);
+            }
+
+            template <IsNumber T>
+            static constexpr auto lgamma(const T& value)
+            {
+                return ctmath_detail::lgamma_check(value);
+            }
+
+            template <IsNumber T>
+            static constexpr auto tgamma(const T& value)
+            {
+                return ctmath_detail::tgamma_check(value);
+            }
+
+            template <IsNumber T1, IsNumber T2>
+            static constexpr auto lbeta(const T1& a, const T2& b)
+            {
+                using RetType = std::common_type_t<T1, T2>;
+                return static_cast<RetType>(
+                    (lgamma(a) + lgamma(b)) - lgamma(a + b)
+                );
+            }
+
+            template <IsNumber T1, IsNumber T2>
+            static constexpr auto beta(const T1& a, const T2& b)
+            {
+                return exp(lbeta(a, b));
             }
         } // namespace constexpr_math
 
@@ -1552,6 +1707,58 @@ namespace hsd
             else
             {
                 return std::atanh(value);
+            }
+        }
+
+        template <IsNumber T>
+        static constexpr auto lgamma(T value)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::lgamma(value);
+            }
+            else
+            {
+                return std::lgamma(value);
+            }
+        }
+
+        template <IsNumber T>
+        static constexpr auto tgamma(T value)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::tgamma(value);
+            }
+            else
+            {
+                return std::tgamma(value);
+            }
+        }
+
+        template <IsNumber T1, IsNumber T2>
+        static constexpr auto lbeta(const T1& a, const T2& b)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::lbeta(a, b);
+            }
+            else
+            {
+                return std::log(std::beta(a, b));
+            }
+        }
+
+        template <IsNumber T1, IsNumber T2>
+        static constexpr auto beta(const T1& a, const T2& b)
+        {
+            if(std::is_constant_evaluated())
+            {
+                return constexpr_math::beta(a, b);
+            }
+            else
+            {
+                return std::beta(a, b);
             }
         }
     } // namespace math

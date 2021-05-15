@@ -219,8 +219,11 @@ namespace hsd
 			#endif
 		}
 
-		void detach() 
+		Result<void, runtime_error> detach() 
 		{
+			if (!joinable())
+				return runtime_error{"Current Thread cannot be detached"};
+
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_detach(_handle);
 			_handle = 0;
@@ -230,10 +233,14 @@ namespace hsd
 			#endif
 			
 			_id = {};
+			return {};
 		}
 
-		void join() 
+		Result<void, runtime_error> join() 
 		{
+			if (!joinable())
+				return runtime_error{"Current Thread cannot be joined"};
+
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_join(_handle, nullptr);
 			_handle = 0;
@@ -244,6 +251,7 @@ namespace hsd
 			#endif
 
 			_id = {};
+			return {};
 		}
 	
 	private:

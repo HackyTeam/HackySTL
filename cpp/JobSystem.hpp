@@ -93,7 +93,7 @@ namespace hsd
 
                 for(auto& _thread : _threads)
                 {
-                    _thread.join();
+                    _thread.join().unwrap();
                 }
             }
 

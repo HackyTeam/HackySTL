@@ -129,4 +129,40 @@ int main()
         hsd::f64 val2 = std::atan2(0.0, -0.0001);
         hsd::io::print<"atan2: {} {}\n">(val1, val2);
     }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::sinh(5.0);
+        hsd::f64 val2 = std::sinh(5.0);
+        hsd::io::print<"sinh: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::cosh(5.0);
+        hsd::f64 val2 = std::cosh(5.0);
+        hsd::io::print<"cosh: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::tanh(5.0);
+        hsd::f64 val2 = std::tanh(5.0);
+        hsd::io::print<"tanh: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::asinh(5.0);
+        hsd::f64 val2 = std::asinh(5.0);
+        hsd::io::print<"asinh: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::acosh(5.0);
+        hsd::f64 val2 = std::acosh(5.0);
+        hsd::io::print<"acosh: {} {}\n">(val1, val2);
+    }
+
+    {
+        constexpr hsd::f64 val1 = hsd::math::atanh(0.22);
+        hsd::f64 val2 = std::atanh(0.22);
+        hsd::io::print<"atanh: {} {}\n">(val1, val2);
+    }
 }

@@ -21,13 +21,13 @@ int main()
 {
     hsd::vector<hsd::thread> vec;
 
-    for (int index = 0; index < 10; index++)
+    for (int index = 0; index < 3; index++)
     {
         vec.emplace_back(thread_func, index);
     }
 
     for (auto& thread_val : vec)
     {
-        thread_val.join();
+        thread_val.join().unwrap();
     }
 }

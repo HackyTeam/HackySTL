@@ -21,5 +21,5 @@ public:
 int main() 
 {
 	hsd::thread t{hsd::bind(&bar::foo, bar{211, 3223})};
-	t.join();
+	t.join().unwrap();
 }

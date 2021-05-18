@@ -129,7 +129,7 @@ namespace hsd
 				static DWORD enter_thread(void* arg)
 				#endif
 				{
-					auto td = hsd::move(*reinterpret_cast<thread_data*>(arg));
+					auto td = hsd::move(*bit_cast<thread_data*>(arg));
 
 					// Tell our parent we are ready and copied the data
 					#if defined(HSD_PLATFORM_POSIX)

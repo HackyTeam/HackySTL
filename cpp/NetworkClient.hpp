@@ -54,9 +54,9 @@ namespace hsd
                 inline sockaddr* get_hint()
                 {
                     if(_protocol == net::protocol_type::ipv4)
-                        return reinterpret_cast<sockaddr*>(&_hintv4);
+                        return bit_cast<sockaddr*>(&_hintv4);
                     
-                    return reinterpret_cast<sockaddr*>(&_hintv6);
+                    return bit_cast<sockaddr*>(&_hintv6);
                 }
 
                 inline void switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
@@ -69,7 +69,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
                     }
                     else
@@ -77,7 +77,7 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                         _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
                     }
                 }
@@ -118,12 +118,12 @@ namespace hsd
                 if(_protocol == net::protocol_type::ipv4)
                 {
                     _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, reinterpret_cast<sockaddr*>(&_hintv4), &_len);
+                        4096, 0, bit_cast<sockaddr*>(&_hintv4), &_len);
                 }
                 else
                 {
                     _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, reinterpret_cast<sockaddr*>(&_hintv6), &_len);
+                        4096, 0, bit_cast<sockaddr*>(&_hintv6), &_len);
                 }
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
@@ -195,7 +195,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        connect(_sock, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                     }
                     else
                     {
@@ -203,7 +203,7 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        connect(_sock, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                     }
                 }
 
@@ -237,7 +237,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        return connect(_sock, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        return connect(_sock, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                     }
                     else
                     {
@@ -245,7 +245,7 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        return connect(_sock, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        return connect(_sock, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                     }
 
                     return -1;

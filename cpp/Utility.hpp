@@ -56,12 +56,18 @@ namespace hsd
         return dest;
     }
 
+    template <typename To>
+    [[nodiscard]] static constexpr auto bit_cast(auto from)
+    {
+        return __builtin_bit_cast(To, from);
+    }
+
     template <typename Type>
     static constexpr const Type* addressof(const Type& value)
     {
         if constexpr(requires{value.operator&();})
         {
-            return reinterpret_cast<Type*>(
+            return bit_cast<Type*>(
                 &reinterpret_cast<char&>(
                     const_cast<Type&>(value)
                 )
@@ -78,7 +84,7 @@ namespace hsd
     {
         if constexpr(requires {value.operator&();})
         {
-            return reinterpret_cast<Type*>(
+            return bit_cast<Type*>(
                 &reinterpret_cast<char&>(
                     const_cast<Type&>(value)
                 )
@@ -145,8 +151,15 @@ namespace hsd
     }
 
     template < typename Elem, usize Count >
-    static constexpr Elem* end(Elem (&arr)[Count])
+    static constexpr const Elem* begin(const Elem (&arr)[Count])
     {
-        return static_cast<Elem*>(arr) + Count;
+        return static_cast<const Elem*>(arr);
+    }
+
+
+    template < typename Elem, usize Count >
+    static constexpr const Elem* end(const Elem (&arr)[Count])
+    {
+        return static_cast<const Elem*>(arr) + Count;
     }
 }

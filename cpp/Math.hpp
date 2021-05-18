@@ -76,6 +76,29 @@ namespace hsd
                 }
 
                 template <IsFloat T>
+                static constexpr bool sign_bit(const T& value)
+                {
+                    if constexpr(IsSame<T, f32>)
+                    {
+                        return bit_cast<u32>(value) >> 31;
+                    }
+                    else if constexpr(IsSame<T, f64>)
+                    {
+                        return bit_cast<u64>(value) >> 63;
+                    }
+                    else
+                    {
+                        struct upair
+                        {
+                            hsd::u64 first;
+                            hsd::u64 second;
+                        };
+
+                        return bit_cast<upair>(value).second >> 15;
+                    }
+                }
+
+                template <IsFloat T>
                 static constexpr auto find_fraction(const T& value)
                 {
                     if(math::abs(value - constexpr_math::floor(value)) >= static_cast<T>(0.5))
@@ -653,9 +676,9 @@ namespace hsd
                     {
                         if(limits<T>::epsilon > abs(y))
                         {
-                            if(y < static_cast<T>(0))
+                            if(y == static_cast<T>(0) && sign_bit(y))
                             {
-                                if(x < static_cast<T>(0))
+                                if(x == static_cast<T>(0) && sign_bit(x))
                                 {
                                     return -static_cast<T>(pi / 2);
                                 }
@@ -664,7 +687,7 @@ namespace hsd
                                     return -static_cast<T>(0);
                                 }
                             }
-                            else if(x < static_cast<T>(0))
+                            else if(x == static_cast<T>(0) && sign_bit(x))
                             {
                                 return static_cast<T>(pi / 2);
                             }

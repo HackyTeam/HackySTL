@@ -64,7 +64,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                     }
                     else
                     {
@@ -72,7 +72,7 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                     }
                 }
             };
@@ -115,12 +115,12 @@ namespace hsd
                 if(_protocol == net::protocol_type::ipv4)
                 {
                     _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, reinterpret_cast<sockaddr*>(&_hintv4), &_len);
+                        4096, 0, bit_cast<sockaddr*>(&_hintv4), &_len);
                 }
                 else
                 {
                     _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, reinterpret_cast<sockaddr*>(&_hintv6), &_len);
+                        4096, 0, bit_cast<sockaddr*>(&_hintv6), &_len);
                 }
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
@@ -149,12 +149,12 @@ namespace hsd
                 if(_protocol == net::protocol_type::ipv4)
                 {
                     _response = sendto(_sock.get_listening(), _net_buf.data(), 
-                        _net_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv4), _len);
+                        _net_buf.size(), 0, bit_cast<sockaddr*>(&_hintv4), _len);
                 }
                 else
                 {
                     _response = sendto(_sock.get_listening(), _net_buf.data(), 
-                        _net_buf.size(), 0, reinterpret_cast<sockaddr*>(&_hintv6), _len);
+                        _net_buf.size(), 0, bit_cast<sockaddr*>(&_hintv6), _len);
                 }
                 if(_response == static_cast<isize>(net::received_state::err))
                 {
@@ -226,7 +226,7 @@ namespace hsd
                         _hintv4.sin_family = static_cast<u16>(_protocol);
                         _hintv4.sin_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
                         listen(_listening, SOMAXCONN);
                     }
                     else
@@ -235,7 +235,7 @@ namespace hsd
                         _hintv6.sin6_family = static_cast<u16>(_protocol);
                         _hintv6.sin6_port = htons(port);
                         inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        bind(_listening, reinterpret_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        bind(_listening, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
                         listen(_listening, SOMAXCONN);
                     }
                 }
@@ -297,9 +297,9 @@ namespace hsd
                     if(protocol == net::protocol_type::ipv4)
                     {
                         _size = sizeof(_sock_hintv4);
-                        _sock_value = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_sock_hintv4), &_size);
+                        _sock_value = accept(_sock.get_listener(), bit_cast<sockaddr*>(&_sock_hintv4), &_size);
 
-                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_sock_hintv4), sizeof(_sock_hintv4), 
+                        if(getnameinfo(bit_cast<sockaddr*>(&_sock_hintv4), sizeof(_sock_hintv4), 
                             _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
                             io::print<"{} connected on port {}\n">(ip_addr, ntohs(_sock_hintv4.sin_port));
@@ -313,9 +313,9 @@ namespace hsd
                     else
                     {
                         _size = sizeof(_sock_hintv6);
-                        _sock_value = accept(_sock.get_listener(), reinterpret_cast<sockaddr*>(&_sock_hintv6), &_size);
+                        _sock_value = accept(_sock.get_listener(), bit_cast<sockaddr*>(&_sock_hintv6), &_size);
 
-                        if(getnameinfo(reinterpret_cast<sockaddr*>(&_sock_hintv6), sizeof(_sock_hintv6), 
+                        if(getnameinfo(bit_cast<sockaddr*>(&_sock_hintv6), sizeof(_sock_hintv6), 
                                 _host.data(), NI_MAXHOST, _service.data(), NI_MAXSERV, 0) == 0)
                         {
                             io::print<"{} connected on port {}\n">(ip_addr, _service.data());

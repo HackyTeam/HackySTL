@@ -85,9 +85,9 @@ namespace hsd
         [[nodiscard]] constexpr auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
         {
-            auto* _block_ptr = reinterpret_cast<block*>(_buf);
-            auto* _block_end = reinterpret_cast<block*>(_buf + _size - sizeof(block));
-            auto* _block_back = reinterpret_cast<block*>(_buf);
+            auto* _block_ptr = bit_cast<block*>(_buf);
+            auto* _block_end = bit_cast<block*>(_buf + _size - sizeof(block));
+            auto* _block_back = bit_cast<block*>(_buf);
             usize _free_size = 0u;
             
             while (_block_ptr < _block_end) 
@@ -98,12 +98,12 @@ namespace hsd
                     {
                         _block_ptr->size = size * sizeof(T);
                         _block_ptr->in_use = true;
-                        return reinterpret_cast<T*>(_block_ptr->data);
+                        return bit_cast<T*>(_block_ptr->data);
                     }
                     else if(_block_ptr->size >= size * sizeof(T))
                     {
                         _block_ptr->in_use = true;
-                        return reinterpret_cast<T*>(_block_ptr->data);
+                        return bit_cast<T*>(_block_ptr->data);
                     }
                     else
                     {
@@ -116,21 +116,21 @@ namespace hsd
                         {
                             _block_back->size = _free_size;
                             _block_back->in_use = true;
-                            return reinterpret_cast<T*>(_block_back->data);
+                            return bit_cast<T*>(_block_back->data);
                         }
                     }
                 }
                 else
                 {
                     _free_size = 0u;
-                    _block_back = reinterpret_cast<block*>(
-                        reinterpret_cast<uchar*>(_block_ptr) + 
+                    _block_back = bit_cast<block*>(
+                        bit_cast<uchar*>(_block_ptr) + 
                         _block_ptr->size + sizeof(block)
                     );
                 }
                 
-                _block_ptr = reinterpret_cast<block*>(
-                    reinterpret_cast<uchar*>(_block_ptr) + 
+                _block_ptr = bit_cast<block*>(
+                    bit_cast<uchar*>(_block_ptr) + 
                     _block_ptr->size + sizeof(block)
                 );
             }
@@ -143,11 +143,10 @@ namespace hsd
         {
             if(ptr != nullptr)
             {
-                if(reinterpret_cast<uchar*>(ptr) >= _buf && 
-                    reinterpret_cast<uchar*>(ptr) < _buf + _size)
+                if(bit_cast<uchar*>(ptr) >= _buf && bit_cast<uchar*>(ptr) < _buf + _size)
                 {
-                    auto* _block_ptr = reinterpret_cast<block*>(
-                        reinterpret_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
+                    auto* _block_ptr = bit_cast<block*>(
+                        bit_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
                     );
 
                     _block_ptr->in_use = false;

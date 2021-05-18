@@ -87,7 +87,9 @@
         "complex": "cpp",
         "cfenv": "cpp",
         "*.ipp": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp"
     },
     "cSpell.words": [
         "IRWXA",

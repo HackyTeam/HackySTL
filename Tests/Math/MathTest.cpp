@@ -124,9 +124,8 @@ int main()
     }
 
     {
-        // still no bit_cast support, thanks gcc
-        constexpr hsd::f64 val1 = hsd::math::atan2(0.0, -0.0001);
-        hsd::f64 val2 = std::atan2(0.0, -0.0001);
+        constexpr hsd::f64 val1 = hsd::math::atan2(0.0, -0.0);
+        hsd::f64 val2 = std::atan2(0.0, -0.0);
         hsd::io::print<"atan2: {} {}\n">(val1, val2);
     }
 

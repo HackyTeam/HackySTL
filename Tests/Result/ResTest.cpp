@@ -30,7 +30,7 @@ static constexpr auto fail_func2(const T& val)
 
 static hsd::optional<int> opt_fail()
 {
-    return hsd::bad_optional_access{};
+    return {};
 }
 
 int main()

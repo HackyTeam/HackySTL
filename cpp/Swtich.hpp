@@ -1,13 +1,17 @@
-#include <Result.hpp>
-#include <Concepts.hpp>
+#include "Result.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
-    template <typename Func>
-    concept InvocableVoid = (
-        requires(Func func) { {func()} -> IsSame<void>; } ||
-        requires(Func func) { {func().unwrap()} -> IsSame<void>; }
-    );
+    namespace switch_detail
+    {
+        template <typename Func>
+        concept InvocableVoid = (
+            InvocableRet<void, Func> || requires(Func func) { 
+                {func().unwrap()} -> IsSame<void>;
+            }
+        );
+    } // namespace switch_detail
 
     namespace case_operators
     {
@@ -28,7 +32,7 @@ namespace hsd
             template <typename T, typename U, typename Func>
             constexpr auto operator()(
                 const T& left, const U& right, const Func& invoke_func)
-            requires (EqualComparable<T, U> && InvocableVoid<Func>)
+            requires (EqualComparable<T, U> && switch_detail::InvocableVoid<Func>)
             {
                 if constexpr (requires {invoke_func().unwrap();})
                 {
@@ -75,7 +79,7 @@ namespace hsd
             template <typename T, typename U, typename Func>
             constexpr auto operator()(
                 const T& left, const U& right, const Func& invoke_func)
-            requires (LessComparable<T, U> && InvocableVoid<Func>)
+            requires (LessComparable<T, U> && switch_detail::InvocableVoid<Func>)
             {
                 if constexpr (requires {invoke_func().unwrap();})
                 {
@@ -122,7 +126,7 @@ namespace hsd
             template <typename T, typename U, typename Func>
             constexpr auto operator()(
                 const T& left, const U& right, const Func& invoke_func)
-            requires (GreaterComparable<T, U> && InvocableVoid<Func>)
+            requires (GreaterComparable<T, U> && switch_detail::InvocableVoid<Func>)
             {
                 if constexpr (requires {invoke_func().unwrap();})
                 {
@@ -180,7 +184,8 @@ namespace hsd
         HSD_CONSTEXPR CasePair(const CasePair&) = default;
         HSD_CONSTEXPR CasePair& operator=(const CasePair&) = delete;
 
-        template <typename U> requires (InvocableVoid<Func>)
+        template <typename U>
+        requires (switch_detail::InvocableVoid<Func>)
         constexpr auto operator()(const U& compare_value) const
         {
             CaseOp _op_func;
@@ -203,7 +208,7 @@ namespace hsd
         HSD_CONSTEXPR DefaultCase& operator=(const DefaultCase&) = delete;
 
         constexpr auto operator()() const
-        requires (InvocableVoid<Func>)
+        requires (switch_detail::InvocableVoid<Func>)
         {
             using ResType = Result<void, runtime_error>;
 

@@ -29,54 +29,54 @@ namespace hsd
             return *this;
         }
 
-        u16 second()
+        u16 second() const
         {
             return static_cast<u16>(_time->tm_sec);
         }
 
-        u16 minute()
+        u16 minute() const
         {
             return static_cast<u16>(_time->tm_min);
         }
 
-        u16 hour()
+        u16 hour() const
         {
             return static_cast<u16>(_time->tm_hour);
         }
 
-        u16 month_day()
+        u16 month_day() const
         {
             return static_cast<u16>(_time->tm_mday);
         }
         
-        u16 week_day()
+        u16 week_day() const
         {
             return static_cast<u16>(_time->tm_wday);
         }
 
-        u16 month()
+        u16 month() const
         {
             return static_cast<u16>(_time->tm_mon);
         }
 
         #ifdef HSD_PLATFORM_POSIX
-        const char* timezone()
+        const char* timezone() const
         {
             return _time->tm_zone;
         }
         #endif
 
-        u16 year_day()
+        u16 year_day() const
         {
             return static_cast<u16>(_time->tm_yday);
         }
 
-        usize year()
+        usize year() const
         {
             return static_cast<usize>(_time->tm_year) + 1900;
         }
 
-        const char* to_text()
+        const char* to_text() const
         {
             return asctime(_time);
         }
@@ -113,47 +113,47 @@ namespace hsd
             return clock{static_cast<clock_t>(lhs._clk + rhs._clk)};
         }
 
-        bool operator==(const clock& rhs)
+        bool operator==(const clock& rhs) const
         {
             return _clk == rhs._clk;
         }
 
-        bool operator!=(const clock& rhs)
+        bool operator!=(const clock& rhs) const
         {
             return _clk != rhs._clk;
         }
 
-        bool operator<(const clock& rhs)
+        bool operator<(const clock& rhs) const
         {
             return _clk < rhs._clk;
         }
 
-        bool operator>(const clock& rhs)
+        bool operator>(const clock& rhs) const
         {
             return _clk > rhs._clk;
         }
 
-        bool operator<=(const clock& rhs)
+        bool operator<=(const clock& rhs) const
         {
             return _clk <= rhs._clk;
         }
 
-        bool operator>=(const clock& rhs)
+        bool operator>=(const clock& rhs) const
         {
             return _clk >= rhs._clk;
         }
 
-        i64 to_microseconds()
+        i64 to_microseconds() const
         {
             return static_cast<i64>(to_seconds() * 1000000);
         }
 
-        i32 to_miliseconds()
+        i32 to_miliseconds() const
         {
             return static_cast<i32>(to_seconds() * 1000);
         }
 
-        f32 to_seconds()
+        f32 to_seconds() const
         {
             return static_cast<f32>(_clk) / CLOCKS_PER_SEC;
         }
@@ -165,7 +165,7 @@ namespace hsd
             return *this - _old_clk;
         }
 
-        clock elapsed_time()
+        clock elapsed_time() const
         {
             clock _new_clk;
             return _new_clk - *this;
@@ -233,7 +233,7 @@ namespace hsd
             }
         }
 
-        bool operator==(const precise_clock& rhs)
+        bool operator==(const precise_clock& rhs) const
         {
             return (
                 _clk.tv_sec == rhs._clk.tv_sec &&
@@ -241,7 +241,7 @@ namespace hsd
             );
         }
 
-        bool operator!=(const precise_clock& rhs)
+        bool operator!=(const precise_clock& rhs) const
         {
             return (
                 _clk.tv_sec != rhs._clk.tv_sec ||
@@ -249,7 +249,7 @@ namespace hsd
             );
         }
 
-        bool operator<(const precise_clock& rhs)
+        bool operator<(const precise_clock& rhs) const
         {
             if(_clk.tv_sec < rhs._clk.tv_sec)
             {
@@ -265,7 +265,7 @@ namespace hsd
             }
         }
 
-        bool operator>(const precise_clock& rhs)
+        bool operator>(const precise_clock& rhs) const
         {
             if(_clk.tv_sec > rhs._clk.tv_sec)
             {
@@ -281,17 +281,17 @@ namespace hsd
             }
         }
 
-        bool operator<=(const precise_clock& rhs)
+        bool operator<=(const precise_clock& rhs) const
         {
             return *this < rhs || *this == rhs;
         }
 
-        bool operator>=(const precise_clock& rhs)
+        bool operator>=(const precise_clock& rhs) const
         {
             return *this > rhs || *this == rhs;
         }
 
-        u64 to_nanoseconds()
+        u64 to_nanoseconds() const
         {
             if(_clk.tv_sec != 0)
             {
@@ -303,17 +303,17 @@ namespace hsd
             }
         }
 
-        i64 to_microseconds()
+        i64 to_microseconds() const
         {
             return static_cast<i64>(to_seconds() * 1'000'000);
         }
 
-        i32 to_miliseconds()
+        i32 to_miliseconds() const
         {
             return static_cast<i32>(to_seconds() * 1000);
         }
 
-        f64 to_seconds()
+        f64 to_seconds() const
         {
             return _clk.tv_nsec / 1'000'000'000.0 + 
                 static_cast<f64>(_clk.tv_sec);
@@ -326,7 +326,7 @@ namespace hsd
             return *this - _old_clk;
         }
 
-        precise_clock elapsed_time()
+        precise_clock elapsed_time() const
         {
             precise_clock _new_clk;
             return _new_clk - *this;

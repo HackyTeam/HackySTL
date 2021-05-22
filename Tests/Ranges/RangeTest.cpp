@@ -11,6 +11,18 @@ int main()
         constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
         constexpr auto square = [](auto val){ return val * val; };
         constexpr auto less = [](auto val){ return val < 5; };
+        constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
+        {
+            if((val & 1) == 0)
+            {
+                return val * val;
+            }
+            else
+            {
+                return {};
+            }
+        };
+
         hsd::vector vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
         puts("Forward:");
@@ -48,6 +60,11 @@ int main()
         for(auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
+        puts("\nForward, filtered and transformed:");
+
+        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"{} ">(val);
+
         puts("\nReversed:");
 
         for(auto& val : vals | hsd::views::reverse)
@@ -81,6 +98,11 @@ int main()
         puts("\nReversed, transformed:");
 
         for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, filtered and transformed:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom:");
@@ -118,6 +140,11 @@ int main()
         for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
+        puts("\nRandom, filtred and transformed:");
+
+        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"{} ">(val);
+
         puts("");
     }
 
@@ -126,6 +153,18 @@ int main()
         constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
         constexpr auto square = [](auto val){ return val * val; };
         constexpr auto less = [](auto val){ return val < 5; };
+        constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
+        {
+            if((val & 1) == 0)
+            {
+                return val * val;
+            }
+            else
+            {
+                return {};
+            }
+        };
+
         hsd::list vals = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
         puts("Forward:");
@@ -163,6 +202,11 @@ int main()
         for(auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
+        puts("\nForward, filtred and transformed:");
+
+        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"{} ">(val);
+
         puts("\nReversed:");
 
         for(auto& val : vals | hsd::views::reverse)
@@ -196,6 +240,11 @@ int main()
         puts("\nReversed, transformed:");
 
         for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
+            hsd::io::print<"{} ">(val);
+
+        puts("\nReversed, filtered and transformed:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom:");
@@ -233,6 +282,11 @@ int main()
         for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
+        puts("\nRandom, filtred and transformed:");
+
+        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"{} ">(val);
+
         puts("");
     }
 
@@ -242,6 +296,17 @@ int main()
         constexpr auto less = [](const auto& val){ return val.second < 5; };
         constexpr auto is_even = [](const auto& val){ return (val.second & 1) == 0; };
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };
+        constexpr auto is_even_square = []<typename T>(const T& val) -> hsd::optional<T>
+        {
+            if((val.second & 1) == 0)
+            {
+                return hsd::pair{val.first, val.second * val.second};
+            }
+            else
+            {
+                return {};
+            }
+        };
 
         hsd::unordered_map<hsd::string_view, hsd::i32> vals = {{
             hsd::pair{"first"_sv, 1}, 
@@ -291,6 +356,11 @@ int main()
         for(auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
+        puts("\nForward, filtered and transformed:");
+
+        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
         puts("\nReversed:");
 
         for(auto& val : vals | hsd::views::reverse)
@@ -326,6 +396,11 @@ int main()
         for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
+        puts("\nReversed, filtered and transformed:");
+
+        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
         puts("\nRandom:");
 
         for(auto& val : vals | hsd::views::random)
@@ -359,6 +434,11 @@ int main()
         puts("\nRandom, transformed:");
 
         for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
+            hsd::io::print<"({}, {}) ">(val.first, val.second);
+
+        puts("\nRandom, filtered and transformed:");
+ 
+        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("");

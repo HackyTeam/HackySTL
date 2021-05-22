@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Reference.hpp"
+#include "Concepts.hpp"
 
 #include <wchar.h>
 #include <stdio.h>
@@ -16,14 +17,14 @@
 
 #define hsd_fprint_check(stream, format, ...)\
 do {\
-    if(fprintf(stream, format, __VA_ARGS__) == -1)\
-        fwprintf(stream, L##format, __VA_ARGS__);\
+    if(fprintf(stream, format __VA_OPT__(,) __VA_ARGS__) == -1)\
+        fwprintf(stream, L##format __VA_OPT__(,) __VA_ARGS__);\
 }while(0)
 
-#define hsd_fputs_check(stream, format)\
+#define hsd_fputs_check(stream, string)\
 do {\
-    if(fprintf(stream, format "\n") == -1)\
-        fwprintf(stream, L##format L"\n");\
+    if(fputs(string "\n", stream) == -1)\
+        fputws(L##string L"\n", stream);\
 }while(0)
 
 namespace hsd
@@ -35,12 +36,6 @@ namespace hsd
 
         template <typename T>
         using InvokeType = decltype(std::declval<T>()());
-
-        template < typename Func, typename Result >
-        concept UnwrapInvocable = requires(Func a) 
-        {
-            {a()} -> is_same<Result>;
-        };
 
         template <typename T>
         concept IsReference = (requires {typename T::value_type;} && (
@@ -54,14 +49,6 @@ namespace hsd
             {str.c_str()} -> is_same<const char*>;
         };
     } // namespace Result_detail
-
-    struct bad_optional_access
-    {
-        const char* operator()() const
-        {
-            return "Acessed an uninitialized value";
-        }
-    };
 
     struct ok_value {};
     struct err_value {};
@@ -184,7 +171,7 @@ namespace hsd
                     );
                     
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err result value:"
                         " %s\n", file_name, func, line, 
@@ -194,7 +181,7 @@ namespace hsd
                 else if constexpr(Result_detail::IsString<Err>)
                 {
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
                         file_name, func, line, 
@@ -204,7 +191,7 @@ namespace hsd
                 else
                 {
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
                         file_name, func, line, _err_data
@@ -216,7 +203,7 @@ namespace hsd
         }
 
         constexpr decltype(auto) expect(
-            const char* message = "Got an Error instead",
+            const char* message = "Object was not initialized",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
@@ -235,7 +222,7 @@ namespace hsd
             else
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:"
+                    stderr, "Got an error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
                     file_name, func, line, message
@@ -297,7 +284,7 @@ namespace hsd
         }
 
         template <typename Func>
-        requires (Result_detail::UnwrapInvocable<Func, Ok>)
+        requires (InvocableRet<Ok, Func>)
         constexpr decltype(auto) unwrap_or_else(Func&& func)
         {
             if(_initialized)
@@ -343,7 +330,7 @@ namespace hsd
             else
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:\n"
+                    stderr, "Got an error in file:\n"
                     "%s\nInvoked from: %s at line: %zu"
                     "\nExpected Err, got Ok instead\n",
                     file_name, func, line
@@ -353,7 +340,7 @@ namespace hsd
         }
 
         constexpr decltype(auto) expect_err(
-            const char* message = "Got a Value instead",
+            const char* message = "Object was initialized",
             const char* func = __builtin_FUNCTION(), 
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
@@ -379,7 +366,7 @@ namespace hsd
             else
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:"
+                    stderr, "Got an error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
                     file_name, func, line, message
@@ -450,7 +437,7 @@ namespace hsd
                     );
                     
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err result value:"
                         " %s\n", file_name, func, line, 
@@ -460,7 +447,7 @@ namespace hsd
                 else if constexpr(Result_detail::IsString<Err>)
                 {
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
                         file_name, func, line, 
@@ -470,7 +457,7 @@ namespace hsd
                 else
                 {
                     hsd_fprint_check(
-                        stderr, "Got type error in file:"
+                        stderr, "Got an error in file:"
                         "\n%s\nInvoked from: %s at line:"
                         " %zu\nWith the Err value: %s\n",
                         file_name, func, line, _err_data
@@ -482,7 +469,7 @@ namespace hsd
         }
 
         constexpr void expect(
-            const char* message = "Got an Error instead",
+            const char* message = "Object was not initialized",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
@@ -490,7 +477,7 @@ namespace hsd
             if(!_initialized)
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:"
+                    stderr, "Got an error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
                     file_name, func, line, message
@@ -499,8 +486,8 @@ namespace hsd
             }
         }
 
-        template <typename Func>
-        requires (Result_detail::UnwrapInvocable<Func, void>)
+        template <typename Func> 
+        requires (InvocableRet<void, Func>)
         constexpr void unwrap_or_else(Func&& func)
         {
             if(!_initialized)
@@ -517,7 +504,7 @@ namespace hsd
             if(_initialized)
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:"
+                    stderr, "Got an error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\n", file_name, func, line
                 );
@@ -537,7 +524,7 @@ namespace hsd
         }
 
         constexpr decltype(auto) expect_err(
-            const char* message = "Got a Value instead",
+            const char* message = "Object was initialized",
             const char* func = __builtin_FUNCTION(),
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
@@ -545,7 +532,7 @@ namespace hsd
             if(_initialized)
             {
                 hsd_fprint_check(
-                    stderr, "Got type error in file:"
+                    stderr, "Got an error in file:"
                     "\n%s\nInvoked from: %s at line:"
                     " %zu\nWith the message: %s\n",
                     file_name, func, line, message);
@@ -554,6 +541,232 @@ namespace hsd
         }
     };
 
+    template <typename Ok>
+    class Result<Ok, void>
+    {
+    private:
+        union {
+            Ok _ok_data;
+        };
+
+        bool _initialized = false;
+        
+    public:
+        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
+        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+
+        HSD_CONSTEXPR Result()
+            : _initialized{false}
+        {}
+
+        template <typename T>
+        requires (std::is_constructible_v<Ok, T&&>)
+        HSD_CONSTEXPR Result(T&& value, ok_value = {})
+            : _ok_data{forward<T>(value)}, _initialized{true}
+        {}
+
+        Result(const Result& other)
+            : _initialized{other._initialized}
+        {
+            if(_initialized)
+            {
+                new(&_ok_data) Ok(other._ok_data);
+            }
+        }
+
+        Result(Result&& other)
+            : _initialized{other._initialized}
+        {
+            if(_initialized)
+            {
+                new(&_ok_data) Ok(move(other._ok_data));
+            }
+        }
+
+        HSD_CONSTEXPR ~Result()
+        {
+            if(_initialized)
+            {
+                _ok_data.~Ok();
+            }
+        }
+
+        constexpr bool is_ok() const
+        {
+            return _initialized;
+        }
+
+        explicit constexpr operator bool() const
+        {
+            return _initialized;
+        }
+
+        constexpr decltype(auto) unwrap(
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<typename Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return release(_ok_data);
+                }
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\n", file_name, func, line
+                );
+
+                abort();
+            }
+        }
+
+        constexpr decltype(auto) expect(
+            const char* message = "Object was not initialized",
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<typename Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return release(_ok_data);
+                }
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
+                abort();
+            }
+        }
+
+        template <typename... Args>
+        constexpr decltype(auto) unwrap_or(Args&&... args)
+        requires (Result_detail::IsReference<Ok>)
+        {
+            if(_initialized)
+            {
+                return static_cast<typename Ok::value_type&>(_ok_data);
+            }
+            else
+            {
+                if constexpr(is_const<Ok>::value)
+                {
+                    return static_cast<const typename Ok::value_type&>(
+                        Ok{forward<Args>(args)...}
+                    );
+                }
+                else
+                {
+                    return static_cast<typename Ok::value_type&>(
+                        Ok{forward<Args>(args)...}
+                    );
+                }
+            }
+        } 
+
+        template <typename... Args>
+        constexpr decltype(auto) unwrap_or(Args&&... args)
+        requires (!Result_detail::IsReference<Ok>)
+        {
+            if(_initialized)
+            {
+                return release(_ok_data);
+            }
+            else
+            {
+                return Ok{forward<Args>(args)...};
+            }
+        } 
+        
+        constexpr decltype(auto) unwrap_or_default()
+        requires (std::is_default_constructible_v<Ok>)
+        {
+            if(_initialized)
+            {
+                return release(_ok_data);
+            }
+            else
+            {
+                return Ok{};
+            }
+        }
+
+        template <typename Func>
+        requires (InvocableRet<Ok, Func>)
+        constexpr decltype(auto) unwrap_or_else(Func&& func)
+        {
+            if(_initialized)
+            {
+                if constexpr(Result_detail::IsReference<Ok>)
+                {
+                    return static_cast<typename Ok::value_type&>(_ok_data);
+                }
+                else
+                {
+                    return release(_ok_data);
+                }
+            }
+            else
+            {
+                return func();
+            }
+        }
+
+        constexpr void unwrap_err(
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(),
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:\n"
+                    "%s\nInvoked from: %s at line: %zu"
+                    "\nExpected Err, got Ok instead\n",
+                    file_name, func, line
+                );
+                abort();
+            }
+        }
+
+        constexpr void expect_err(
+            const char* message = "Object was initialized",
+            const char* func = __builtin_FUNCTION(), 
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if(_initialized)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
+                abort();
+            }
+        }
+    };
+
     template <typename T>
-    using optional = Result<T, bad_optional_access>;
+    using optional = Result<T, void>;
 } // namespace hsd

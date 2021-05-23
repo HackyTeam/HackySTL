@@ -20,20 +20,20 @@ namespace hsd
         template <typename CharT, auto GetC>
         inline auto read_file_impl(FILE* stream)
         {
-            constexpr usize buf_size = 1024;
-            static CharT s_buf[buf_size];
+            constexpr usize _buf_size = 1024;
+            static CharT _s_buf[_buf_size];
 
-            usize size;
-            for (size = 0; size < buf_size;)
+            usize _size;
+            for (_size = 0; _size < _buf_size;)
             {
-                auto c = GetC(stream);
+                auto _ch = GetC(stream);
                 
-                if (c == EOF)
+                if (_ch == static_cast<decltype(_ch)>(EOF))
                     break;
 
-                s_buf[size++] = static_cast<CharT>(c);
+                _s_buf[_size++] = static_cast<CharT>(_ch);
             }
-            return basic_string_view<CharT>(s_buf, size);
+            return basic_string_view<CharT>(_s_buf, _size);
         }
 
         template <typename CharT>
@@ -244,7 +244,7 @@ namespace hsd
         // If an error occurs, the rest of buffer can be passed in
         Result<void, JsonError> lex_file(string_view filename)
         {
-            static const char* const s_keywords[] = {"null", "true", "false"};
+            //static const char* const s_keywords[] = {"null", "true", "false"};
             auto* stream = fopen(filename.data(), "r");
             
             if (!stream)

@@ -10,20 +10,20 @@ auto test_trace(hsd::stack_trace tr, const char* msg)
 }
 
 template <>
-auto test_trace<0>(hsd::stack_trace tr, const char* msg)
+auto test_trace<0>(hsd::stack_trace, const char*)
     -> hsd::Result<void, hsd::stack_trace_error>
 {
     return hsd::stack_trace_error{};
 }
 
 template <hsd::usize N>
-static void test_profiler(hsd::profiler tr)
+static void test_profiler(hsd::profiler)
 {
     invoke_profiler_func(test_profiler<N - 1>);
 }
 
 template <>
-void test_profiler<0>(hsd::profiler tr) {}
+void test_profiler<0>(hsd::profiler) {}
 
 int main()
 {

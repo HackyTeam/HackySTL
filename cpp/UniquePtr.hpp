@@ -91,7 +91,7 @@ namespace hsd
                 
                 if constexpr(is_same<pointer_type, value_type*>::value)
                 {
-                    this->get_allocator() = move(rhs.get_allocator());
+                    this->get_allocator() = rhs.get_allocator();
                     this->_data = exchange(rhs._data, nullptr);
                 }
                 else

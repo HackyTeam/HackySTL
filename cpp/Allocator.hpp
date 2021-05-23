@@ -42,7 +42,7 @@ namespace hsd
         struct block 
         {
             bool in_use{};
-            usize size{};
+            u32 size{};
             uchar data[];
         };
 
@@ -86,7 +86,12 @@ namespace hsd
             -> Result< T*, allocator_detail::allocator_error >
         {
             auto* _block_ptr = bit_cast<block*>(_buf);
-            auto* _block_end = bit_cast<block*>(_buf + _size - sizeof(block));
+            auto* _block_end = bit_cast<block*>(
+                _buf + _size - 
+                _block_ptr->size - 
+                sizeof(block)
+            );
+
             auto* _block_back = bit_cast<block*>(_buf);
             usize _free_size = 0u;
             
@@ -146,7 +151,7 @@ namespace hsd
                 if(bit_cast<uchar*>(ptr) >= _buf && bit_cast<uchar*>(ptr) < _buf + _size)
                 {
                     auto* _block_ptr = bit_cast<block*>(
-                        bit_cast<uchar*>(ptr) - (sizeof(usize) + 1u)
+                        bit_cast<uchar*>(ptr) - sizeof(block)
                     );
 
                     _block_ptr->in_use = false;
@@ -203,6 +208,13 @@ namespace hsd
         HSD_CONSTEXPR allocator(const allocator<U>& other)
             : _type_size{other._type_size}, _alignment{other._alignment}
         {}
+
+        HSD_CONSTEXPR allocator& operator=(const allocator& rhs)
+        {
+            _type_size = rhs._type_size;
+            _alignment = rhs._alignment;
+            return *this;
+        }
 
         template <typename U>
         HSD_CONSTEXPR allocator& operator=(const allocator<U>& rhs)

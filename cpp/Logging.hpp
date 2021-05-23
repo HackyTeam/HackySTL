@@ -115,7 +115,7 @@ namespace hsd
             for(auto it = _stack.rbegin(); it != _stack.rend(); it--)
             {
                 fprintf(
-                    stderr, "Info: %s:%zu\n\tFunction: %s\n",
+                    stderr, "Info: %s:%d\n\tFunction: %s\n",
                     it->file_name(), it->line(), 
                     it->function_name()
                 );
@@ -144,7 +144,7 @@ namespace hsd
             if(_stack.size() > 0)
             {
                 printf(
-                    "Info: %s:%zu\n\tFunction: %s, time taken: %lluus\n", 
+                    "Info: %s:%d\n\tFunction: %s, time taken: %lluus\n", 
                     get().file_name(), get().line(), get().function_name(),
                     get().elapsed_time().to_microseconds()
                 );

@@ -29,7 +29,7 @@ namespace hsd
         }
 
         template <basic_string_literal fmt, usize N>
-        static constexpr auto split_literal()
+        static consteval auto split_literal()
             -> Result< 
                 static_vector< pair<
                     const typename decltype(fmt)::char_type*, usize>, N > 
@@ -37,22 +37,34 @@ namespace hsd
         {
             using char_type = typename decltype(fmt)::char_type;
             using buf_type = static_vector< pair<const char_type*, usize>, N >;
+            constexpr auto _find = [](const char_type* str, char_type letter)
+            {
+                const char_type* _start_ptr = str;
+
+        	    for(; *str != '\0'; str++)
+        	    {
+        	    	if(*str == letter)
+        	    		return static_cast<usize>(str - _start_ptr);
+        	    }
+
+        	    return static_cast<usize>(-1);
+            };
 
             buf_type _buf;
             const char_type* _iter_f = fmt.data;
-            const char_type* _iter_s = basic_cstring<char_type>::find(_iter_f, '{');
+            usize _pos_s = _find(_iter_f, '{');
 
-            if(_iter_s != nullptr && *(_iter_s + 1) != '}')
+            if(_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
             {
                 return runtime_error{"invalid character after \'{\'"};
             }
-            while (_iter_s != nullptr && *_iter_s != '\0')
+            while (_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s) != '\0')
             {
-                _buf.emplace_back(_iter_f, static_cast<usize>(_iter_s - _iter_f));
-                _iter_f = _iter_s + 2;
-                _iter_s = basic_cstring<char_type>::find(_iter_f, '{');
+                _buf.emplace_back(_iter_f, _pos_s);
+                _iter_f += _pos_s + 2;
+                _pos_s = _find(_iter_f, '{');
 
-                if(_iter_s != nullptr && *(_iter_s + 1) != '}')
+                if(_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
                     return runtime_error{"invalid character after \'{\'"};
             }
 

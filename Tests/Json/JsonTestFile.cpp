@@ -20,5 +20,5 @@ int main()
     // Assert that the whole object is complete
     assert(value->is_complete());
     
-    auto res = (*value)[L"LoS"_sv][0][L"age"_sv].as_num().unwrap();
+    [[maybe_unused]] auto res = (*value)[L"LoS"_sv][0][L"age"_sv].as_num().unwrap();
 }

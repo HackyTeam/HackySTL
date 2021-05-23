@@ -28,11 +28,6 @@ static constexpr auto fail_func2(const T& val)
         return hsd::to_string(val);
 }
 
-static hsd::optional<int> opt_fail()
-{
-    return {};
-}
-
 int main()
 {
     [](const auto& param)

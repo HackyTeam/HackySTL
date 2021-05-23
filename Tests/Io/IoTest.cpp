@@ -62,12 +62,12 @@ int main()
     
     hsd::io::err_print<L"{}\n">(test{});
     hsd::io::print<L"{}\n">(test{21, 1, "how is this possible", 69.42342});
-    auto t = hsd::io::read_line().unwrap().parse<test>();
+    [[maybe_unused]] auto t = hsd::io::read_line().unwrap().parse<test>();
     
     hsd::io::read_line().unwrap().set_data(x, y, z).unwrap();
     hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
     auto file = hsd::file("test.txt", hsd::file::options::text::read);
     
-    auto c = file.read_line().unwrap().parse<hsd::i32>();
+    [[maybe_unused]] auto c = file.read_line().unwrap().parse<hsd::i32>();
 }

@@ -7,9 +7,7 @@ static int func(int a)
 }
 
 template <typename T>
-static void func2(T& val)
-{
-}
+static void func2(T&) {}
 
 struct counter {
     counter(int a = 0) : c(a) {}

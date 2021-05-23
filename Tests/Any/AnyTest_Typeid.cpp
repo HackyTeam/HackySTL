@@ -52,5 +52,5 @@ int main()
         hsd::io::print<"Holds a S\n">();
     
     if (a.holds_type<int>())
-        hsd::io::print<"Holds an int\n">;
+        hsd::io::print<"Holds an int\n">();
 }

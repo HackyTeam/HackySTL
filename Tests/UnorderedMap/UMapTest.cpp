@@ -2,7 +2,7 @@
 #include <HeapArray.hpp>
 #include <stdio.h>
 
-template <hsd::usize N>
+template <hsd::i32 N>
 constexpr auto gen_map()
 {
     hsd::static_umap< hsd::i32, hsd::i32, N > map{};

@@ -59,8 +59,8 @@ namespace hsd
     template <typename To>
     [[nodiscard]] static constexpr auto bit_cast(auto from)
     {
-        return static_cast<To>(from);
-        //return __builtin_bit_cast(To, from);
+        //return static_cast<To>(from);
+        return __builtin_bit_cast(To, from);
     }
 
     template <typename Type>

@@ -37,8 +37,7 @@ int main()
     // Pauses current function of the caller until all jobs are done
     hsd::job_system.wait();
 
-//                              \\//
-    //Example where args are passed
+    // Example where args are passed
     hsd::i32 x = 10;
     hsd::f32 y = 5.942f;
 

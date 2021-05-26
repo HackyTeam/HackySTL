@@ -5,7 +5,7 @@
 #include "Concepts.hpp"
 #include <cmath>
 
-/// The implementations are NOT original they are in fact
+/// The implementations are NOT original, they are, in fact
 /// A C++20 adaptation of a C++11 codebase thanks to the
 /// compile-time math library: https://github.com/kthohr/gcem
 

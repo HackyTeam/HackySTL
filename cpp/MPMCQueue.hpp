@@ -153,7 +153,7 @@ namespace hsd
         void emplace(T&& value)
         {
             auto const head = _head.fetch_add(1);
-            auto& slot = _allocation.at(mod(head)).unwrap();
+            auto& slot = _allocation[mod(head)];
 
             while(turn(head) * 2 != slot.ticket.load(hsd::memory_order_acquire));
             
@@ -164,7 +164,7 @@ namespace hsd
         void pop(T& value)
         {
             auto const tail = _tail.fetch_add(1);
-            auto& slot = _allocation.at(mod(tail)).unwrap();
+            auto& slot = _allocation[mod(tail)];
 
             while(turn(tail) * 2 + 1 != slot.ticket.load(hsd::memory_order_acquire));
 

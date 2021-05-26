@@ -24,10 +24,9 @@ void foo(int a, float b)
 int main()
 {
     // Generic example with no parameters
-    hsd::Job j = hsd::job_system.create_job([](hsd::Job) 
-    {
+    hsd::job_fn j = [] {
         print();
-    });
+    };
 
     // Schedules 10 jobs
     for(hsd::i32 i = 0; i < 10; i++)
@@ -43,20 +42,11 @@ int main()
     hsd::i32 x = 10;
     hsd::f32 y = 5.942f;
 
-    void* data[] = { &x, &y };
-
-    j = hsd::job_system.create_job(
-        // Technically could just be a fnptr, but a lambda is more readable here
-        [](hsd::Job j)    
+    j = hsd::bind([](hsd::i32& s, hsd::f32 t)    
         {
-            // Get the variables from the data array
-            auto& s = *static_cast<hsd::i32*>(j.data[0]);  // Can be mutable
-            auto t = *static_cast<hsd::f32*>(j.data[1]);   // Or a copy
-
             // Passing the values into the function
             foo(s, t);
-
-        }, data
+        }, hsd::reference{x}, y
     );
 
     for(hsd::i32 i = 0; i < 10; ++i)

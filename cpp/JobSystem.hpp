@@ -6,27 +6,7 @@
 
 namespace hsd
 {
-    struct Job;
-
-    using job_fn = function<void(Job)>;
-
-    // A Job. Has a function ptr and a pointer to data to pass as args
-    struct Job
-    {
-        job_fn task = nullptr;
-        void** data = nullptr;
-
-    };
-
-/// @TODO: Change from using a void** to pass args (which is super bad and unsafe), to this JobData struct
-/*
-    // A packed list of arguments for a function in a job
-    template<u8 numargs, typename T>
-    struct JobData
-    {
-        
-    };
-*/
+    using job_fn = function<void()>;
 
     enum class PRIO
     {
@@ -43,30 +23,30 @@ namespace hsd
             counter _counter = {0};
             atomic_bool _running = {false};
 
-            MPMCQueue<Job> _high_priority;
-            MPMCQueue<Job> _normal_priority;
-            MPMCQueue<Job> _low_priority;
+            MPMCQueue<job_fn> _high_priority;
+            MPMCQueue<job_fn> _normal_priority;
+            MPMCQueue<job_fn> _low_priority;
 
             vector<thread> _threads;
 
             void thread_function()
             {
-                Job _job;
+                job_fn _job_task = nullptr;
                 while(_running.load())
                 {
-                    if(_high_priority.try_pop(_job))
+                    if(_high_priority.try_pop(_job_task))
                     {
-                        _job.task(_job).unwrap();
+                        _job_task().unwrap();
                         _counter--;
                     }
-                    else if(_normal_priority.try_pop(_job))
+                    else if(_normal_priority.try_pop(_job_task))
                     {
-                        _job.task(_job).unwrap();
+                        _job_task().unwrap();
                         _counter--;
                     }
-                    else if(_low_priority.try_pop(_job))
+                    else if(_low_priority.try_pop(_job_task))
                     {
-                        _job.task(_job).unwrap();
+                        _job_task().unwrap();
                         _counter--;
                     }
                 }
@@ -112,30 +92,21 @@ namespace hsd
                 return -1;
             }
 
-            // Returns a Job which may be scheduled.
-            static Job create_job(job_fn jobfunction, void** data = nullptr)
-            {
-                return Job{
-                    .task = jobfunction,
-                    .data = data
-                };
-            }
-
             // Schedules a job to be added to the queue. Optionally accepts a priority for the job
-            void schedule_job(Job job, PRIO priority = PRIO::NORM)
+            void schedule_job(job_fn job_task, PRIO priority = PRIO::NORM)
             {
                 switch(priority)
                 {
                     case PRIO::HIGH:
-                        _high_priority.emplace(move(job));
+                        _high_priority.emplace(move(job_task));
                         _counter++;
                         return;
                     case PRIO::NORM:
-                        _normal_priority.emplace(move(job));
+                        _normal_priority.emplace(move(job_task));
                         _counter++;
                         return;
                     case PRIO::LOW:
-                        _low_priority.emplace(move(job));
+                        _low_priority.emplace(move(job_task));
                         _counter++;
                         return;
                 }
@@ -151,20 +122,20 @@ namespace hsd
                 {
                     if(use_current_thread)
                     {
-                        Job _job;
-                        if(_high_priority.try_pop(_job))
+                        job_fn _job_task = nullptr;
+                        if(_high_priority.try_pop(_job_task))
                         {
-                            _job.task(_job).unwrap();
+                            _job_task().unwrap();
                             _counter--;
                         }
-                        else if(_normal_priority.try_pop(_job))
+                        else if(_normal_priority.try_pop(_job_task))
                         {
-                            _job.task(_job).unwrap();
+                            _job_task().unwrap();
                             _counter--;
                         }
-                        else if(_low_priority.try_pop(_job))
+                        else if(_low_priority.try_pop(_job_task))
                         {
-                            _job.task(_job).unwrap();
+                            _job_task().unwrap();
                             _counter--;
                         }
                     }

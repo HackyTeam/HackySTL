@@ -338,11 +338,8 @@ namespace hsd
 
         inline void clear() noexcept
         {
-            if constexpr(is_same<decltype(_data), T*>::value)
-            {
-                for (usize _index = _size; _index > 0; --_index)
-                    at_unchecked(_index - 1).~T();
-            }
+            for (usize _index = _size; _index > 0; --_index)
+                at_unchecked(_index - 1).~T();
                 
             _size = 0;
         }
@@ -357,20 +354,17 @@ namespace hsd
                 while (_new_capacity < new_cap)
                     _new_capacity += (_new_capacity + 1) / 2;
 
-                if constexpr(is_same<decltype(_data), T*>::value)
-                {
-                    T* _new_buf = _alloc.allocate(_new_capacity).unwrap();
-                
-                    for (usize _index = 0; _index < _size; ++_index)
-                    {
-                        auto& _value = at_unchecked(_index);
-                        _alloc.construct_at(&_new_buf[_index], move(_value));
-                        _value.~T();
-                    }
+                T* _new_buf = _alloc.allocate(_new_capacity).unwrap();
 
-                    _alloc.deallocate(_data, _capacity).unwrap();
-                    _data = _new_buf;
+                for (usize _index = 0; _index < _size; ++_index)
+                {
+                    auto& _value = at_unchecked(_index);
+                    _alloc.construct_at(&_new_buf[_index], move(_value));
+                    _value.~T();
                 }
+
+                _alloc.deallocate(_data, _capacity).unwrap();
+                _data = _new_buf;
                 
                 _capacity = _new_capacity;
             }
@@ -404,35 +398,31 @@ namespace hsd
                 while (_new_capacity < new_size)
                     _new_capacity += (_new_capacity + 1) / 2;
 
-                if constexpr(is_same<decltype(_data), T*>::value)
+                T* _new_buf = _alloc.allocate(_new_capacity).unwrap();
+                usize _index = 0;
+
+                for (; _index < _size; ++_index)
                 {
-                    T* _new_buf = _alloc.allocate(_new_capacity).unwrap();
-                    usize _index = 0;
-
-                    for (; _index < _size; ++_index)
+                    auto& _value = at_unchecked(_index);
+                    _alloc.construct_at(&_new_buf[_index], move(_value));
+                    _value.~T();
+                }
+                for (; _index < new_size; ++_index)
+                {
+                    if constexpr(
+                        std::is_constructible_v<T, alloc_type> && 
+                        !std::is_default_constructible_v<T>)
                     {
-                        auto& _value = at_unchecked(_index);
-                        _alloc.construct_at(&_new_buf[_index], move(_value));
-                        _value.~T();
+                        _alloc.construct_at(&_new_buf[_index], _alloc);
                     }
-                    for (; _index < new_size; ++_index)
+                    else
                     {
-                        if constexpr(
-                            std::is_constructible_v<T, alloc_type> && 
-                            !std::is_default_constructible_v<T>)
-                        {
-                            _alloc.construct_at(&_new_buf[_index], _alloc);
-                        }
-                        else
-                        {
-                            _alloc.construct_at(&_new_buf[_index]);
-                        }
+                        _alloc.construct_at(&_new_buf[_index]);
                     }
-
-                    _alloc.deallocate(_data, _capacity).unwrap();
-                    _data = _new_buf;
                 }
 
+                _alloc.deallocate(_data, _capacity).unwrap();
+                _data = _new_buf;
                 _capacity = _new_capacity;
                 _size = new_size;
             }
@@ -502,14 +492,7 @@ namespace hsd
 
         inline iterator data()
         {
-            if constexpr(is_same<decltype(_data), T*>::value)
-            {
-                return _data;
-            }
-            else
-            {
-                return &_data[0];
-            }
+            return _data;
         }
 
         inline iterator begin()
@@ -534,14 +517,7 @@ namespace hsd
 
         inline const_iterator cbegin() const
         {
-            if constexpr(is_same<decltype(_data), T*>::value)
-            {
-                return _data;
-            }
-            else
-            {
-                return &_data[0];
-            }
+            return _data;
         }
 
         inline const_iterator cend() const

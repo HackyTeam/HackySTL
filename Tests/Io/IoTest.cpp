@@ -16,33 +16,33 @@ struct test
     }
 };
 
-template <hsd::string_literal str>
+template <hsd::usize N, hsd::string_literal<N> str>
 inline void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
-        hsd::io_detail::_print<str>();
+        hsd::io_detail::_print<N, str>();
         hsd::io::print<"Struct Test contains:\n[\n    a = {}\n    b = {}\n    c = {}\n    d = {}\n]">(t.a, t.b, t.c, t.d);
     }
     else if(ptr == stderr)
     {
-        hsd::io_detail::_print<str>(stderr);
+        hsd::io_detail::_print<N, str>(stderr);
         hsd::io::err_print<"Struct Test contains:\n[\n    a = {}\n    b = {}\n    c = {}\n    d = {}\n]">(t.a, t.b, t.c, t.d);
     }
 }
 
-template <hsd::wstring_literal str>
+template <hsd::usize N, hsd::wstring_literal<N> str>
 inline void _print(test& t, FILE* ptr = stdout)
 {
     if(ptr == stdout)
     {
         // Optional: You can use hsd::io::print<L"{}">(str) as well
-        hsd::io_detail::_print<str>();
+        hsd::io_detail::_print<N, str>();
         hsd::io::print<L"Struct Test contains:\n[\n    a = {}\n    b = {}\n    c = {}\n    d = {}\n]">(t.a, t.b, t.c, t.d);
     }
     else if(ptr == stderr)
     {
-        hsd::io_detail::_print<str>(stderr);
+        hsd::io_detail::_print<N, str>(stderr);
         hsd::io::err_print<L"Struct Test contains:\n[\n    a = {}\n    b = {}\n    c = {}\n    d = {}\n]">(t.a, t.b, t.c, t.d);
     }
 }

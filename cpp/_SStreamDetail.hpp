@@ -372,73 +372,73 @@ namespace hsd
             return {};
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, str.data);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(char val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%c").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(char8 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zc").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(i16 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%hd").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(u16 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%hu").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(i32 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%d").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(u32 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%u").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(i64 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%lld").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(u64 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%llu").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(long val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zd").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(ulong val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zu").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(f32 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -453,7 +453,7 @@ namespace hsd
             }
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(f64 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -468,7 +468,7 @@ namespace hsd
             }
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(f128 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -483,32 +483,32 @@ namespace hsd
             }
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(char* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(const char* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
 
-        template <string_literal str>
+        template <usize N, string_literal<N> str>
         inline i32 _write(const char8* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
         
-        template <string_literal str, typename... Args>
+        template <usize N, string_literal<N> str, typename... Args>
         inline i32 _write(const tuple<Args...>& val, pair<char*, usize> dest)
         {
             i32 _len = dest.second;
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (_sub_from(_len, _write<"">(val.template get<Ints>(), 
+                    (_sub_from(_len, _write<2, " ">(val.template get<Ints>(), 
                     {dest.first + (dest.second - _len), _len}))), ...
                 );
             }(make_index_sequence<val.size()>{});
@@ -516,79 +516,79 @@ namespace hsd
             return dest.second - _len;
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, str.data);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(wchar val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%lc").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(char val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%c").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(char8 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zc").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(i16 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%hd").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(u16 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%hu").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(i32 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%d").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(u32 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%u").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(i64 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%lld").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(u64 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%llu").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(long val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zd").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(ulong val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zu").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(f32 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -603,7 +603,7 @@ namespace hsd
             }
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(f64 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -618,7 +618,7 @@ namespace hsd
             }
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(f128 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -633,50 +633,50 @@ namespace hsd
             }
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(char* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(const char* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(char8* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(const char8* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(wchar* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%ls").data, val);
         }
 
-        template <wstring_literal str>
+        template <usize N, wstring_literal<N> str>
         inline i32 _write(const wchar* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%ls").data, val);
         }
 
-        template <wstring_literal str, typename... Args>
+        template <usize N, wstring_literal<N> str, typename... Args>
         inline i32 _write(const tuple<Args...>& val, pair<wchar*, usize> dest)
         {
             i32 _len = dest.second;
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (_sub_from(_len, _write<L" ">(val.template get<Ints>(), 
+                    (_sub_from(_len, _write<2, L" ">(val.template get<Ints>(), 
                     {dest.first + (dest.second - _len), _len}))), ...
                 );
             }(make_index_sequence<val.size()>{});

@@ -77,7 +77,7 @@ namespace hsd
         template < basic_string_literal fmt, typename... Args >
         static void print(Args&&... args)
         {
-            using char_type = decltype(fmt)::char_type;
+            using char_type = typename decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
             static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
@@ -89,17 +89,23 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
-                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args), ...);
+                (_print<
+                    _fmt_buf[Ints].second + 1, 
+                    basic_string_literal< 
+                        char_type, _fmt_buf[Ints].second + 1 
+                    >{
+                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                    }
+                >(args), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_last>();
+            _print<_len + 1, _last>();
         }
 
         template < basic_string_literal fmt, typename... Args >
         static void err_print(Args&&... args)
         {
-            using char_type = decltype(fmt)::char_type;
+            using char_type = typename decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
             static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
@@ -111,11 +117,17 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
-                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args, stderr), ...);
+                (_print<
+                    _fmt_buf[Ints].second + 1, 
+                    basic_string_literal< 
+                        char_type, _fmt_buf[Ints].second + 1 
+                    >{
+                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                    }
+                >(args, stderr), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_last>(stderr);
+            _print<_len + 1, _last>(stderr);
         }
     };
 
@@ -266,7 +278,7 @@ namespace hsd
             if(only_read())
                 return runtime_error{"Cannot write file. It is in read mode"};
 
-            using char_type = decltype(fmt)::char_type;
+            using char_type = typename decltype(fmt)::char_type;
             using io_detail::_print;
             constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>();
             static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
@@ -278,11 +290,17 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
-                    _fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args, _file_buf), ...);
+                (_print<
+                    _fmt_buf[Ints].second + 1, 
+                    basic_string_literal< 
+                        char_type, _fmt_buf[Ints].second + 1 
+                    >{
+                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                    }
+                >(args, _file_buf), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_last>(_file_buf);
+            _print<_len + 1, _last>(_file_buf);
             return {};
         }
     };

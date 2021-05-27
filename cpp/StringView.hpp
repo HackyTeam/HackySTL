@@ -330,37 +330,37 @@ namespace hsd
         }
     } // namespace string_view_literals
 
-    template <string_literal str>
+    template <usize N, string_literal<N> str>
     inline i32 _write(const basic_string_view<char>& val, pair<char*, usize> dest)
     {
         return snprintf(dest.first, dest.second, (str + "%s").data, val.data());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline i32 _write(const basic_string_view<char>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%s").data, val.data());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline i32 _write(const basic_string_view<wchar>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%ls").data, val.data());
     }
 
-    template <string_literal str>
+    template <usize N, string_literal<N> str>
     inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.data());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.data());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline void _print(const basic_string_view<wchar>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%ls").data, val.data());

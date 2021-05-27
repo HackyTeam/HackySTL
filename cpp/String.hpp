@@ -753,11 +753,11 @@ namespace hsd
         val = move(basic_string<char>(str.first, str.second));
     }
 
-    template <typename T = wchar>
+    /*template <typename T = wchar>
     inline void _parse(pair<const wchar*, usize>& str, basic_string<char>& val)
     {
         val = move(basic_string<wchar>(str.first, str.second));
-    }
+    }*/
 
     template <typename T = wchar>
     inline void _parse(pair<const wchar*, usize>& str, basic_string<wchar>& val)
@@ -765,49 +765,49 @@ namespace hsd
         val = move(basic_string<wchar>(str.first, str.second));
     }
 
-    template <string_literal str>
+    template <usize N, string_literal<N> str>
     inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
     {
         return snprintf(dest.first, dest.second, (str + "%s").data, val.c_str());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%s").data, val.c_str());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%ls").data, val.c_str());
     }
 
-    template <string_literal str>
+    template <usize N, string_literal<N> str>
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
-    template <string_literal str>
+    template <usize N, string_literal<N> str>
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
-    template <wstring_literal str>
+    template <usize N, wstring_literal<N> str>
     inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%ls").data, val.c_str());

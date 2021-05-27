@@ -15,11 +15,6 @@ struct derived
     {}
 };
 
-template <typename T>
-struct hsdCTAlloc
-    : public hsd::constexpr_allocator<T, 1>
-{};
-
 int main()
 {
     hsd::uchar buf[256]{};

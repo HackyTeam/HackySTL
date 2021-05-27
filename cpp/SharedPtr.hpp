@@ -15,180 +15,156 @@ namespace hsd
             concept ConvertibleDerived = std::is_convertible_v<U, T> || std::is_base_of_v<T, U>;
 
             template < typename T, template <typename> typename Allocator >
-            class storage : private Allocator<remove_array_t<T>>
+            class storage
             {
             private:
-                usize _size = 0;
                 using alloc_type = Allocator<remove_array_t<T>>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
+
+                alloc_type _alloc;
+                pointer_type _data = nullptr;
+                usize _size = 0;
 
                 template <typename U, template <typename> typename Alloc>
                 friend class storage;
 
             public:
-                HSD_CONSTEXPR storage()
-                requires (std::is_default_constructible_v<Allocator<uchar>>) = default;
+                inline storage()
+                requires (std::is_default_constructible_v<alloc_type>) = default;
 
-                HSD_CONSTEXPR storage(pointer_type ptr, usize size)
-                requires (std::is_default_constructible_v<Allocator<uchar>>)
-                    : _size{size}
-                {
-                    this->_data = ptr;
-                }
+                inline storage(pointer_type ptr, usize size)
+                requires (std::is_default_constructible_v<alloc_type>)
+                    : _data{ptr}, _size{size}
+                {}
 
-                HSD_CONSTEXPR storage(const Allocator<value_type>& alloc, usize size)
+                inline storage(const alloc_type& alloc, usize size)
                 requires (std::is_copy_constructible_v<value_type>)
-                    : Allocator<value_type>(alloc), _size{size}
+                    : _alloc{alloc}, _size{size}
                 {
-                    this->_data = this->allocate(size);
-                    alloc_type::construct_at(this->_data);
+                    _data = _alloc.allocate(size).unwrap();
+                    _alloc.construct_at(_data);
 
                     for(usize _index = 0; _index < size; _index++)
                     {
-                        alloc_type::construct_at(&this->_data[_index]);
+                        _alloc.construct_at(&_data[_index]);
                     }
                 }
 
-                HSD_CONSTEXPR storage(pointer_type ptr, 
-                    const Allocator<value_type>& alloc, usize size)
+                inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
                 requires (std::is_copy_constructible_v<value_type>)
-                    : Allocator<value_type>(alloc), _size{size}
+                    : _alloc{alloc}, _data{ptr}, _size{size}
+                {}
+
+                inline storage(const storage& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}, _size{other._size}
+                {}
+
+                inline storage(const storage& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}, _size{other._size}
+                {}
+
+                inline storage(storage&& other)
+                requires (std::is_move_constructible_v<alloc_type>)
+                    : _alloc{move(other._alloc)}
                 {
-                    this->_data = ptr;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
-                HSD_CONSTEXPR storage(const storage& other)
-                requires (std::is_copy_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(other)
+                inline storage(storage&& other)
+                requires (!std::is_move_constructible_v<alloc_type>)
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
-                }
-
-                HSD_CONSTEXPR storage(const storage& other)
-                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = other._data;
-                    this->_size = other._size;
-                }
-
-                HSD_CONSTEXPR storage(storage&& other)
-                requires (std::is_move_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(move(other))
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                HSD_CONSTEXPR storage(storage&& other)
-                requires (!std::is_move_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage(const storage<U, Allocator>& other)
-                requires (std::is_copy_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(other)
+                inline storage(const storage<U, Allocator>& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}, _size{other._size}
+                {}
+
+                template <typename U = T>
+                inline storage(const storage<U, Allocator>& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}, _size{other._size}
+                {}
+
+                template <typename U = T>
+                inline storage(storage<U, Allocator>&& other)
+                requires (std::is_move_constructible_v<alloc_type>)
+                    : _alloc{move(other._alloc)}
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage(const storage<U, Allocator>& other)
-                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
+                inline storage(storage<U, Allocator>&& other)
+                requires (!std::is_move_constructible_v<alloc_type>)
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
-                template <typename U = T>
-                HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
-                requires (std::is_move_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(move(other))
+                inline storage& operator=(const storage& rhs)
                 {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                template <typename U = T>
-                HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
-                requires (!std::is_move_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                HSD_CONSTEXPR storage& operator=(const storage& rhs)
-                {
-                    this->get_allocator() = rhs.get_allocator();
-                    this->_data = rhs._data;
-                    this->_size = rhs._size;
+                    _alloc = rhs._alloc;
+                    _data = rhs._data;
+                    _size = rhs._size;
                     return *this;
                 }
 
-                HSD_CONSTEXPR storage& operator=(storage&& rhs)
+                inline storage& operator=(storage&& rhs)
                 {
-                    this->get_allocator() = move(rhs.get_allocator());
-                    this->_data = exchange(rhs._data, nullptr);                    
-                    swap(this->_size, rhs._size);
+                    _alloc = rhs._alloc;
+                    _data = exchange(rhs._data, nullptr);                    
+                    swap(_size, rhs._size);
                     return *this;
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage& operator=(const storage<U, Allocator>& rhs)
+                inline storage& operator=(const storage<U, Allocator>& rhs)
                 {
-                    this->get_allocator() = rhs.get_allocator();
-                    this->_data = rhs._data;
-                    this->_size = rhs._size;
+                    _alloc = rhs._alloc;
+                    _data = rhs._data;
+                    _size = rhs._size;
                     return *this;
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage& operator=(storage<U, Allocator>&& rhs)
+                inline storage& operator=(storage<U, Allocator>&& rhs)
                 {
-                    this->get_allocator() = move(rhs.get_allocator()); 
-                    this->_data = exchange(rhs._data, nullptr);               
-                    swap(this->_size, rhs._size);
+                    _alloc = rhs._alloc; 
+                    _data = exchange(rhs._data, nullptr);               
+                    swap(_size, rhs._size);
                     return *this;
                 }
 
-                constexpr Allocator<value_type>& get_allocator()
+                inline auto deallocate()
                 {
-                    return *this;
+                    return _alloc.deallocate(_data, _size);
                 }
 
-                constexpr const Allocator<value_type>& get_allocator() const
-                {
-                    return *this;
-                }
-
-                constexpr usize get_size() const
+                inline usize get_size() const
                 {
                     return _size;
                 }
 
-                constexpr auto* get_pointer() const
+                inline auto* get_pointer() const
                 {
-                    if constexpr(is_same<decltype(this->_data), value_type*>::value)
-                    {
-                        return this->_data;
-                    }
-                    else if constexpr(requires {this->_data.data();})
-                    {
-                        return this->_data.data();
-                    }
+                    return _data;
                 }
 
-                constexpr void set_pointer(pointer_type ptr)
+                inline void set_pointer(pointer_type ptr)
                 {
                     this->_data = ptr;
                 }
 
-                constexpr void set_size(usize size)
+                inline void set_size(usize size)
                 {
                     _size = size;
                 }
@@ -196,103 +172,98 @@ namespace hsd
 
             template < template <typename> typename Allocator >
             class counter
-                : private Allocator<usize>
             {
             private:
                 using alloc_type = Allocator<usize>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+                alloc_type _alloc;
+                usize* _data = nullptr;
+
                 template < template <typename> typename Alloc >
                 friend class counter;                
 
             public:
-                HSD_CONSTEXPR counter()
-                requires (std::is_default_constructible_v<Allocator<usize>>)
+                inline counter()
+                requires (std::is_default_constructible_v<alloc_type>)
                 {
-                    this->_data = this->allocate(1).unwrap();
-                    *this->_data = 1;
+                    _data = _alloc.allocate(1).unwrap();
+                    *_data = 1;
                 }
 
-                HSD_CONSTEXPR counter(const Allocator<usize>& alloc)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<usize>(alloc)
+                inline counter(const alloc_type& alloc)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{alloc}
                 {
-                    this->_data = this->allocate(1).unwrap();
-                    *this->_data = 1;
+                    _data = _alloc.allocate(1).unwrap();
+                    *_data = 1;
                 }
 
-                HSD_CONSTEXPR counter(usize* ptr)
-                requires (std::is_default_constructible_v<Allocator<usize>>)
+                inline counter(usize* ptr)
+                requires (std::is_default_constructible_v<alloc_type>)
+                    : _data{ptr}
                 {
-                    this->_data = ptr;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const Allocator<usize>& alloc, usize* ptr)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<usize>(alloc)
+                inline counter(const alloc_type& alloc, usize* ptr)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{alloc}, _data{ptr}
                 {
-                    this->_data = ptr;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const counter& other)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<usize>(other)
+                inline counter(const counter& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}
                 {
-                    this->_data = other._data;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const counter& other)
-                requires (!std::is_copy_constructible_v<Allocator<usize>>)
+                inline counter(const counter& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}
                 {
-                    this->_data = other._data;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter& operator=(const counter& rhs)
+                inline counter& operator=(const counter& rhs)
                 {
-                    this->_data = rhs._data;
-                    (*this->_data)++;
+                    _data = rhs._data;
+                    (*_data)++;
                     return *this;
                 }
 
-                HSD_CONSTEXPR counter& operator=(counter&& rhs)
+                inline counter& operator=(counter&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);
+                    _data = exchange(rhs._data, nullptr);
                     return *this;
                 }
 
-                constexpr usize& operator*()
+                inline usize& operator*()
                 {
-                    return *this->_data;
+                    return *_data;
                 }
 
-                constexpr Allocator<usize>& get_allocator()
+                inline auto deallocate()
                 {
-                    return *this;
+                    return _alloc.deallocate(_data, 1);
                 }
 
-                constexpr const Allocator<usize>& get_allocator() const
-                {
-                    return *this;
-                }
-
-                constexpr usize get_size() const
+                inline usize get_size() const
                 {
                     return 1u;
                 }
 
-                constexpr auto* get_pointer() const
+                inline auto* get_pointer() const
                 {
-                    return this->_data;
+                    return _data;
                 }
 
-                constexpr void set_pointer(pointer_type ptr)
+                inline void set_pointer(pointer_type ptr)
                 {
-                    this->_data = ptr;
+                    _data = ptr;
                 }
             };
             
@@ -308,7 +279,7 @@ namespace hsd
             template <typename U, template <typename> typename Alloc>
             friend class shared_ptr;
 
-            HSD_CONSTEXPR void _delete()
+            inline void _delete()
             {
                 if(_count.get_pointer() != nullptr)
                 {
@@ -328,10 +299,8 @@ namespace hsd
                                 _destroy_inplace(*get());
                             }
                         }
-                        _value.get_allocator().deallocate(
-                            _value.get_pointer(), _value.get_size());
-                        _count.get_allocator().deallocate(
-                            _count.get_pointer(), _count.get_size());
+                        _value.deallocate().unwrap();
+                        _count.deallocate().unwrap();
                     }
 
                     _value.set_pointer(nullptr);
@@ -345,50 +314,50 @@ namespace hsd
             using value_type = typename alloc_type::value_type;
             using reference_type = typename alloc_type::value_type&;
 
-            HSD_CONSTEXPR shared_ptr() = default;
-            HSD_CONSTEXPR shared_ptr(NullType) {}
+            inline shared_ptr() = default;
+            inline shared_ptr(NullType) {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr) 
-            requires (std::is_default_constructible_v<Allocator<uchar>>)
+            inline shared_ptr(pointer_type ptr) 
+            requires (std::is_default_constructible_v<alloc_type>)
                 : _value{ptr, 1u}
             {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr, usize size) 
-            requires (std::is_default_constructible_v<Allocator<uchar>>)
+            inline shared_ptr(pointer_type ptr, usize size) 
+            requires (std::is_default_constructible_v<alloc_type>)
                 : _value{ptr, size}
             {}
 
-            HSD_CONSTEXPR shared_ptr(const Allocator<value_type>& alloc) 
+            inline shared_ptr(const alloc_type& alloc) 
                 : _value{alloc, 1u}, _count{alloc}
             {}
 
-            HSD_CONSTEXPR shared_ptr(const Allocator<value_type>& alloc, usize size) 
+            inline shared_ptr(const alloc_type& alloc, usize size) 
                 : _value{alloc, size}, _count{alloc}
             {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr, 
-                const Allocator<value_type>& alloc, usize size) 
+            inline shared_ptr(pointer_type ptr, 
+                const alloc_type& alloc, usize size) 
                 : _value{ptr, alloc, size}, _count{alloc}
             {}
 
             template <typename U = T> 
-            constexpr shared_ptr(const shared_ptr<U, Allocator>& other)
+            inline shared_ptr(const shared_ptr<U, Allocator>& other)
             requires(shared_detail::ConvertibleDerived<T, U>)
                 : _value{other._value}, _count{other._count}
             {}
 
             template <typename U = T> 
-            constexpr shared_ptr(shared_ptr<U, Allocator>&& other)
+            inline shared_ptr(shared_ptr<U, Allocator>&& other)
             requires(shared_detail::ConvertibleDerived<T, U>)
                 : _value{move(other._value)}, _count{move(other._count)}
             {}
 
-            HSD_CONSTEXPR ~shared_ptr()
+            inline ~shared_ptr()
             {
                 _delete();
             }
 
-            HSD_CONSTEXPR shared_ptr& operator=(NullType)
+            inline shared_ptr& operator=(NullType)
             {
                 _delete();
                 return *this;
@@ -396,7 +365,7 @@ namespace hsd
 
             template <typename U = T> 
             requires(shared_detail::ConvertibleDerived<T, U>)
-            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U, Allocator>& rhs)
+            inline shared_ptr& operator=(shared_ptr<U, Allocator>& rhs)
             {
                 _delete();
                 _value = rhs._value;
@@ -406,7 +375,7 @@ namespace hsd
 
             template <typename U = T> 
             requires(shared_detail::ConvertibleDerived<T, U>)
-            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U, Allocator>&& rhs)
+            inline shared_ptr& operator=(shared_ptr<U, Allocator>&& rhs)
             {
                 _delete();
                 _value = move(rhs._value);
@@ -414,62 +383,62 @@ namespace hsd
                 return *this;
             }
 
-            constexpr bool operator==(const shared_ptr& rhs) const
+            inline bool operator==(const shared_ptr& rhs) const
             {
                 return get() == rhs.get();
             }
 
-            constexpr bool operator!=(const shared_ptr& rhs) const
+            inline bool operator!=(const shared_ptr& rhs) const
             {
                 return get() == rhs.get();
             }
 
-            constexpr bool operator==(NullType) const
+            inline bool operator==(NullType) const
             {
                 return get() == nullptr;
             }
 
-            constexpr bool operator!=(NullType) const
+            inline bool operator!=(NullType) const
             {
                 return get() == nullptr;
             }
 
-            constexpr auto* get()
+            inline auto* get()
             {
                 return _value.get_pointer();
             }
 
-            constexpr auto* get() const
+            inline auto* get() const
             {
                 return _value.get_pointer();
             }
 
-            constexpr auto* operator->()
+            inline auto* operator->()
             {
                 return get();
             }
 
-            constexpr auto* operator->() const
+            inline auto* operator->() const
             {
                 return get();
             }
 
-            constexpr auto& operator*()
+            inline auto& operator*()
             {
                 return *get();
             }
 
-            constexpr auto& operator*() const
+            inline auto& operator*() const
             {
                 return *get();
             }
 
-            constexpr usize get_count()
+            inline usize get_count()
             {
                 return *_count;
             }
 
-            constexpr bool is_unique()
+            inline bool is_unique()
             {
                 return get_count() == 1;
             }
@@ -495,7 +464,7 @@ namespace hsd
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
         requires (std::is_default_constructible_v<Allocator<uchar>>)
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::single_object 
+        static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Args&&... args)
         {
             Allocator<remove_array_t<T>> _alloc;
@@ -505,7 +474,7 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args >
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::single_object 
+        static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
@@ -515,7 +484,7 @@ namespace hsd
 
         template < typename T, template <typename> typename Allocator = allocator >
         requires (std::is_default_constructible_v<Allocator<uchar>>)
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::array
+        static inline typename MakeShr<T, Allocator>::array
         make_shared(usize size)
         {
             Allocator<remove_array_t<T>> _alloc;
@@ -524,14 +493,14 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename U >
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::array
+        static inline typename MakeShr<T, Allocator>::array
         make_shared(Allocator<U>& alloc, usize size)
         {
             return shared_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), size);
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::invalid_type 
+        static inline typename MakeShr<T, Allocator>::invalid_type 
         make_shared(Args&&...) = delete;
     }
 
@@ -543,180 +512,156 @@ namespace hsd
             concept ConvertibleDerived = std::is_convertible_v<U, T> || std::is_base_of_v<T, U>;
 
             template < typename T, template <typename> typename Allocator >
-            class storage : private Allocator<remove_array_t<T>>
+            class storage
             {
             private:
-                usize _size = 0;
                 using alloc_type = Allocator<remove_array_t<T>>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
+
+                alloc_type _alloc;
+                pointer_type _data = nullptr;
+                usize _size = 0;
 
                 template <typename U, template <typename> typename Alloc>
                 friend class storage;
 
             public:
-                HSD_CONSTEXPR storage()
-                requires (std::is_default_constructible_v<Allocator<uchar>>) = default;
+                inline storage()
+                requires (std::is_default_constructible_v<alloc_type>) = default;
 
-                HSD_CONSTEXPR storage(pointer_type ptr, usize size)
-                requires (std::is_default_constructible_v<Allocator<uchar>>)
-                    : _size{size}
-                {
-                    this->_data = ptr;
-                }
+                inline storage(pointer_type ptr, usize size)
+                requires (std::is_default_constructible_v<alloc_type>)
+                    : _data{ptr}, _size{size}
+                {}
 
-                HSD_CONSTEXPR storage(const Allocator<value_type>& alloc, usize size)
+                inline storage(const alloc_type& alloc, usize size)
                 requires (std::is_copy_constructible_v<value_type>)
-                    : Allocator<value_type>(alloc), _size{size}
+                    : _alloc{alloc}, _size{size}
                 {
-                    this->_data = this->allocate(size);
-                    alloc_type::construct_at(this->_data);
+                    _data = _alloc.allocate(size).unwrap();
+                    _alloc.construct_at(_data);
 
                     for(usize _index = 0; _index < size; _index++)
                     {
-                        alloc_type::construct_at(&this->_data[_index]);
+                        _alloc.construct_at(&_data[_index]);
                     }
                 }
 
-                HSD_CONSTEXPR storage(pointer_type ptr, 
-                    const Allocator<value_type>& alloc, usize size)
+                inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
                 requires (std::is_copy_constructible_v<value_type>)
-                    : Allocator<value_type>(alloc), _size{size}
+                    : _alloc{alloc}, _data{ptr}, _size{size}
+                {}
+
+                inline storage(const storage& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}, _size{other._size}
+                {}
+
+                inline storage(const storage& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}, _size{other._size}
+                {}
+
+                inline storage(storage&& other)
+                requires (std::is_move_constructible_v<alloc_type>)
+                    : _alloc{move(other._alloc)}
                 {
-                    this->_data = ptr;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
-                HSD_CONSTEXPR storage(const storage& other)
-                requires (std::is_copy_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(other)
+                inline storage(storage&& other)
+                requires (!std::is_move_constructible_v<alloc_type>)
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
-                }
-
-                HSD_CONSTEXPR storage(const storage& other)
-                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = other._data;
-                    this->_size = other._size;
-                }
-
-                HSD_CONSTEXPR storage(storage&& other)
-                requires (std::is_move_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(move(other))
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                HSD_CONSTEXPR storage(storage&& other)
-                requires (!std::is_move_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage(const storage<U, Allocator>& other)
-                requires (std::is_copy_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(other)
+                inline storage(const storage<U, Allocator>& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}, _size{other._size}
+                {}
+
+                template <typename U = T>
+                inline storage(const storage<U, Allocator>& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}, _size{other._size}
+                {}
+
+                template <typename U = T>
+                inline storage(storage<U, Allocator>&& other)
+                requires (std::is_move_constructible_v<alloc_type>)
+                    : _alloc{move(other._alloc)}
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage(const storage<U, Allocator>& other)
-                requires (!std::is_copy_constructible_v<Allocator<value_type>>)
+                inline storage(storage<U, Allocator>&& other)
+                requires (!std::is_move_constructible_v<alloc_type>)
                 {
-                    this->_data = other._data;
-                    this->_size = other._size;
+                    _data = exchange(other._data, nullptr);
+                    swap(_size, other._size);
                 }
 
-                template <typename U = T>
-                HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
-                requires (std::is_move_constructible_v<Allocator<value_type>>)
-                    : Allocator<value_type>(move(other))
+                inline storage& operator=(const storage& rhs)
                 {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                template <typename U = T>
-                HSD_CONSTEXPR storage(storage<U, Allocator>&& other)
-                requires (!std::is_move_constructible_v<Allocator<value_type>>)
-                {
-                    this->_data = exchange(other._data, nullptr);
-                    swap(this->_size, other._size);
-                }
-
-                HSD_CONSTEXPR storage& operator=(const storage& rhs)
-                {
-                    this->get_allocator() = rhs.get_allocator();
-                    this->_data = rhs._data;
-                    this->_size = rhs._size;
+                    _alloc = rhs._alloc;
+                    _data = rhs._data;
+                    _size = rhs._size;
                     return *this;
                 }
 
-                HSD_CONSTEXPR storage& operator=(storage&& rhs)
+                inline storage& operator=(storage&& rhs)
                 {
-                    this->get_allocator() = move(rhs.get_allocator());
-                    this->_data = exchange(rhs._data, nullptr);                    
-                    swap(this->_size, rhs._size);
+                    _alloc = rhs._alloc;
+                    _data = exchange(rhs._data, nullptr);                    
+                    swap(_size, rhs._size);
                     return *this;
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage& operator=(const storage<U, Allocator>& rhs)
+                inline storage& operator=(const storage<U, Allocator>& rhs)
                 {
-                    this->get_allocator() = rhs.get_allocator();
-                    this->_data = rhs._data;
-                    this->_size = rhs._size;
+                    _alloc = rhs._alloc;
+                    _data = rhs._data;
+                    _size = rhs._size;
                     return *this;
                 }
 
                 template <typename U = T>
-                HSD_CONSTEXPR storage& operator=(storage<U, Allocator>&& rhs)
+                inline storage& operator=(storage<U, Allocator>&& rhs)
                 {
-                    this->get_allocator() = move(rhs.get_allocator()); 
-                    this->_data = exchange(rhs._data, nullptr);               
-                    swap(this->_size, rhs._size);
+                    _alloc = rhs._alloc; 
+                    _data = exchange(rhs._data, nullptr);               
+                    swap(_size, rhs._size);
                     return *this;
                 }
 
-                constexpr Allocator<value_type>& get_allocator()
+                inline auto deallocate()
                 {
-                    return *this;
+                    return _alloc.deallocate(_data, _size);
                 }
 
-                constexpr const Allocator<value_type>& get_allocator() const
-                {
-                    return *this;
-                }
-
-                constexpr usize get_size() const
+                inline usize get_size() const
                 {
                     return _size;
                 }
 
-                constexpr auto* get_pointer() const
+                inline auto* get_pointer() const
                 {
-                    if constexpr(is_same<decltype(this->_data), value_type*>::value)
-                    {
-                        return this->_data;
-                    }
-                    else if constexpr(requires {this->_data.data();})
-                    {
-                        return this->_data.data();
-                    }
+                    return _data;
                 }
 
-                constexpr void set_pointer(pointer_type ptr)
+                inline void set_pointer(pointer_type ptr)
                 {
                     this->_data = ptr;
                 }
 
-                constexpr void set_size(usize size)
+                inline void set_size(usize size)
                 {
                     _size = size;
                 }
@@ -724,103 +669,98 @@ namespace hsd
 
             template < template <typename> typename Allocator >
             class counter
-                : private Allocator<atomic_usize>
             {
             private:
                 using alloc_type = Allocator<atomic_usize>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+                alloc_type _alloc;
+                atomic_usize* _data = nullptr;
+
                 template < template <typename> typename Alloc >
                 friend class counter;                
 
             public:
-                HSD_CONSTEXPR counter()
-                requires (std::is_default_constructible_v<Allocator<usize>>)
+                inline counter()
+                requires (std::is_default_constructible_v<alloc_type>)
                 {
-                    this->_data = this->allocate(1).unwrap();
-                    *this->_data = 1;
+                    _data = _alloc.allocate(1).unwrap();
+                    *_data = 1;
                 }
 
-                HSD_CONSTEXPR counter(const Allocator<usize>& alloc)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<atomic_usize>(alloc)
+                inline counter(const alloc_type& alloc)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{alloc}
                 {
-                    this->_data = this->allocate(1).unwrap();
-                    *this->_data = 1;
+                    _data = _alloc.allocate(1).unwrap();
+                    *_data = 1;
                 }
 
-                HSD_CONSTEXPR counter(atomic_usize* ptr)
-                requires (std::is_default_constructible_v<Allocator<usize>>)
+                inline counter(usize* ptr)
+                requires (std::is_default_constructible_v<alloc_type>)
+                    : _data{ptr}
                 {
-                    this->_data = ptr;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const Allocator<usize>& alloc, usize* ptr)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<atomic_usize>(alloc)
+                inline counter(const alloc_type& alloc, usize* ptr)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{alloc}, _data{ptr}
                 {
-                    this->_data = ptr;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const counter& other)
-                requires (std::is_copy_constructible_v<Allocator<usize>>)
-                    : Allocator<atomic_usize>(other)
+                inline counter(const counter& other)
+                requires (std::is_copy_constructible_v<alloc_type>)
+                    : _alloc{other._alloc}, _data{other._data}
                 {
-                    this->_data = other._data;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter(const counter& other)
-                requires (!std::is_copy_constructible_v<Allocator<usize>>)
+                inline counter(const counter& other)
+                requires (!std::is_copy_constructible_v<alloc_type>)
+                    : _data{other._data}
                 {
-                    this->_data = other._data;
-                    (*this->_data)++;
+                    (*_data)++;
                 }
 
-                HSD_CONSTEXPR counter& operator=(const counter& rhs)
+                inline counter& operator=(const counter& rhs)
                 {
-                    this->_data = rhs._data;
-                    (*this->_data)++;
+                    _data = rhs._data;
+                    (*_data)++;
                     return *this;
                 }
 
-                HSD_CONSTEXPR counter& operator=(counter&& rhs)
+                inline counter& operator=(counter&& rhs)
                 {
-                    this->_data = exchange(rhs._data, nullptr);
+                    _data = exchange(rhs._data, nullptr);
                     return *this;
                 }
 
-                constexpr atomic_usize& operator*()
+                inline atomic_usize& operator*()
                 {
-                    return *this->_data;
+                    return *_data;
                 }
 
-                constexpr Allocator<atomic_usize>& get_allocator()
+                inline auto deallocate()
                 {
-                    return *this;
+                    return _alloc.deallocate(_data, 1);
                 }
 
-                constexpr const Allocator<atomic_usize>& get_allocator() const
-                {
-                    return *this;
-                }
-
-                constexpr usize get_size() const
+                inline usize get_size() const
                 {
                     return 1u;
                 }
 
-                constexpr auto* get_pointer() const
+                inline auto* get_pointer() const
                 {
-                    return this->_data;
+                    return _data;
                 }
 
-                constexpr void set_pointer(pointer_type ptr)
+                inline void set_pointer(pointer_type ptr)
                 {
-                    this->_data = ptr;
+                    _data = ptr;
                 }
             };
             
@@ -836,7 +776,7 @@ namespace hsd
             template <typename U, template <typename> typename Alloc>
             friend class shared_ptr;
 
-            HSD_CONSTEXPR void _delete()
+            inline void _delete()
             {
                 if(_count.get_pointer() != nullptr)
                 {
@@ -844,7 +784,8 @@ namespace hsd
 
                     if(*_count == 0)
                     {
-                        if (get() != nullptr) {
+                        if (get() != nullptr) 
+                        {
                             if constexpr (is_array<T>::value)
                             {
                                 for (usize i = 0, size = _value.get_size(); i < size; ++i)
@@ -855,10 +796,8 @@ namespace hsd
                                 _destroy_inplace(*get());
                             }
                         }
-                        _value.get_allocator().deallocate(
-                            _value.get_pointer(), _value.get_size());
-                        _count.get_allocator().deallocate(
-                            _count.get_pointer(), _count.get_size());
+                        _value.deallocate().unwrap();
+                        _count.deallocate().unwrap();
                     }
 
                     _value.set_pointer(nullptr);
@@ -872,50 +811,50 @@ namespace hsd
             using value_type = typename alloc_type::value_type;
             using reference_type = typename alloc_type::value_type&;
 
-            HSD_CONSTEXPR shared_ptr() = default;
-            HSD_CONSTEXPR shared_ptr(NullType) {}
+            inline shared_ptr() = default;
+            inline shared_ptr(NullType) {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr) 
-            requires (std::is_default_constructible_v<Allocator<uchar>>)
+            inline shared_ptr(pointer_type ptr) 
+            requires (std::is_default_constructible_v<alloc_type>)
                 : _value{ptr, 1u}
             {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr, usize size) 
-            requires (std::is_default_constructible_v<Allocator<uchar>>)
+            inline shared_ptr(pointer_type ptr, usize size) 
+            requires (std::is_default_constructible_v<alloc_type>)
                 : _value{ptr, size}
             {}
 
-            HSD_CONSTEXPR shared_ptr(const Allocator<value_type>& alloc) 
+            inline shared_ptr(const alloc_type& alloc) 
                 : _value{alloc, 1u}, _count{alloc}
             {}
 
-            HSD_CONSTEXPR shared_ptr(const Allocator<value_type>& alloc, usize size) 
+            inline shared_ptr(const alloc_type& alloc, usize size) 
                 : _value{alloc, size}, _count{alloc}
             {}
 
-            HSD_CONSTEXPR shared_ptr(pointer_type ptr, 
-                const Allocator<value_type>& alloc, usize size) 
+            inline shared_ptr(pointer_type ptr, 
+                const alloc_type& alloc, usize size) 
                 : _value{ptr, alloc, size}, _count{alloc}
             {}
 
             template <typename U = T> 
-            constexpr shared_ptr(const shared_ptr<U, Allocator>& other)
+            inline shared_ptr(const shared_ptr<U, Allocator>& other)
             requires(shared_detail::ConvertibleDerived<T, U>)
                 : _value{other._value}, _count{other._count}
             {}
 
             template <typename U = T> 
-            constexpr shared_ptr(shared_ptr<U, Allocator>&& other)
+            inline shared_ptr(shared_ptr<U, Allocator>&& other)
             requires(shared_detail::ConvertibleDerived<T, U>)
                 : _value{move(other._value)}, _count{move(other._count)}
             {}
 
-            HSD_CONSTEXPR ~shared_ptr()
+            inline ~shared_ptr()
             {
                 _delete();
             }
 
-            HSD_CONSTEXPR shared_ptr& operator=(NullType)
+            inline shared_ptr& operator=(NullType)
             {
                 _delete();
                 return *this;
@@ -923,7 +862,7 @@ namespace hsd
 
             template <typename U = T> 
             requires(shared_detail::ConvertibleDerived<T, U>)
-            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U, Allocator>& rhs)
+            inline shared_ptr& operator=(shared_ptr<U, Allocator>& rhs)
             {
                 _delete();
                 _value = rhs._value;
@@ -933,7 +872,7 @@ namespace hsd
 
             template <typename U = T> 
             requires(shared_detail::ConvertibleDerived<T, U>)
-            HSD_CONSTEXPR shared_ptr& operator=(shared_ptr<U, Allocator>&& rhs)
+            inline shared_ptr& operator=(shared_ptr<U, Allocator>&& rhs)
             {
                 _delete();
                 _value = move(rhs._value);
@@ -941,62 +880,62 @@ namespace hsd
                 return *this;
             }
 
-            constexpr bool operator==(const shared_ptr& rhs) const
+            inline bool operator==(const shared_ptr& rhs) const
             {
                 return get() == rhs.get();
             }
 
-            constexpr bool operator!=(const shared_ptr& rhs) const
+            inline bool operator!=(const shared_ptr& rhs) const
             {
                 return get() == rhs.get();
             }
 
-            constexpr bool operator==(NullType) const
+            inline bool operator==(NullType) const
             {
                 return get() == nullptr;
             }
 
-            constexpr bool operator!=(NullType) const
+            inline bool operator!=(NullType) const
             {
                 return get() == nullptr;
             }
 
-            constexpr auto* get()
+            inline auto* get()
             {
                 return _value.get_pointer();
             }
 
-            constexpr auto* get() const
+            inline auto* get() const
             {
                 return _value.get_pointer();
             }
 
-            constexpr auto* operator->()
+            inline auto* operator->()
             {
                 return get();
             }
 
-            constexpr auto* operator->() const
+            inline auto* operator->() const
             {
                 return get();
             }
 
-            constexpr auto& operator*()
+            inline auto& operator*()
             {
                 return *get();
             }
 
-            constexpr auto& operator*() const
+            inline auto& operator*() const
             {
                 return *get();
             }
 
-            constexpr usize get_count()
+            inline usize get_count()
             {
                 return *_count;
             }
 
-            constexpr bool is_unique()
+            inline bool is_unique()
             {
                 return get_count() == 1;
             }
@@ -1022,7 +961,7 @@ namespace hsd
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
         requires (std::is_default_constructible_v<Allocator<uchar>>)
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::single_object 
+        static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Args&&... args)
         {
             Allocator<remove_array_t<T>> _alloc;
@@ -1032,7 +971,7 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args> 
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::single_object 
+        static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Allocator<U>& alloc, Args&&... args)
         {
             auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
@@ -1042,7 +981,7 @@ namespace hsd
 
         template < typename T, template <typename> typename Allocator = allocator >
         requires (std::is_default_constructible_v<Allocator<uchar>>)
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::array
+        static inline typename MakeShr<T, Allocator>::array
         make_shared(usize size)
         {
             Allocator<remove_array_t<T>> _alloc;
@@ -1051,14 +990,14 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename U >
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::array
+        static inline typename MakeShr<T, Allocator>::array
         make_shared(Allocator<U>& alloc, usize size)
         {
             return shared_ptr<T, Allocator>(static_cast<Allocator<remove_array_t<T>>>(alloc), size);
         }
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-        static HSD_CONSTEXPR typename MakeShr<T, Allocator>::invalid_type 
+        static inline typename MakeShr<T, Allocator>::invalid_type 
         make_shared(Args&&...) = delete;
     }
 
@@ -1069,52 +1008,52 @@ namespace hsd
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto make_unsafe_shared(Args&&... args)
+    static inline auto make_unsafe_shared(Args&&... args)
     {
         return non_atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto make_safe_shared(Args&&... args)
+    static inline auto make_safe_shared(Args&&... args)
     {
         return atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args >
-    static HSD_CONSTEXPR auto make_unsafe_shared(Allocator<U>& alloc, Args&&... args)
+    static inline auto make_unsafe_shared(Allocator<U>& alloc, Args&&... args)
     {
         return non_atomic_types::make_shared<T, Allocator, U, Args...>(alloc, forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U, typename... Args >
-    static HSD_CONSTEXPR auto make_safe_shared(Allocator<U>& alloc, Args&&... args)
+    static inline auto make_safe_shared(Allocator<U>& alloc, Args&&... args)
     {
         return atomic_types::make_shared<T, Allocator, U, Args...>(alloc, forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto make_unsafe_shared(usize size)
+    static inline auto make_unsafe_shared(usize size)
     {
         return non_atomic_types::make_shared<T, Allocator>(size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
     requires (std::is_default_constructible_v<Allocator<uchar>>)
-    static HSD_CONSTEXPR auto make_safe_shared(usize size)
+    static inline auto make_safe_shared(usize size)
     {
         return atomic_types::make_shared<T, Allocator>(size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U >
-    static HSD_CONSTEXPR auto make_unsafe_shared(Allocator<U>& alloc, usize size)
+    static inline auto make_unsafe_shared(Allocator<U>& alloc, usize size)
     {
         return non_atomic_types::make_shared<T, Allocator, U>(alloc, size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename U >
-    static HSD_CONSTEXPR auto make_safe_shared(Allocator<U>& alloc, usize size)
+    static inline auto make_safe_shared(Allocator<U>& alloc, usize size)
     {
         return atomic_types::make_shared<T, Allocator, U>(alloc, size);
     }

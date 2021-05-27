@@ -46,9 +46,6 @@ namespace hsd
             uchar data[];
         };
 
-    protected:
-        T* _data = nullptr;
-
     public:
         using pointer_type = T*;
         using value_type = T;
@@ -193,30 +190,17 @@ namespace hsd
         template <typename U>
         friend class allocator;
 
-    protected:
-        T* _data = nullptr;
-
     public:
         using pointer_type = T*;
         using value_type = T;
         HSD_CONSTEXPR allocator() = default;
-        HSD_CONSTEXPR allocator(const allocator& other)
-            : _type_size{other._type_size}, _alignment{other._alignment}
-        {}
 
-        template <typename U>
+        template <typename U = T>
         HSD_CONSTEXPR allocator(const allocator<U>& other)
             : _type_size{other._type_size}, _alignment{other._alignment}
         {}
 
-        HSD_CONSTEXPR allocator& operator=(const allocator& rhs)
-        {
-            _type_size = rhs._type_size;
-            _alignment = rhs._alignment;
-            return *this;
-        }
-
-        template <typename U>
+        template <typename U = T>
         HSD_CONSTEXPR allocator& operator=(const allocator<U>& rhs)
         {
             _type_size = rhs._type_size;
@@ -265,33 +249,6 @@ namespace hsd
         static constexpr void construct_at(T* ptr, Args&&... args)
         {
             new (ptr) T(forward<Args>(args)...);
-        }
-    };
-
-    template < typename T, usize MaxSize >
-    class constexpr_allocator
-    {
-    protected:
-        using data_type = stack_array<T, MaxSize>;
-        data_type _data;
-
-    public:
-        using pointer_type = data_type;
-        using value_type = T;
-
-        HSD_CONSTEXPR constexpr_allocator() = default;
-        HSD_CONSTEXPR constexpr_allocator(const constexpr_allocator&) = delete;
-        HSD_CONSTEXPR constexpr_allocator(constexpr_allocator&&) = delete;
-
-        static constexpr usize limit()
-        {
-            return MaxSize;
-        }
-
-        template <typename... Args>
-        static constexpr void construct_at(T* ptr, Args&&... args)
-        {
-            (*ptr) = T(forward<Args>(args)...);
         }
     };
 } // namespace hsd

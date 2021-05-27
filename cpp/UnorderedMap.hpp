@@ -4,6 +4,7 @@
 #include "Pair.hpp"
 #include "Vector.hpp"
 #include "Hash.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
@@ -47,7 +48,7 @@ namespace hsd
         vector< ref_vector, BucketAllocator > _buckets;
         vector< pair<Key, T>, Allocator > _data;
 
-        constexpr void _replace(usize new_size)
+        inline void _replace(usize new_size)
         {
             _buckets.clear();
             _buckets.resize(new_size);
@@ -60,7 +61,7 @@ namespace hsd
             }
         }
 
-        constexpr pair<usize, usize> _get(const Key& key) const
+        inline pair<usize, usize> _get(const Key& key) const
         {
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
@@ -76,7 +77,7 @@ namespace hsd
             return {static_cast<usize>(-1), _index};
         }
 
-        constexpr auto _get_iter(const Key& key)
+        inline auto _get_iter(const Key& key)
             -> Result< pair<bucket_iter, usize>, umap_detail::bad_access >
         {
             auto _key_hash = Hasher::get_hash(key);
@@ -98,15 +99,15 @@ namespace hsd
         using iterator = typename vector<pair<Key, T>>::iterator;
         using const_iterator = typename vector<pair<Key, T>>::const_iterator;
 
-        HSD_CONSTEXPR ~unordered_map() {}
+        inline ~unordered_map() {}
 
-        HSD_CONSTEXPR unordered_map()
+        inline unordered_map()
         requires (umap_detail::DefaultAlloc<Allocator> &&
             umap_detail::DefaultAlloc<BucketAllocator>)
             : _buckets(10)
         {}
 
-        HSD_CONSTEXPR unordered_map(const Allocator<uchar>& alloc)
+        inline unordered_map(const Allocator<uchar>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<Allocator> || 
             umap_detail::CopyAlloc<Allocator>) && 
@@ -115,7 +116,7 @@ namespace hsd
             : _buckets(10, alloc), _data(alloc)
         {}
 
-        HSD_CONSTEXPR unordered_map(const BucketAllocator<uchar>& alloc)
+        inline unordered_map(const BucketAllocator<uchar>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<BucketAllocator> || 
             umap_detail::CopyAlloc<BucketAllocator>) && 
@@ -125,7 +126,7 @@ namespace hsd
             : _buckets(10, alloc)
         {}
 
-        HSD_CONSTEXPR unordered_map(const Allocator<uchar>& alloc)
+        inline unordered_map(const Allocator<uchar>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<Allocator> || 
             umap_detail::CopyAlloc<Allocator>) && 
@@ -135,7 +136,7 @@ namespace hsd
             : _buckets(10), _data(alloc)
         {}
 
-        HSD_CONSTEXPR unordered_map(
+        inline unordered_map(
             const BucketAllocator<uchar>& bucket_alloc, 
             const Allocator<uchar>& data_alloc)
         requires (
@@ -148,7 +149,7 @@ namespace hsd
             : _buckets(10, bucket_alloc), _data(data_alloc)
         {}
 
-        HSD_CONSTEXPR unordered_map(const unordered_map& other)
+        inline unordered_map(const unordered_map& other)
             : _buckets{other._buckets.size()}, _data{other._data}
         {
             for(auto& _val : _data)
@@ -159,12 +160,12 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR unordered_map(unordered_map&& other)
+        inline unordered_map(unordered_map&& other)
             : _buckets{move(other._buckets)}, _data{move(other._data)}
         {}
 
         template <usize N>
-        HSD_CONSTEXPR unordered_map(pair<Key, T> (&&other)[N])
+        inline unordered_map(pair<Key, T> (&&other)[N])
         requires (umap_detail::DefaultAlloc<Allocator> &&
             umap_detail::DefaultAlloc<BucketAllocator>)
             : _buckets(10)
@@ -178,14 +179,14 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR unordered_map& operator=(unordered_map&& rhs)
+        inline unordered_map& operator=(unordered_map&& rhs)
         {
             _buckets = move(rhs._buckets);
             _data = move(rhs._data);
             return *this;
         }
 
-        HSD_CONSTEXPR unordered_map& operator=(const unordered_map& rhs)
+        inline unordered_map& operator=(const unordered_map& rhs)
         {
             clear();
 
@@ -196,7 +197,7 @@ namespace hsd
         }
 
         template <usize N>
-        HSD_CONSTEXPR unordered_map& operator=(const pair<Key, T>(&rhs)[N])
+        inline unordered_map& operator=(const pair<Key, T>(&rhs)[N])
         {
             clear();
 
@@ -209,7 +210,7 @@ namespace hsd
         }
 
         template <usize N>
-        HSD_CONSTEXPR unordered_map& operator=(pair<Key, T>(&&rhs)[N])
+        inline unordered_map& operator=(pair<Key, T>(&&rhs)[N])
         {
             clear();
 
@@ -224,17 +225,17 @@ namespace hsd
             return *this;
         }
 
-        constexpr auto& operator[](const Key& key) noexcept
+        inline auto& operator[](const Key& key) noexcept
         {
             return emplace(key).first->second;
         }
 
-        constexpr const auto& operator[](const Key& key) const
+        inline const auto& operator[](const Key& key) const
         {
             return at(key).unwrap();
         }
 
-        constexpr auto at(const Key& key)
+        inline auto at(const Key& key)
             -> Result< reference<T>, umap_detail::bad_key >
         {
             usize _data_index = _get(key).first;
@@ -245,7 +246,7 @@ namespace hsd
             return {_data[_data_index].second};
         }
 
-        constexpr auto at(const Key& key) const
+        inline auto at(const Key& key) const
             -> Result< reference<const T>, umap_detail::bad_key >
         {
             usize _data_index = _get(key).first;
@@ -257,7 +258,7 @@ namespace hsd
         }
 
         template< typename NewKey, typename... Args >
-        constexpr pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
+        inline pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
         {
             auto [_data_index, _bucket_index] = _get(key);
 
@@ -271,25 +272,13 @@ namespace hsd
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
-                    if constexpr(requires {BucketAllocator<uchar>::limit();})
-                    {
-                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
-                        {
-                            _replace(_buckets.size() + _buckets.size() / 2);
-                        }
-                        else
-                        {
-                            _replace(BucketAllocator<uchar>::limit());
-                        }
-                    }
-                    else
-                    {
-                        _replace(_buckets.size() + _buckets.size() / 2);
-                    }
+                    _replace(_buckets.size() + _buckets.size() / 2);
                 }
                 else
                 {
-                    _buckets[_bucket_index].emplace_back(Hasher::get_hash(_data.back().first), _data.size() - 1);
+                    _buckets[_bucket_index].emplace_back(
+                        Hasher::get_hash(_data.back().first), _data.size() - 1
+                    );
                 }
 
                 return {_data.end() - 1, true};
@@ -297,7 +286,7 @@ namespace hsd
         }
 
         template< typename NewKey, typename... Args >
-        constexpr pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
+        inline pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
         {
             auto [_data_index, _bucket_index] = _get(key);
 
@@ -311,32 +300,20 @@ namespace hsd
 
                 if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
-                    if constexpr(requires {BucketAllocator<uchar>::limit();})
-                    {
-                        if(BucketAllocator<uchar>::limit() > _buckets.size() + _buckets.size() / 2)
-                        {
-                            _replace(_buckets.size() + _buckets.size() / 2);
-                        }
-                        else
-                        {
-                            _replace(BucketAllocator<uchar>::limit());
-                        }
-                    }
-                    else
-                    {
-                        _replace(_buckets.size() + _buckets.size() / 2);
-                    }
+                    _replace(_buckets.size() + _buckets.size() / 2);
                 }
                 else
                 {
-                    _buckets[_bucket_index].emplace_back(Hasher::get_hash(_data.back().first), _data.size() - 1);
+                    _buckets[_bucket_index].emplace_back(
+                        Hasher::get_hash(_data.back().first), _data.size() - 1
+                    );
                 }
 
                 return {_data.end() - 1, true};
             }
         }
 
-        constexpr auto erase(const_iterator pos)
+        inline auto erase(const_iterator pos)
             -> Result<iterator, umap_detail::bad_access>
         {
             auto _result = _get_iter(pos->first);
@@ -350,73 +327,73 @@ namespace hsd
             return _data.erase(pos).unwrap(HSD_FUNCTION_NAME);
         }
 
-        constexpr void clear()
+        inline void clear()
         {
             _data.clear();
             _buckets.clear();
         }
 
-        constexpr usize size() const
+        inline usize size() const
         {
             return _data.size();
         }
 
-        constexpr iterator begin()
+        inline iterator begin()
         {
             return _data.begin();
         }
 
-        constexpr const_iterator begin() const
+        inline const_iterator begin() const
         {
             return cbegin();
         }
 
-        constexpr iterator end()
+        inline iterator end()
         {
             return _data.end();
         }
 
-        constexpr const_iterator end() const
+        inline const_iterator end() const
         {
             return cend();
         }
 
-        constexpr const_iterator cbegin() const
+        inline const_iterator cbegin() const
         {
             return _data.cbegin();
         }
 
-        constexpr const_iterator cend() const
+        inline const_iterator cend() const
         {
             return _data.cend();
         }
 
-        constexpr iterator rbegin()
+        inline iterator rbegin()
         {
             return _data.rbegin();
         }
 
-        constexpr const_iterator rbegin() const
+        inline const_iterator rbegin() const
         {
             return crbegin();
         }
 
-        constexpr iterator rend()
+        inline iterator rend()
         {
             return _data.rend();
         }
 
-        constexpr const_iterator rend() const
+        inline const_iterator rend() const
         {
             return crend();
         }
 
-        constexpr const_iterator crbegin() const
+        inline const_iterator crbegin() const
         {
             return _data.crbegin();
         }
 
-        constexpr const_iterator crend() const
+        inline const_iterator crend() const
         {
             return _data.crend();
         }
@@ -424,12 +401,10 @@ namespace hsd
 
     template< typename Key, typename T, usize N >
     unordered_map(pair<Key, T> (&&other)[N]) 
-        -> unordered_map< Key, T, hash<usize, Key>, allocator >;
+        -> unordered_map<Key, T, hash<usize, Key>>;
 
     template< typename Key, typename T >
-    using buffered_umap = unordered_map< Key, T, hash<usize, Key>, buffered_allocator >;
-    template< typename Key, typename T, usize N >
-    using static_umap = unordered_map< Key, T, hash<usize, Key>, 
-        ct_alloc_helper<N + N / 2>::template alloc_type,
-        ct_alloc_helper<N>::template alloc_type >;
+    using buffered_umap = unordered_map<
+        Key, T, hash<usize, Key>, buffered_allocator
+    >;
 } // namespace hsd

@@ -2,17 +2,6 @@
 #include <HeapArray.hpp>
 #include <stdio.h>
 
-template <hsd::i32 N>
-constexpr auto gen_map()
-{
-    hsd::static_umap< hsd::i32, hsd::i32, N > map{};
-
-    for(hsd::i32 i = 0; i < N; i++)
-        map.emplace(i * i, i);
-
-    return map;
-}
-
 static auto check_erase()
 {
     hsd::unordered_map<hsd::i32, hsd::i32> map;
@@ -51,12 +40,5 @@ int main()
     printf("%d\n========\n", map[9]);
 
     for(auto& _it : map)
-        printf("%d\n", _it.first);
-
-    constexpr auto map2 = gen_map<100>();
-
-    printf("========\n%d\n========\n", map2[49]);
-
-    for(auto& _it : map2)
         printf("%d\n", _it.first);
 }

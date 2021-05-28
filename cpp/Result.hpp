@@ -70,7 +70,7 @@ namespace hsd
     };
 
     template < typename Ok, typename Err >
-    class Result
+    class [[nodiscard("Result type should not be discarded")]] Result
     {
     private:
         union
@@ -377,7 +377,7 @@ namespace hsd
     };
 
     template <typename Err>
-    class Result<void, Err>
+    class [[nodiscard("Result type should not be discarded")]] Result<void, Err>
     {
     private:
         union {
@@ -542,7 +542,7 @@ namespace hsd
     };
 
     template <typename Ok>
-    class Result<Ok, void>
+    class [[nodiscard("Result type should not be discarded")]] Result<Ok, void>
     {
     private:
         union {

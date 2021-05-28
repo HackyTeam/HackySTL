@@ -7,7 +7,7 @@ int main()
 {
     using namespace hsd::string_view_literals;
     setlocale(LC_ALL, "en_US.UTF-8");
-    hsd::JsonStream<hsd::wchar> lexer;
+    hsd::JsonStream<char> lexer;
     
     // Lex the string
     lexer.lex_file(test_filename).unwrap();
@@ -20,5 +20,5 @@ int main()
     // Assert that the whole object is complete
     assert(value->is_complete());
     
-    [[maybe_unused]] auto res = (*value)[L"LoS"_sv][0][L"age"_sv].as_num().unwrap();
+    [[maybe_unused]] auto res = (*value)["LoS"_sv][0]["age"_sv].as_num().unwrap();
 }

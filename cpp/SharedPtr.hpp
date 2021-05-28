@@ -697,14 +697,14 @@ namespace hsd
                     *_data = 1;
                 }
 
-                inline counter(usize* ptr)
+                inline counter(atomic_usize* ptr)
                 requires (std::is_default_constructible_v<alloc_type>)
                     : _data{ptr}
                 {
                     (*_data)++;
                 }
 
-                inline counter(const alloc_type& alloc, usize* ptr)
+                inline counter(const alloc_type& alloc, atomic_usize* ptr)
                 requires (std::is_copy_constructible_v<alloc_type>)
                     : _alloc{alloc}, _data{ptr}
                 {

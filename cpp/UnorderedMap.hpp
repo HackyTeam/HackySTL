@@ -14,8 +14,6 @@ namespace hsd
         concept DefaultAlloc = std::is_default_constructible_v<Allocator<uchar>>;
         template < template <typename> typename Allocator >
         concept CopyAlloc = std::is_copy_constructible_v<Allocator<uchar>>;
-        template < template <typename> typename Alloc1, template <typename> typename Alloc2 >
-        concept IsSameAlloc = is_same<Alloc1<uchar>, Alloc2<uchar>>::value;
 
         struct bad_key
         {
@@ -107,44 +105,48 @@ namespace hsd
             : _buckets(10)
         {}
 
-        inline unordered_map(const Allocator<uchar>& alloc)
+        template <typename U = uchar>
+        inline unordered_map(const Allocator<U>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<Allocator> || 
             umap_detail::CopyAlloc<Allocator>) && 
-            umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+            IsSame<Allocator<U>, BucketAllocator<U>>
         )
             : _buckets(10, alloc), _data(alloc)
         {}
 
-        inline unordered_map(const BucketAllocator<uchar>& alloc)
+        template <typename U = uchar>
+        inline unordered_map(const BucketAllocator<U>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<BucketAllocator> || 
             umap_detail::CopyAlloc<BucketAllocator>) && 
-            umap_detail::DefaultAlloc<Allocator> &&
-            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+            (umap_detail::DefaultAlloc<Allocator> &&
+            !IsSame<Allocator<U>, BucketAllocator<U>>)
         )
             : _buckets(10, alloc)
         {}
 
-        inline unordered_map(const Allocator<uchar>& alloc)
+        template <typename U = uchar>
+        inline unordered_map(const Allocator<U>& alloc)
         requires (
             (!umap_detail::DefaultAlloc<Allocator> || 
             umap_detail::CopyAlloc<Allocator>) && 
-            umap_detail::DefaultAlloc<BucketAllocator> &&
-            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+            (umap_detail::DefaultAlloc<BucketAllocator> &&
+            IsSame<Allocator<U>, BucketAllocator<U>>)
         )
             : _buckets(10), _data(alloc)
         {}
 
+        template <typename U1 = uchar, typename U2 = uchar>
         inline unordered_map(
-            const BucketAllocator<uchar>& bucket_alloc, 
-            const Allocator<uchar>& data_alloc)
+            const BucketAllocator<U1>& bucket_alloc, 
+            const Allocator<U2>& data_alloc)
         requires (
             (!umap_detail::DefaultAlloc<Allocator> || 
             umap_detail::CopyAlloc<Allocator>) && 
-            umap_detail::DefaultAlloc<Allocator> &&
-            umap_detail::DefaultAlloc<BucketAllocator> &&
-            !umap_detail::IsSameAlloc<Allocator, BucketAllocator>
+            (umap_detail::DefaultAlloc<Allocator> &&
+            umap_detail::DefaultAlloc<BucketAllocator>) &&
+            !IsSame<Allocator<U1>, BucketAllocator<U1>>
         )
             : _buckets(10, bucket_alloc), _data(data_alloc)
         {}
@@ -166,8 +168,8 @@ namespace hsd
 
         template <usize N>
         inline unordered_map(pair<Key, T> (&&other)[N])
-        requires (umap_detail::DefaultAlloc<Allocator> &&
-            umap_detail::DefaultAlloc<BucketAllocator>)
+        requires ((umap_detail::DefaultAlloc<Allocator> &&
+            umap_detail::DefaultAlloc<BucketAllocator>))
             : _buckets(10)
         {
             for(usize _index = 0; _index < N; _index++)

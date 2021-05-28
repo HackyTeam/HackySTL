@@ -82,18 +82,18 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
-        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+        constexpr Result& operator=(const Result&) = delete;
+        constexpr Result& operator=(Result&&) = delete;
 
         template <typename T>
         requires (std::is_constructible_v<Ok, T&&>)
-        HSD_CONSTEXPR Result(T&& value, ok_value = {})
+        constexpr Result(T&& value, ok_value = {})
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
         template <typename T>
         requires (std::is_constructible_v<Err, T&&>)
-        HSD_CONSTEXPR Result(T&& value, err_value = {})
+        constexpr Result(T&& value, err_value = {})
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 
@@ -123,7 +123,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR ~Result()
+        constexpr ~Result()
         {
             if(_initialized)
             {
@@ -387,24 +387,24 @@ namespace hsd
         bool _initialized = false;
 
     public:
-        HSD_CONSTEXPR Result(const Result&) = delete;
-        HSD_CONSTEXPR Result(Result&&) = delete;
-        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
-        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+        constexpr Result(const Result&) = delete;
+        constexpr Result(Result&&) = delete;
+        constexpr Result& operator=(const Result&) = delete;
+        constexpr Result& operator=(Result&&) = delete;
         constexpr void unwrap_or_default() = delete;
         constexpr void unwrap_or() = delete;
 
-        HSD_CONSTEXPR Result()
+        constexpr Result()
             : _initialized{true}
         {}
 
         template <typename T>
         requires (std::is_constructible_v<Err, T&&>)
-        HSD_CONSTEXPR Result(T&& value)
+        constexpr Result(T&& value)
             : _err_data{forward<Err>(value)}, _initialized{false}
         {}
 
-        HSD_CONSTEXPR ~Result()
+        constexpr ~Result()
         {
             if(!_initialized)
             {
@@ -552,16 +552,16 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        HSD_CONSTEXPR Result& operator=(const Result&) = delete;
-        HSD_CONSTEXPR Result& operator=(Result&&) = delete;
+        constexpr Result& operator=(const Result&) = delete;
+        constexpr Result& operator=(Result&&) = delete;
 
-        HSD_CONSTEXPR Result()
+        constexpr Result()
             : _initialized{false}
         {}
 
         template <typename T>
         requires (std::is_constructible_v<Ok, T&&>)
-        HSD_CONSTEXPR Result(T&& value, ok_value = {})
+        constexpr Result(T&& value, ok_value = {})
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
@@ -583,7 +583,7 @@ namespace hsd
             }
         }
 
-        HSD_CONSTEXPR ~Result()
+        constexpr ~Result()
         {
             if(_initialized)
             {

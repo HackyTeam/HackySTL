@@ -214,7 +214,7 @@ namespace hsd
         	return str;
         }
 
-	    static HSD_CONSTEXPR CharT* reverse(const CharT* str, usize size = 0)
+	    static constexpr CharT* reverse(const CharT* str, usize size = 0)
 	    {
 	    	usize _begin = 0;
 	        usize _end = size - 1;
@@ -255,7 +255,7 @@ namespace hsd
 	    	}
 	    }
 
-		static HSD_CONSTEXPR CharT* to_string(long num)
+		static constexpr CharT* to_string(long num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -290,7 +290,7 @@ namespace hsd
 		}
 
 		#if defined(HSD_COMPILER_GCC)
-		static HSD_CONSTEXPR CharT* to_string(i128 num)
+		static constexpr CharT* to_string(i128 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -325,7 +325,7 @@ namespace hsd
 		}
 		#endif
 
-		static HSD_CONSTEXPR CharT* to_string(i64 num)
+		static constexpr CharT* to_string(i64 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -359,7 +359,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(i32 num)
+		static constexpr CharT* to_string(i32 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -393,7 +393,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(i16 num)
+		static constexpr CharT* to_string(i16 num)
 		{
 			bool _negative = (num < 0);
 			usize _len = _num_len(num);
@@ -427,7 +427,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(ulong num)
+		static constexpr CharT* to_string(ulong num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -443,7 +443,7 @@ namespace hsd
 		}
 
 		#if defined(HSD_COMPILER_GCC)
-		static HSD_CONSTEXPR CharT* to_string(u128 num)
+		static constexpr CharT* to_string(u128 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -459,7 +459,7 @@ namespace hsd
 		}
 		#endif
 
-		static HSD_CONSTEXPR CharT* to_string(u64 num)
+		static constexpr CharT* to_string(u64 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -474,7 +474,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(u32 num)
+		static constexpr CharT* to_string(u32 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -489,7 +489,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(u16 num)
+		static constexpr CharT* to_string(u16 num)
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
@@ -504,7 +504,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(f128 num)
+		static constexpr CharT* to_string(f128 num)
 		{
 			usize _len = 0;
 			i32 _round_num = static_cast<i64>(num);
@@ -546,7 +546,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(f64 num)
+		static constexpr CharT* to_string(f64 num)
 		{
 			usize _len = 0;
 			i32 _round_num = static_cast<i64>(num);
@@ -588,7 +588,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(f32 num)
+		static constexpr CharT* to_string(f32 num)
 		{
 			usize _len = 0;
 			i64 _round_num = static_cast<i64>(num);
@@ -630,7 +630,7 @@ namespace hsd
 			return _buf;
 		}
 
-		static HSD_CONSTEXPR CharT* to_string(CharT letter)
+		static constexpr CharT* to_string(CharT letter)
 		{
 			CharT* _buf = new CharT[2];
 			_buf[0] = static_cast<CharT>(letter);

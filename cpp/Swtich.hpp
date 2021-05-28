@@ -177,12 +177,12 @@ namespace hsd
         Func _invoke_func;
 
     public:
-        HSD_CONSTEXPR CasePair(T value, Func invoke_func)
+        constexpr CasePair(T value, Func invoke_func)
             : _value{value}, _invoke_func{invoke_func}
         {}
 
-        HSD_CONSTEXPR CasePair(const CasePair&) = default;
-        HSD_CONSTEXPR CasePair& operator=(const CasePair&) = delete;
+        constexpr CasePair(const CasePair&) = default;
+        constexpr CasePair& operator=(const CasePair&) = delete;
 
         template <typename U>
         requires (switch_detail::InvocableVoid<Func>)
@@ -204,8 +204,8 @@ namespace hsd
             : _invoke_func{invoke_func}
         {}
 
-        HSD_CONSTEXPR DefaultCase(const DefaultCase&) = default;
-        HSD_CONSTEXPR DefaultCase& operator=(const DefaultCase&) = delete;
+        constexpr DefaultCase(const DefaultCase&) = default;
+        constexpr DefaultCase& operator=(const DefaultCase&) = delete;
 
         constexpr auto operator()() const
         requires (switch_detail::InvocableVoid<Func>)

@@ -29,7 +29,7 @@ namespace hsd
                 list_impl* _next = nullptr;
                 list_impl* _back = nullptr;
 
-                HSD_CONSTEXPR list_impl() {}
+                constexpr list_impl() {}
 
                 constexpr list_impl(const T& val)
                     : _value{val}
@@ -124,10 +124,10 @@ namespace hsd
             }
 
         public:
-            HSD_CONSTEXPR iterator() {}
+            constexpr iterator() {}
             constexpr iterator(hsd::NullType) {}
 
-            HSD_CONSTEXPR iterator(const iterator& other)
+            constexpr iterator(const iterator& other)
             {
                 _iterator = other._iterator;
             }
@@ -207,15 +207,15 @@ namespace hsd
     public:
         using iterator = list_detail::iterator<T>;
         using const_iterator = const iterator;
-        HSD_CONSTEXPR list() {}
+        constexpr list() {}
 
-        HSD_CONSTEXPR list(const list& other)
+        constexpr list(const list& other)
         {
             for(const auto& _element : other)
                 push_back(_element);
         }
 
-        HSD_CONSTEXPR list(list&& other)
+        constexpr list(list&& other)
         {
             _head = other._head;
             _tail = other._tail;
@@ -224,20 +224,20 @@ namespace hsd
         }
 
         template <usize N>
-        HSD_CONSTEXPR list(const T (&arr)[N])
+        constexpr list(const T (&arr)[N])
         {
             for(usize _index = 0; _index < N; _index++)
                 push_back(arr[_index]);
         }
 
         template <usize N>
-        HSD_CONSTEXPR list(T (&&arr)[N])
+        constexpr list(T (&&arr)[N])
         {
             for(usize _index = 0; _index < N; _index++)
                 push_back(move(arr[_index]));
         }
 
-        HSD_CONSTEXPR ~list()
+        constexpr ~list()
         {
             clear();
         }

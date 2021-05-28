@@ -16,7 +16,7 @@ namespace hsd
             const char* _err = nullptr;
 
         public:
-            HSD_CONSTEXPR allocator_error(const char* error)
+            constexpr allocator_error(const char* error)
                 : _err{error}
             {}
 
@@ -50,31 +50,31 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        HSD_CONSTEXPR buffered_allocator(uchar* buf, usize size)
+        inline buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
         {}
 
         template <typename U>
-        HSD_CONSTEXPR buffered_allocator(const buffered_allocator<U>& other)
+        inline buffered_allocator(const buffered_allocator<U>& other)
             : _buf{other._buf}, _size{other._size}
         {}
         
         template <typename U>
-        HSD_CONSTEXPR buffered_allocator(buffered_allocator<U>&& other)
+        inline buffered_allocator(buffered_allocator<U>&& other)
         {
             _buf = exchange(other._buf, nullptr);
             _size = exchange(other._size, 0u);
         }
 
         template <typename U>
-        HSD_CONSTEXPR buffered_allocator& operator=(const buffered_allocator<U>& other)
+        inline buffered_allocator& operator=(const buffered_allocator<U>& other)
         {
             _buf = other._buf;
             _size = other._size;
         }
 
         template <typename... Args>
-        static constexpr void construct_at(T* ptr, Args&&... args)
+        static inline void construct_at(T* ptr, Args&&... args)
         {
             new (ptr) T(forward<Args>(args)...);
         }
@@ -193,15 +193,15 @@ namespace hsd
     public:
         using pointer_type = T*;
         using value_type = T;
-        HSD_CONSTEXPR allocator() = default;
+        inline allocator() = default;
 
         template <typename U = T>
-        HSD_CONSTEXPR allocator(const allocator<U>& other)
+        inline allocator(const allocator<U>& other)
             : _type_size{other._type_size}, _alignment{other._alignment}
         {}
 
         template <typename U = T>
-        HSD_CONSTEXPR allocator& operator=(const allocator<U>& rhs)
+        inline allocator& operator=(const allocator<U>& rhs)
         {
             _type_size = rhs._type_size;
             _alignment = rhs._alignment;
@@ -246,7 +246,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        static constexpr void construct_at(T* ptr, Args&&... args)
+        static inline void construct_at(T* ptr, Args&&... args)
         {
             new (ptr) T(forward<Args>(args)...);
         }

@@ -4,6 +4,7 @@
 #include "Concepts.hpp"
 #include "Random.hpp"
 #include "Vector.hpp"
+#include "Span.hpp"
 
 namespace hsd
 {
@@ -20,7 +21,7 @@ namespace hsd
                     T _iter;
                 
                 public:
-                    HSD_CONSTEXPR reverse_iterator(T iter)
+                    constexpr reverse_iterator(T iter)
                         : _iter{iter}
                     {}
 
@@ -59,51 +60,6 @@ namespace hsd
                 };
 
                 template <ForwardIterable T>
-                class forward_iterator
-                {
-                private:
-                    T _iter;
-                
-                public:
-                    HSD_CONSTEXPR forward_iterator(T iter)
-                        : _iter{iter}
-                    {}
-
-                    constexpr auto& operator++()
-                    {
-                        _iter++;
-                        return *this;
-                    }
-
-                    constexpr forward_iterator operator++(i32)
-                    {
-                        forward_iterator tmp = *this;
-                        operator++();
-                        return tmp;
-                    }
-
-                    constexpr bool operator==(const forward_iterator& rhs) const
-                    {
-                        return _iter == rhs._iter;
-                    }
-
-                    constexpr bool operator!=(const forward_iterator& rhs) const
-                    {
-                        return _iter != rhs._iter;
-                    }
-
-                    constexpr auto& operator*()
-                    {
-                        return *_iter;
-                    }
-
-                    constexpr const auto& operator*() const
-                    {
-                        return *_iter;
-                    }
-                };
-
-                template <ForwardIterable T>
                 class random_iterator
                 {
                 private:
@@ -113,7 +69,7 @@ namespace hsd
                     static inline mt19937_64 engine{};
                 
                 public:
-                    HSD_CONSTEXPR random_iterator(T iter, usize index)
+                    constexpr random_iterator(T iter, usize index)
                         : _iter{iter}, _origin{iter}, _index{index}
                     {}
 
@@ -157,87 +113,6 @@ namespace hsd
                         return *_iter;
                     }
                 };
-
-                template <ForwardIterable T>
-                class forward
-                {
-                private:
-                    using iter_type = typename views_detail::forward_iterator<T>;
-                    usize _view_size = 0;
-                    iter_type _begin;
-                    iter_type _end;
-                
-                    constexpr forward(const iter_type& begin, const iter_type& end, usize view_size)
-                        : _view_size{view_size}, _begin{begin}, _end{end}
-                    {}
-                    
-                public:
-                    using iter_value_type = T;
-
-                    template <IsForwardContainer U>
-                    HSD_CONSTEXPR forward(const U& container)
-                        : _view_size{container.size()}, 
-                        _begin{container.begin()}, 
-                        _end{container.end()}
-                    {}
-
-                    constexpr auto drop(usize quantity) const
-                        -> Result<forward, runtime_error>
-                    {
-                        if(quantity > _view_size)
-                        {
-                            return runtime_error{"Dropping out of bounds"};
-                        }
-                        else
-                        {
-                            usize _index = 0;
-                            iter_type _result_iter = _begin;
-                            for(; _index < quantity; _index++, _result_iter++);
-                            return forward{_result_iter, _end, _view_size - _index};
-                        }
-                    }
-
-                    constexpr auto take(usize quantity) const
-                        -> Result<forward, runtime_error> 
-                    {
-                        if(quantity > _view_size)
-                        {
-                            return runtime_error{"Dropping out of bounds"};
-                        }
-                        else
-                        {
-                            usize _index = 0;
-                            iter_type _result_iter = _begin;
-                            for(; _index < quantity; _index++, _result_iter++);
-                            return forward{_begin, _result_iter, _view_size - _index};
-                        }
-                    }
-
-                    constexpr usize size() const
-                    {
-                        return _view_size;
-                    }
-
-                    constexpr auto begin()
-                    {
-                        return _begin;
-                    }
-
-                    constexpr const auto begin() const
-                    {
-                        return _begin;
-                    }
-
-                    constexpr auto end()
-                    {
-                        return _end;
-                    }
-
-                    constexpr const auto end() const
-                    {
-                        return _end;
-                    }
-                };
                 
                 template <ReverseIterable T>
                 class reverse
@@ -253,10 +128,10 @@ namespace hsd
                     {}
 
                 public:
-                    using iter_value_type = T;
+                    using value_type = T;
 
                     template <IsReverseContainer U>
-                    HSD_CONSTEXPR reverse(const U& container)
+                    constexpr reverse(const U& container)
                         : _view_size{container.size()}, 
                         _begin{container.rbegin()}, 
                         _end{container.rend()}
@@ -334,10 +209,10 @@ namespace hsd
                     {}
 
                 public:
-                    using iter_value_type = T;
+                    using value_type = T;
 
                     template <IsForwardContainer U>
-                    HSD_CONSTEXPR random(const U& container)
+                    constexpr random(const U& container)
                         : _view_size{container.size()}, _begin{container.begin(), 0}, 
                         _end{container.end(), container.size()}
                     {}
@@ -400,21 +275,10 @@ namespace hsd
                     }
                 };
 
-                template <IsForwardContainer U>
-                forward(const U& container) -> forward<decltype(container.end())>;
                 template <IsReverseContainer U>
                 reverse(const U& container) -> reverse<decltype(container.rend())>;
                 template <IsForwardContainer U>
                 random(const U& container) -> random<decltype(container.end())>;
-
-                struct _forward
-                {
-                    template <IsForwardContainer U>
-                    constexpr friend auto operator|(const U& rhs, const _forward&)
-                    {
-                        return forward{rhs};
-                    }
-                };
 
                 struct _reverse
                 {
@@ -437,12 +301,11 @@ namespace hsd
             
             template <typename T>
             concept IsView = (
-                IsSame<T, views_detail::forward<typename T::iter_value_type>> ||
-                IsSame<T, views_detail::reverse<typename T::iter_value_type>> ||
-                IsSame<T, views_detail::random<typename T::iter_value_type>>
+                IsSame<T, span<typename T::value_type>> ||
+                IsSame<T, views_detail::reverse<typename T::value_type>> ||
+                IsSame<T, views_detail::random<typename T::value_type>>
             );
 
-            static constexpr views_detail::_forward forward = {};
             static constexpr views_detail::_reverse reverse = {};
             static constexpr views_detail::_random random = {};
 
@@ -452,7 +315,7 @@ namespace hsd
                 usize _count;
 
             public:
-                HSD_CONSTEXPR drop(usize count)
+                constexpr drop(usize count)
                     : _count{count}
                 {}
 
@@ -466,7 +329,7 @@ namespace hsd
                 constexpr friend auto operator|(const U& lhs, const drop& rhs)
                 requires (IsForwardContainer<U> && !IsView<U>)
                 {
-                    return (lhs | forward).drop(rhs._count).unwrap();
+                    return span{lhs}.drop(rhs._count).unwrap();
                 }
             };
 
@@ -477,7 +340,7 @@ namespace hsd
                 FuncType _func;
 
             public:
-                HSD_CONSTEXPR drop_while(FuncType func)
+                constexpr drop_while(FuncType func)
                     : _func(hsd::forward<FuncType>(func))
                 {}
 
@@ -517,7 +380,7 @@ namespace hsd
                 constexpr friend auto operator|(const U& lhs, const drop_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
-                    return lhs | views::forward | rhs;
+                    return span{lhs} | rhs;
                 }
             };
 
@@ -527,7 +390,7 @@ namespace hsd
                 usize _count;
 
             public:
-                HSD_CONSTEXPR take(usize count)
+                constexpr take(usize count)
                     : _count{count}
                 {}
 
@@ -541,7 +404,7 @@ namespace hsd
                 constexpr friend auto operator|(const U& lhs, const take& rhs)
                 requires (IsForwardContainer<U> && !IsView<U>)
                 {
-                    return (lhs | forward).take(rhs._count).unwrap();
+                    return span{lhs}.take(rhs._count).unwrap();
                 }
             };
 
@@ -552,7 +415,7 @@ namespace hsd
                 FuncType _func;
 
             public:
-                HSD_CONSTEXPR take_while(FuncType func)
+                constexpr take_while(FuncType func)
                     : _func(hsd::forward<FuncType>(func))
                 {}
 
@@ -586,7 +449,7 @@ namespace hsd
                 constexpr friend auto operator|(const U& lhs, const take_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
-                    return lhs | views::forward | rhs;
+                    return span{lhs} | rhs;
                 }
             };
         } // namespace views
@@ -598,7 +461,7 @@ namespace hsd
             FuncType _func;
 
         public:
-            HSD_CONSTEXPR filter(FuncType func)
+            constexpr filter(FuncType func)
                 : _func(hsd::forward<FuncType>(func))
             {}
 
@@ -629,7 +492,7 @@ namespace hsd
             constexpr friend auto operator|(const U& lhs, const filter& rhs)
             requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
             {
-                return lhs | views::forward | rhs;
+                return span{lhs} | rhs;
             }
         };
 
@@ -640,7 +503,7 @@ namespace hsd
             FuncType _func;
 
         public:
-            HSD_CONSTEXPR transform(FuncType func)
+            constexpr transform(FuncType func)
                 : _func(hsd::forward<FuncType>(func))
             {}
 
@@ -671,7 +534,7 @@ namespace hsd
             requires (InvocableRet<
                 remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
             {
-                return lhs | views::forward | rhs;
+                return span{lhs} | rhs;
             }
         };
 
@@ -682,7 +545,7 @@ namespace hsd
             FuncType _func;
 
         public:
-            HSD_CONSTEXPR filter_map(FuncType func)
+            constexpr filter_map(FuncType func)
                 : _func(hsd::forward<FuncType>(func))
             {}
 
@@ -713,7 +576,7 @@ namespace hsd
                     remove_cvref_t<decltype(*lhs.begin())>
                 >, FuncType, decltype(*lhs.begin())>)
             {
-                return lhs | views::forward | rhs;
+                return span{lhs} | rhs;
             }
         };
     } // namespace ranges

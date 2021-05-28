@@ -28,13 +28,13 @@ namespace hsd
         using iterator = T*;
         using const_iterator = const T*;
 
-        HSD_CONSTEXPR heap_array()
+        constexpr heap_array()
         {
             _array = new T[N]{};
         }
 
         template <usize L>
-        HSD_CONSTEXPR heap_array(const T (&arr)[L])
+        constexpr heap_array(const T (&arr)[L])
         {
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
@@ -43,7 +43,7 @@ namespace hsd
         }
 
         template <usize L>
-        HSD_CONSTEXPR heap_array(T (&&arr)[L])
+        constexpr heap_array(T (&&arr)[L])
         {
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
@@ -51,7 +51,7 @@ namespace hsd
             }(make_index_sequence<N>{});
         }
 
-        HSD_CONSTEXPR heap_array(const heap_array& other)
+        constexpr heap_array(const heap_array& other)
         {
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
@@ -59,13 +59,13 @@ namespace hsd
             }(make_index_sequence<N>{});;
         }
 
-        HSD_CONSTEXPR heap_array(heap_array&& other)
+        constexpr heap_array(heap_array&& other)
         {
             _array = other._array;
             other._array = nullptr;
         }
 
-        HSD_CONSTEXPR ~heap_array()
+        constexpr ~heap_array()
         {
             delete[] _array;
         }
@@ -170,17 +170,17 @@ namespace hsd
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cbegin() const
+        constexpr const_iterator cbegin() const
         {
             return begin();
         }
 
-        HSD_CONSTEXPR const_iterator cend()
+        constexpr const_iterator cend()
         {
             return end();
         }
 
-        HSD_CONSTEXPR const_iterator cend() const
+        constexpr const_iterator cend() const
         {
             return end();
         }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_NetworkDetail.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
@@ -141,7 +142,8 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template < string_literal fmt, typename... Args >
+            template < basic_string_literal fmt, typename... Args >
+            requires (IsSame<char, typename decltype(fmt)::char_type>)
             inline net::received_state respond(Args&&... args)
             {
                 _clear_buf();
@@ -299,7 +301,8 @@ namespace hsd
                 return {_net_buf, net::received_state::ok};
             }
 
-            template < string_literal fmt, typename... Args >
+            template < basic_string_literal fmt, typename... Args >
+            requires (IsSame<char, typename decltype(fmt)::char_type>)
             inline net::received_state respond(Args&&... args)
             {
                 _clear_buf();

@@ -15,7 +15,7 @@ namespace hsd
             i32 _line, _column;
 
         public:
-            HSD_CONSTEXPR source_location(
+            constexpr source_location(
                 const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 i32 line = __builtin_LINE(), i32 column = 0)

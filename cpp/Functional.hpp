@@ -67,39 +67,39 @@ namespace hsd
         
         safe_shared_ptr<callable_base> _func_impl{};
 
-        HSD_CONSTEXPR void reset()
+        inline void reset()
         {
             _func_impl = nullptr;
         }
 
     public:
-        HSD_CONSTEXPR function() = default;
-        HSD_CONSTEXPR function(NullType) {}
+        inline function() = default;
+        inline function(NullType) {}
 
         template <typename Func>
         requires (func_detail::IsFunction<Func, ResultType, Args...>)
-        HSD_CONSTEXPR function(Func);
+        inline function(Func);
 
-        HSD_CONSTEXPR function(const function&);
+        inline function(const function&);
 
-        HSD_CONSTEXPR function(function&& other)
+        inline function(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
         }
 
-        HSD_CONSTEXPR ~function()
+        inline ~function()
         {
             reset();
         }
 
-        HSD_CONSTEXPR function& operator=(const function& other)
+        inline function& operator=(const function& other)
         {
             reset();
             _func_impl = other._func_impl;
             return *this;
         }
 
-        HSD_CONSTEXPR function& operator=(function&& other)
+        inline function& operator=(function&& other)
         {
             hsd::swap(_func_impl, other._func_impl);
             return *this;
@@ -107,20 +107,20 @@ namespace hsd
 
         template <typename Func>
         requires (func_detail::IsFunction<Func, ResultType, Args...>)
-        HSD_CONSTEXPR function& operator=(Func&& func)
+        inline function& operator=(Func&& func)
         {
             reset();
             _func_impl = make_safe_shared<callable<Func>>(forward<Func>(func));
             return *this;
         }
 
-        HSD_CONSTEXPR function& operator=(NullType)
+        inline function& operator=(NullType)
         {
             reset();
             return *this;
         }
 
-        constexpr auto operator()(Args... args) 
+        inline auto operator()(Args... args) 
             -> Result<
                 func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
@@ -132,7 +132,7 @@ namespace hsd
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
 
-        constexpr auto operator()(Args... args) 
+        inline auto operator()(Args... args) 
             -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {
@@ -143,7 +143,7 @@ namespace hsd
             return {};
         }
 
-        constexpr auto operator()(Args... args) const
+        inline auto operator()(Args... args) const
             -> Result<
                 const func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
@@ -155,7 +155,7 @@ namespace hsd
             return {_func_impl->operator()(hsd::forward<Args>(args)...)};
         }
 
-        constexpr auto operator()(Args... args) const
+        inline auto operator()(Args... args) const
             -> Result< void, func_detail::bad_function >
         requires (is_void<ResultType>::value)
         {
@@ -198,7 +198,7 @@ namespace hsd
     }
 
     template < typename Res, typename... Args >
-    HSD_CONSTEXPR function<Res(Args...)>::function(const function& other)
+    inline function<Res(Args...)>::function(const function& other)
     {
         _func_impl = other._func_impl;
     }
@@ -206,14 +206,14 @@ namespace hsd
     template < typename Res, typename... Args >
     template < typename Func >
     requires (func_detail::IsFunction<Func, Res, Args...>)
-    HSD_CONSTEXPR function<Res(Args...)>::function(Func func)
+    inline function<Res(Args...)>::function(Func func)
     {
         _func_impl = make_safe_shared<callable<Func>>(func);
     }
 
     template < typename Func, typename T, typename... Args >
     requires (std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, T&& value, Args&&... args)
+    static inline auto bind(Func func, T&& value, Args&&... args)
     {
         return [=, value{move(value)}]() mutable {
             if constexpr(requires {value.*(func(declval<Args>()...)).unwrap();})
@@ -235,7 +235,7 @@ namespace hsd
 
     template < typename Func, typename T, typename... Args >
     requires (std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, T&& value, hsd::tuple<Args...>&& args)
+    static inline auto bind(Func func, T&& value, hsd::tuple<Args...>&& args)
     {
         return [=, value{move(value)}]() mutable {
             return [&]<usize... Ints>(hsd::index_sequence<Ints...>)
@@ -276,7 +276,7 @@ namespace hsd
 
     template < typename Func, typename T, typename... Args >
     requires (std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, T& value, Args&&... args)
+    static inline auto bind(Func func, T& value, Args&&... args)
     {
         return [=, &value]{
             if constexpr(requires {value.*(func(declval<Args>()...)).unwrap();})
@@ -298,7 +298,7 @@ namespace hsd
 
     template < typename Func, typename T, typename... Args >
     requires (std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, T& value, hsd::tuple<Args...>&& args)
+    static inline auto bind(Func func, T& value, hsd::tuple<Args...>&& args)
     {
         return [=, &value]{
             return [&]<usize... Ints>(hsd::index_sequence<Ints...>)
@@ -339,7 +339,7 @@ namespace hsd
 
     template < typename Func, typename... Args >
     requires (!std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, Args&&... args)
+    static inline auto bind(Func func, Args&&... args)
     {
         return [=]{
             if constexpr(requires {func(declval<Args>()...).unwrap();})
@@ -355,7 +355,7 @@ namespace hsd
 
     template < typename Func, typename... Args >
     requires (!std::is_member_function_pointer_v<Func>)
-    static HSD_CONSTEXPR auto bind(Func func, hsd::tuple<Args...>&& args)
+    static inline auto bind(Func func, hsd::tuple<Args...>&& args)
     {
         return [=]{
             return [&]<usize... Ints>(hsd::index_sequence<Ints...>)

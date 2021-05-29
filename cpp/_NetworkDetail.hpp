@@ -28,7 +28,8 @@ namespace hsd
         enum class protocol_type
         {
             ipv4 = AF_INET,
-            ipv6 = AF_INET6
+            ipv6 = AF_INET6,
+            unspec = AF_UNSPEC
         };
 
         #if defined(HSD_PLATFORM_POSIX)

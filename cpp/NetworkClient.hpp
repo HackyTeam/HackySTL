@@ -9,6 +9,8 @@ namespace hsd
     {
         namespace client_detail
         {
+            using protocol_type = hsd::net::protocol_type;
+
             class socket
             {
             private:
@@ -18,19 +20,18 @@ namespace hsd
                 SOCKET _listening = 0;
                 #endif
 
-                sockaddr_in6 _hintv6{};
-                sockaddr_in _hintv4{};
+                sockaddr_storage _peer_addr{};
                 net::protocol_type _protocol;
 
             public:
-                inline socket(net::protocol_type protocol = net::protocol_type::ipv4, 
-                    u16 port = 54000, const char* ip_addr = "127.0.0.1")
+                inline socket(protocol_type protocol = protocol_type::ipv4, 
+                    const char* ip_addr = "127.0.0.1:54000")
                 {
                     #if defined(HSD_PLATFORM_WINDOWS)
                     network_detail::init_winsock();
                     #endif
                     
-                    switch_to(protocol, port, ip_addr);
+                    switch_to(protocol, ip_addr);
                 }
 
                 inline ~socket()
@@ -54,32 +55,95 @@ namespace hsd
 
                 inline sockaddr* get_hint()
                 {
-                    if(_protocol == net::protocol_type::ipv4)
-                        return bit_cast<sockaddr*>(&_hintv4);
-                    
-                    return bit_cast<sockaddr*>(&_hintv6);
+                    return reinterpret_cast<sockaddr*>(&_peer_addr);
                 }
 
-                inline void switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
+                inline void switch_to(protocol_type protocol, const char* ip_addr)
                 {
                     close();
                     _protocol = protocol;
+                    addrinfo* _result = nullptr;
+                    addrinfo* _rp = nullptr;
 
-                    if(_protocol == net::protocol_type::ipv4)
+                    auto _hints = addrinfo
                     {
-                        _hintv4.sin_family = static_cast<u16>(_protocol);
-                        _hintv4.sin_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        bind(_listening, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
-                        _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
+                        .ai_flags = AI_PASSIVE,
+                        .ai_family = static_cast<i32>(protocol),
+                        .ai_socktype = net::socket_type::dgram,
+                        .ai_protocol = 0,
+                        .ai_addrlen = 0,
+                        .ai_addr = nullptr,
+                        .ai_canonname = nullptr,
+                        .ai_next = nullptr
+                    };
+
+                    const char* _domain_port = 
+                        cstring::find(ip_addr, ':');
+
+                    if (_domain_port != nullptr)
+                    {
+                        char* _domain_addr = nullptr;
+                        auto _domain_len = static_cast<usize>(
+                            _domain_port - ip_addr
+                        );
+
+                        _domain_addr = new char[_domain_len + 1];
+                        cstring::copy(_domain_addr, ip_addr, _domain_len);
+                        _domain_addr[_domain_len] = static_cast<char>(0);
+                        _domain_port += 1;
+
+                        i32 _error_code = getaddrinfo(
+                            _domain_addr, _domain_port, &_hints, &_result
+                        );
+
+                        if (_error_code != 0) 
+                        {
+                            fprintf(
+                                stderr, "Error for getaddrinfo, code"
+                                ": %s\n", gai_strerror(_error_code)
+                            );
+                            return;
+                        }
+
+                        delete[] _domain_addr;
                     }
                     else
                     {
-                        _hintv6.sin6_family = static_cast<u16>(_protocol);
-                        _hintv6.sin6_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        bind(_listening, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
-                        _listening = ::socket(static_cast<i32>(_protocol), net::socket_type::dgram, 0);
+                        i32 _error_code = getaddrinfo(
+                            ip_addr, nullptr, &_hints, &_result
+                        );
+    
+                        if (_error_code != 0) 
+                        {
+                            fprintf(
+                                stderr, "Error for getaddrinfo, code"
+                                ": %s\n", gai_strerror(_error_code)
+                            );
+                            return;
+                        }
+                    }
+
+                    for (_rp = _result; _rp != nullptr; _rp = _rp->ai_next)
+                    {
+                        _listening = ::socket(
+                            _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
+                        );
+
+                        if (_listening != -1)
+                        {
+                            if (bind(_listening, _rp->ai_addr, _rp->ai_addrlen) == 0)
+                                break;
+
+                            close();
+                        }
+                    }
+
+                    freeaddrinfo(_result);
+
+                    if (_rp == nullptr)
+                    {
+                        fprintf(stderr, "Could not bind\n");
+                        return;
                     }
                 }
             };
@@ -89,10 +153,8 @@ namespace hsd
         {
         private:
             client_detail::socket _sock;
-            sockaddr_in6 _hintv6{};
-            sockaddr_in _hintv4{};
-            socklen_t _len = sizeof(sockaddr_in);
-            net::protocol_type _protocol = net::protocol_type::ipv4;
+            sockaddr_storage _hint{};
+            socklen_t _len = sizeof(sockaddr_storage);
             hsd::sstream _net_buf{4095};
 
             inline void _clear_buf()
@@ -100,32 +162,27 @@ namespace hsd
                 memset(_net_buf.data(), '\0', 4096);
             }
 
+            inline sockaddr* _get_hint()
+            {
+                return bit_cast<sockaddr*>(&_hint);
+            }
+
         public:
             inline client() = default;
             inline ~client() = default;
 
-            inline client(net::protocol_type protocol, u16 port, const char* ip_addr)
-                : _sock{protocol, port, ip_addr}, _protocol{protocol}
-            {
-                if(_protocol == net::protocol_type::ipv6)
-                    _len = sizeof(sockaddr_in6);
-            }
+            inline client(net::protocol_type protocol, const char* ip_addr)
+                : _sock{protocol, ip_addr}
+            {}
 
             inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                isize _response = 0;
-                
-                if(_protocol == net::protocol_type::ipv4)
-                {
-                    _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, bit_cast<sockaddr*>(&_hintv4), &_len);
-                }
-                else
-                {
-                    _response = recvfrom(_sock.get_listening(), _net_buf.data(), 
-                        4096, 0, bit_cast<sockaddr*>(&_hintv6), &_len);
-                }
+                isize _response = recvfrom(
+                    _sock.get_listening(), _net_buf.data(), 
+                    4096, 0, _get_hint(), &_len
+                );
+
                 if (_response == static_cast<isize>(net::received_state::err))
                 {
                     hsd::io::err_print<"Error in receiving\n">();
@@ -169,44 +226,28 @@ namespace hsd
     {
         namespace client_detail
         {
+            using protocol_type = net::protocol_type;
+
             class socket
             {
             private:
                 #if defined(HSD_PLATFORM_POSIX)
-                i32 _sock = 0;
+                i32 _sock = -1;
                 #else
-                SOCKET _sock = 0;
+                SOCKET _sock = -1;
                 #endif
 
-                sockaddr_in6 _hintv6{};
-                sockaddr_in _hintv4{};
                 net::protocol_type _protocol;
 
             public:
-                inline socket(net::protocol_type protocol = net::protocol_type::ipv4, 
-                    u16 port = 54000, const char* ip_addr = "127.0.0.1")
+                inline socket(protocol_type protocol = protocol_type::ipv4, 
+                    const char* ip_addr = "127.0.0.1:54000")
                 {
                     #if defined(HSD_PLATFORM_WINDOWS)
                     network_detail::init_winsock();
                     #endif
-                    _protocol = protocol;
-
-                    if(_protocol == net::protocol_type::ipv4)
-                    {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv4.sin_family = static_cast<u16>(_protocol);
-                        _hintv4.sin_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        connect(_sock, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
-                    }
-                    else
-                    {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv6.sin6_family = static_cast<u16>(_protocol);
-                        _hintv6.sin6_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        connect(_sock, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
-                    }
+                    
+                    switch_to(protocol, ip_addr);
                 }
 
                 inline ~socket()
@@ -228,29 +269,97 @@ namespace hsd
                     return _sock;
                 }
 
-                inline int switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
+                inline i32 switch_to(net::protocol_type protocol, const char* ip_addr)
                 {
-                    close();
-                    _protocol = protocol;
+                    if (_sock != -1)
+                        close();
 
-                    if(_protocol == net::protocol_type::ipv4)
+                    _protocol = protocol;
+                    addrinfo* _result = nullptr;
+                    addrinfo* _rp = nullptr;
+
+                    auto _hints = addrinfo
                     {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv4.sin_family = static_cast<u16>(_protocol);
-                        _hintv4.sin_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv4.sin_addr);
-                        return connect(_sock, bit_cast<sockaddr*>(&_hintv4), sizeof(_hintv4));
+                        .ai_flags = AI_PASSIVE,
+                        .ai_family = static_cast<i32>(protocol),
+                        .ai_socktype = net::socket_type::stream,
+                        .ai_protocol = 0,
+                        .ai_addrlen = 0,
+                        .ai_addr = nullptr,
+                        .ai_canonname = nullptr,
+                        .ai_next = nullptr
+                    };
+
+                    const char* _domain_port = 
+                        cstring::find(ip_addr, ':');
+
+                    if (_domain_port != nullptr)
+                    {
+                        char* _domain_addr = nullptr;
+                        auto _domain_len = static_cast<usize>(
+                            _domain_port - ip_addr
+                        );
+
+                        _domain_addr = new char[_domain_len + 1];
+                        cstring::copy(_domain_addr, ip_addr, _domain_len);
+                        _domain_addr[_domain_len] = static_cast<char>(0);
+                        _domain_port += 1;
+
+                        i32 _error_code = getaddrinfo(
+                            _domain_addr, _domain_port, &_hints, &_result
+                        );
+
+                        if (_error_code != 0) 
+                        {
+                            fprintf(
+                                stderr, "Error for getaddrinfo, code"
+                                ": %s\n", gai_strerror(_error_code)
+                            );
+                            return -1;
+                        }
+
+                        delete[] _domain_addr;
                     }
                     else
                     {
-                        _sock = ::socket(static_cast<i32>(_protocol), net::socket_type::stream, 0);
-                        _hintv6.sin6_family = static_cast<u16>(_protocol);
-                        _hintv6.sin6_port = htons(port);
-                        inet_pton(static_cast<i32>(_protocol), ip_addr, &_hintv6.sin6_addr);
-                        return connect(_sock, bit_cast<sockaddr*>(&_hintv6), sizeof(_hintv6));
+                        i32 _error_code = getaddrinfo(
+                            ip_addr, nullptr, &_hints, &_result
+                        );
+    
+                        if (_error_code != 0) 
+                        {
+                            fprintf(
+                                stderr, "Error for getaddrinfo, code"
+                                ": %s\n", gai_strerror(_error_code)
+                            );
+                            return -1;
+                        }
                     }
 
-                    return -1;
+                    for (_rp = _result; _rp != nullptr; _rp = _rp->ai_next)
+                    {
+                        _sock = ::socket(
+                            _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
+                        );
+
+                        if (_sock != -1)
+                        {
+                            if (connect(_sock, _rp->ai_addr, _rp->ai_addrlen) == 0)
+                                break;
+
+                            close();
+                        }
+                    }
+
+                    freeaddrinfo(_result);
+
+                    if (_rp == nullptr)
+                    {
+                        fprintf(stderr, "Could not bind\n");
+                        return -1;
+                    }
+
+                    return 0;
                 }
             };
         } // namespace client_detail
@@ -270,13 +379,13 @@ namespace hsd
             inline client() = default;
             inline ~client() = default;
 
-            inline client(net::protocol_type protocol, u16 port, const char* ip_addr)
-                : _sock{protocol, port, ip_addr}
+            inline client(net::protocol_type protocol, const char* ip_addr)
+                : _sock{protocol, ip_addr}
             {}
 
-            inline bool switch_to(net::protocol_type protocol, u16 port, const char* ip_addr)
+            inline bool switch_to(net::protocol_type protocol, const char* ip_addr)
             {
-                return _sock.switch_to(protocol, port, ip_addr) != -1;
+                return _sock.switch_to(protocol, ip_addr) != -1;
             }
 
             inline hsd::pair< hsd::sstream&, net::received_state > receive()

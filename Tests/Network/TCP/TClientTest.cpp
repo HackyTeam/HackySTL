@@ -2,7 +2,7 @@
 
 int main()
 {
-    hsd::tcp::client client{hsd::net::protocol_type::ipv4, 48000, "127.0.0.1"};
+    hsd::tcp::client client{hsd::net::protocol_type::ipv4, "127.0.0.1:48000"};
     char raw_buf[1024];
 
     while(true)

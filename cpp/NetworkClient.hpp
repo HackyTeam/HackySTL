@@ -15,13 +15,12 @@ namespace hsd
             {
             private:
                 #if defined(HSD_PLATFORM_POSIX)
-                i32 _listening = 0;
+                i32 _listening = -1;
                 #else
-                SOCKET _listening = 0;
+                SOCKET _listening = -1;
                 #endif
 
                 sockaddr_storage _peer_addr{};
-                net::protocol_type _protocol;
 
             public:
                 inline socket(protocol_type protocol = protocol_type::ipv4, 
@@ -46,6 +45,8 @@ namespace hsd
                     #else
                     ::closesocket(_listening);
                     #endif
+
+                    _listening = -1;
                 }
 
                 inline i32 get_listening()
@@ -55,25 +56,31 @@ namespace hsd
 
                 inline sockaddr* get_hint()
                 {
-                    return reinterpret_cast<sockaddr*>(&_peer_addr);
+                    return bit_cast<sockaddr*>(&_peer_addr);
                 }
 
                 inline void switch_to(protocol_type protocol, const char* ip_addr)
                 {
-                    close();
-                    _protocol = protocol;
+                    if (_listening != static_cast<decltype(_listening)>(-1))
+                        close();
+
                     addrinfo* _result = nullptr;
                     addrinfo* _rp = nullptr;
 
                     auto _hints = addrinfo
                     {
-                        .ai_flags = AI_PASSIVE,
+                        .ai_flags = 0,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::dgram,
                         .ai_protocol = 0,
                         .ai_addrlen = 0,
+                        #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,
                         .ai_canonname = nullptr,
+                        #else
+                        .ai_canonname = nullptr,
+                        .ai_addr = nullptr,
+                        #endif
                         .ai_next = nullptr
                     };
 
@@ -129,22 +136,19 @@ namespace hsd
                             _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
                         );
 
-                        if (_listening != -1)
+                        if (_listening != static_cast<decltype(_listening)>(-1))
                         {
-                            if (bind(_listening, _rp->ai_addr, _rp->ai_addrlen) == 0)
+                            if (connect(_listening, _rp->ai_addr, _rp->ai_addrlen) != -1)
                                 break;
 
                             close();
                         }
                     }
 
-                    freeaddrinfo(_result);
-
                     if (_rp == nullptr)
-                    {
                         fprintf(stderr, "Could not bind\n");
-                        return;
-                    }
+
+                    freeaddrinfo(_result);
                 }
             };
         } // namespace client_detail
@@ -153,18 +157,12 @@ namespace hsd
         {
         private:
             client_detail::socket _sock;
-            sockaddr_storage _hint{};
             socklen_t _len = sizeof(sockaddr_storage);
             hsd::sstream _net_buf{4095};
 
             inline void _clear_buf()
             {
                 memset(_net_buf.data(), '\0', 4096);
-            }
-
-            inline sockaddr* _get_hint()
-            {
-                return bit_cast<sockaddr*>(&_hint);
             }
 
         public:
@@ -180,7 +178,7 @@ namespace hsd
                 _clear_buf();
                 isize _response = recvfrom(
                     _sock.get_listening(), _net_buf.data(), 
-                    4096, 0, _get_hint(), &_len
+                    4096, 0, _sock.get_hint(), &_len
                 );
 
                 if (_response == static_cast<isize>(net::received_state::err))
@@ -237,8 +235,6 @@ namespace hsd
                 SOCKET _sock = -1;
                 #endif
 
-                net::protocol_type _protocol;
-
             public:
                 inline socket(protocol_type protocol = protocol_type::ipv4, 
                     const char* ip_addr = "127.0.0.1:54000")
@@ -262,6 +258,8 @@ namespace hsd
                     #else
                     ::closesocket(_sock);
                     #endif
+
+                    _sock = -1;
                 }
 
                 inline i32 get_sock()
@@ -271,22 +269,26 @@ namespace hsd
 
                 inline i32 switch_to(net::protocol_type protocol, const char* ip_addr)
                 {
-                    if (_sock != -1)
+                    if (_sock != static_cast<decltype(_sock)>(-1))
                         close();
 
-                    _protocol = protocol;
                     addrinfo* _result = nullptr;
                     addrinfo* _rp = nullptr;
 
                     auto _hints = addrinfo
                     {
-                        .ai_flags = AI_PASSIVE,
+                        .ai_flags = 0,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::stream,
                         .ai_protocol = 0,
                         .ai_addrlen = 0,
+                        #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,
                         .ai_canonname = nullptr,
+                        #else
+                        .ai_canonname = nullptr,
+                        .ai_addr = nullptr,
+                        #endif
                         .ai_next = nullptr
                     };
 
@@ -342,23 +344,23 @@ namespace hsd
                             _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
                         );
 
-                        if (_sock != -1)
+                        if (_sock != static_cast<decltype(_sock)>(-1))
                         {
-                            if (connect(_sock, _rp->ai_addr, _rp->ai_addrlen) == 0)
+                            if (connect(_sock, _rp->ai_addr, _rp->ai_addrlen) != -1)
                                 break;
 
                             close();
                         }
                     }
 
-                    freeaddrinfo(_result);
-
                     if (_rp == nullptr)
                     {
                         fprintf(stderr, "Could not bind\n");
+                        freeaddrinfo(_result);
                         return -1;
                     }
 
+                    freeaddrinfo(_result);
                     return 0;
                 }
             };
@@ -391,8 +393,9 @@ namespace hsd
             inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                isize _response = recv(_sock.get_sock(), 
-                    _net_buf.data(), 4096, 0);
+                isize _response = recv(
+                    _sock.get_sock(), _net_buf.data(), 4096, 0
+                );
 
                 if (_response == static_cast<isize>(net::received_state::err))
                 {

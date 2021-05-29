@@ -748,10 +748,14 @@ namespace hsd
 			if (dest == nullptr)
 				return nullptr;
 
-			for(; *src && len != 0; len--, dest++, src++)
+			for (; *src && len != 0; len--, dest++, src++)
 			{
 				*dest = *src;
 			}
+
+			if (len != 0)
+				*dest = *src;
+
 			return dest;
 		}
 
@@ -762,9 +766,10 @@ namespace hsd
 
 			char* ptr = dest;
 
-			for(; *src; dest++, src++)
+			for (; *src; dest++, src++)
 				*dest = *src;
-			
+
+			*dest = *src;
 			return ptr;
 		}
 

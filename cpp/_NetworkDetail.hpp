@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <memory.h>
 #else
+#include <unistd.h>
 #include <ws2tcpip.h>
 #endif
 

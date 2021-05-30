@@ -155,7 +155,6 @@ namespace hsd
         {
         private:
             client_detail::socket _sock;
-            socklen_t _len = sizeof(sockaddr_storage);
             hsd::sstream _net_buf{4095};
 
             inline void _clear_buf()
@@ -179,8 +178,10 @@ namespace hsd
             inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                isize _response = read(
-                    _sock.get_listening(), _net_buf.data(), 4096
+                isize _response = recvfrom(
+                    _sock.get_listening(), 
+                    _net_buf.data(), 
+                    4096, 0, nullptr, 0
                 );
 
                 if (_response == static_cast<isize>(net::received_state::err))
@@ -206,8 +207,9 @@ namespace hsd
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                isize _response  = write(
-                    _sock.get_listening(), _net_buf.data(), _net_buf.size()
+                isize _response  = sendto(
+                    _sock.get_listening(), _net_buf.data(), 
+                    _net_buf.size(), 0, nullptr, 0
                 );
                     
                 if(_response == static_cast<isize>(net::received_state::err))

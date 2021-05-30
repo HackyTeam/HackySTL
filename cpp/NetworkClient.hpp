@@ -20,8 +20,6 @@ namespace hsd
                 SOCKET _listening = -1;
                 #endif
 
-                sockaddr_storage _peer_addr{};
-
             public:
                 inline socket(protocol_type protocol = protocol_type::ipv4, 
                     const char* ip_addr = "127.0.0.1:54000")
@@ -54,12 +52,7 @@ namespace hsd
                     return _listening;
                 }
 
-                inline sockaddr* get_hint()
-                {
-                    return bit_cast<sockaddr*>(&_peer_addr);
-                }
-
-                inline void switch_to(protocol_type protocol, const char* ip_addr)
+                inline i32 switch_to(protocol_type protocol, const char* ip_addr)
                 {
                     if (_listening != static_cast<decltype(_listening)>(-1))
                         close();
@@ -109,7 +102,7 @@ namespace hsd
                                 stderr, "Error for getaddrinfo, code"
                                 ": %s\n", gai_strerror(_error_code)
                             );
-                            return;
+                            return -1;
                         }
 
                         delete[] _domain_addr;
@@ -126,7 +119,7 @@ namespace hsd
                                 stderr, "Error for getaddrinfo, code"
                                 ": %s\n", gai_strerror(_error_code)
                             );
-                            return;
+                            return -1;
                         }
                     }
 
@@ -146,9 +139,14 @@ namespace hsd
                     }
 
                     if (_rp == nullptr)
+                    {
                         fprintf(stderr, "Could not bind\n");
+                        freeaddrinfo(_result);
+                        return -1;
+                    }
 
                     freeaddrinfo(_result);
+                    return 0;
                 }
             };
         } // namespace client_detail
@@ -173,12 +171,16 @@ namespace hsd
                 : _sock{protocol, ip_addr}
             {}
 
+            inline bool switch_to(net::protocol_type protocol, const char* ip_addr)
+            {
+                return _sock.switch_to(protocol, ip_addr) != -1;
+            }
+
             inline hsd::pair< hsd::sstream&, net::received_state > receive()
             {
                 _clear_buf();
-                isize _response = recvfrom(
-                    _sock.get_listening(), _net_buf.data(), 
-                    4096, 0, _sock.get_hint(), &_len
+                isize _response = read(
+                    _sock.get_listening(), _net_buf.data(), 4096
                 );
 
                 if (_response == static_cast<isize>(net::received_state::err))
@@ -204,9 +206,8 @@ namespace hsd
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                isize _response  = sendto(
-                    _sock.get_listening(), _net_buf.data(), 
-                    _net_buf.size(), 0, _sock.get_hint(), _len
+                isize _response  = write(
+                    _sock.get_listening(), _net_buf.data(), _net_buf.size()
                 );
                     
                 if(_response == static_cast<isize>(net::received_state::err))
@@ -280,7 +281,7 @@ namespace hsd
                         .ai_flags = 0,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::stream,
-                        .ai_protocol = 0,
+                        .ai_protocol = IPPROTO_UDP,
                         .ai_addrlen = 0,
                         #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,
@@ -420,8 +421,9 @@ namespace hsd
                 _clear_buf();
                 _net_buf.write_data<fmt>(forward<Args>(args)...);
 
-                isize _response = send(_sock.get_sock(), 
-                    _net_buf.data(), _net_buf.size(), 0);
+                isize _response = send(
+                    _sock.get_sock(), _net_buf.data(), _net_buf.size(), 0
+                );
 
                 if(_response == static_cast<isize>(net::received_state::err))
                 {

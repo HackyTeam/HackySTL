@@ -275,7 +275,7 @@ namespace hsd
                     return _listening;
                 }
 
-                inline i32 switch_to(net::protocol_type protocol, const char* ip_addr)
+                inline void switch_to(net::protocol_type protocol, const char* ip_addr)
                 {      
                     if (_listening != static_cast<decltype(_listening)>(-1))
                         close();
@@ -325,7 +325,7 @@ namespace hsd
                                 stderr, "Error for getaddrinfo, code"
                                 ": %s\n", gai_strerror(_error_code)
                             );
-                            return -1;
+                            return;
                         }
 
                         delete[] _domain_addr;
@@ -342,7 +342,7 @@ namespace hsd
                                 stderr, "Error for getaddrinfo, code"
                                 ": %s\n", gai_strerror(_error_code)
                             );
-                            return -1;
+                            return;
                         }
                     }
 
@@ -365,12 +365,12 @@ namespace hsd
                     {
                         fprintf(stderr, "Could not bind\n");
                         freeaddrinfo(_result);
-                        return -1;
+                        return;
                     }
 
                     listen(_listening, SOMAXCONN);
                     freeaddrinfo(_result);
-                    return 0;
+                    return;
                 }
             };
 

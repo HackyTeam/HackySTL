@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <memory.h>
+#include <errno.h>
 #else
 #include <unistd.h>
 #include <ws2tcpip.h>

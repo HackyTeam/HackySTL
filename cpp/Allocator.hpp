@@ -3,6 +3,7 @@
 #include "Result.hpp"
 #include "Math.hpp"
 #include "StackArray.hpp"
+#include "IntegerSequence.hpp"
 
 #include <malloc.h>
 #include <string.h>
@@ -54,7 +55,7 @@ namespace hsd
             }
         }
 
-        template <typename T, typename U, usize N> requires (N != 0)
+        template <typename T, typename U, usize N>
         [[nodiscard]] static inline auto allocate_multiple(usize size, const U (&arr)[N])
             -> Result< T*, allocator_detail::allocator_error >
         {
@@ -95,8 +96,8 @@ namespace hsd
             }
         }
 
-        template <typename T>
-        [[nodiscard]] static inline auto allocate_multiple(usize size)
+        template <typename T, typename... Args>
+        [[nodiscard]] static inline auto allocate_multiple(usize size, Args... args)
             -> Result< T*, allocator_detail::allocator_error >
         {
             if (size > limits<usize>::max / sizeof(T))
@@ -113,11 +114,23 @@ namespace hsd
                 }
                 else
                 {
-                    usize _index = 0;
-
-                    for (; _index < size; _index++)
+                    if (size < sizeof...(args))
                     {
-                        construct_at(_result + _index);
+                        return {allocator_detail::allocator_error{"Array too small"}, err_value{}};
+                    }
+                    else
+                    {
+                        usize _index = sizeof...(args);
+
+                        [&]<usize... Ints>(hsd::index_sequence<Ints...>)
+                        {
+                            (construct_at(_result + Ints, args), ...);
+                        }(index_sequence_for<Args...>{});
+
+                        for (; _index < size; _index++)
+                        {
+                            construct_at(_result + _index);
+                        }
                     }
 
                     return {_result, ok_value{}};

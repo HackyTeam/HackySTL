@@ -3,6 +3,7 @@
 #include "Result.hpp"
 #include "Utility.hpp"
 #include "Types.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -28,60 +29,49 @@ namespace hsd
         using iterator = T*;
         using const_iterator = const T*;
 
-        constexpr heap_array()
+        inline heap_array()
         {
-            _array = new T[N]{};
-
-            [[unlikely]] if (_array == nullptr) abort();
+            _array = mallocator::allocate_multiple<T>(N).unwrap();
         }
 
         template <usize L> requires (L == N)
-        constexpr heap_array(const T (&arr)[L])
+        inline heap_array(const T (&arr)[L])
         {
-            _array = new T[N];
-
-            [[unlikely]] if (_array == nullptr) abort();
-
+            _array = mallocator::allocate_multiple<T>(N).unwrap();
             copy_n(arr, N, _array);
         }
 
         template <usize L> requires (L == N)
-        constexpr heap_array(T (&&arr)[L])
+        inline heap_array(T (&&arr)[L])
         {
-            _array = new T[N];
-
-            [[unlikely]] if (_array == nullptr) abort();
-
+            _array = mallocator::allocate_multiple<T>(N).unwrap();
             move(arr, arr + N, _array);
         }
 
-        constexpr heap_array(const heap_array& other)
+        inline heap_array(const heap_array& other)
         {
-            _array = new T[N];
-
-            [[unlikely]] if (_array == nullptr) abort();
-
+            _array = mallocator::allocate_multiple<T>(N).unwrap();
             copy_n(other.data(), N, _array);
         }
 
-        constexpr heap_array(heap_array&& other)
+        inline heap_array(heap_array&& other)
         {
             _array = other._array;
             other._array = nullptr;
         }
 
-        constexpr ~heap_array()
+        inline ~heap_array()
         {
-            delete[] _array;
+            mallocator::deallocate(_array);
         }
 
-        constexpr heap_array& operator=(const heap_array& rhs)
+        inline heap_array& operator=(const heap_array& rhs)
         {
             copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
-        constexpr heap_array& operator=(heap_array&& other)
+        inline heap_array& operator=(heap_array&& other)
         {
             _array = other._array;
             other._array = nullptr;
@@ -89,30 +79,30 @@ namespace hsd
         }
 
         template <usize L>
-        constexpr heap_array& operator=(const T (&arr)[L])
+        inline heap_array& operator=(const T (&arr)[L])
         {
             copy(arr, arr + N, _array);
             return *this;
         }
 
         template <usize L>
-        constexpr heap_array& operator=(T (&&arr)[L])
+        inline heap_array& operator=(T (&&arr)[L])
         {
             move(arr, arr + N, _array);
             return *this;
         }
 
-        constexpr T& operator[](usize index)
+        inline T& operator[](usize index)
         {
             return _array[index];
         }
         
-        constexpr const T& operator[](usize index) const
+        inline const T& operator[](usize index) const
         {
             return _array[index];
         }
 
-        constexpr auto at(usize index) 
+        inline auto at(usize index) 
             -> Result<reference<T>, harray_detail::bad_access>
         {
             if (index >= N)
@@ -121,7 +111,7 @@ namespace hsd
             return {_array[index]};
         }
 
-        constexpr auto at(usize index) const 
+        inline auto at(usize index) const 
             -> Result<const reference<T>, harray_detail::bad_access>
         {
             if (index >= N)
@@ -130,62 +120,62 @@ namespace hsd
             return {_array[index]};
         }
 
-        constexpr usize size()
+        consteval usize size()
         {
             return N;
         }
 
-        constexpr usize size() const
+        consteval usize size() const
         {
             return N;
         }
 
-        constexpr iterator data()
+        inline iterator data()
         {
             return _array;
         }
 
-        constexpr iterator data() const
+        inline iterator data() const
         {
             return _array;
         }
 
-        constexpr iterator begin()
+        inline iterator begin()
         {
             return data();
         }
 
-        constexpr iterator begin() const
+        inline iterator begin() const
         {
             return data();
         }
 
-        constexpr iterator end()
+        inline iterator end()
         {
             return begin() + size();
         }
 
-        constexpr iterator end() const
+        inline iterator end() const
         {
             return begin() + size();
         }
 
-        constexpr const_iterator cbegin()
+        inline const_iterator cbegin()
         {
             return begin();
         }
 
-        constexpr const_iterator cbegin() const
+        inline const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend()
+        inline const_iterator cend()
         {
             return end();
         }
 
-        constexpr const_iterator cend() const
+        inline const_iterator cend() const
         {
             return end();
         }

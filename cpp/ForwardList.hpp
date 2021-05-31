@@ -2,7 +2,8 @@
 
 #include "Utility.hpp"
 #include "Types.hpp"
-#include "Result.hpp"
+#include "Allocator.hpp"
+
 #include <new>
 
 namespace hsd
@@ -35,9 +36,8 @@ namespace hsd
                 {}
 
                 inline forward_list_impl(T&& val)
-                {
-                    _value = hsd::move(val);
-                }
+                    : _value{move(val)}
+                {}
             };
             
             forward_list_impl *_iterator = nullptr;
@@ -58,35 +58,47 @@ namespace hsd
 
             inline void push_back(const T& value)
             {
-                _iterator->_next = new forward_list_impl{value};
+                _iterator->_next = mallocator::allocate_single<
+                    forward_list_impl>(value).unwrap();
+                
                 _iterator = _iterator->_next;
             }
 
             inline void push_back(T&& value)
             {
-                _iterator->_next = new forward_list_impl{move(value)};
+                _iterator->_next = mallocator::allocate_single<
+                    forward_list_impl>(move(value)).unwrap();
+                
                 _iterator = _iterator->_next;
             }
 
             template <typename... Args>
             inline void emplace_back(Args&&... args)
             {
-                _iterator->_next = new forward_list_impl{};
+                _iterator->_next = mallocator::allocate_single<
+                    forward_list_impl>().unwrap();
+
                 _iterator->_next->_value.~T();
-                new (&_iterator->_next->_value) T{forward<Args>(args)...};
+                mallocator::construct_at(
+                    &_iterator->_next->_value, forward<Args>(args)...
+                );
                 _iterator = _iterator->_next;
             }
 
             inline void push_front(const T& value)
             {
-                forward_list_impl* _element = new forward_list_impl{value};
+                forward_list_impl* _element = mallocator::allocate_single<
+                    forward_list_impl>(value).unwrap();
+                
                 _element->_next = _iterator;
                 _iterator = _element;
             }
 
             inline void push_front(T&& value)
             {
-                forward_list_impl* _element = new forward_list_impl{move(value)};
+                forward_list_impl* _element = mallocator::allocate_single<
+                    forward_list_impl>(move(value)).unwrap();
+                
                 _element->_next = _iterator;
                 _iterator = _element;
             }
@@ -94,10 +106,14 @@ namespace hsd
             template <typename... Args>
             inline void emplace_front(Args&&... args)
             {
-                forward_list_impl* _element = new forward_list_impl{};
+                forward_list_impl* _element = mallocator::allocate_single<
+                    forward_list_impl>().unwrap();
                 _element->_next = _iterator;
+                
                 _element->_value.~T();
-                new (&_element->_value) T{forward<Args>(args)...};
+                mallocator::construct_at(
+                    &_element->_value, forward<Args>(args)...
+                );
                 _iterator = _element;
             }
 
@@ -105,7 +121,7 @@ namespace hsd
             {
                 forward_list_impl* _element = _iterator;
                 _iterator = _iterator->_next;
-                delete _element;
+                mallocator::deallocate(_element);
             }
         public:
 
@@ -315,7 +331,9 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{value};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>(value).unwrap();
+
                 _tail = _head;
             }
             else
@@ -328,7 +346,9 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{move(value)};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>(move(value)).unwrap();
+
                 _tail = _head;
             }
             else
@@ -342,9 +362,14 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>().unwrap();
+
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T{forward<Args>(args)...};
+                mallocator::construct_at(
+                    &_head._iterator->_value, forward<Args>(args)...
+                );
+
                 _tail = _head;
             }
             else
@@ -357,7 +382,9 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{value};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>(value).unwrap();
+
                 _tail = _head;
             }
             else
@@ -370,7 +397,9 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{move(value)};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>(move(value));
+
                 _tail = _head;
             }
             else
@@ -384,9 +413,14 @@ namespace hsd
         {
             if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl{};
+                _head._iterator = mallocator::allocate_single<
+                    typename iterator::forward_list_impl>().unwrap();
+
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T{forward<Args>(args)...};
+                mallocator::construct_at(
+                    &_head._iterator->_value, forward<Args>(args)...
+                );
+
                 _tail = _head;
             }
             else

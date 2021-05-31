@@ -3,6 +3,8 @@
 #include "Result.hpp"
 #include "Math.hpp"
 #include "StackArray.hpp"
+
+#include <malloc.h>
 #include <string.h>
 #include <new>
 
@@ -27,6 +29,107 @@ namespace hsd
         };
     } // namespace allocator_detail
     
+    struct mallocator
+    {
+        template <typename T, typename... Args>
+        static inline void construct_at(T* ptr, Args&&... args)
+        {
+            new (ptr) T{forward<Args>(args)...};
+        }
+
+        template <typename T, typename... Args>
+        [[nodiscard]] static inline auto allocate_single(Args&&... args)
+            -> Result< T*, allocator_detail::allocator_error >
+        {
+            T* _result = static_cast<T*>(malloc(sizeof(T)));
+
+            if (_result == nullptr)
+            {
+                return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+            }
+            else
+            {
+                construct_at(_result, forward<Args>(args)...);
+                return {_result, ok_value{}};
+            }
+        }
+
+        template <typename T, typename U, usize N> requires (N != 0)
+        [[nodiscard]] static inline auto allocate_multiple(usize size, U (&arr)[N])
+            -> Result< T*, allocator_detail::allocator_error >
+        {
+            if (size > limits<usize>::max / sizeof(T))
+            {
+                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
+            }
+            else
+            {
+                T* _result = static_cast<T*>(malloc(sizeof(T) * size));
+
+                if (_result == nullptr)
+                {
+                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                }
+                else
+                {
+                    if (size < N)
+                    {
+                        return {allocator_detail::allocator_error{"Array too small"}, err_value{}};
+                    }
+                    else
+                    {
+                        usize _index = 0;
+
+                        for (; _index < N; _index++)
+                        {
+                            construct_at(_result + _index, arr[_index]);
+                        }
+                        for (; _index < size; _index++)
+                        {
+                            construct_at(_result + _index);
+                        }
+                    }
+
+                    return {_result, ok_value{}};
+                }
+            }
+        }
+
+        template <typename T>
+        [[nodiscard]] static inline auto allocate_multiple(usize size)
+            -> Result< T*, allocator_detail::allocator_error >
+        {
+            if (size > limits<usize>::max / sizeof(T))
+            {
+                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
+            }
+            else
+            {
+                T* _result = static_cast<T*>(malloc(sizeof(T) * size));
+
+                if (_result == nullptr)
+                {
+                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                }
+                else
+                {
+                    usize _index = 0;
+
+                    for (; _index < size; _index++)
+                    {
+                        construct_at(_result + _index);
+                    }
+
+                    return {_result, ok_value{}};
+                }
+            }
+        }
+
+        static inline void deallocate(void* ptr)
+        {
+            free(ptr);
+        }
+    };    
 
     template <typename T>
     class buffered_allocator
@@ -76,7 +179,7 @@ namespace hsd
         template <typename... Args>
         static inline void construct_at(T* ptr, Args&&... args)
         {
-            new (ptr) T(forward<Args>(args)...);
+            new (ptr) T{forward<Args>(args)...};
         }
 
         [[nodiscard]] constexpr auto allocate(usize size)
@@ -221,11 +324,21 @@ namespace hsd
             else
             {
                 #ifdef __cpp_aligned_new
-                return {static_cast<pointer_type>(::operator new(
-                    size * _type_size, static_cast<std::align_val_t>(_alignment))), ok_value{}};
+                T* _result = static_cast<pointer_type>(::operator new(
+                    size * _type_size, static_cast<std::align_val_t>(_alignment)
+                ));
                 #else
-                return {static_cast<pointer_type>(::operator new(size * _type_size)), ok_value{}};
+                T* _result = static_cast<pointer_type>(::operator new(size * _type_size));
                 #endif
+
+                if (_result == nullptr)
+                {
+                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                }
+                else
+                {
+                    return _result;
+                }
             }
         }
 
@@ -251,7 +364,7 @@ namespace hsd
         template <typename... Args>
         static inline void construct_at(T* ptr, Args&&... args)
         {
-            new (ptr) T(forward<Args>(args)...);
+            new (ptr) T{forward<Args>(args)...};
         }
     };
 } // namespace hsd

@@ -35,7 +35,9 @@ namespace hsd
 
         inline basic_string(usize size)
         {
-            _data = new CharT[size + 1];
+            _data = mallocator::allocate_multiple<
+                CharT>(size + 1).unwrap();
+
             _size = size;
             _capacity = _size;
         }
@@ -44,7 +46,9 @@ namespace hsd
         {
             _size = _str_utils::length(cstr);
             _capacity = _size;
-            _data = new CharT[_size + 1];
+            _data = mallocator::allocate_multiple<
+                CharT>(_size + 1).unwrap();
+
             _str_utils::copy(_data, cstr, _size);
             _data[_size] = static_cast<CharT>(0);
         }
@@ -53,7 +57,9 @@ namespace hsd
         {
             _size = size;
             _capacity = _size;
-            _data = new CharT[_size + 1];
+            _data = mallocator::allocate_multiple<
+                CharT>(size + 1).unwrap();
+
             _str_utils::copy(_data, cstr, _size);
             _data[_size] = static_cast<CharT>(0);
         }
@@ -81,7 +87,9 @@ namespace hsd
         {
             _size = other._size;
             _capacity = other._capacity;
-            _data = new CharT[_capacity + 1]{};
+            _data = mallocator::allocate_multiple<
+                CharT>(_capacity + 1).unwrap();
+
             _str_utils::copy(_data, other._data, _size);
         }
 
@@ -102,7 +110,9 @@ namespace hsd
             _reset();
             _size = _str_utils::length(rhs);
             _capacity = _size;
-            _data = new CharT[_size + 1]{};
+            _data = mallocator::allocate_multiple<
+                CharT>(_size + 1).unwrap();
+
             _str_utils::copy(_data, rhs, _size);
             return *this;
         }
@@ -112,7 +122,9 @@ namespace hsd
             _reset();
             _size = rhs.size();
             _capacity = _size;
-            _data = new CharT[_size + 1]{};
+            _data = mallocator::allocate_multiple<
+                CharT>(_size + 1).unwrap();
+
             copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
@@ -575,9 +587,8 @@ namespace hsd
                     _new_capacity += (_new_capacity + 1) / 2;
 
                 // Allocate space for NULL byte
-                auto* _new_buf = new CharT[_new_capacity + 1];
-                
-                if (_new_buf == nullptr) [[unlikely]] abort();
+                auto* _new_buf = mallocator::allocate_multiple<
+                    CharT>(_new_capacity + 1).unwrap();
 
                 _new_buf[_new_capacity] = 0;
                 

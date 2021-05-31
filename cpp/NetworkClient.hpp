@@ -2,6 +2,7 @@
 
 #include "_NetworkDetail.hpp"
 #include "Concepts.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -87,7 +88,9 @@ namespace hsd
                             _domain_port - ip_addr
                         );
 
-                        _domain_addr = new char[_domain_len + 1];
+                        _domain_addr = mallocator::allocate_multiple<
+                            char>(_domain_len + 1).unwrap();
+
                         cstring::copy(_domain_addr, ip_addr, _domain_len);
                         _domain_addr[_domain_len] = static_cast<char>(0);
                         _domain_port += 1;
@@ -105,7 +108,7 @@ namespace hsd
                             return -1;
                         }
 
-                        delete[] _domain_addr;
+                        mallocator::deallocate(_domain_addr);
                     }
                     else
                     {
@@ -305,7 +308,9 @@ namespace hsd
                             _domain_port - ip_addr
                         );
 
-                        _domain_addr = new char[_domain_len + 1];
+                        _domain_addr = mallocator::allocate_multiple<
+                            char>(_domain_len + 1).unwrap();
+
                         cstring::copy(_domain_addr, ip_addr, _domain_len);
                         _domain_addr[_domain_len] = static_cast<char>(0);
                         _domain_port += 1;
@@ -323,7 +328,7 @@ namespace hsd
                             return -1;
                         }
 
-                        delete[] _domain_addr;
+                        mallocator::deallocate(_domain_addr);
                     }
                     else
                     {

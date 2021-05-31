@@ -1,19 +1,11 @@
-#include <stdlib.h>
+#include <Allocator.hpp>
 #include <Types.hpp>
 #include <Pair.hpp>
 
-struct alloc_data
-{
-    hsd::usize _sz;
-    char _values[];
-};
-
 int main()
 {
-    auto* data = reinterpret_cast<alloc_data*>(
-        malloc(sizeof(alloc_data) + sizeof(hsd::i32) * 5)
-    );
+    auto* data = hsd::mallocator::allocate_multiple<
+        char>(12, "hello world").unwrap();
 
-    data->_sz = 5;
-    free(data);
+    hsd::mallocator::deallocate(data);
 }

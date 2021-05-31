@@ -3,6 +3,7 @@
 #include "Utility.hpp"
 #include "Limits.hpp"
 #include "StackArray.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {	
@@ -232,10 +233,7 @@ namespace hsd
 					_end--;
 			}
 			
-			_buf = new CharT[_end + 2];
-
-			if (_buf == nullptr) [[unlikely]] abort();
-
+			_buf = mallocator::allocate_multiple<CharT>(_end + 2).unwrap();
 			copy(str, str + _end + 1, _buf);
 
 	    	for (; _begin <= _end; _begin++, _end--)
@@ -269,14 +267,14 @@ namespace hsd
 			if (_negative)
 			{
 				_len += 1;
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<CharT>(_len + 1).unwrap();
 				_buf[_len] = '\0';
 				_buf[0] = '-';
 				num = -num;
 			}
 			else
 			{
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<CharT>(_len + 1).unwrap();
 				_buf[_len] = '\0';
 			}
 
@@ -304,14 +302,18 @@ namespace hsd
 			if (_negative)
 			{
 				_len += 1;
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
+
 				_buf[_len] = '\0';
 				_buf[0] = '-';
 				num = -num;
 			}
 			else
 			{
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
+
 				_buf[_len] = '\0';
 			}
 
@@ -339,14 +341,18 @@ namespace hsd
 			if (_negative)
 			{
 				_len += 1;
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
+
 				_buf[_len] = '\0';
 				_buf[0] = '-';
 				num = -num;
 			}
 			else
 			{
-				_buf = new CharT[_len + 1];
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
+
 				_buf[_len] = '\0';
 			}
 
@@ -373,9 +379,8 @@ namespace hsd
 			if (_negative)
 			{
 				_len += 1;
-				_buf = new CharT[_len + 1];
-
-				if (_buf == nullptr) [[unlikely]] abort();
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
 
 				_buf[_len] = '\0';
 				_buf[0] = '-';
@@ -383,9 +388,8 @@ namespace hsd
 			}
 			else
 			{
-				_buf = new CharT[_len + 1];
-
-				if (_buf == nullptr) [[unlikely]] abort();
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
 
 				_buf[_len] = '\0';
 			}
@@ -413,9 +417,8 @@ namespace hsd
 			if (_negative)
 			{
 				_len += 1;
-				_buf = new CharT[_len + 1];
-
-				if (_buf == nullptr) [[unlikely]] abort();
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
 
 				_buf[_len] = '\0';
 				_buf[0] = '-';
@@ -423,9 +426,8 @@ namespace hsd
 			}
 			else
 			{
-				_buf = new CharT[_len + 1];
-
-				if (_buf == nullptr) [[unlikely]] abort();
+				_buf = mallocator::allocate_multiple<
+					CharT>(_len + 1).unwrap();
 
 				_buf[_len] = '\0';
 			}
@@ -447,9 +449,8 @@ namespace hsd
 		static constexpr CharT* to_string(ulong num)
 		{
 			usize _len = _num_len(num);
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 			_buf[0] = '0';
@@ -466,9 +467,8 @@ namespace hsd
 		static constexpr CharT* to_string(u128 num)
 		{
 			usize _len = _num_len(num);
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 			_buf[0] = '0';
@@ -483,9 +483,8 @@ namespace hsd
 		static constexpr CharT* to_string(u64 num)
 		{
 			usize _len = _num_len(num);
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 			_buf[0] = '0';
@@ -499,9 +498,8 @@ namespace hsd
 		static constexpr CharT* to_string(u32 num)
 		{
 			usize _len = _num_len(num);
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 			_buf[0] = '0';
@@ -515,9 +513,8 @@ namespace hsd
 		static constexpr CharT* to_string(u16 num)
 		{
 			usize _len = _num_len(num);
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 			_buf[0] = '0';
@@ -540,9 +537,8 @@ namespace hsd
 			else
 				_len = _num_len(_round_num) + 7;
 			
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 
@@ -585,9 +581,8 @@ namespace hsd
 			else
 				_len = _num_len(_round_num) + 7;
 			
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 
@@ -632,9 +627,8 @@ namespace hsd
 			else
 				_len = _num_len(_round_num) + 5;
 
-			CharT* _buf = new CharT[_len + 1];
-
-			if (_buf == nullptr) [[unlikely]] abort();
+			CharT* _buf = mallocator::allocate_multiple<
+				CharT>(_len + 1).unwrap();
 
 			_buf[_len] = '\0';
 
@@ -667,10 +661,7 @@ namespace hsd
 
 		static constexpr CharT* to_string(CharT letter)
 		{
-			CharT* _buf = new CharT[2];
-
-			if (_buf == nullptr) [[unlikely]] abort();
-
+			CharT* _buf = mallocator::allocate_multiple<CharT>(2).unwrap();
 			_buf[0] = static_cast<CharT>(letter);
 			_buf[1] = '\0';
 			return _buf;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_SStreamDetail.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -21,7 +22,9 @@ namespace hsd
 
         basic_sstream(usize size)
         {
-            _data = new CharT[size + 1];
+            _data = mallocator::allocate_multiple<
+                CharT>(size + 1).unwrap();
+
             _data[size] = '\0';
             _capacity = size;
         }

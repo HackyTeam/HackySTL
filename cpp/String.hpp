@@ -35,7 +35,7 @@ namespace hsd
 
         inline basic_string(usize size)
         {
-            _data = new CharT[size + 1]{};
+            _data = new CharT[size + 1];
             _size = size;
             _capacity = _size;
         }
@@ -44,16 +44,18 @@ namespace hsd
         {
             _size = _str_utils::length(cstr);
             _capacity = _size;
-            _data = new CharT[_size + 1]{};
+            _data = new CharT[_size + 1];
             _str_utils::copy(_data, cstr, _size);
+            _data[_size] = static_cast<CharT>(0);
         }
 
         inline basic_string(const CharT* cstr, usize size)
         {
             _size = size;
             _capacity = _size;
-            _data = new CharT[_size + 1]{};
+            _data = new CharT[_size + 1];
             _str_utils::copy(_data, cstr, _size);
+            _data[_size] = static_cast<CharT>(0);
         }
 
         inline basic_string(CharT* cstr, move_data_pointer)
@@ -574,6 +576,9 @@ namespace hsd
 
                 // Allocate space for NULL byte
                 auto* _new_buf = new CharT[_new_capacity + 1];
+                
+                if (_new_buf == nullptr) [[unlikely]] abort();
+
                 _new_buf[_new_capacity] = 0;
                 
                 for (usize _index = 0; _index < _size; ++_index)

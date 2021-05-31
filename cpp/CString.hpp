@@ -233,6 +233,9 @@ namespace hsd
 			}
 			
 			_buf = new CharT[_end + 2];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			copy(str, str + _end + 1, _buf);
 
 	    	for (; _begin <= _end; _begin++, _end--)
@@ -371,6 +374,9 @@ namespace hsd
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
+
+				if (_buf == nullptr) [[unlikely]] abort();
+
 				_buf[_len] = '\0';
 				_buf[0] = '-';
 				num = -num;
@@ -378,6 +384,9 @@ namespace hsd
 			else
 			{
 				_buf = new CharT[_len + 1];
+
+				if (_buf == nullptr) [[unlikely]] abort();
+
 				_buf[_len] = '\0';
 			}
 
@@ -405,6 +414,9 @@ namespace hsd
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
+
+				if (_buf == nullptr) [[unlikely]] abort();
+
 				_buf[_len] = '\0';
 				_buf[0] = '-';
 				num = -num;
@@ -412,6 +424,9 @@ namespace hsd
 			else
 			{
 				_buf = new CharT[_len + 1];
+
+				if (_buf == nullptr) [[unlikely]] abort();
+
 				_buf[_len] = '\0';
 			}
 
@@ -433,6 +448,9 @@ namespace hsd
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
@@ -449,6 +467,9 @@ namespace hsd
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
@@ -463,6 +484,9 @@ namespace hsd
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
@@ -476,6 +500,9 @@ namespace hsd
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
@@ -489,6 +516,9 @@ namespace hsd
 		{
 			usize _len = _num_len(num);
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
@@ -511,6 +541,9 @@ namespace hsd
 				_len = _num_len(_round_num) + 7;
 			
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 
 			if (_point_num == 0)
@@ -553,6 +586,9 @@ namespace hsd
 				_len = _num_len(_round_num) + 7;
 			
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 
 			if (_point_num == 0)
@@ -597,6 +633,9 @@ namespace hsd
 				_len = _num_len(_round_num) + 5;
 
 			CharT* _buf = new CharT[_len + 1];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[_len] = '\0';
 
 			if (_point_num == 0)
@@ -629,6 +668,9 @@ namespace hsd
 		static constexpr CharT* to_string(CharT letter)
 		{
 			CharT* _buf = new CharT[2];
+
+			if (_buf == nullptr) [[unlikely]] abort();
+
 			_buf[0] = static_cast<CharT>(letter);
 			_buf[1] = '\0';
 			return _buf;

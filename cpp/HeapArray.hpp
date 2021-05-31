@@ -31,32 +31,37 @@ namespace hsd
         constexpr heap_array()
         {
             _array = new T[N]{};
+
+            [[unlikely]] if (_array == nullptr) abort();
         }
 
-        template <usize L>
+        template <usize L> requires (L == N)
         constexpr heap_array(const T (&arr)[L])
         {
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                _array = new T[N]{arr[Ints]...};
-            }(make_index_sequence<N>{});
+            _array = new T[N];
+
+            [[unlikely]] if (_array == nullptr) abort();
+
+            copy_n(arr, N, _array);
         }
 
-        template <usize L>
+        template <usize L> requires (L == N)
         constexpr heap_array(T (&&arr)[L])
         {
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                _array = new T[N]{move(arr[Ints])...};
-            }(make_index_sequence<N>{});
+            _array = new T[N];
+
+            [[unlikely]] if (_array == nullptr) abort();
+
+            move(arr, arr + N, _array);
         }
 
         constexpr heap_array(const heap_array& other)
         {
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                _array = new T[N]{other[Ints]...};
-            }(make_index_sequence<N>{});;
+            _array = new T[N];
+
+            [[unlikely]] if (_array == nullptr) abort();
+
+            copy_n(other.data(), N, _array);
         }
 
         constexpr heap_array(heap_array&& other)

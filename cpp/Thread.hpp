@@ -45,11 +45,11 @@ namespace hsd
 		static id get_id() 
 		{
 			#if defined(HSD_PLATFORM_POSIX)
-			return id{
+			return id {
 				static_cast<native_id_type>(pthread_self())
 			};
 			#else
-			return id{
+			return id {
 				static_cast<native_id_type>(GetCurrentThreadId())
 			};
 			#endif
@@ -61,7 +61,7 @@ namespace hsd
 			    Sleep(seconds * 1000); // milliseconds
 			#else /* posix */
     		auto frac = seconds - static_cast<i32>(seconds);
-    		timespec ts{
+    		timespec ts {
     		    .tv_sec = static_cast<i32>(seconds),
     		    .tv_nsec = static_cast<long>(frac * 1'000'000'000.f)
     		};
@@ -103,25 +103,25 @@ namespace hsd
 
 			auto decay_copy = []<typename T>(T&& t) -> decay_t<T>
 			{
-				return hsd::forward<T>(t);
+				return forward<T>(t);
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
-			hsd::i32 _ready = 0;
+			i32 _ready = 0;
 			#else
-			hsd::u64 _ready = 0;
+			u64 _ready = 0;
 			#endif
 
 			struct thread_data 
 			{
 				#if defined(HSD_PLATFORM_POSIX)
-				hsd::i32* ready;
+				i32* ready;
 				#else
-				hsd::u64* ready;
+				u64* ready;
 				#endif
 
-				hsd::decay_t<F> func;
-				hsd::tuple<decay_t<Args>...> args;
+				decay_t<F> func;
+				tuple<decay_t<Args>...> args;
 
 				#if defined(HSD_PLATFORM_POSIX)
 				static void* enter_thread(void* arg)
@@ -129,7 +129,7 @@ namespace hsd
 				static DWORD enter_thread(void* arg)
 				#endif
 				{
-					auto td = hsd::move(*bit_cast<thread_data*>(arg));
+					auto td = move(*bit_cast<thread_data*>(arg));
 
 					// Tell our parent we are ready and copied the data
 					#if defined(HSD_PLATFORM_POSIX)
@@ -138,7 +138,7 @@ namespace hsd
 					InterlockedIncrementRelease(td.ready);
 					#endif
 					
-					hsd::apply(td.func, td.args);
+					apply(td.func, td.args);
 
 					#if defined(HSD_PLATFORM_POSIX)
 					return nullptr;
@@ -151,14 +151,14 @@ namespace hsd
 			auto _td = thread_data
 			{
 				.ready = &_ready,
-				.func = decay_copy(hsd::forward<F>(func)),
-				.args = hsd::make_tuple(decay_copy(hsd::forward<Args>(args))...)
+				.func = decay_copy(forward<F>(func)),
+				.args = make_tuple(decay_copy(forward<Args>(args))...)
 			};
 
 			#if defined(HSD_PLATFORM_POSIX)
 			i32 _res = pthread_create(&_handle, &_attr, thread_data::enter_thread, &_td);
 			
-			if (_res) abort();
+			if (_res != 0) abort();
 
 			// Spinlock time
 			while (!__atomic_load_n(&_ready, __ATOMIC_ACQUIRE));
@@ -189,6 +189,7 @@ namespace hsd
 
 		void swap(thread &other) 
 		{ 
+			// namespace needed
 			hsd::swap(_handle, other._handle);
 			hsd::swap(_id, other._id);
 		}

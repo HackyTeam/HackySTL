@@ -88,7 +88,10 @@ namespace hsd
             {
                 usize _index = 0;
                 iter_type _result_iter = _begin;
-                for(; _index < quantity; _index++, _result_iter++);
+
+                for (; _index < quantity; _index++, _result_iter++)
+                    ;
+
                 return span{_result_iter, _end, _view_size - _index};
             }
         }
@@ -104,7 +107,10 @@ namespace hsd
             {
                 usize _index = 0;
                 iter_type _result_iter = _begin;
-                for(; _index < quantity; _index++, _result_iter++);
+                
+                for(; _index < quantity; _index++, _result_iter++)
+                    ;
+
                 return span{_begin, _result_iter, _view_size - _index};
             }
         }

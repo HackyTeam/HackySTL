@@ -28,7 +28,7 @@ namespace hsd
                 T _value;
                 forward_list_impl* _next = nullptr;
 
-                inline forward_list_impl() {}
+                inline forward_list_impl() = default;
 
                 inline forward_list_impl(const T& val)
                     : _value{val}
@@ -58,35 +58,35 @@ namespace hsd
 
             inline void push_back(const T& value)
             {
-                _iterator->_next = new forward_list_impl(value);
+                _iterator->_next = new forward_list_impl{value};
                 _iterator = _iterator->_next;
             }
 
             inline void push_back(T&& value)
             {
-                _iterator->_next = new forward_list_impl(hsd::move(value));
+                _iterator->_next = new forward_list_impl{move(value)};
                 _iterator = _iterator->_next;
             }
 
             template <typename... Args>
             inline void emplace_back(Args&&... args)
             {
-                _iterator->_next = new forward_list_impl();
+                _iterator->_next = new forward_list_impl{};
                 _iterator->_next->_value.~T();
-                new (&_iterator->_next->_value) T(hsd::forward<Args>(args)...);
+                new (&_iterator->_next->_value) T{forward<Args>(args)...};
                 _iterator = _iterator->_next;
             }
 
             inline void push_front(const T& value)
             {
-                forward_list_impl* _element = new forward_list_impl(value);
+                forward_list_impl* _element = new forward_list_impl{value};
                 _element->_next = _iterator;
                 _iterator = _element;
             }
 
             inline void push_front(T&& value)
             {
-                forward_list_impl* _element = new forward_list_impl(hsd::move(value));
+                forward_list_impl* _element = new forward_list_impl{move(value)};
                 _element->_next = _iterator;
                 _iterator = _element;
             }
@@ -94,10 +94,10 @@ namespace hsd
             template <typename... Args>
             inline void emplace_front(Args&&... args)
             {
-                forward_list_impl* _element = new forward_list_impl();
+                forward_list_impl* _element = new forward_list_impl{};
                 _element->_next = _iterator;
                 _element->_value.~T();
-                new (&_element->_value) T(hsd::forward<Args>(args)...);
+                new (&_element->_value) T{forward<Args>(args)...};
                 _iterator = _element;
             }
 
@@ -176,11 +176,11 @@ namespace hsd
     public:
         using iterator = forward_list_detail::iterator<T>;
         using const_iterator = const iterator;
-        inline forward_list() {}
+        inline forward_list() = default;
 
         inline forward_list(const forward_list& other)
         {
-            for(const auto& _element : other)
+            for (const auto& _element : other)
                 push_back(_element);
         }
 
@@ -195,14 +195,14 @@ namespace hsd
         template <usize N>
         inline forward_list(const T (&arr)[N])
         {
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(arr[_index]);
         }
 
         template <usize N>
         inline forward_list(T (&&arr)[N])
         {
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(move(arr[_index]));
         }
 
@@ -215,7 +215,7 @@ namespace hsd
         {
             clear();
             
-            for(const auto& _element : rhs)
+            for (const auto& _element : rhs)
                 push_back(_element);
             
             return *this;
@@ -237,10 +237,10 @@ namespace hsd
             clear();
             usize _index = 0;
 
-            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
                 *_it = arr[_index];
 
-            for(; _index < N; _index++)
+            for (; _index < N; _index++)
                 push_back(arr[_index]);
 
             return *this;
@@ -252,10 +252,10 @@ namespace hsd
             clear();
             usize _index = 0;
 
-            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
                 *_it = move(arr[_index]);
 
-            for(; _index < N; _index++)
+            for (; _index < N; _index++)
                 push_back(move(arr[_index]));
 
             return *this;
@@ -264,7 +264,7 @@ namespace hsd
         inline auto erase(const_iterator pos)
             -> Result<iterator, runtime_error>
         {
-            if(pos._iterator == nullptr)
+            if (pos._iterator == nullptr)
             {
                 // this in the only situation when
                 // .erase() will "throw" because
@@ -272,12 +272,12 @@ namespace hsd
                 // if it belongs to this list or not
                 return runtime_error{"Accessed an null element"};
             }
-            else if(_size == 1)
+            else if (_size == 1)
             {
                 pop_front();
                 return end();
             }
-            else if(pos == begin())
+            else if (pos == begin())
             {
                 pop_front();
                 return begin();
@@ -291,9 +291,9 @@ namespace hsd
                         pos._iterator && _back_iter != end();
                 };
                 
-                for(_back_iter = begin(); _check_iter(); _back_iter++) {}
+                for (_back_iter = begin(); _check_iter(); _back_iter++) {}
 
-                if(_back_iter == end())
+                if (_back_iter == end())
                 {
                     return runtime_error{"Undefined Behaviour"};
                 }
@@ -313,9 +313,9 @@ namespace hsd
 
         inline void push_back(const T& value)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl(value);
+                _head._iterator = new typename iterator::forward_list_impl{value};
                 _tail = _head;
             }
             else
@@ -326,13 +326,13 @@ namespace hsd
 
         inline void push_back(T&& value)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl(hsd::move(value));
+                _head._iterator = new typename iterator::forward_list_impl{move(value)};
                 _tail = _head;
             }
             else
-                _tail.push_back(hsd::move(value));
+                _tail.push_back(move(value));
 
             _size++;
         }
@@ -340,24 +340,24 @@ namespace hsd
         template <typename... Args>
         inline void emplace_back(Args&&... args)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl();
+                _head._iterator = new typename iterator::forward_list_impl{};
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T(hsd::forward<Args>(args)...);
+                new (&_head._iterator->_value) T{forward<Args>(args)...};
                 _tail = _head;
             }
             else
-                _tail.emplace_back(hsd::forward<Args>(args)...);
+                _tail.emplace_back(forward<Args>(args)...);
 
             _size++;
         }
 
         inline void push_front(const T& value)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl(value);
+                _head._iterator = new typename iterator::forward_list_impl{value};
                 _tail = _head;
             }
             else
@@ -368,13 +368,13 @@ namespace hsd
 
         inline void push_front(T&& value)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl(hsd::move(value));
+                _head._iterator = new typename iterator::forward_list_impl{move(value)};
                 _tail = _head;
             }
             else
-                _head.push_front(hsd::move(value));
+                _head.push_front(move(value));
 
             _size++;
         }
@@ -382,22 +382,22 @@ namespace hsd
         template <typename... Args>
         inline void emplace_front(Args&&... args)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::forward_list_impl();
+                _head._iterator = new typename iterator::forward_list_impl{};
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T(hsd::forward<Args>(args)...);
+                new (&_head._iterator->_value) T{forward<Args>(args)...};
                 _tail = _head;
             }
             else
-                _head.emplace_front(hsd::forward<Args>(args)...);
+                _head.emplace_front(forward<Args>(args)...);
 
             _size++;
         }
 
         inline void pop_front()
         {
-            if(!empty())
+            if (!empty())
             {
                 _head.pop_front();
             }
@@ -409,7 +409,9 @@ namespace hsd
 
         inline void clear()
         {
-            for(; !empty(); pop_front());
+            for (; !empty(); pop_front())
+                ;
+            
             pop_front();
         }
 
@@ -440,7 +442,7 @@ namespace hsd
 
         inline iterator end()
         {
-            return iterator(nullptr);
+            return {nullptr};
         }
 
         inline const_iterator end() const
@@ -455,7 +457,7 @@ namespace hsd
 
         inline const_iterator cend() const
         {
-            return iterator(nullptr);
+            return {nullptr};
         }
     };
 } // namespace hsd

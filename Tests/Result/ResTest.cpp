@@ -12,7 +12,7 @@ struct S
 static auto fail_func(int val) 
     -> hsd::Result<hsd::string, S>
 {
-    if(val < 10)
+    if (val < 10)
         return S{};
     else
         return {"Test string"};
@@ -22,7 +22,7 @@ template <typename T>
 static constexpr auto fail_func2(const T& val) 
     -> hsd::Result<hsd::string, S>
 {
-    if(!static_cast<bool>(val))
+    if (!static_cast<bool>(val))
         return S{};
     else
         return hsd::to_string(val);

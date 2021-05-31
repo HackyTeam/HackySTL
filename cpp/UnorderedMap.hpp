@@ -51,7 +51,7 @@ namespace hsd
             _buckets.clear();
             _buckets.resize(new_size);
 
-            for(usize _index = 0; _index < _data.size(); _index++)
+            for (usize _index = 0; _index < _data.size(); _index++)
             {
                 auto _hash_rez = Hasher::get_hash(_data[_index].first);
                 usize _bucket_index = _hash_rez % new_size;
@@ -64,12 +64,10 @@ namespace hsd
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
 
-            for(auto& _val : _buckets[_index])
+            for (auto& _val : _buckets[_index])
             {
-                if(_key_hash == _val.first)
-                {
+                if (_key_hash == _val.first)
                     return {_val.second, _index};
-                }
             }
 
             return {static_cast<usize>(-1), _index};
@@ -81,12 +79,10 @@ namespace hsd
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
 
-            for(auto _val = _buckets[_index].begin(); _val != _buckets[_index].end(); _val++)
+            for (auto _val = _buckets[_index].begin(); _val != _buckets[_index].end(); _val++)
             {
-                if(_key_hash == _val->first)
-                {
+                if (_key_hash == _val->first)
                     return pair{_val, _index};
-                }
             }
 
             return umap_detail::bad_access{};
@@ -154,7 +150,7 @@ namespace hsd
         inline unordered_map(const unordered_map& other)
             : _buckets{other._buckets.size()}, _data{other._data}
         {
-            for(auto& _val : _data)
+            for (auto& _val : _data)
             {
                 auto _hash_rez = Hasher::get_hash(_val.get().first);
                 usize _index = _hash_rez % _buckets.size();
@@ -172,7 +168,7 @@ namespace hsd
             umap_detail::DefaultAlloc<BucketAllocator>))
             : _buckets(10)
         {
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
             {
                 emplace(
                     move(other[_index].first), 
@@ -192,7 +188,7 @@ namespace hsd
         {
             clear();
 
-            for(pair<Key, T>& val : rhs._data)
+            for (pair<Key, T>& val : rhs._data)
                 emplace(val.first, val.second);
 
             return *this;
@@ -203,10 +199,8 @@ namespace hsd
         {
             clear();
 
-            for(usize _index = 0; _index < N; _index++)
-            {
+            for (usize _index = 0; _index < N; _index++)
                 emplace(rhs[_index].first, rhs[_index].second);
-            }
 
             return *this;
         }
@@ -216,7 +210,7 @@ namespace hsd
         {
             clear();
 
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
             {
                 emplace(
                     move(rhs[_index].first), 
@@ -242,7 +236,7 @@ namespace hsd
         {
             usize _data_index = _get(key).first;
 
-            if(_data_index == static_cast<usize>(-1))
+            if (_data_index == static_cast<usize>(-1))
                 return umap_detail::bad_key{};
 
             return {_data[_data_index].second};
@@ -253,7 +247,7 @@ namespace hsd
         {
             usize _data_index = _get(key).first;
 
-            if(_data_index == static_cast<usize>(-1))
+            if (_data_index == static_cast<usize>(-1))
                 return umap_detail::bad_key{};
 
             return {_data[_data_index].second};
@@ -264,7 +258,7 @@ namespace hsd
         {
             auto [_data_index, _bucket_index] = _get(key);
 
-            if(_data_index != static_cast<usize>(-1))
+            if (_data_index != static_cast<usize>(-1))
             {
                 return {_data.begin() + _data_index, false};
             }
@@ -272,7 +266,7 @@ namespace hsd
             {
                 _data.emplace_back(key, T{forward<Args>(args)...});
 
-                if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
+                if (static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
                     _replace(_buckets.size() + _buckets.size() / 2);
                 }
@@ -292,7 +286,7 @@ namespace hsd
         {
             auto [_data_index, _bucket_index] = _get(key);
 
-            if(_data_index != static_cast<usize>(-1))
+            if (_data_index != static_cast<usize>(-1))
             {
                 return {_data.begin() + _data_index, false};
             }
@@ -300,7 +294,7 @@ namespace hsd
             {
                 _data.emplace_back(move(key), move(T{forward<Args>(args)...}));
 
-                if(static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
+                if (static_cast<f64>(_data.size()) / static_cast<f64>(_buckets.size()) >= _limit_ratio)
                 {
                     _replace(_buckets.size() + _buckets.size() / 2);
                 }
@@ -320,7 +314,7 @@ namespace hsd
         {
             auto _result = _get_iter(pos->first);
             
-            if(_result.is_ok() == false)
+            if (_result.is_ok() == false)
                 return umap_detail::bad_access{};
             
             // now .unwrap() should not fail

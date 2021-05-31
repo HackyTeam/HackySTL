@@ -66,7 +66,7 @@ namespace hsd
         {
             static bool _is_init = false;
             
-            if(_is_init == false)
+            if (_is_init == false)
             {
                 WSAData _data;
 	            WORD _ver = MAKEWORD(2, 2);

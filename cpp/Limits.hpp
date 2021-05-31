@@ -23,7 +23,7 @@ namespace hsd
         {
             constexpr auto _lshf = static_cast<T>(1) << (digits_byte<T, B>() - 1);
 
-            if constexpr(is_signed_byte<T>())
+            if constexpr (is_signed_byte<T>())
             {
                 return ((_lshf - 1) << 1) + 1;
             }
@@ -34,7 +34,7 @@ namespace hsd
         template <typename T, usize B>
         constexpr T min_byte()
         {
-            if constexpr(is_signed_byte<T>())
+            if constexpr (is_signed_byte<T>())
             {
                 return -max_byte<T, B>() - 1;
             }

@@ -35,7 +35,7 @@ namespace hsd
         concept is_same = hsd::is_same<From, To>::value;
 
         template <typename T>
-        using InvokeType = decltype(std::declval<T>()());
+        using InvokeType = decltype(declval<T>()());
 
         template <typename T>
         concept IsReference = (requires {typename T::value_type;} && (
@@ -100,13 +100,13 @@ namespace hsd
         Result(const Result& other)
             : _initialized{other._initialized}
         {
-            if(_initialized)
+            if (_initialized)
             {
-                new(&_ok_data) Ok(other._ok_data);
+                new (&_ok_data) Ok(other._ok_data);
             }
             else
             {
-                new(&_err_data) Err(other._err_data);
+                new (&_err_data) Err(other._err_data);
             }
         }
 
@@ -115,17 +115,17 @@ namespace hsd
         {
             if(_initialized)
             {
-                new(&_ok_data) Ok(move(other._ok_data));
+                new (&_ok_data) Ok(move(other._ok_data));
             }
             else
             {
-                new(&_err_data) Err(move(other._err_data));
+                new (&_err_data) Err(move(other._err_data));
             }
         }
 
         constexpr ~Result()
         {
-            if(_initialized)
+            if (_initialized)
             {
                 _ok_data.~Ok();
             }
@@ -150,9 +150,9 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr (Result_detail::IsReference<Ok>)
                 {
                     return static_cast<typename Ok::value_type&>(_ok_data);
                 }
@@ -163,7 +163,7 @@ namespace hsd
             }
             else
             {
-                if constexpr(requires {_err_data();})
+                if constexpr (requires {_err_data();})
                 {
                     static_assert(
                         is_same<const char*, Result_detail::InvokeType<Err>>::value, 
@@ -178,7 +178,7 @@ namespace hsd
                         _err_data()
                     );
                 }
-                else if constexpr(Result_detail::IsString<Err>)
+                else if constexpr (Result_detail::IsString<Err>)
                 {
                     hsd_fprint_check(
                         stderr, "Got an error in file:"
@@ -208,9 +208,9 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr (Result_detail::IsReference<Ok>)
                 {
                     return static_cast<typename Ok::value_type&>(_ok_data);
                 }
@@ -235,24 +235,22 @@ namespace hsd
         constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (Result_detail::IsReference<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
-                return static_cast<typename Ok::value_type&>(_ok_data);
-            }
-            else
-            {
-                if constexpr(is_const<Ok>::value)
+                if constexpr (is_const<Ok>::value)
                 {
-                    return static_cast<const typename Ok::value_type&>(
-                        Ok{forward<Args>(args)...}
-                    );
+                    return static_cast<const typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
-                    return static_cast<typename Ok::value_type&>(
-                        Ok{forward<Args>(args)...}
-                    );
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
+            }
+            else
+            {
+                return typename Ok::value_type {
+                    forward<Args>(args)...
+                };
             }
         } 
 
@@ -260,7 +258,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (!Result_detail::IsReference<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
                 return release(_ok_data);
             }
@@ -273,7 +271,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_or_default()
         requires (std::is_default_constructible_v<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
                 return release(_ok_data);
             }
@@ -287,7 +285,7 @@ namespace hsd
         requires (InvocableRet<Ok, Func>)
         constexpr decltype(auto) unwrap_or_else(Func&& func)
         {
-            if(_initialized)
+            if (_initialized)
             {
                 if constexpr(Result_detail::IsReference<Ok>)
                 {
@@ -309,11 +307,11 @@ namespace hsd
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
         {
-            if(!_initialized)
+            if (!_initialized)
             {
-                if constexpr(Result_detail::IsReference<Err>)
+                if constexpr (Result_detail::IsReference<Err>)
                 {
-                    if constexpr(is_const<Err>::value)
+                    if constexpr (is_const<Err>::value)
                     {
                         return static_cast<const typename Err::value_type&>(_err_data);
                     }
@@ -345,11 +343,11 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(!_initialized)
+            if (!_initialized)
             {
-                if constexpr(Result_detail::IsReference<Err>)
+                if constexpr (Result_detail::IsReference<Err>)
                 {
-                    if constexpr(is_const<Err>::value)
+                    if constexpr (is_const<Err>::value)
                     {
                         return static_cast<const typename Err::value_type&>(_err_data);
                     }
@@ -427,9 +425,9 @@ namespace hsd
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
         {
-            if(!_initialized)
+            if (!_initialized)
             {
-                if constexpr(requires {_err_data();})
+                if constexpr (requires {_err_data();})
                 {
                     static_assert(
                         is_same<const char*, Result_detail::InvokeType<Err>>::value, 
@@ -444,7 +442,7 @@ namespace hsd
                         _err_data()
                     );
                 }
-                else if constexpr(Result_detail::IsString<Err>)
+                else if constexpr (Result_detail::IsString<Err>)
                 {
                     hsd_fprint_check(
                         stderr, "Got an error in file:"
@@ -474,7 +472,7 @@ namespace hsd
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
         {
-            if(!_initialized)
+            if (!_initialized)
             {
                 hsd_fprint_check(
                     stderr, "Got an error in file:"
@@ -490,7 +488,7 @@ namespace hsd
         requires (InvocableRet<void, Func>)
         constexpr void unwrap_or_else(Func&& func)
         {
-            if(!_initialized)
+            if (!_initialized)
             {
                 func();
             }
@@ -501,7 +499,7 @@ namespace hsd
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
                 hsd_fprint_check(
                     stderr, "Got an error in file:"
@@ -512,7 +510,7 @@ namespace hsd
             }
             else
             {
-                if constexpr(Result_detail::IsReference<Err>)
+                if constexpr (Result_detail::IsReference<Err>)
                 {
                     return static_cast<typename Err::value_type&>(_err_data);
                 }
@@ -529,7 +527,7 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
                 hsd_fprint_check(
                     stderr, "Got an error in file:"
@@ -537,6 +535,24 @@ namespace hsd
                     " %zu\nWith the message: %s\n",
                     file_name, func, line, message);
                 abort();
+            }
+            else
+            {
+                if constexpr (Result_detail::IsReference<Err>)
+                {
+                    if constexpr (is_const<Err>::value)
+                    {
+                        return static_cast<const typename Err::value_type&>(_err_data);
+                    }
+                    else
+                    {
+                        return static_cast<typename Err::value_type&>(_err_data);
+                    }
+                }
+                else
+                {
+                    return release(_err_data);
+                }
             }
         }
     };
@@ -606,9 +622,9 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr (Result_detail::IsReference<Ok>)
                 {
                     return static_cast<typename Ok::value_type&>(_ok_data);
                 }
@@ -635,9 +651,9 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr (Result_detail::IsReference<Ok>)
                 {
                     return static_cast<typename Ok::value_type&>(_ok_data);
                 }
@@ -662,24 +678,22 @@ namespace hsd
         constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (Result_detail::IsReference<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
-                return static_cast<typename Ok::value_type&>(_ok_data);
-            }
-            else
-            {
-                if constexpr(is_const<Ok>::value)
+                if constexpr (is_const<Ok>::value)
                 {
-                    return static_cast<const typename Ok::value_type&>(
-                        Ok{forward<Args>(args)...}
-                    );
+                    return static_cast<const typename Ok::value_type&>(_ok_data);
                 }
                 else
                 {
-                    return static_cast<typename Ok::value_type&>(
-                        Ok{forward<Args>(args)...}
-                    );
+                    return static_cast<typename Ok::value_type&>(_ok_data);
                 }
+            }
+            else
+            {
+                return typename Ok::value_type {
+                    forward<Args>(args)...
+                };
             }
         } 
 
@@ -687,7 +701,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_or(Args&&... args)
         requires (!Result_detail::IsReference<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
                 return release(_ok_data);
             }
@@ -700,7 +714,7 @@ namespace hsd
         constexpr decltype(auto) unwrap_or_default()
         requires (std::is_default_constructible_v<Ok>)
         {
-            if(_initialized)
+            if (_initialized)
             {
                 return release(_ok_data);
             }
@@ -714,9 +728,9 @@ namespace hsd
         requires (InvocableRet<Ok, Func>)
         constexpr decltype(auto) unwrap_or_else(Func&& func)
         {
-            if(_initialized)
+            if (_initialized)
             {
-                if constexpr(Result_detail::IsReference<Ok>)
+                if constexpr (Result_detail::IsReference<Ok>)
                 {
                     return static_cast<typename Ok::value_type&>(_ok_data);
                 }
@@ -736,7 +750,7 @@ namespace hsd
             const char* file_name = __builtin_FILE(),
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
                 hsd_fprint_check(
                     stderr, "Got an error in file:\n"
@@ -754,7 +768,7 @@ namespace hsd
             const char* file_name = __builtin_FILE(), 
             usize line = __builtin_LINE())
         {
-            if(_initialized)
+            if (_initialized)
             {
                 hsd_fprint_check(
                     stderr, "Got an error in file:"

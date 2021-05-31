@@ -45,10 +45,8 @@ namespace hsd
                     _data = _alloc.allocate(size).unwrap();
                     _alloc.construct_at(_data);
 
-                    for(usize _index = 0; _index < size; _index++)
-                    {
+                    for (usize _index = 0; _index < size; _index++)
                         _alloc.construct_at(&_data[_index]);
-                    }
                 }
 
                 inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
@@ -281,11 +279,11 @@ namespace hsd
 
             inline void _delete()
             {
-                if(_count.get_pointer() != nullptr)
+                if (_count.get_pointer() != nullptr)
                 {
                     (*_count)--;
 
-                    if(*_count == 0)
+                    if (*_count == 0)
                     {
                         if (get() != nullptr) 
                         {
@@ -542,10 +540,8 @@ namespace hsd
                     _data = _alloc.allocate(size).unwrap();
                     _alloc.construct_at(_data);
 
-                    for(usize _index = 0; _index < size; _index++)
-                    {
+                    for (usize _index = 0; _index < size; _index++)
                         _alloc.construct_at(&_data[_index]);
-                    }
                 }
 
                 inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
@@ -778,11 +774,11 @@ namespace hsd
 
             inline void _delete()
             {
-                if(_count.get_pointer() != nullptr)
+                if (_count.get_pointer() != nullptr)
                 {
                     (*_count)--;
 
-                    if(*_count == 0)
+                    if (*_count == 0)
                     {
                         if (get() != nullptr) 
                         {

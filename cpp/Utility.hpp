@@ -50,9 +50,8 @@ namespace hsd
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
         while (first != last) 
-        {
-            *dest++ = hsd::move(*first++);
-        }
+            *dest++ = move(*first++);
+
         return dest;
     }
 
@@ -66,7 +65,7 @@ namespace hsd
     template <typename Type>
     static constexpr const Type* addressof(const Type& value)
     {
-        if constexpr(requires{value.operator&();})
+        if constexpr (requires{value.operator&();})
         {
             return bit_cast<Type*>(
                 &reinterpret_cast<char&>(
@@ -83,7 +82,7 @@ namespace hsd
     template <typename Type>
     static constexpr Type* addressof(Type& value)
     {
-        if constexpr(requires {value.operator&();})
+        if constexpr (requires {value.operator&();})
         {
             return bit_cast<Type*>(
                 &reinterpret_cast<char&>(
@@ -100,18 +99,17 @@ namespace hsd
     template <typename T1>
     static constexpr void swap(T1& first, T1& second) noexcept
     {
-        auto _tmp = hsd::move(first);
-        first = hsd::move(second);
-        second = hsd::move(_tmp);
+        auto _tmp = move(first);
+        first = move(second);
+        second = move(_tmp);
     }
     
     template < typename InIt, typename OutIt >
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
-        while(first != last) 
-        {
+        while (first != last) 
             *dest++ = *first++;
-        }
+
         return dest;
     }
 
@@ -120,7 +118,7 @@ namespace hsd
     {
         using value_type = remove_reference_t<decltype(*dest)>;
 
-        for(usize _index = 0; _index != n; _index++)
+        for (usize _index = 0; _index != n; _index++)
             *dest++ = static_cast<value_type>(*first++);
     
         return dest;
@@ -129,15 +127,16 @@ namespace hsd
     template < typename InIt, typename ValueType >
     static constexpr void set(InIt first, InIt last, ValueType value)
     {
-        for(; first != last; *first++ = value);
+        for (; first != last; *first++ = value)
+            ;
     }
 
     template < typename InIt, typename OutIt, typename Pred >
     static constexpr OutIt copy_if(InIt first, InIt last, OutIt dest, Pred pred)
     {
-        while(first != last) 
+        while (first != last) 
         {
-            if(pred(*first))
+            if (pred(*first))
                 *dest++ = *first;
                 
             first++;

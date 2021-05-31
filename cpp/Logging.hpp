@@ -112,7 +112,7 @@ namespace hsd
 
         void print_stack()
         {
-            for(auto it = _stack.rbegin(); it != _stack.rend(); it--)
+            for (auto it = _stack.rbegin(); it != _stack.rend(); it--)
             {
                 fprintf(
                     stderr, "Info: %s:%d\n\tFunction: %s\n",

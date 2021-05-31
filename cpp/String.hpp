@@ -25,6 +25,7 @@ namespace hsd
             delete[] _data;
             _data = nullptr;
         }
+
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
@@ -150,7 +151,7 @@ namespace hsd
 
         inline basic_string& operator+=(const basic_string& rhs)
         {
-            if(_capacity <= _size + rhs._size)
+            if (_capacity <= _size + rhs._size)
             {
                 basic_string _buf(_size + rhs._size);
                 _str_utils::copy(_buf._data, _data, _size);
@@ -169,7 +170,7 @@ namespace hsd
         {
             usize _rhs_len = _str_utils::length(rhs);
 
-            if(_capacity <= _size + _rhs_len)
+            if (_capacity <= _size + _rhs_len)
             {
                 basic_string _buf(_size + _rhs_len);
                 _str_utils::copy(_buf._data, _data, _size);
@@ -266,41 +267,53 @@ namespace hsd
 
         inline usize find(const basic_string& str, usize pos = 0) const
         {
-            if(pos >= _size)
+            if (pos >= _size)
+            {
                 return npos;
+            }
             else
             {
                 const CharT* _find_addr = _str_utils::find(
                     &_data[pos], str._data
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 
         inline usize find(const CharT* str, usize pos = 0) const
         {
-            if(pos >= _size)
+            if (pos >= _size)
+            {
                 return npos;
+            }
             else
             {
                 const CharT* _find_addr = _str_utils::find(
                     &_data[pos], str
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 
         inline usize find(CharT letter, usize pos = 0) const
         {
-            if(pos >= _size)
+            if (pos >= _size)
             {
                 return npos;
             }
@@ -310,7 +323,7 @@ namespace hsd
                     &_data[pos], letter
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
                 {
                     return npos;
                 }
@@ -323,20 +336,24 @@ namespace hsd
 
         inline usize rfind(const basic_string& str, usize pos = npos) const
         {
-            if(pos >= _size && pos != npos)
+            if (pos >= _size && pos != npos)
             {
                 return npos;
             }
-            else if(pos == npos)
+            else if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
                     &_data[pos], str._data, _size
                 );
 
                 if(_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
             else
             {
@@ -344,29 +361,37 @@ namespace hsd
                     &_data[pos], str._data, _size - pos
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 
         inline usize rfind(const CharT* str, usize pos = npos) const
         {
-            if(pos >= _size && pos != npos)
+            if (pos >= _size && pos != npos)
             {
                 return npos;
             }
-            else if(pos == npos)
+            else if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
                     &_data[pos], str, _size
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
             else
             {
@@ -374,29 +399,37 @@ namespace hsd
                     &_data[pos], str, _size - pos
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 
         inline usize rfind(CharT str, usize pos = npos) const
         {
-            if(pos >= _size && pos != npos)
+            if (pos >= _size && pos != npos)
             {
                 return npos;
             }
-            else if(pos == npos)
+            else if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
                     &_data[pos], str, _size
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
             else
             {
@@ -404,16 +437,20 @@ namespace hsd
                     &_data[pos], str, _size - pos
                 );
 
-                if(_find_addr == nullptr)
+                if (_find_addr == nullptr)
+                {
                     return npos;
+                }
                 else
-                    return _find_addr - _data;
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
             }
         }
 
         inline bool starts_with(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return _data[0] == letter;
 
             return false;
@@ -421,7 +458,7 @@ namespace hsd
 
         inline bool starts_with(const CharT* str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) == 0;
 
             return false;
@@ -429,7 +466,7 @@ namespace hsd
 
         inline bool starts_with(const basic_string& str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) == 0;
 
             return false;
@@ -437,7 +474,7 @@ namespace hsd
 
         inline bool contains(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(letter) != npos;
 
             return false;
@@ -445,7 +482,7 @@ namespace hsd
 
         inline bool contains(const CharT* str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) != npos;
 
             return false;
@@ -453,7 +490,7 @@ namespace hsd
 
         inline bool contains(const basic_string& str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) != npos;
 
             return false;
@@ -461,7 +498,7 @@ namespace hsd
 
         inline bool ends_with(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return _data[size() - 1] == letter;
 
             return false;
@@ -471,16 +508,16 @@ namespace hsd
         {
             usize _len = cstring::length(str);
 
-            if(_data != nullptr)
-                return rfind(str) == size() - _len;
+            if (_data != nullptr)
+                return rfind(str) == (size() - _len);
 
             return false;
         }
 
         inline bool ends_with(const basic_string& str) const
         {
-            if(_data != nullptr)
-                return rfind(str) == size() - str.size();
+            if (_data != nullptr)
+                return rfind(str) == (size() - str.size());
 
             return false;
         }
@@ -488,7 +525,7 @@ namespace hsd
         inline auto sub_string(usize from, usize count)
             -> Result<basic_string, bad_access>
         {
-            if(from > size() || from + count > size())
+            if (from > size() || (from + count) > size())
                 return bad_access{};
 
             return basic_string{_data + from, count};
@@ -509,13 +546,13 @@ namespace hsd
         inline auto erase_for(const_iterator from, const_iterator to)
             -> Result<iterator, bad_access>
         {
-            if(from < begin() || from > end() || to < begin() || to > end() || from > to)
+            if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
 
             usize _current_pos = static_cast<usize>(from - begin());
             usize _last_pos = static_cast<usize>(to - begin());
 
-            for(usize _index = 0; _index < _capacity - _last_pos + 1; _index++)
+            for (usize _index = 0; _index < _capacity - _last_pos + 1; _index++)
             {
                 this->_data[_current_pos + _index] = 
                     move(this->_data[_last_pos + _index]);

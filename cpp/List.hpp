@@ -29,13 +29,13 @@ namespace hsd
                 list_impl* _next = nullptr;
                 list_impl* _back = nullptr;
 
-                constexpr list_impl() {}
+                inline list_impl() = default;
 
-                constexpr list_impl(const T& val)
+                inline list_impl(const T& val)
                     : _value{val}
                 {}
 
-                constexpr list_impl(T&& val)
+                inline list_impl(T&& val)
                 {
                     _value = hsd::move(val);
                 }
@@ -43,153 +43,155 @@ namespace hsd
 
             friend class list<T>;
 
-            constexpr T* get()
+            inline T* get()
             {
                 return &_iterator->_value;
             }
 
-            constexpr T* get() const
+            inline T* get() const
             {
                 return &_iterator->_value;
             }
 
-            constexpr void push_back(const T& value)
+            inline void push_back(const T& value)
             {
-                _iterator->_next = new list_impl(value);
+                _iterator->_next = new list_impl{value};
                 _iterator->_next->_back = _iterator;
                 _iterator = _iterator->_next;
             }
 
-            constexpr void push_back(T&& value)
+            inline void push_back(T&& value)
             {
-                _iterator->_next = new list_impl(hsd::move(value));
+                _iterator->_next = new list_impl{move(value)};
                 _iterator->_next->_back = _iterator;
                 _iterator = _iterator->_next;
             }
 
             template <typename... Args>
-            constexpr void emplace_back(Args&&... args)
+            inline void emplace_back(Args&&... args)
             {
-                _iterator->_next = new list_impl();
+                _iterator->_next = new list_impl{};
                 _iterator->_next->_value.~T();
-                new (&_iterator->_next->_value) T(hsd::forward<Args>(args)...);
+                new (&_iterator->_next->_value) T{forward<Args>(args)...};
+                
                 _iterator->_next->_back = _iterator;
                 _iterator = _iterator->_next;
             }
 
-            constexpr void pop_back()
+            inline void pop_back()
             {
                 list_impl* _element = _iterator;
                 _iterator = _iterator->_back;
                 
-                if(_iterator != nullptr)
+                if (_iterator != nullptr)
                     _iterator->_next = nullptr;
                 
                 delete _element;
             }
 
-            constexpr void push_front(const T& value)
+            inline void push_front(const T& value)
             {
-                _iterator->_back = new list_impl(value);
+                _iterator->_back = new list_impl{value};
                 _iterator->_back->_next = _iterator;
                 _iterator = _iterator->_back;
             }
 
-            constexpr void push_front(T&& value)
+            inline void push_front(T&& value)
             {
-                _iterator->_back = new list_impl(hsd::move(value));
+                _iterator->_back = new list_impl{move(value)};
                 _iterator->_back->_next = _iterator;
                 _iterator = _iterator->_back;
             }
 
             template <typename... Args>
-            constexpr void emplace_front(Args&&... args)
+            inline void emplace_front(Args&&... args)
             {
-                _iterator->_back = new list_impl();
+                _iterator->_back = new list_impl{};
                 _iterator->_back->_value.~T();
-                new (&_iterator->_back->_value) T(hsd::forward<Args>(args)...);
+                new (&_iterator->_back->_value) T{hsd::forward<Args>(args)...};
+
                 _iterator->_back->_next = _iterator;
                 _iterator = _iterator->_back;
             }
 
-            constexpr void pop_front()
+            inline void pop_front()
             {
                 list_impl* _element = _iterator;
                 _iterator = _iterator->_next;
                 
-                if(_iterator != nullptr)
+                if (_iterator != nullptr)
                     _iterator->_back = nullptr;
                 
                 delete _element;
             }
 
         public:
-            constexpr iterator() {}
-            constexpr iterator(hsd::NullType) {}
+            inline iterator() {}
+            inline iterator(hsd::NullType) {}
 
-            constexpr iterator(const iterator& other)
+            inline iterator(const iterator& other)
             {
                 _iterator = other._iterator;
             }
         
-            constexpr iterator& operator=(const iterator& rhs)
+            inline iterator& operator=(const iterator& rhs)
             {
                 _iterator = rhs._iterator;
                 return *this;
             }
 
-            constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+            inline friend bool operator==(const iterator& lhs, const iterator& rhs)
             {
                 return lhs._iterator == rhs._iterator;
             }
 
-            constexpr friend bool operator!=(const iterator& lhs, const iterator& rhs)
+            inline friend bool operator!=(const iterator& lhs, const iterator& rhs)
             {
                 return lhs._iterator != rhs._iterator;
             }
 
-            constexpr auto& operator++()
+            inline auto& operator++()
             {
                 _iterator = _iterator->_next;
                 return *this;
             }
 
-            constexpr auto& operator--()
+            inline auto& operator--()
             {
                 _iterator = _iterator->_back;
                 return *this;
             }
 
-            constexpr iterator operator++(i32)
+            inline iterator operator++(i32)
             {
                 iterator tmp = *this;
                 operator++();
                 return tmp;
             }
 
-            constexpr iterator operator--(i32)
+            inline iterator operator--(i32)
             {
                 iterator tmp = *this;
                 operator--();
                 return tmp;
             }
 
-            constexpr auto& operator*()
+            inline auto& operator*()
             {
                 return _iterator->_value;
             }
 
-            constexpr const auto& operator*() const
+            inline const auto& operator*() const
             {
                 return _iterator->_value;
             }
 
-            constexpr auto* operator->()
+            inline auto* operator->()
             {
                 return get();
             }
 
-            constexpr const auto* operator->() const
+            inline const auto* operator->() const
             {
                 return get();
             }
@@ -207,15 +209,15 @@ namespace hsd
     public:
         using iterator = list_detail::iterator<T>;
         using const_iterator = const iterator;
-        constexpr list() {}
+        inline list() {}
 
-        constexpr list(const list& other)
+        inline list(const list& other)
         {
             for(const auto& _element : other)
                 push_back(_element);
         }
 
-        constexpr list(list&& other)
+        inline list(list&& other)
         {
             _head = other._head;
             _tail = other._tail;
@@ -224,35 +226,35 @@ namespace hsd
         }
 
         template <usize N>
-        constexpr list(const T (&arr)[N])
+        inline list(const T (&arr)[N])
         {
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(arr[_index]);
         }
 
         template <usize N>
-        constexpr list(T (&&arr)[N])
+        inline list(T (&&arr)[N])
         {
-            for(usize _index = 0; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(move(arr[_index]));
         }
 
-        constexpr ~list()
+        inline ~list()
         {
             clear();
         }
 
-        constexpr list& operator=(const list& rhs)
+        inline list& operator=(const list& rhs)
         {
             clear();
             
-            for(const auto& _element : rhs)
+            for (const auto& _element : rhs)
                 push_back(_element);
             
             return *this;
         }
 
-        constexpr list& operator=(list&& rhs)
+        inline list& operator=(list&& rhs)
         {
             _head = rhs._head;
             _tail = rhs._tail;
@@ -263,39 +265,39 @@ namespace hsd
         }
 
         template <usize N>
-        constexpr list& operator=(const T (&arr)[N])
+        inline list& operator=(const T (&arr)[N])
         {
             clear();
             usize _index = 0;
 
-            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
                 *_it = arr[_index];
 
-            for(; _index < N; _index++)
+            for (; _index < N; _index++)
                 push_back(arr[_index]);
 
             return *this;
         }
 
         template <usize N>
-        constexpr list& operator=(T (&&arr)[N])
+        inline list& operator=(T (&&arr)[N])
         {
             clear();
             usize _index = 0;
 
-            for(auto _it = begin(); _it != end() && _index < N; _it++, _index++)
+            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
                 *_it = move(arr[_index]);
 
-            for(; _index < N; _index++)
+            for (; _index < N; _index++)
                 push_back(move(arr[_index]));
 
             return *this;
         }
 
-        constexpr auto erase(const_iterator pos)
+        inline auto erase(const_iterator pos)
             -> Result<iterator, runtime_error>
         {
-            if(pos._iterator == nullptr)
+            if (pos._iterator == nullptr)
             {
                 // this in the only situation when
                 // .erase() will "throw" because
@@ -303,12 +305,12 @@ namespace hsd
                 // if it belongs to this list or not
                 return runtime_error{"Accessed an null element"};
             }
-            else if(pos == _tail)
+            else if (pos == _tail)
             {
                 pop_back();
                 return end();
             }
-            else if(pos == _head)
+            else if (pos == _head)
             {
                 pop_front();
                 return begin();
@@ -329,35 +331,35 @@ namespace hsd
             return runtime_error{"Undefined Behaviour"};
         }
 
-        constexpr void push_back(const T& value)
+        inline void push_back(const T& value)
         {
             emplace_back(value);
         }
 
-        constexpr void push_back(T&& value)
+        inline void push_back(T&& value)
         {
             emplace_back(move(value));
         }
 
         template <typename... Args>
-        constexpr void emplace_back(Args&&... args)
+        inline void emplace_back(Args&&... args)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::list_impl();
+                _head._iterator = new typename iterator::list_impl{};
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T(hsd::forward<Args>(args)...);
+                new (&_head._iterator->_value) T{forward<Args>(args)...};
                 _tail = _head;
             }
             else
-                _tail.emplace_back(hsd::forward<Args>(args)...);
+                _tail.emplace_back(forward<Args>(args)...);
 
             _size++;
         }
 
-        constexpr void pop_back()
+        inline void pop_back()
         {
-            if(!empty())
+            if (!empty())
             {
                 _tail.pop_back();
             }
@@ -367,35 +369,35 @@ namespace hsd
             _size--;
         }
 
-        constexpr void push_front(const T& value)
+        inline void push_front(const T& value)
         {
             emplace_front(value);
         }
 
-        constexpr void push_front(T&& value)
+        inline void push_front(T&& value)
         {
             emplace_front(move(value));
         }
 
         template <typename... Args>
-        constexpr void emplace_front(Args&&... args)
+        inline void emplace_front(Args&&... args)
         {
-            if(empty())
+            if (empty())
             {
-                _head._iterator = new typename iterator::list_impl();
+                _head._iterator = new typename iterator::list_impl{};
                 _head._iterator->_value.~T();
-                new (&_head._iterator->_value) T(hsd::forward<Args>(args)...);
+                new (&_head._iterator->_value) T{forward<Args>(args)...};
                 _tail = _head;
             }
             else
-                _head.emplace_front(hsd::forward<Args>(args)...);
+                _head.emplace_front(forward<Args>(args)...);
 
             _size++;
         }
 
-        constexpr void pop_front()
+        inline void pop_front()
         {
-            if(!empty())
+            if (!empty())
             {
                 _head.pop_front();
             }
@@ -405,88 +407,90 @@ namespace hsd
             _size--;
         }
 
-        constexpr void clear()
+        inline void clear()
         {
-            for(; !empty(); pop_front()) {}
+            for (; !empty(); pop_front())
+                ;
+                
             pop_front();
         }
 
-        constexpr usize size() const
+        inline usize size() const
         {
             return _size;
         }
 
-        constexpr bool empty()
+        inline bool empty()
         {
             return size() == 0;
         }
 
-        constexpr T& front()
+        inline T& front()
         {
             return *_head.get();
         }
 
-        constexpr T& back()
+        inline T& back()
         {
             return *_tail.get();
         }
 
-        constexpr iterator begin()
+        inline iterator begin()
         {
             return _head;
         }
 
-        constexpr iterator begin() const
+        inline iterator begin() const
         {
             return _head;
         }
 
-        constexpr iterator end()
+        inline iterator end()
         {
             return {nullptr};
         }
 
-        constexpr iterator end() const
+        inline iterator end() const
         {
             return {nullptr};
         }
 
-        constexpr const_iterator cbegin() const
+        inline const_iterator cbegin() const
         {
             return begin();
         }
 
-        constexpr const_iterator cend() const
+        inline const_iterator cend() const
         {
             return end();
         }
 
-        constexpr iterator rbegin()
+        inline iterator rbegin()
         {
             return _tail;
         }
 
-        constexpr iterator rbegin() const
+        inline iterator rbegin() const
         {
             return _tail;
         }
 
-        constexpr iterator rend()
+        inline iterator rend()
         {
             return {nullptr};
         }
 
-        constexpr iterator rend() const
+        inline iterator rend() const
         {
             return {nullptr};
         }
 
-        constexpr const_iterator crbegin() const
+        inline const_iterator crbegin() const
         {
             return rbegin();
         }
 
-        constexpr const_iterator crend() const
+        inline const_iterator crend() const
         {
             return rend();
         }

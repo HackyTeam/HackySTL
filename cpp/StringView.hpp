@@ -130,7 +130,7 @@ namespace hsd
         {
             auto* _find_res = cstring_utils::find(_data, letter);
 
-            if(_find_res == nullptr)
+            if (_find_res == nullptr)
             {
                 return npos;
             }
@@ -144,7 +144,7 @@ namespace hsd
         {
             auto* _find_res = cstring_utils::find(_data, other._data);
 
-            if(_find_res == nullptr)
+            if (_find_res == nullptr)
             {
                 return npos;
             }
@@ -158,7 +158,7 @@ namespace hsd
         {
             auto* _find_res = cstring_utils::rfind(_data, letter);
 
-            if(_find_res == nullptr)
+            if (_find_res == nullptr)
             {
                 return npos;
             }
@@ -172,7 +172,7 @@ namespace hsd
         {
             auto* _find_res = cstring_utils::rfind(_data, other._data);
 
-            if(_find_res == nullptr)
+            if (_find_res == nullptr)
             {
                 return npos;
             }
@@ -184,7 +184,7 @@ namespace hsd
 
         constexpr bool starts_with(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return _data[0] == letter;
 
             return false;
@@ -192,7 +192,7 @@ namespace hsd
 
         constexpr bool starts_with(const CharT* str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) == 0;
 
             return false;
@@ -200,7 +200,7 @@ namespace hsd
 
         constexpr bool starts_with(const basic_string_view& str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) == 0;
 
             return false;
@@ -208,7 +208,7 @@ namespace hsd
 
         constexpr bool contains(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(letter) != npos;
 
             return false;
@@ -216,7 +216,7 @@ namespace hsd
 
         constexpr bool contains(const CharT* str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) != npos;
 
             return false;
@@ -224,7 +224,7 @@ namespace hsd
 
         constexpr bool contains(const basic_string_view& str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return find(str) != npos;
 
             return false;
@@ -232,7 +232,7 @@ namespace hsd
 
         constexpr bool ends_with(CharT letter) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return _data[size() - 1] == letter;
 
             return false;
@@ -242,7 +242,7 @@ namespace hsd
         {
             usize _len = cstring::length(str);
 
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return rfind(str) == size() - _len;
 
             return false;
@@ -250,7 +250,7 @@ namespace hsd
 
         constexpr bool ends_with(const basic_string_view& str) const
         {
-            if(_data != nullptr)
+            if (_data != nullptr)
                 return rfind(str) == size() - str.size();
 
             return false;

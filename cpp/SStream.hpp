@@ -46,7 +46,7 @@ namespace hsd
             using sstream_detail::_parse;
             auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data, _capacity);
 
-            if(sizeof...(Args) > _data_set.size())
+            if (sizeof...(Args) > _data_set.size())
             {
                 return runtime_error{"Input too small to parse"};
             }

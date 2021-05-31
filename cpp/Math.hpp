@@ -65,7 +65,7 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr auto sgn(const T& value)
                 {
-                    if(value != 0)
+                    if (value != 0)
                     {
                         return value < 0 ? -1 : 1;
                     }
@@ -78,11 +78,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr bool sign_bit(const T& value)
                 {
-                    if constexpr(IsSame<T, f32>)
+                    if constexpr (IsSame<T, f32>)
                     {
                         return bit_cast<u32>(value) >> 31;
                     }
-                    else if constexpr(IsSame<T, f64>)
+                    else if constexpr (IsSame<T, f64>)
                     {
                         return bit_cast<u64>(value) >> 63;
                     }
@@ -101,7 +101,7 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto find_fraction(const T& value)
                 {
-                    if(math::abs(value - constexpr_math::floor(value)) >= static_cast<T>(0.5))
+                    if (math::abs(value - constexpr_math::floor(value)) >= static_cast<T>(0.5))
                     {
                         return value - constexpr_math::floor(value) - sgn(value);
                     }
@@ -114,7 +114,7 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto find_whole(const T& value)
                 {
-                    if(math::abs(value - constexpr_math::floor(value)) >= static_cast<T>(0.5))
+                    if (math::abs(value - constexpr_math::floor(value)) >= static_cast<T>(0.5))
                     {
                         return static_cast<i64>(constexpr_math::floor(value) + sgn(value));
                     }
@@ -128,9 +128,9 @@ namespace hsd
                 static constexpr T1 pow_int_compute_rec(
                     const T1& base, const T1& val, const T2& exp_term)
                 {
-                    if(exp_term > static_cast<T2>(1))
+                    if (exp_term > static_cast<T2>(1))
                     {
-                        if((exp_term & 1U) != 0)
+                        if ((exp_term & 1U) != 0)
                         {
                             return pow_int_compute_rec(base * base, val * base, exp_term / 2);
                         }
@@ -148,7 +148,7 @@ namespace hsd
                 template < IsNumber T1, IsIntegral T2 >
                 static constexpr auto pow_int_sgn_check(const T1& base, const T2& exp_term)
                 {
-                    if(exp_term < 0)
+                    if (exp_term < 0)
                     {
                         return 1 / pow_int_compute_rec(base, static_cast<T1>(1), -exp_term);
                     }
@@ -161,27 +161,27 @@ namespace hsd
                 template < IsNumber T1, IsIntegral T2 >
                 static constexpr auto pow_int_compute(const T1& base, const T2& exp_term)
                 {
-                    if(exp_term == 3)
+                    if (exp_term == 3)
                     {
                         return base * base * base;
                     }
-                    else if(exp_term == 2)
+                    else if (exp_term == 2)
                     {
                         return base * base;
                     }
-                    else if(exp_term == 1)
+                    else if (exp_term == 1)
                     {
                         return base;
                     }
-                    else if(exp_term == 0)
+                    else if (exp_term == 0)
                     {
                         return static_cast<T1>(1);
                     }
-                    else if(exp_term == limits<T2>::min)
+                    else if (exp_term == limits<T2>::min)
                     {
                         return static_cast<T1>(0);
                     }
-                    else if(exp_term == limits<T2>::max)
+                    else if (exp_term == limits<T2>::max)
                     {
                         return limits<T1>::infinity;
                     }
@@ -200,7 +200,7 @@ namespace hsd
                 template < IsNumber T1, IsFloat T2 >
                 static constexpr auto pow_int_type_check(const T1& base, const T2& exp_term)
                 {
-                    if(limits<T2>::epsilon > mod(exp_term, 1))
+                    if (limits<T2>::epsilon > mod(exp_term, 1))
                     {
                         return pow_int_compute(base, static_cast<i64>(exp_term));
                     }
@@ -220,9 +220,9 @@ namespace hsd
                 template < usize Depth, usize MaxDepth, IsNumber T >
                 static constexpr auto exp_cf_rec(const T& value)
                 {
-                    if constexpr(Depth < MaxDepth)
+                    if constexpr (Depth < MaxDepth)
                     {
-                        if constexpr(Depth == 1)
+                        if constexpr (Depth == 1)
                         {
                             return static_cast<T>(1) - value / 
                                 exp_cf_rec< Depth + 1, MaxDepth >(value);
@@ -256,11 +256,11 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr T mantissa(const T& value)
                 {
-                    if(value < static_cast<T>(1))
+                    if (value < static_cast<T>(1))
                     {
                         return mantissa(value * static_cast<T>(10));
                     }
-                    else if(value > static_cast<T>(10))
+                    else if (value > static_cast<T>(10))
                     {
                         return mantissa(value / static_cast<T>(10));
                     }
@@ -273,11 +273,11 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr i64 find_exponent(const T value, const i64& exponent)
                 {
-                    if(value < static_cast<T>(1))
+                    if (value < static_cast<T>(1))
                     {
                         return find_exponent(value * static_cast<T>(10), exponent - static_cast<i64>(1));
                     }
-                    else if(value > static_cast<T>(10))
+                    else if (value > static_cast<T>(10))
                     {
                         return find_exponent(value / static_cast<T>(10) , exponent + static_cast<i64>(1));
                     }
@@ -300,7 +300,7 @@ namespace hsd
                 static constexpr auto tan_series_exp(const T& value)
                 {
                     using constants::pi;
-                    if(limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
+                    if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
                     {
                         return static_cast<T>(pi / 2);
                     }
@@ -313,7 +313,7 @@ namespace hsd
                 template < usize Depth, usize MaxDepth, IsNumber T >
                 static constexpr auto tan_cf_rec(const T& value)
                 {
-                    if constexpr(Depth < MaxDepth)
+                    if constexpr (Depth < MaxDepth)
                     {
                         return static_cast<T>(2 * Depth - 1) - value / 
                             tan_cf_rec< Depth + 1, MaxDepth >(value);
@@ -327,15 +327,15 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr auto tan_cf_main(const T& value)
                 {
-                    if(value > static_cast<T>(1.55) && value < static_cast<T>(1.60))
+                    if (value > static_cast<T>(1.55) && value < static_cast<T>(1.60))
                     {
                         return tan_series_exp(value);
                     }
-                    else if(value > static_cast<T>(1.4))
+                    else if (value > static_cast<T>(1.4))
                     {
                         return value / tan_cf_rec<1, 45>(value * value);
                     }
-                    else if(value > static_cast<T>(1))
+                    else if (value > static_cast<T>(1))
                     {
                         return value / tan_cf_rec<1, 35>(value * value);
                     }
@@ -350,11 +350,11 @@ namespace hsd
                 {
                     using constants::pi;
 
-                    if(value > static_cast<T>(pi))
+                    if (value > static_cast<T>(pi))
                     {
                         value -= static_cast<T>(pi) * floor(value / static_cast<T>(pi));
 
-                        if(value > static_cast<T>(pi))
+                        if (value > static_cast<T>(pi))
                         {
                             return limits<T>::nan;     
                         }
@@ -394,7 +394,7 @@ namespace hsd
                 template < usize Depth, usize MaxDepth, IsNumber T >
                 static constexpr auto log_cf_main(const T& value)
                 {
-                    if constexpr(Depth < MaxDepth)
+                    if constexpr (Depth < MaxDepth)
                     {
                         return static_cast<T>(2 * Depth - 1) - 
                         static_cast<T>(Depth * Depth) * value / 
@@ -420,7 +420,7 @@ namespace hsd
 
                 static constexpr f128 log_mantissa_integer(const i32& value)
                 {
-                    if(value > 1 && value < 11)
+                    if (value > 1 && value < 11)
                     {
                         return constants::ln_table[value - 2];
                     }
@@ -456,7 +456,7 @@ namespace hsd
                 {
                     using ReturnType = std::common_type_t<T1, T2>;
 
-                    if(base < static_cast<T1>(0))
+                    if (base < static_cast<T1>(0))
                     {
                         return limits<ReturnType>::nan;
                     }
@@ -488,21 +488,21 @@ namespace hsd
                 template <usize Order, usize MaxOrder, IsNumber T>
                 static constexpr auto atan_series_order(const T& value, const T& value_pow)
                 {
-                    if constexpr(Order == 1)
+                    if constexpr (Order == 1)
                     {
                         return (
                             static_cast<T>(math::constants::pi / 2) - static_cast<T>(1) / value + 
                             atan_series_order<Order + 1, MaxOrder>(value * value, pow(value, 3))
                         );
                     }
-                    else if constexpr(Order < MaxOrder)
+                    else if constexpr (Order < MaxOrder)
                     {
                         return (
                             atan_series_order_calc<Order>(value, value_pow) + 
                             atan_series_order<Order + 1, MaxOrder>(value, value_pow * value * value)
                         );
                     }
-                    else if constexpr(Order == MaxOrder)
+                    else if constexpr (Order == MaxOrder)
                     {
                         return atan_series_order_calc<Order>(value, value_pow);
                     }
@@ -515,21 +515,21 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr auto atan_series_main(const T& value)
                 {
-                    if(value < static_cast<T>(3))          return atan_series_order<1, 10>(value, value);
-                    else if(value < static_cast<T>(4))     return atan_series_order<1, 9>(value, value);
-                    else if(value < static_cast<T>(5))     return atan_series_order<1, 8>(value, value);
-                    else if(value < static_cast<T>(7))     return atan_series_order<1, 7>(value, value);
-                    else if(value < static_cast<T>(11))    return atan_series_order<1, 6>(value, value);
-                    else if(value < static_cast<T>(25))    return atan_series_order<1, 5>(value, value);
-                    else if(value < static_cast<T>(100))   return atan_series_order<1, 4>(value, value);
-                    else if(value < static_cast<T>(1000))  return atan_series_order<1, 3>(value, value);
-                    else                                   return atan_series_order<1, 2>(value, value);
+                    if (value < static_cast<T>(3))          return atan_series_order<1, 10>(value, value);
+                    else if (value < static_cast<T>(4))     return atan_series_order<1, 9>(value, value);
+                    else if (value < static_cast<T>(5))     return atan_series_order<1, 8>(value, value);
+                    else if (value < static_cast<T>(7))     return atan_series_order<1, 7>(value, value);
+                    else if (value < static_cast<T>(11))    return atan_series_order<1, 6>(value, value);
+                    else if (value < static_cast<T>(25))    return atan_series_order<1, 5>(value, value);
+                    else if (value < static_cast<T>(100))   return atan_series_order<1, 4>(value, value);
+                    else if (value < static_cast<T>(1000))  return atan_series_order<1, 3>(value, value);
+                    else                                    return atan_series_order<1, 2>(value, value);
                 }
                 
                 template <usize Depth, usize MaxDepth, IsNumber T>
                 static constexpr auto atan_cf_recur(const T& value)
                 {
-                    if constexpr(Depth < MaxDepth)
+                    if constexpr (Depth < MaxDepth)
                     {
                         return static_cast<T>(2 * Depth - 1) + Depth * Depth * 
                         value / atan_cf_recur<Depth + 1, MaxDepth>(value);
@@ -543,17 +543,17 @@ namespace hsd
                 template <IsNumber T>
                 static constexpr auto atan_cf_main(const T& value)
                 {
-                    if(value < static_cast<T>(0.5))         return value / atan_cf_recur<1, 15>(value * value); 
-                    else if(value < static_cast<T>(1))      return value / atan_cf_recur<1, 25>(value * value); 
-                    else if(value < static_cast<T>(1.5))    return value / atan_cf_recur<1, 35>(value * value); 
-                    else if(value < static_cast<T>(2))      return value / atan_cf_recur<1, 45>(value * value); 
-                    else                                    return value / atan_cf_recur<1, 52>(value * value);
+                    if (value < static_cast<T>(0.5))         return value / atan_cf_recur<1, 15>(value * value); 
+                    else if (value < static_cast<T>(1))      return value / atan_cf_recur<1, 25>(value * value); 
+                    else if (value < static_cast<T>(1.5))    return value / atan_cf_recur<1, 35>(value * value); 
+                    else if (value < static_cast<T>(2))      return value / atan_cf_recur<1, 45>(value * value); 
+                    else                                     return value / atan_cf_recur<1, 52>(value * value);
                 }
                 
                 template <IsNumber T>
                 static constexpr auto atan_begin(const T& value)
                 {
-                    if(value > static_cast<T>(2.5))
+                    if (value > static_cast<T>(2.5))
                     {
                         return static_cast<T>(atan_series_main(value));
                     }
@@ -566,15 +566,15 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto atan_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
-                    else if(value < static_cast<T>(0))
+                    else if (value < static_cast<T>(0))
                     {
                         return -atan_begin(-value);
                     }
@@ -587,15 +587,15 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto asin_compute(const T& value)
                 {
-                    if(value > static_cast<T>(1))
+                    if (value > static_cast<T>(1))
                     {
                         return limits<T>::nan;
                     }
-                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    else if (limits<T>::epsilon > abs(value - static_cast<T>(1)))
                     {
                         return static_cast<T>(math::constants::pi / 2);
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
@@ -608,11 +608,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto asin_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(value < static_cast<T>(0))
+                    else if (value < static_cast<T>(0))
                     {
                         return -asin_compute(-value);
                     }
@@ -629,11 +629,11 @@ namespace hsd
                     {
                         return limits<T>::nan;
                     }
-                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    else if (limits<T>::epsilon > abs(value - static_cast<T>(1)))
                     {
                         return static_cast<T>(0);
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(math::constants::pi / 2);
                     }
@@ -648,11 +648,11 @@ namespace hsd
                 {
                     using math::constants::pi;
 
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(value > static_cast<T>(0))
+                    else if (value > static_cast<T>(0))
                     {
                         return acos_compute(value);
                     }
@@ -668,17 +668,17 @@ namespace hsd
                 {
                     using math::constants::pi;
 
-                    if(y == limits<T>::nan || x == limits<T>::nan)
+                    if (y == limits<T>::nan || x == limits<T>::nan)
                     {
                         return limits<T>::nan;
                     }
-                    else if(limits<T>::epsilon > abs(x))
+                    else if (limits<T>::epsilon > abs(x))
                     {
-                        if(limits<T>::epsilon > abs(y))
+                        if (limits<T>::epsilon > abs(y))
                         {
-                            if(y == static_cast<T>(0) && sign_bit(y))
+                            if (y == static_cast<T>(0) && sign_bit(y))
                             {
-                                if(x == static_cast<T>(0) && sign_bit(x))
+                                if (x == static_cast<T>(0) && sign_bit(x))
                                 {
                                     return -static_cast<T>(pi / 2);
                                 }
@@ -687,7 +687,7 @@ namespace hsd
                                     return -static_cast<T>(0);
                                 }
                             }
-                            else if(x == static_cast<T>(0) && sign_bit(x))
+                            else if (x == static_cast<T>(0) && sign_bit(x))
                             {
                                 return static_cast<T>(pi / 2);
                             }
@@ -696,7 +696,7 @@ namespace hsd
                                 return static_cast<T>(0);
                             }
                         }
-                        else if(y > static_cast<T>(0))
+                        else if (y > static_cast<T>(0))
                         {
                             return static_cast<T>(pi / 2);
                         }
@@ -705,9 +705,9 @@ namespace hsd
                             return -static_cast<T>(pi / 2);
                         }
                     }
-                    else if(x < static_cast<T>(0))
+                    else if (x < static_cast<T>(0))
                     {
-                        if(y < static_cast<T>(0))
+                        if (y < static_cast<T>(0))
                         {
                             return atan(y / x) - static_cast<T>(pi);
                         }
@@ -736,11 +736,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto sinh_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
@@ -753,11 +753,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto cosh_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(1);
                     }
@@ -770,7 +770,7 @@ namespace hsd
                 template <usize Depth, IsFloat T>
                 static constexpr auto tanh_cf(const T value)
                 {
-                    if constexpr(Depth < 25)
+                    if constexpr (Depth < 25)
                     {
                         return (2 * Depth - 1) + value / tanh_cf<Depth + 1>(value);
                     }
@@ -789,15 +789,15 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto tanh_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
-                    else if(value < static_cast<T>(0))
+                    else if (value < static_cast<T>(0))
                     {
                         return -tanh_begin(-value);
                     }
@@ -810,11 +810,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto asinh_compute(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
@@ -827,11 +827,11 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto acosh_compute(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    else if (limits<T>::epsilon > abs(value - static_cast<T>(1)))
                     {
                         return static_cast<T>(0);
                     }
@@ -854,19 +854,19 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto atanh_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(static_cast<T>(1) < abs(value))
+                    else if (static_cast<T>(1) < abs(value))
                     {
                         return limits<T>::nan;
                     }
-                    else if(limits<T>::epsilon > (static_cast<T>(1) - abs(value)))
+                    else if (limits<T>::epsilon > (static_cast<T>(1) - abs(value)))
                     {
                         return sgn(value) * limits<T>::infinity; 
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return static_cast<T>(0);
                     }
@@ -881,21 +881,21 @@ namespace hsd
                 static constexpr auto lgamma_coef_term(const T& value)
                 {
                     return (     
-                        0.99999999999999709182l                     + 
-                        57.156235665862923517l      / (value + 1)   -
-                        59.597960355475491248l      / (value + 2)   + 
-                        14.136097974741747174l      / (value + 3)   -
-                        0.49191381609762019978l     / (value + 4)   + 
-                        0.33994649984811888699e-4l  / (value + 5)   +
-                        0.46523628927048575665e-4l  / (value + 6)   - 
-                        0.98374475304879564677e-4l  / (value + 7)   +
-                        0.15808870322491248884e-3l  / (value + 8)   - 
-                        0.21026444172410488319e-3l  / (value + 9)   +
-                        0.21743961811521264320e-3l  / (value + 10)  - 
-                        0.16431810653676389022e-3l  / (value + 11)  +
-                        0.84418223983852743293e-4l  / (value + 12)  -
-                        0.26190838401581408670e-4l  / (value + 13)  +
-                        0.36899182659531622704e-5L  / (value + 14) 
+                        0.99999999999999709182l                    + 
+                        57.156235665862923517l     / (value + 1)   -
+                        59.597960355475491248l     / (value + 2)   + 
+                        14.136097974741747174l     / (value + 3)   -
+                        0.49191381609762019978l    / (value + 4)   + 
+                        0.33994649984811888699e-4l / (value + 5)   +
+                        0.46523628927048575665e-4l / (value + 6)   - 
+                        0.98374475304879564677e-4l / (value + 7)   +
+                        0.15808870322491248884e-3l / (value + 8)   - 
+                        0.21026444172410488319e-3l / (value + 9)   +
+                        0.21743961811521264320e-3l / (value + 10)  - 
+                        0.16431810653676389022e-3l / (value + 11)  +
+                        0.84418223983852743293e-4l / (value + 12)  -
+                        0.26190838401581408670e-4l / (value + 13)  +
+                        0.36899182659531622704e-5L / (value + 14) 
                     );  
                 }
                 
@@ -912,6 +912,7 @@ namespace hsd
                 static constexpr auto lgamma_term_1(const T& value)
                 {   
                     constexpr f128 _key_gamma = 5.2421875l;
+
                     return ( 
                         (value + static_cast<T>(0.5l)) * 
                         log(value + static_cast<T>(_key_gamma)) - 
@@ -928,15 +929,15 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto lgamma_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    else if (limits<T>::epsilon > abs(value - static_cast<T>(1)))
                     {
                         return static_cast<T>(0);
                     }
-                    else if(limits<T>::epsilon > value)
+                    else if (limits<T>::epsilon > value)
                     {
                         return limits<T>::infinity;
                     }
@@ -949,19 +950,19 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr auto tgamma_check(const T& value)
                 {
-                    if(value == limits<T>::nan)
+                    if (value == limits<T>::nan)
                     {
                         return value;
                     }
-                    else if(limits<T>::epsilon > abs(value - static_cast<T>(1)))
+                    else if (limits<T>::epsilon > abs(value - static_cast<T>(1)))
                     {
                         return static_cast<T>(1);
                     }
-                    else if(limits<T>::epsilon > abs(value))
+                    else if (limits<T>::epsilon > abs(value))
                     {
                         return limits<T>::infinity;
                     }
-                    else if(value < static_cast<T>(0))
+                    else if (value < static_cast<T>(0))
                     { 
                         if(limits<T>::epsilon > abs(value - find_whole(value)))
                         {
@@ -976,7 +977,7 @@ namespace hsd
                     }
                     else
                     {
-                        if(static_cast<u64>(value) == value)
+                        if (static_cast<u64>(value) == value)
                         {
                             return factorial<T>(
                                 static_cast<usize>(value) - 1
@@ -995,7 +996,7 @@ namespace hsd
             {
                 T _result = 1;
 
-                for(usize _index = size; _index >= 2; _index--)
+                for (usize _index = size; _index >= 2; _index--)
                     _result *= static_cast<T>(_index);
 
                 return _result;
@@ -1004,7 +1005,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto mod(const T& value, const T& factor)
             {
-                if(ctmath_detail::invlaid_case(value))
+                if (ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -1018,13 +1019,14 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto floor(const T& value)
             {
-                if(ctmath_detail::invlaid_case(value))
+                if (ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
                 else
                 {
                     i64 _rez = static_cast<i64>(value);
+
                     return static_cast<T>(_rez - (value < 0 && 
                         constexpr_math::mod(value, static_cast<T>(1)) != 0)
                     );
@@ -1034,7 +1036,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto ceil(const T& value)
             {
-                if(ctmath_detail::invlaid_case(value))
+                if (ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -1051,7 +1053,7 @@ namespace hsd
             template <IsFloat T>
             static constexpr auto round(const T& value)
             {
-                if(ctmath_detail::invlaid_case(value))
+                if (ctmath_detail::invlaid_case(value))
                 {
                     return value;
                 }
@@ -1068,11 +1070,11 @@ namespace hsd
             template <IsNumber T>
             static constexpr auto tan(T value)
             {
-                if(value == limits<T>::nan)
+                if (value == limits<T>::nan)
                 {
                     return value;
                 }
-                else if(limits<T>::epsilon > math::abs(value))
+                else if (limits<T>::epsilon > math::abs(value))
                 {
                     return static_cast<T>(0);
                 }
@@ -1086,27 +1088,28 @@ namespace hsd
             static constexpr auto sin(T value)
             {
                 using constants::pi;
-                if(value == limits<T>::nan)
+
+                if (value == limits<T>::nan)
                 {
                     return value;
                 }
-                else if(limits<T>::epsilon > math::abs(value))
+                else if (limits<T>::epsilon > math::abs(value))
                 {
                     return static_cast<T>(0);
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
                 {
                     return static_cast<T>(1);
                 }
-                else if(limits<T>::epsilon > math::abs(value + static_cast<T>(pi / 2)))
+                else if (limits<T>::epsilon > math::abs(value + static_cast<T>(pi / 2)))
                 {
                     return -static_cast<T>(1);
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(pi)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(limits<T>::epsilon > math::abs(value + static_cast<T>(pi)))
+                else if (limits<T>::epsilon > math::abs(value + static_cast<T>(pi)))
                 {
                     return -static_cast<T>(0);
                 }
@@ -1120,27 +1123,28 @@ namespace hsd
             static constexpr auto cos(T value)
             {
                 using constants::pi;
-                if(value == limits<T>::nan)
+
+                if (value == limits<T>::nan)
                 {
                     return value;
                 }
-                else if(limits<T>::epsilon > math::abs(value))
+                else if (limits<T>::epsilon > math::abs(value))
                 {
                     return static_cast<T>(1);
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(limits<T>::epsilon > math::abs(value + static_cast<T>(pi / 2)))
+                else if (limits<T>::epsilon > math::abs(value + static_cast<T>(pi / 2)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(pi)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi)))
                 {
                     return -static_cast<T>(1);
                 }
-                else if(limits<T>::epsilon > math::abs(value + static_cast<T>(pi)))
+                else if (limits<T>::epsilon > math::abs(value + static_cast<T>(pi)))
                 {
                     return -static_cast<T>(1);
                 }
@@ -1153,25 +1157,25 @@ namespace hsd
             template <IsNumber T>
             static constexpr auto log(T value)
             {
-                if(value == limits<T>::nan || value < static_cast<T>(0))
+                if (value == limits<T>::nan || value < static_cast<T>(0))
                 {
                     return limits<T>::nan;
                 }
-                else if(limits<T>::epsilon > value)
+                else if (limits<T>::epsilon > value)
                 {
                     return -limits<T>::infinity;
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(value == limits<T>::infinity)
+                else if (value == limits<T>::infinity)
                 {
                     return limits<T>::infinity;
                 }
                 else
                 {
-                    if(value < static_cast<T>(0.5) || value > static_cast<T>(1.5))
+                    if (value < static_cast<T>(0.5) || value > static_cast<T>(1.5))
                     {
                         return ctmath_detail::log_breakup(value);
                     }
@@ -1185,19 +1189,19 @@ namespace hsd
             template <IsNumber T>
             static constexpr auto log2(T value)
             {
-                if(value == limits<T>::nan || value < static_cast<T>(0))
+                if (value == limits<T>::nan || value < static_cast<T>(0))
                 {
                     return limits<T>::nan;
                 }
-                else if(limits<T>::epsilon > value)
+                else if (limits<T>::epsilon > value)
                 {
                     return -limits<T>::infinity;
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(value == limits<T>::infinity)
+                else if (value == limits<T>::infinity)
                 {
                     return limits<T>::infinity;
                 }
@@ -1210,19 +1214,19 @@ namespace hsd
             template <IsNumber T>
             static constexpr auto log10(T value)
             {
-                if(value == limits<T>::nan || value < static_cast<T>(0))
+                if (value == limits<T>::nan || value < static_cast<T>(0))
                 {
                     return limits<T>::nan;
                 }
-                else if(limits<T>::epsilon > value)
+                else if (limits<T>::epsilon > value)
                 {
                     return -limits<T>::infinity;
                 }
-                else if(limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
+                else if (limits<T>::epsilon > math::abs(value - static_cast<T>(1)))
                 {
                     return static_cast<T>(0);
                 }
-                else if(value == limits<T>::infinity)
+                else if (value == limits<T>::infinity)
                 {
                     return limits<T>::infinity;
                 }
@@ -1235,19 +1239,19 @@ namespace hsd
             template <IsNumber T>
             static constexpr auto exp(T value)
             {
-                if(value == limits<T>::nan || value == limits<T>::infinity)
+                if (value == limits<T>::nan || value == limits<T>::infinity)
                 {
                     return value;
                 }
-                else if(value == -limits<T>::infinity)
+                else if (value == -limits<T>::infinity)
                 {
                     return static_cast<T>(0);
                 }
-                else if(limits<T>::epsilon > math::abs(value))
+                else if (limits<T>::epsilon > math::abs(value))
                 {
                     return static_cast<T>(1);
                 }
-                else if(math::abs(value) < static_cast<T>(2))
+                else if (math::abs(value) < static_cast<T>(2))
                 {
                     return static_cast<T>(ctmath_detail::exp_cf(value));
                 }
@@ -1268,11 +1272,11 @@ namespace hsd
             {
                 auto mid_val = static_cast<T>(1.0);
 
-                if(value <= static_cast<T>(-0.0))
+                if (value <= static_cast<T>(-0.0))
                 {
                     return limits<T>::nan;
                 }
-                for(usize count = 0; count < 10; count++)
+                for (usize count = 0; count < 10; count++)
                 {
                     auto euler = value / mid_val;
                     mid_val = midpoint(mid_val, euler);
@@ -1372,7 +1376,7 @@ namespace hsd
         template <Middleable T>
         constexpr auto midpoint(T a, T b)
         {
-            if constexpr(hsd::is_integral<T>::value)
+            if constexpr (is_integral<T>::value)
             {
                 if(a > b)
                 {
@@ -1390,15 +1394,15 @@ namespace hsd
                 const auto _abs_a = math::abs(a);
                 const auto _abs_b = math::abs(b);
 
-                if(_abs_a <= _high_limit && _abs_b <= _high_limit)
+                if (_abs_a <= _high_limit && _abs_b <= _high_limit)
                 {
                     return (a + b) / 2;
                 }
-                else if(_abs_a < _low_limit)
+                else if (_abs_a < _low_limit)
                 {
                     return a + b / 2;
                 }
-                else if(_abs_b < _low_limit)
+                else if (_abs_b < _low_limit)
                 {
                     return a / 2 + b;
                 }
@@ -1419,7 +1423,7 @@ namespace hsd
         template <IsFloat T>
         static constexpr auto mod(const T& value, const T& factor)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::mod(value, factor);
             }
@@ -1432,7 +1436,7 @@ namespace hsd
         template <IsFloat T>
         static constexpr auto floor(const T& value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::floor(value);
             }
@@ -1445,7 +1449,7 @@ namespace hsd
         template <IsFloat T>
         static constexpr auto ceil(const T& value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::ceil(value);
             }
@@ -1458,7 +1462,7 @@ namespace hsd
         template <IsFloat T>
         static constexpr auto round(const T& value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::round(value);
             }
@@ -1489,7 +1493,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto tan(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::tan(value);
             }
@@ -1502,7 +1506,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto sin(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::sin(value);
             }
@@ -1515,7 +1519,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto cos(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::cos(value);
             }
@@ -1528,7 +1532,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto atan(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::atan(value);
             }
@@ -1541,7 +1545,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto asin(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::asin(value);
             }
@@ -1554,7 +1558,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto acos(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::acos(value);
             }
@@ -1567,7 +1571,7 @@ namespace hsd
         template <IsNumber T1, IsNumber T2>
         static constexpr auto atan2(const T1 y, const T2 x)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::atan2(y, x);
             }
@@ -1580,7 +1584,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto log(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::log(value);
             }
@@ -1593,7 +1597,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto log2(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::log2(value);
             }
@@ -1606,7 +1610,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto log10(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::log10(value);
             }
@@ -1619,7 +1623,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto sqrt(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::sqrt(value);
             }
@@ -1632,7 +1636,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto exp(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::exp(value);
             }
@@ -1645,7 +1649,7 @@ namespace hsd
         template <IsNumber T1, IsNumber T2>
         static constexpr auto pow(T1 base, T2 exp_term)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::pow(base, exp_term);
             }
@@ -1658,7 +1662,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto sinh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::sinh(value);
             }
@@ -1671,7 +1675,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto cosh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::cosh(value);
             }
@@ -1684,7 +1688,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto tanh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::tanh(value);
             }
@@ -1697,7 +1701,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto asinh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::asinh(value);
             }
@@ -1710,7 +1714,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto acosh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::acosh(value);
             }
@@ -1723,7 +1727,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto atanh(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::atanh(value);
             }
@@ -1736,7 +1740,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto lgamma(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::lgamma(value);
             }
@@ -1749,7 +1753,7 @@ namespace hsd
         template <IsNumber T>
         static constexpr auto tgamma(T value)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::tgamma(value);
             }
@@ -1762,7 +1766,7 @@ namespace hsd
         template <IsNumber T1, IsNumber T2>
         static constexpr auto lbeta(const T1& a, const T2& b)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::lbeta(a, b);
             }
@@ -1775,7 +1779,7 @@ namespace hsd
         template <IsNumber T1, IsNumber T2>
         static constexpr auto beta(const T1& a, const T2& b)
         {
-            if(std::is_constant_evaluated())
+            if (std::is_constant_evaluated())
             {
                 return constexpr_math::beta(a, b);
             }

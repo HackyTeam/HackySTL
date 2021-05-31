@@ -38,7 +38,8 @@ namespace hsd
             _alloc.deallocate(_data, _capacity).unwrap();
         }
 
-        inline vector() requires (std::is_default_constructible_v<alloc_type>) = default;
+        inline vector() 
+            requires (std::is_default_constructible_v<alloc_type>) = default;
 
         inline vector(usize size)
         {
@@ -282,10 +283,10 @@ namespace hsd
         inline auto erase_for(const_iterator from, const_iterator to)
             -> Result<iterator, bad_access>
         {
-            if(from < begin() || from > end() || to < begin() || to > end() || from > to)
+            if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
 
-            if(to == end())
+            if (to == end())
             {
                 for(; from != end(); from++)
                     from->~T();
@@ -297,7 +298,7 @@ namespace hsd
                 usize _current_pos = static_cast<usize>(from - begin());
                 usize _last_pos = static_cast<usize>(to - begin());
 
-                for(usize _index = 0; _index < _capacity - _last_pos; _index++)
+                for (usize _index = 0; _index < _capacity - _last_pos; _index++)
                 {
                     _data[_current_pos + _index] = 
                         move(_data[_last_pos + _index]);
@@ -311,7 +312,7 @@ namespace hsd
         inline auto at(usize index)
             -> Result<reference<T>, bad_access>
         {
-            if(index >= _size)
+            if (index >= _size)
                 return bad_access{};
 
             return {_data[index]};
@@ -320,7 +321,7 @@ namespace hsd
         inline auto at(usize index) const
             -> Result< const reference<T>, bad_access >
         {
-            if(index >= _size)
+            if (index >= _size)
                 return bad_access{};
 
             return {_data[index]};
@@ -737,12 +738,12 @@ namespace hsd
         inline auto erase_for(const_iterator from, const_iterator to)
             -> Result<iterator, bad_access>
         {
-            if(from < begin() || from > end() || to < begin() || to > end() || from > to)
+            if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
 
-            if(to == end())
+            if (to == end())
             {
-                for(; from != end(); from++)
+                for (; from != end(); from++)
                     from->~T();
     
                 return end();
@@ -752,7 +753,7 @@ namespace hsd
                 usize _current_pos = static_cast<usize>(from - begin());
                 usize _last_pos = static_cast<usize>(to - begin());
 
-                for(usize _index = 0; _index < _capacity - _last_pos; _index++)
+                for (usize _index = 0; _index < _capacity - _last_pos; _index++)
                 {
                     _data[_current_pos + _index] = 
                         move(_data[_last_pos + _index]);
@@ -766,7 +767,7 @@ namespace hsd
         constexpr auto at(usize index)
             -> Result<reference<T>, bad_access>
         {
-            if(index >= _size)
+            if (index >= _size)
                 return bad_access{};
 
             return {_data[index]};
@@ -775,7 +776,7 @@ namespace hsd
         constexpr auto at(usize index) const
             -> Result< const reference<T>, bad_access >
         {
-            if(index >= _size)
+            if (index >= _size)
                 return bad_access{};
 
             return {_data[index]};

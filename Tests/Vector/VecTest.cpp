@@ -13,7 +13,8 @@ struct S
     {}
 };
 
-struct verbose {
+struct verbose 
+{
     verbose() {
         std::puts("default constructor");
     }
@@ -48,10 +49,7 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
 }
 
 template <typename T>
-void test(hsd::vector<T>&&)
-{
-
-}
+void test(hsd::vector<T>&&) {}
 
 constexpr auto make_constexpr_vec()
 {
@@ -82,7 +80,7 @@ int main()
         // let's test constexpr vector (it works)
         constexpr auto v = make_constexpr_vec();
 
-        for(auto& val : v)
+        for (auto& val : v)
             printf("%d\n", val);
 
         puts("==========");
@@ -91,9 +89,9 @@ int main()
     {
         hsd::vector e = {{1, 2, 3, 4, 5, 6}};
 
-        for(auto iter = e.begin(); iter != e.end();)
+        for (auto iter = e.begin(); iter != e.end();)
         {
-            if(*iter == 6)
+            if (*iter == 6)
             {
                 iter = e.erase(iter).unwrap();
             }
@@ -125,12 +123,12 @@ int main()
         vec2.push_back(2);
         vec2.push_back(1);
 
-        for(auto& val : vec)
+        for (auto& val : vec)
             printf("%d\n", val);
 
         puts("==========");
         
-        for(auto& val : vec2)
+        for (auto& val : vec2)
             printf("%d\n", val);
 
         puts("==========");

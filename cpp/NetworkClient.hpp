@@ -212,7 +212,7 @@ namespace hsd
                     _net_buf.size(), 0, nullptr, 0
                 );
                     
-                if(_response == static_cast<isize>(net::received_state::err))
+                if (_response == static_cast<isize>(net::received_state::err))
                 {
                     hsd::io::err_print<"Error in sending\n">();
                     return net::received_state::err;
@@ -427,7 +427,7 @@ namespace hsd
                     _sock.get_sock(), _net_buf.data(), _net_buf.size(), 0
                 );
 
-                if(_response == static_cast<isize>(net::received_state::err))
+                if (_response == static_cast<isize>(net::received_state::err))
                 {
                     hsd::io::err_print<"Error in sending\n">();
                     return net::received_state::err;

@@ -199,7 +199,7 @@ namespace hsd
 
         friend precise_clock operator-(const precise_clock& lhs, const precise_clock& rhs)
         {
-            if(lhs._clk.tv_nsec - rhs._clk.tv_nsec < 0)
+            if (lhs._clk.tv_nsec - rhs._clk.tv_nsec < 0)
             {
                 return timespec {
                     lhs._clk.tv_sec - rhs._clk.tv_sec - 1,
@@ -217,7 +217,7 @@ namespace hsd
 
         friend precise_clock operator+(const precise_clock& lhs, const precise_clock& rhs)
         {
-            if(lhs._clk.tv_nsec + rhs._clk.tv_nsec >= 1'000'000'000)
+            if (lhs._clk.tv_nsec + rhs._clk.tv_nsec >= 1'000'000'000)
             {
                 return timespec {
                     lhs._clk.tv_sec + rhs._clk.tv_sec + 1,
@@ -251,11 +251,11 @@ namespace hsd
 
         bool operator<(const precise_clock& rhs) const
         {
-            if(_clk.tv_sec < rhs._clk.tv_sec)
+            if (_clk.tv_sec < rhs._clk.tv_sec)
             {
                 return true;
             }
-            else if(_clk.tv_sec > rhs._clk.tv_sec)
+            else if (_clk.tv_sec > rhs._clk.tv_sec)
             {
                 return false;
             }
@@ -267,11 +267,11 @@ namespace hsd
 
         bool operator>(const precise_clock& rhs) const
         {
-            if(_clk.tv_sec > rhs._clk.tv_sec)
+            if (_clk.tv_sec > rhs._clk.tv_sec)
             {
                 return true;
             }
-            else if(_clk.tv_sec < rhs._clk.tv_sec)
+            else if (_clk.tv_sec < rhs._clk.tv_sec)
             {
                 return false;
             }
@@ -293,7 +293,7 @@ namespace hsd
 
         u64 to_nanoseconds() const
         {
-            if(_clk.tv_sec != 0)
+            if (_clk.tv_sec != 0)
             {
                 return static_cast<u64>(to_seconds() * 1'000'000'000);
             }

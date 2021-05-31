@@ -39,7 +39,7 @@ namespace hsd
 
         void _twist()
         {
-            for(UType _state_index = 0; _state_index < state_size; _state_index++)
+            for (UType _state_index = 0; _state_index < state_size; _state_index++)
             {
                 UType _value = (_mt_states[_state_index] & _upper_mask) +
                     (_mt_states[(_state_index + 1) % state_size] & _lower_mask);
@@ -61,7 +61,7 @@ namespace hsd
         {
             _mt_states[0] = seed;
 
-            for(UType _state_index = 1; _state_index < state_size; _state_index++)
+            for (UType _state_index = 1; _state_index < state_size; _state_index++)
             {
                 _mt_states[_state_index] = init_multiplier * (_mt_states[_state_index - 1] ^ 
                     (_mt_states[_state_index - 1] >> (word_size - 2))) + _state_index;
@@ -75,10 +75,10 @@ namespace hsd
         constexpr auto generate(RetType from, RetType to)
             -> Result<RetType, runtime_error>
         {
-            if(from >= to)
+            if (from >= to)
                 return runtime_error{"Invalid interval"};
             
-            if(_index == state_size)
+            if (_index == state_size)
                 _twist();
 
             UType _result = _mt_states[_index];
@@ -88,7 +88,7 @@ namespace hsd
             _result = _result ^ (_result >> tempering_l);
             _index++;
 
-            if constexpr(word_size == 64)
+            if constexpr (word_size == 64)
             {
                 auto _multiplier = static_cast<f64>(_result) / static_cast<f64>(limits<UType>::max);
                 return static_cast<RetType>(static_cast<f64>(to - from) * _multiplier) + from;
@@ -116,7 +116,7 @@ namespace hsd
         // This one can't "throw" an error
         constexpr UType generate()
         {            
-            if(_index == state_size)
+            if (_index == state_size)
                 _twist();
 
             UType _result = _mt_states[_index];

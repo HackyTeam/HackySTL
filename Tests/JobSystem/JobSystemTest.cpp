@@ -29,10 +29,8 @@ int main()
     };
 
     // Schedules 10 jobs
-    for(hsd::i32 i = 0; i < 10; i++)
-    {
+    for (hsd::i32 i = 0; i < 10; i++)
         hsd::job_system.schedule_job(j);
-    }
     
     // Pauses current function of the caller until all jobs are done
     hsd::job_system.wait();
@@ -48,10 +46,8 @@ int main()
         }, hsd::reference{x}, y
     );
 
-    for(hsd::i32 i = 0; i < 10; ++i)
-    {
+    for (hsd::i32 i = 0; i < 10; ++i)
         hsd::job_system.schedule_job(j);
-    }
 
     hsd::job_system.wait();
 }

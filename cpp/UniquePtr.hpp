@@ -54,7 +54,7 @@ namespace hsd
                 : _alloc{alloc}, _data{ptr}, _size{size}
             {}
 
-            storage(const storage&) = delete;
+            inline storage(const storage&) = delete;
 
             template <typename U = T>
             inline storage(storage<U, Allocator>&& other)

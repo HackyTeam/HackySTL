@@ -125,37 +125,69 @@ namespace hsd
             constexpr char arg = arr_elem_v<Prog, PC + 1>;
 
             if constexpr (op == 'G')
+            {
                 return run_impl<PC + 2, arr_elem_v<Ram, arg>, Ram, Out, Prog>();
-            if constexpr (op == 'O')
+            }
+            else if constexpr (op == 'O')
+            {
                 return run_impl<PC + 2, X, arr_replace_t<Ram, arg, X>, Out, Prog>();
-            if constexpr (op == 'R')
+            }
+            else if constexpr (op == 'R')
+            {
                 return run_impl<PC + 2, /*input*/ 0, Ram, Out, Prog>();
-            if constexpr (op == 'B')
+            }
+            else if constexpr (op == 'B')
+            {
                 return run_impl<X ? PC + 2 : arg * 2, X, Ram, Out, Prog>();
-            if constexpr (op == 'I')
+            }
+            else if constexpr (op == 'I')
+            {
                 return run_impl<PC + 2, (X + arg) & 0xFF, Ram, Out, Prog>();
-            if constexpr (op == 'T') // output
+            }
+            else if constexpr (op == 'T') // output
+            {
                 return run_impl<PC + 2, X, Ram, arr_append_t<Out, X>, Prog>();
-            if constexpr (op == 'S')
+            }
+            else if constexpr (op == 'S')
+            {
                 return run_impl<PC + 2, arg, Ram, Out, Prog>();
-            if constexpr (op == 'A')
+            }
+            else if constexpr (op == 'A')
+            {
                 return run_impl<PC + 2, (X + arr_elem_v<Ram, arg>) & 0xFF, Ram, Out, Prog>();
-            if constexpr (op == 'g')
+            }
+            else if constexpr (op == 'g')
+            {
                 return run_impl<PC + 2, arr_elem_v<Ram, arr_elem_v<Ram, arg>>, Ram, Out, Prog>();
-            if constexpr (op == 'o')
+            }
+            else if constexpr (op == 'o')
+            {
                 return run_impl<PC + 2, X, arr_replace_t<Ram, arr_elem_v<Ram, arg>, X>, Out, Prog>();
-            if constexpr (op == 'r')
+            }
+            else if constexpr (op == 'r')
+            {
                 return run_impl<PC + 2, X, arr_replace_t<Ram, arg, /*input*/ 0>, Out, Prog>();
-            if constexpr (op == 'b')
+            }
+            else if constexpr (op == 'b')
+            {
                 return run_impl<X ? PC + 2 : arr_elem_v<Ram, arg> * 2, X, Ram, Out, Prog>();
-            if constexpr (op == 'i')
+            }
+            else if constexpr (op == 'i')
+            {
                 return run_impl<PC + 2, X, arr_replace_t<Ram, arg, (arr_elem_v<Ram, arg> + X) & 0xFF>, Out, Prog>();
-            if constexpr (op == 't') // output
+            }
+            else if constexpr (op == 't') // output
+            {
                 return run_impl<PC + 2, X, Ram, arr_append_t<Out, arr_elem_v<Ram, arg>>, Prog>();
-            if constexpr (op == 's')
+            }
+            else if constexpr (op == 's')
+            {
                 return run_impl<PC + 2, X ^ arr_elem_v<Ram, arg>, Ram, Out, Prog>();
-            if constexpr (op == 'a')
+            }
+            else if constexpr (op == 'a')
+            {
                 return run_impl<PC + 2, (X + arr_elem_v<Ram, arr_elem_v<Ram, arg>>) & 0xFF, Ram, Out, Prog>();
+            }
             //if constexpr (op == ' ')
             //    return run_impl<PC + 2, X, Ram, Out, Prog>();
         }
@@ -170,14 +202,19 @@ namespace hsd
             {
     			if constexpr (arr_size_v<Str> > I + 1)
     				static_assert(arr_elem_v<Str, I + 1> == ' ');
+
     			return run_parser<Str, true, 0, I + 2, c..., arr_elem_v<Str, I>, 0>();
     		} 
             else 
             {
     			if constexpr (Parsing_command)
+                {
     				return run_parser<Str, false, 0, I + 1, c..., arr_elem_v<Str, I>>();
+                }
     			else if constexpr (arr_elem_v<Str, I> >= '0' && arr_elem_v<Str, I> <= '9')
+                {
     				return run_parser<Str, false, (Tmp * 10 + arr_elem_v<Str, I> - '0') & 0xFF, I + 1, c...>();
+                }
     			else 
                 {
     				static_assert(arr_elem_v<Str, I> == ' ');

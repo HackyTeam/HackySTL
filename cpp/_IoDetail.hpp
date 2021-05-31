@@ -27,7 +27,7 @@ namespace hsd
         template <usize N, string_literal<N> str>
         inline void _print(bool val, FILE* file_buf = stdout)
         {
-            if(val == true)
+            if (val == true)
             {
                 fprintf(file_buf, (str + "true").data);
             }
@@ -102,7 +102,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, (str + "%e").data, val);
             }
@@ -117,7 +117,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, (str + "%e").data, val);
             }
@@ -132,7 +132,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fprintf(file_buf, (str + "%Le").data, val);
             }
@@ -171,11 +171,11 @@ namespace hsd
         {
             fprintf(file_buf, (str + "(").data);
 
-            if constexpr(val.size() == 1)
+            if constexpr (val.size() == 1)
             {
                 _print<1, "">(val.template get<0>(), file_buf);
             }
-            else if constexpr(val.size() > 1)
+            else if constexpr (val.size() > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
@@ -199,7 +199,7 @@ namespace hsd
         template <usize N, wstring_literal<N> str>
         inline void _print(bool val, FILE* file_buf = stdout)
         {
-            if(val == true)
+            if (val == true)
             {
                 fwprintf(file_buf, (str + L"true").data);
             }
@@ -280,7 +280,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, (str + L"%e").data, val);
             }
@@ -295,7 +295,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, (str + L"%e").data, val);
             }
@@ -310,7 +310,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 fwprintf(file_buf, (str + L"%Le").data, val);
             }
@@ -361,11 +361,11 @@ namespace hsd
         {
             fwprintf(file_buf, (str + L"(").data);
 
-            if constexpr(val.size() == 1)
+            if constexpr (val.size() == 1)
             {
                 _print<1, L"">(val.template get<0>(), file_buf);
             }
-            else if constexpr(val.size() > 1)
+            else if constexpr (val.size() > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((

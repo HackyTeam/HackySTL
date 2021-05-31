@@ -13,7 +13,7 @@ int main()
         constexpr auto less = [](auto val){ return val < 5; };
         constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
         {
-            if((val & 1) == 0)
+            if ((val & 1) == 0)
             {
                 return val * val;
             }
@@ -27,52 +27,52 @@ int main()
 
         puts("Forward:");
 
-        for(auto& val : vals)
+        for (auto& val : vals)
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, dropped 3 elements:");
 
-        for(auto& val : vals | hsd::views::drop(3))
+        for (auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::drop_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, took 3 elements:");
 
-        for(auto& val : vals | hsd::views::take(3))
+        for (auto& val : vals | hsd::views::take(3))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, filtred:");
 
-        for(auto& val : vals | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, transformed:");
 
-        for(auto& val : vals | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, filtered and transformed:");
 
-        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed:");
 
-        for(auto& val : vals | hsd::views::reverse)
+        for (auto& val : vals | hsd::views::reverse)
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, dropped 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, dropped until 5 elements:");
@@ -82,27 +82,27 @@ int main()
 
         puts("\nReversed, took 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take(5))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, filtred:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, filtered and transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom:");
@@ -112,37 +112,37 @@ int main()
 
         puts("\nRandom, dropped 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, took 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::take(2))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, filtred:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, transformed:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, filtred and transformed:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("");
@@ -155,7 +155,7 @@ int main()
         constexpr auto less = [](auto val){ return val < 5; };
         constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
         {
-            if((val & 1) == 0)
+            if ((val & 1) == 0)
             {
                 return val * val;
             }
@@ -169,122 +169,122 @@ int main()
 
         puts("Forward:");
 
-        for(auto& val : vals)
+        for (auto& val : vals)
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, dropped 3 elements:");
 
-        for(auto& val : vals | hsd::views::drop(3))
+        for (auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::drop_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, took 3 elements:");
 
-        for(auto& val : vals | hsd::views::take(3))
+        for (auto& val : vals | hsd::views::take(3))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, filtred:");
 
-        for(auto& val : vals | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, transformed:");
 
-        for(auto& val : vals | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nForward, filtred and transformed:");
 
-        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed:");
 
-        for(auto& val : vals | hsd::views::reverse)
+        for (auto& val : vals | hsd::views::reverse)
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, dropped 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, took 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take(5))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, filtred:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nReversed, filtered and transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom:");
 
-        for(auto& val : vals | hsd::views::random)
+        for (auto& val : vals | hsd::views::random)
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, dropped 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, took 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::take(2))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::take_while(less))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, filtred:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, transformed:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
             hsd::io::print<"{} ">(val);
 
         puts("\nRandom, filtred and transformed:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"{} ">(val);
 
         puts("");
@@ -298,7 +298,7 @@ int main()
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };
         constexpr auto is_even_square = []<typename T>(const T& val) -> hsd::optional<T>
         {
-            if((val.second & 1) == 0)
+            if ((val.second & 1) == 0)
             {
                 return hsd::pair{val.first, val.second * val.second};
             }
@@ -323,122 +323,122 @@ int main()
 
         puts("Forward:");
 
-        for(auto& val : vals)
+        for (auto& val : vals)
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, dropped 3 elements:");
 
-        for(auto& val : vals | hsd::views::drop(3))
+        for (auto& val : vals | hsd::views::drop(3))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::drop_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, took 3 elements:");
 
-        for(auto& val : vals | hsd::views::take(3))
+        for (auto& val : vals | hsd::views::take(3))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::take_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, filtred:");
 
-        for(auto& val : vals | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::ranges::filter(is_even))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, transformed:");
 
-        for(auto& val : vals | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::ranges::transform(square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nForward, filtered and transformed:");
 
-        for(auto& val : vals | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed:");
 
-        for(auto& val : vals | hsd::views::reverse)
+        for (auto& val : vals | hsd::views::reverse)
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, dropped 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::drop(5))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::drop_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, took 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take(5))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take(5))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::reverse | hsd::views::take_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, filtred:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter(is_even))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::transform(square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nReversed, filtered and transformed:");
 
-        for(auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::reverse | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom:");
 
-        for(auto& val : vals | hsd::views::random)
+        for (auto& val : vals | hsd::views::random)
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, dropped 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop(2))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, dropped until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::drop_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, took 2 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take(2))
+        for (auto& val : vals | hsd::views::random | hsd::views::take(2))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, took until 5 elements:");
 
-        for(auto& val : vals | hsd::views::random | hsd::views::take_while(less))
+        for (auto& val : vals | hsd::views::random | hsd::views::take_while(less))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, filtred:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter(is_even))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, transformed:");
 
-        for(auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::transform(square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("\nRandom, filtered and transformed:");
  
-        for(auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
+        for (auto& val : vals | hsd::views::random | hsd::ranges::filter_map(is_even_square))
             hsd::io::print<"({}, {}) ">(val.first, val.second);
 
         puts("");

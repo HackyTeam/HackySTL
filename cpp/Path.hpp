@@ -24,7 +24,7 @@ namespace hsd
                 file_type _from_file = fopen(from, "r");
                 file_type _to_file = fopen(to, "w");
                 
-                if(_from_file == nullptr || _to_file == nullptr)
+                if (_from_file == nullptr || _to_file == nullptr)
                 {
                     return runtime_error{"File not found"};
                 }
@@ -52,7 +52,7 @@ namespace hsd
                 file_type _from_file = _wfopen(from, L"r");
                 file_type _to_file = _wfopen(to, L"w");
                 
-                if(_from_file == nullptr || _to_file == nullptr)
+                if (_from_file == nullptr || _to_file == nullptr)
                 {
                     return runtime_error{"File not found"};
                 }
@@ -248,7 +248,7 @@ namespace hsd
 
             inline path parent()
             {
-                if(*this == root())
+                if (*this == root())
                     return root();
 
                 #if defined(HSD_PLATFORM_POSIX)
@@ -261,7 +261,7 @@ namespace hsd
             inline auto list()
                 -> Result<hsd::vector<path>, runtime_error>
             {
-                if(_directory != nullptr)
+                if (_directory != nullptr)
                 {
                     hsd::vector<path> _paths;
                     
@@ -278,17 +278,17 @@ namespace hsd
                     #endif
                     {
                         #if defined(HSD_PLATFORM_POSIX)
-                        if(cstring::compare(_dir_entry->d_name, ".") != 0 && 
+                        if (cstring::compare(_dir_entry->d_name, ".") != 0 && 
                             cstring::compare(_dir_entry->d_name, "..") != 0)
                         #elif defined(HSD_PLATFORM_WINDOWS)
-                        if(wcstring::compare(_dir_entry->d_name, L".") != 0 && 
+                        if (wcstring::compare(_dir_entry->d_name, L".") != 0 && 
                             wcstring::compare(_dir_entry->d_name, L"..") != 0)
                         #endif
                         {
                             #if defined(HSD_PLATFORM_POSIX)
-                            if(*(relative_name().end() - 1) == '/')
+                            if (*(relative_name().end() - 1) == '/')
                             #elif defined(HSD_PLATFORM_WINDOWS)
-                            if(*(relative_name().end() - 1) == L'\\')
+                            if (*(relative_name().end() - 1) == L'\\')
                             #endif
                             {
                                 _paths.emplace_back(relative_name() + 
@@ -335,7 +335,7 @@ namespace hsd
             inline auto change_permissions(const fs_perms_mask& mask)
                 -> Result<void, runtime_error>
             {
-                if(!status().exists())
+                if (!status().exists())
                 {
                     return runtime_error{"File/Directory not found"};
                 }
@@ -347,7 +347,7 @@ namespace hsd
                     int _res = _wchmod(absolute_name().c_str(), static_cast<u32>(mask));
                     #endif
 
-                    if(_res == -1)
+                    if (_res == -1)
                     {
                         return runtime_error{
                             "Couldn't change permissions of the file"
@@ -365,7 +365,7 @@ namespace hsd
             #endif
                 -> Result<void, runtime_error> 
             {
-                if(!status().exists())
+                if (!status().exists())
                 {
                     return runtime_error{"File/Directory not found"};
                 }
@@ -380,9 +380,9 @@ namespace hsd
                     int _res = 0;
 
                     #if defined(HSD_PLATFORM_POSIX)
-                    if(_slash_pos == string::npos)
+                    if (_slash_pos == string::npos)
                     #elif defined(HSD_PLATFORM_WINDOWS)
-                    if(_slash_pos == wstring::npos)
+                    if (_slash_pos == wstring::npos)
                     #endif
                     {
                         path _new_path;
@@ -400,7 +400,7 @@ namespace hsd
                         );
                         #endif
 
-                        if(_res == -1)
+                        if (_res == -1)
                             return runtime_error{strerror(errno)};
 
                         _new_path._destroy();
@@ -428,7 +428,7 @@ namespace hsd
                         );
                         #endif
 
-                        if(_res == -1)
+                        if (_res == -1)
                             return runtime_error{strerror(errno)};
 
                         _new_path._destroy();
@@ -452,7 +452,7 @@ namespace hsd
 
             inline auto extension() const
             {
-                if(status().is_regular_file().unwrap())
+                if (status().is_regular_file().unwrap())
                 {
                     #if defined(HSD_PLATFORM_POSIX)
                     usize _point_pos = relative_name().rfind('.');
@@ -461,7 +461,7 @@ namespace hsd
                     #endif
 
                     #if defined(HSD_PLATFORM_POSIX)
-                    if(_point_pos != string::npos)
+                    if (_point_pos != string::npos)
                     {
                         const char* _str_data = relative_name().c_str();
                         usize _str_size = relative_name().size();
@@ -473,7 +473,7 @@ namespace hsd
 
                     return string{};
                     #elif defined(HSD_PLATFORM_WINDOWS)
-                    if(_point_pos != wstring::npos)
+                    if (_point_pos != wstring::npos)
                     {
                         const wchar* _str_data = relative_name().c_str();
                         usize _str_size = relative_name().size();
@@ -498,10 +498,10 @@ namespace hsd
             inline auto copy(const path& to)
                 -> Result<void, runtime_error> 
             {
-                if(status().is_directory().unwrap() &&
+                if (status().is_directory().unwrap() &&
                     to.status().is_directory().unwrap())
                 {
-                    for(auto& _item : list().unwrap())
+                    for (auto& _item : list().unwrap())
                     {
                         #if defined(HSD_PLATFORM_POSIX)
                         const char* _item_name =
@@ -544,7 +544,7 @@ namespace hsd
                         _item.copy(_new_to).unwrap();
                     }
                 }
-                else if(status().is_regular_file().unwrap() &&
+                else if (status().is_regular_file().unwrap() &&
                     to.status().is_regular_file().unwrap())
                 {
                     return fs_detail::copy_file(
@@ -552,7 +552,7 @@ namespace hsd
                         to.absolute_name().c_str()
                     );
                 }
-                else if(status().is_regular_file().unwrap() &&
+                else if (status().is_regular_file().unwrap() &&
                     to.status().is_directory().unwrap())
                 {
                     #if defined(HSD_PLATFORM_POSIX)
@@ -571,7 +571,7 @@ namespace hsd
                         _new_to.absolute_name().c_str()
                     );
                 }
-                else if(status().is_directory().unwrap() &&
+                else if (status().is_directory().unwrap() &&
                     to.status().is_regular_file().unwrap())
                 {
                     return runtime_error{
@@ -593,7 +593,7 @@ namespace hsd
             #endif
                 -> Result<void, runtime_error>
             {
-                if(name.rfind('/') < name.size() - 1)
+                if (name.rfind('/') < name.size() - 1)
                 {
                     return runtime_error{
                         "Cannot create multiple directories"
@@ -670,10 +670,10 @@ namespace hsd
             #endif
             {
                 #if defined(HSD_PLATFORM_POSIX)
-                if(rhs[0] != '/')
+                if (rhs[0] != '/')
                     return path{relative_name() + "/" + rhs};
                 #elif defined(HSD_PLATFORM_WINDOWS)
-                if(rhs[0] != L'\\')
+                if (rhs[0] != L'\\')
                     return path{relative_name() + L"\\" + rhs};
                 #endif
 
@@ -687,10 +687,10 @@ namespace hsd
             #endif
             {
                 #if defined(HSD_PLATFORM_POSIX)
-                if(rhs[0] != '/')
+                if (rhs[0] != '/')
                     return path{relative_name() + "/" + rhs};
                 #elif defined(HSD_PLATFORM_WINDOWS)
-                if(rhs[0] != L'\\')
+                if (rhs[0] != L'\\')
                     return path{relative_name() + L"\\" + rhs};
                 #endif
 
@@ -700,10 +700,10 @@ namespace hsd
             inline path operator/(const path& rhs) const
             {
                 #if defined(HSD_PLATFORM_POSIX)
-                if(rhs.relative_name()[0] != '/')
+                if (rhs.relative_name()[0] != '/')
                     return path{relative_name() + "/" + rhs.relative_name()};
                 #elif defined(HSD_PLATFORM_WINDOWS)
-                if(rhs.relative_name()[0] != L'\\')
+                if (rhs.relative_name()[0] != L'\\')
                     return path{relative_name() + L"\\" + rhs.relative_name()};
                 #endif
 

@@ -10,7 +10,7 @@ void thread_func(hsd::i32 thread_index)
     for (hsd::i32 count = 0; count < 100; count++)
     {
         // spin until the lock is acquired
-        while(lock.test_and_set(hsd::memory_order_acquire));
+        while (lock.test_and_set(hsd::memory_order_acquire));
 
         hsd::io::print<"Output from thread {}\n">(thread_index);
         lock.clear(hsd::memory_order_release);

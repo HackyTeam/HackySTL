@@ -9,9 +9,14 @@ static int func(int a)
 template <typename T>
 static void func2(T&) {}
 
-struct counter {
-    counter(int a = 0) : c(a) {}
+struct counter 
+{
+    counter(int a = 0)
+        : c(a)
+    {}
+
     int c;
+    
     int operator()()
     {
         return c++;

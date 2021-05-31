@@ -72,7 +72,7 @@ namespace hsd
 
         constexpr heap_array& operator=(const heap_array& rhs)
         {
-            hsd::copy(rhs.begin(), rhs.end(), begin());
+            copy(rhs.begin(), rhs.end(), begin());
             return *this;
         }
 
@@ -86,14 +86,14 @@ namespace hsd
         template <usize L>
         constexpr heap_array& operator=(const T (&arr)[L])
         {
-            hsd::copy(arr, arr + N, _array);
+            copy(arr, arr + N, _array);
             return *this;
         }
 
         template <usize L>
         constexpr heap_array& operator=(T (&&arr)[L])
         {
-            hsd::move(arr, arr + N, _array);
+            move(arr, arr + N, _array);
             return *this;
         }
 
@@ -110,7 +110,7 @@ namespace hsd
         constexpr auto at(usize index) 
             -> Result<reference<T>, harray_detail::bad_access>
         {
-            if(index >= N)
+            if (index >= N)
                 return harray_detail::bad_access{};
 
             return {_array[index]};
@@ -119,7 +119,7 @@ namespace hsd
         constexpr auto at(usize index) const 
             -> Result<const reference<T>, harray_detail::bad_access>
         {
-            if(index >= N)
+            if (index >= N)
                 return harray_detail::bad_access{};
 
             return {_array[index]};

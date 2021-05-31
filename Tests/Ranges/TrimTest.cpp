@@ -11,7 +11,7 @@ hsd::string trim(hsd::string_view const in)
         | hsd::views::reverse
         | hsd::views::drop_while(hsd::cstring::iswhitespace);
 
-    for(auto& val : rev_view | hsd::views::reverse)
+    for (auto& val : rev_view | hsd::views::reverse)
         str.push_back(val);
 
     return str;

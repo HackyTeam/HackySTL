@@ -26,7 +26,7 @@ namespace hsd
                 _u8io_buf.reset_data();
                 char* _str = fgets(_u8io_buf.data(), 4096, stdin);
 
-                if(_str == nullptr)
+                if (_str == nullptr)
                 {
                     return runtime_error{"Input requirements not satisfied"};
                 }
@@ -54,11 +54,11 @@ namespace hsd
                 _wio_buf.reset_data();
                 wchar* _str = fgetws(_wio_buf.data(), 4096, stdin);
 
-                if(_str == nullptr)
+                if (_str == nullptr)
                 {
                     return runtime_error{"Input requirements not satisfied"};
                 }
-            }while(_wio_buf.c_str()[0] == '\n');
+            } while (_wio_buf.c_str()[0] == '\n');
 
             return {_wio_buf};
         }
@@ -69,7 +69,7 @@ namespace hsd
             {
                 _wio_buf.reset_data();
                 wscanf(L"%ls", _wio_buf.data());
-            }while(_wio_buf.c_str()[0] == '\n');
+            } while (_wio_buf.c_str()[0] == '\n');
 
             return _wio_buf;
         }
@@ -182,7 +182,7 @@ namespace hsd
             _file_buf = fopen(file_path, open_option);
             _file_mode = open_option;
             
-            if(_file_buf == nullptr)
+            if (_file_buf == nullptr)
             {
                 hsd_fputs_check(stderr, "File not found");
                 abort();
@@ -196,7 +196,7 @@ namespace hsd
 
         Result< void, runtime_error > flush()
         {
-            if(only_read())
+            if (only_read())
             {
                 fflush(_file_buf);
             }
@@ -212,11 +212,11 @@ namespace hsd
         {
             _u8io_buf.reset_data();
             
-            if(only_write())
+            if (only_write())
             {
                 return runtime_error{"Cannot read file. It is in write mode"};
             }
-            if(fgets(_u8io_buf.data(), 4096, _file_buf) == nullptr)
+            if (fgets(_u8io_buf.data(), 4096, _file_buf) == nullptr)
             { 
                 _u8io_buf.reset_data();
             }
@@ -228,11 +228,11 @@ namespace hsd
         {
             _wio_buf.reset_data();
             
-            if(only_write())
+            if (only_write())
             {
                 return runtime_error{"Cannot read file. It is in write mode"};
             }
-            if(fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
+            if (fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
             { 
                 _wio_buf.reset_data();
             }
@@ -244,11 +244,11 @@ namespace hsd
         {
             _u8io_buf.reset_data();
 
-            if(only_write())
+            if (only_write())
             {
                 return runtime_error{"Cannot read file. It is in write mode"};
             }
-            if(fscanf(_file_buf, "%s", _u8io_buf.data()) == EOF)
+            if (fscanf(_file_buf, "%s", _u8io_buf.data()) == EOF)
             {
                 _u8io_buf.reset_data();
             }
@@ -260,11 +260,11 @@ namespace hsd
         {
             _wio_buf.reset_data();
 
-            if(only_write())
+            if (only_write())
             {
                 return runtime_error{"Cannot read file. It is in write mode"};
             }
-            if(fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
+            if (fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
             {
                 _wio_buf.reset_data();
             }

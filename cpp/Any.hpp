@@ -13,8 +13,12 @@
 
 namespace hsd
 {
-    template <typename T>
-    concept Copyable = std::is_copy_constructible_v<T>;
+    namespace any_detail
+    {
+        template <typename T>
+        concept Copyable = std::is_copy_constructible_v<T>;
+    } // namespace any_detail
+    
 
     struct bad_any_cast
     {
@@ -36,7 +40,7 @@ namespace hsd
         #endif
     };
 
-    template <Copyable T>
+    template <any_detail::Copyable T>
     class _any_derived : public _any_base 
     {
         T _value;
@@ -68,7 +72,7 @@ namespace hsd
     public:
         inline any() noexcept = default;
 
-        template <Copyable T>
+        template <any_detail::Copyable T>
         inline any(T other)
         {
             _data = hsd::make_unique<_any_derived<T>>(move(other));
@@ -98,7 +102,7 @@ namespace hsd
         {
             using type = typename std::remove_pointer<T>::type;
 
-            if(auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
+            if (auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
                 return p_base->_value;
             }

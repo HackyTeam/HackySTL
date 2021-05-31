@@ -6,12 +6,12 @@ static auto check_erase()
 {
     hsd::unordered_map<hsd::i32, hsd::i32> map;
 
-    for(hsd::i32 i = 0; i < 20; i++)
+    for (hsd::i32 i = 0; i < 20; i++)
         map.emplace(i * i, i);
 
-    for(auto iter = map.begin(); iter != map.end();)
+    for (auto iter = map.begin(); iter != map.end();)
     {
-        if(iter->second == 12)
+        if (iter->second == 12)
         {
             iter = map.erase(iter).unwrap();
         }
@@ -33,12 +33,12 @@ int main()
     check_erase();
     puts("============");
 
-    for(hsd::i32 i = 1; i <= 14; i++)
+    for (hsd::i32 i = 1; i <= 14; i++)
         map.emplace(i, i);
 
     printf("%d\n========\n", map[8]);
     printf("%d\n========\n", map[9]);
 
-    for(auto& _it : map)
+    for (auto& _it : map)
         printf("%d\n", _it.first);
 }

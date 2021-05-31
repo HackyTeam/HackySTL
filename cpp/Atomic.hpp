@@ -221,19 +221,19 @@ namespace hsd
 			}
 
 			T fetch_add(T arg, memory_order order = memory_order_seq_cst)
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_add(T arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_add(ptrdiff_t arg, memory_order order = memory_order_seq_cst)
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(),
 					arg * sizeof(remove_pointer_t<T>),
@@ -242,7 +242,7 @@ namespace hsd
 			}
 
 			T fetch_add(ptrdiff_t arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(),
 					arg * sizeof(remove_pointer_t<T>),
@@ -251,19 +251,19 @@ namespace hsd
 			}
 
 			T fetch_sub(T arg, memory_order order = memory_order_seq_cst)
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_sub(T arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_sub(ptrdiff_t arg, memory_order order = memory_order_seq_cst)
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(),
 					arg * sizeof(remove_pointer_t<T>),
@@ -272,7 +272,7 @@ namespace hsd
 			}
 
 			T fetch_sub(ptrdiff_t arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(),
 					arg * sizeof(remove_pointer_t<T>),
@@ -281,169 +281,169 @@ namespace hsd
 			}
 
 			T fetch_and(T arg, memory_order order = memory_order_seq_cst)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_and(T arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_or(T arg, memory_order order = memory_order_seq_cst)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_or(T arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_xor(T arg, memory_order order = memory_order_seq_cst)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T fetch_xor(T arg, memory_order order = memory_order_seq_cst) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
 			T operator++()
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1) + 1;
 			}
 
 			T operator++(int)
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1);
 			}
 
 			T operator++() volatile
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1) + 1;
 			}
 
 			T operator++(int) volatile
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1);
 			}
 
 			T operator--()
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1) - 1;
 			}
 
 			T operator--(int)
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1);
 			}
 
 			T operator--() volatile
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1) - 1;
 			}
 
 			T operator--(int) volatile
-			requires(is_integral<T>::value || is_pointer<T>::value)
+			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1);
 			}
 
 			T operator+=(T arg)
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
 			T operator+=(T arg) volatile
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
 			T operator+=(ptrdiff_t arg)
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
 			T operator+=(ptrdiff_t arg) volatile
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
 			T operator-=(T arg)
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
 			T operator-=(T arg) volatile
-			requires(is_number<T>::value)
+			requires (is_number<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
 			T operator-=(ptrdiff_t arg)
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
 			T operator-=(ptrdiff_t arg) volatile
-			requires(is_pointer<T>::value)
+			requires (is_pointer<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
 			T operator&=(T arg)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_and(arg) & arg;
 			}
 
 			T operator&=(T arg) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_and(arg) & arg;
 			}
 
 			T operator|=(T arg)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_or(arg) | arg;
 			}
 
 			T operator|=(T arg) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_or(arg) | arg;
 			}
 
 			T operator^=(T arg)
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_xor(arg) ^ arg;
 			}
 
 			T operator^=(T arg) volatile
-			requires(is_integral<T>::value)
+			requires (is_integral<T>::value)
 			{
 				return fetch_xor(arg) ^ arg;
 			}
@@ -570,13 +570,15 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline T atomic_load_explicit(atomic<T>* obj, memory_order order)
+	inline T atomic_load_explicit(
+		atomic<T>* obj, memory_order order)
 	{
 		return obj->load(order);
 	}
 
 	template <typename T>
-	inline T atomic_load_explicit(volatile atomic<T>* obj, memory_order order)
+	inline T atomic_load_explicit(
+		volatile atomic<T>* obj, memory_order order)
 	{
 		return obj->load(order);
 	}
@@ -795,8 +797,7 @@ namespace hsd
 	{
 		constexpr atomic_flag()
 			: _flag{}
-		{
-		}
+		{}
 
 		atomic_flag(const atomic_flag&) = delete;
 		atomic_flag& operator=(const atomic_flag&) = delete;

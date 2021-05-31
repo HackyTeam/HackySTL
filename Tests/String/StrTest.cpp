@@ -26,7 +26,7 @@ int main()
         hsd::io::print<"\nIterating:\n">();
         hsd::string str = "Test String";
 
-        for(char& ch : str)
+        for (char& ch : str)
             ch++;
 
         hsd::io::print<"{}\n">(str);
@@ -53,29 +53,29 @@ int main()
         hsd::string str = "Test String";
         hsd::string str2 = "Test String2";
 
-        if(str <= str2)
+        if (str <= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str < str2)
+            if (str < str2)
             {
                 hsd::io::print<"OK!\n">();
             }
         }
-        if(str >= str2)
+        if (str >= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str > str2)
+            if (str > str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
         }
-        if(str != str2)
+        if (str != str2)
         {
             hsd::io::print<"OK!\n">();
         }
@@ -87,29 +87,29 @@ int main()
         hsd::string str = "Test String3";
         hsd::string str2 = "Test String2";
 
-        if(str <= str2)
+        if (str <= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str < str2)
+            if (str < str2)
             {
                 hsd::io::print<"BUG!\n">();
             }
         }
-        if(str >= str2)
+        if (str >= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str > str2)
+            if (str > str2)
             {
                 hsd::io::err_print<"OK!\n">();
             }
         }
-        if(str != str2)
+        if (str != str2)
         {
             hsd::io::print<"OK!\n">();
         }
@@ -121,29 +121,29 @@ int main()
         hsd::string str = "Test String2";
         hsd::string str2 = "Test String2";
 
-        if(str <= str2)
+        if (str <= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"OK!\n">();
             }
-            if(str < str2)
+            if (str < str2)
             {
                 hsd::io::print<"BUG!\n">();
             }
         }
-        if(str >= str2)
+        if (str >= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"OK!\n">();
             }
-            if(str > str2)
+            if (str > str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
         }
-        if(str != str2)
+        if (str != str2)
         {
             hsd::io::print<"BUG!\n">();
         }
@@ -155,29 +155,29 @@ int main()
         hsd::string str = "Test String34";
         hsd::string str2 = "Test String2";
 
-        if(str <= str2)
+        if (str <= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str < str2)
+            if (str < str2)
             {
                 hsd::io::print<"BUG!\n">();
             }
         }
-        if(str >= str2)
+        if (str >= str2)
         {
-            if(str == str2)
+            if (str == str2)
             {
                 hsd::io::err_print<"BUG!\n">();
             }
-            if(str > str2)
+            if (str > str2)
             {
                 hsd::io::err_print<"OK!\n">();
             }
         }
-        if(str != str2)
+        if (str != str2)
         {
             hsd::io::print<"OK!\n">();
         }
@@ -188,9 +188,9 @@ int main()
         hsd::io::print<"\nErasing:\n">();
         hsd::string str = "Test long String";
 
-        for(auto it = str.begin(); it != str.end();)
+        for (auto it = str.begin(); it != str.end();)
         {
-            if(*it == 't' || *it == 'n')
+            if (*it == 't' || *it == 'n')
             {
                 it = str.erase(it).unwrap();
             }
@@ -208,7 +208,7 @@ int main()
         hsd::io::print<"\nPushing:\n">();
         hsd::string str;
 
-        for(hsd::i32 index = 0; index < 10; index++)
+        for (hsd::i32 index = 0; index < 10; index++)
             str.push_back('0' + static_cast<char>(index));
 
         hsd::io::print<"{}\n">(str);

@@ -78,7 +78,8 @@ namespace hsd
                         _iter = _origin;
                         
                         usize _to = engine.generate<usize>(0u, _index + 1).unwrap();
-                        for(usize _from = 0; _from < _to; _from++, _iter++);
+                        for (usize _from = 0; _from < _to; _from++, _iter++)
+                            ;
 
                         _index++;
                         return *this;
@@ -140,7 +141,7 @@ namespace hsd
                     constexpr auto drop(usize quantity) const
                         -> Result<reverse, runtime_error> 
                     {
-                        if(quantity > _view_size)
+                        if (quantity > _view_size)
                         {
                             return runtime_error{"Dropping out of bounds"};
                         }
@@ -148,7 +149,9 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
-                            for(; _index < quantity; _index++, _result_iter++);
+                            for (; _index < quantity; _index++, _result_iter++)
+                                ;
+
                             return reverse{_result_iter, _end, _view_size - _index};
                         }
                     }
@@ -220,7 +223,7 @@ namespace hsd
                     constexpr auto drop(usize quantity) const
                         -> Result<random, runtime_error>
                     {
-                        if(quantity > _view_size)
+                        if (quantity > _view_size)
                         {
                             return runtime_error{"Dropping out of bounds"};
                         }
@@ -228,7 +231,9 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
-                            for(; _index < quantity; _index++, _result_iter++);
+                            for (; _index < quantity; _index++, _result_iter++)
+                                ;
+
                             return random{_result_iter, _end, _view_size - _index};
                         }
                     }
@@ -236,7 +241,7 @@ namespace hsd
                     constexpr auto take(usize quantity) const
                         -> Result<random, runtime_error> 
                     {
-                        if(quantity > _view_size)
+                        if (quantity > _view_size)
                         {
                             return runtime_error{"Dropping out of bounds"};
                         }
@@ -244,7 +249,9 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
-                            for(; _index < quantity; _index++, _result_iter++);
+                            for(; _index < quantity; _index++, _result_iter++)
+                                ;
+
                             return random{_begin, _result_iter, _view_size - _index};
                         }
                     }
@@ -350,13 +357,13 @@ namespace hsd
                 {
                     vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
 
-                    if constexpr(requires{rhs._func(*lhs.begin()).unwrap();})
+                    if constexpr (requires{rhs._func(*lhs.begin()).unwrap();})
                     {
                         auto _iter = lhs.begin();
-                        for(; _iter != lhs.end() && 
+                        for (; _iter != lhs.end() && 
                             rhs._func(*_iter).unwrap(); _iter++);
 
-                        for(; _iter != lhs.end(); _iter++)
+                        for (; _iter != lhs.end(); _iter++)
                         {
                             _vec.emplace_back(*_iter);
                         }
@@ -364,10 +371,10 @@ namespace hsd
                     else
                     {
                         auto _iter = lhs.begin();
-                        for(; _iter != lhs.end() && 
+                        for (; _iter != lhs.end() && 
                             rhs._func(*_iter); _iter++);
 
-                        for(; _iter != lhs.end(); _iter++)
+                        for (; _iter != lhs.end(); _iter++)
                         {
                             _vec.emplace_back(*_iter);
                         }
@@ -425,9 +432,9 @@ namespace hsd
                 {
                     vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
 
-                    if constexpr(requires{rhs._func(*lhs.begin()).unwrap();})
+                    if constexpr (requires{rhs._func(*lhs.begin()).unwrap();})
                     {
-                        for(auto _iter = lhs.begin(); _iter != lhs.end() 
+                        for (auto _iter = lhs.begin(); _iter != lhs.end() 
                             && rhs._func(*_iter).unwrap(); _iter++)
                         {
                             _vec.emplace_back(*_iter);
@@ -435,7 +442,7 @@ namespace hsd
                     }
                     else
                     {
-                        for(auto _iter = lhs.begin(); _iter != lhs.end() 
+                        for (auto _iter = lhs.begin(); _iter != lhs.end() 
                             && rhs._func(*_iter); _iter++)
                         {
                             _vec.emplace_back(*_iter);
@@ -471,9 +478,9 @@ namespace hsd
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
 
-                for(auto& _value : lhs)
+                for (auto& _value : lhs)
                 {
-                    if constexpr(requires{rhs._func(_value).unwrap();})
+                    if constexpr (requires{rhs._func(_value).unwrap();})
                     {
                         if(rhs._func(_value).unwrap())
                             _vec.emplace_back(_value);
@@ -514,9 +521,9 @@ namespace hsd
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
 
-                for(auto& _value : lhs)
+                for (auto& _value : lhs)
                 {
-                    if constexpr(requires{rhs._func(_value).unwrap();})
+                    if constexpr (requires{rhs._func(_value).unwrap();})
                     {
                         _vec.emplace_back(rhs._func(_value).unwrap());
                     }
@@ -557,11 +564,11 @@ namespace hsd
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
 
-                for(auto& _value : lhs)
+                for (auto& _value : lhs)
                 {
                     auto _res = rhs._func(_value);
 
-                    if(_res.is_ok())
+                    if (_res.is_ok())
                     {
                         _vec.emplace_back(_res.unwrap());
                     }

@@ -32,19 +32,20 @@ namespace hsd
             void thread_function()
             {
                 job_fn _job_task = nullptr;
-                while(_running.load())
+
+                while (_running.load())
                 {
-                    if(_high_priority.try_pop(_job_task))
+                    if (_high_priority.try_pop(_job_task))
                     {
                         _job_task().unwrap();
                         _counter--;
                     }
-                    else if(_normal_priority.try_pop(_job_task))
+                    else if (_normal_priority.try_pop(_job_task))
                     {
                         _job_task().unwrap();
                         _counter--;
                     }
-                    else if(_low_priority.try_pop(_job_task))
+                    else if (_low_priority.try_pop(_job_task))
                     {
                         _job_task().unwrap();
                         _counter--;
@@ -61,7 +62,7 @@ namespace hsd
                 _running.store(true);
                 usize _numcores = thread::hardware_concurrency(); 
 
-                for(usize _index = 0; _index < _numcores; _index++)
+                for (usize _index = 0; _index < _numcores; _index++)
                 {
                     _threads.emplace_back(bind(&JobSystem::thread_function, this));
                 }
@@ -71,7 +72,7 @@ namespace hsd
             {
                 _running.store(false);
 
-                for(auto& _thread : _threads)
+                for (auto& _thread : _threads)
                 {
                     _thread.join().unwrap();
                 }
@@ -81,9 +82,10 @@ namespace hsd
             isize get_current_thread() const
             {
                 auto _this_thread_id = this_thread::get_id();
-                for(usize _index = 0; _index < _threads.size(); _index++)
+
+                for (usize _index = 0; _index < _threads.size(); _index++)
                 {
-                    if(_this_thread_id == _threads[_index].get_id())
+                    if (_this_thread_id == _threads[_index].get_id())
                     {
                         return static_cast<isize>(_index);
                     }
@@ -95,7 +97,7 @@ namespace hsd
             // Schedules a job to be added to the queue. Optionally accepts a priority for the job
             void schedule_job(job_fn job_task, PRIO priority = PRIO::NORM)
             {
-                switch(priority)
+                switch (priority)
                 {
                     case PRIO::HIGH:
                         _high_priority.emplace(move(job_task));
@@ -118,22 +120,23 @@ namespace hsd
             // to execute jobs as well if set to `true`
             void wait(ulong target = 0, bool use_current_thread = true)
             {
-                while(_counter.load() > target)
+                while (_counter.load() > target)
                 {
-                    if(use_current_thread)
+                    if (use_current_thread)
                     {
                         job_fn _job_task = nullptr;
-                        if(_high_priority.try_pop(_job_task))
+
+                        if (_high_priority.try_pop(_job_task))
                         {
                             _job_task().unwrap();
                             _counter--;
                         }
-                        else if(_normal_priority.try_pop(_job_task))
+                        else if (_normal_priority.try_pop(_job_task))
                         {
                             _job_task().unwrap();
                             _counter--;
                         }
-                        else if(_low_priority.try_pop(_job_task))
+                        else if (_low_priority.try_pop(_job_task))
                         {
                             _job_task().unwrap();
                             _counter--;

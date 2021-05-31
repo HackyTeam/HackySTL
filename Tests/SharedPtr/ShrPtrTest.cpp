@@ -1,4 +1,4 @@
-#include <iostream>
+#include <Io.hpp>
 #include <SharedPtr.hpp>
 
 struct S
@@ -13,28 +13,20 @@ struct S
     {}
 };
 
-template<typename T>
-static void print_val(T& val)
-{
-    std::cout << val << '\n';
-}
-
 static void print(
     hsd::safe_shared_ptr<S, hsd::buffered_allocator> ptr)
 {
-    print_val(ptr->_a);
-    print_val(ptr->_b);
-    print_val(ptr->_c);
-    print_val(ptr->_d);
+    hsd::io::print<"{}\n{}\n{}\n{}\n">(
+        ptr->_a, ptr->_b, ptr->_c, ptr->_d
+    );
 }
 
 static void print(
     hsd::unsafe_shared_ptr<S, hsd::buffered_allocator> ptr)
 {
-    print_val(ptr->_a);
-    print_val(ptr->_b);
-    print_val(ptr->_c);
-    print_val(ptr->_d);
+    hsd::io::print<"{}\n{}\n{}\n{}\n">(
+        ptr->_a, ptr->_b, ptr->_c, ptr->_d
+    );
 }
 
 struct base

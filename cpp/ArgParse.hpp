@@ -4,6 +4,7 @@
 #include "Functional.hpp"
 #include "_SStreamDetail.hpp"
 #include "StringView.hpp"
+#include "Result.hpp"
 
 namespace hsd
 {
@@ -27,7 +28,7 @@ namespace hsd
             using sstream_detail::_parse;
             constexpr usize num_args = sizeof...(Args);
 
-            if(num_args > _args_buf.size())
+            if (num_args > _args_buf.size())
             {
                 return runtime_error{"Input too small to parse"};
             }
@@ -73,7 +74,8 @@ namespace hsd
         inline argument_parser& operator=(argument_parser&&) = delete;
         inline ~argument_parser() = default;
 
-        inline void add(const string_view& argument, usize num_args,
+        inline void add(
+            const string_view& argument, usize num_args,
             function_type&& func, const string_view& help)
         {
             _actions.emplace(argument, func, num_args);
@@ -82,14 +84,14 @@ namespace hsd
 
         inline void parse(i32 argc, const char** argv)
         {
-            if(argc == 1)
+            if (argc == 1)
             {
                 return;
             }
-            else if(cstring::compare(argv[1], "-h") == 0 || 
+            else if (cstring::compare(argv[1], "-h") == 0 || 
                 cstring::compare(argv[1], "--help") == 0)
             {
-                for(auto& _tips : _informations)
+                for (auto& _tips : _informations)
                     puts(_tips.data());
             }
             else
@@ -102,14 +104,14 @@ namespace hsd
                 i32 _index = 1, _incrementor;
                 parser_stream _buf;
 
-                while(_index < argc)
+                while (_index < argc)
                 {
                     auto& [_function, _num_args] = _actions
                         .at(argv[_index]).unwrap(HSD_FUNCTION_NAME);
                     _incrementor = _num_args;
                     _index += 1;
                     
-                    for(; _incrementor != 0; _incrementor--)
+                    for (; _incrementor != 0; _incrementor--)
                         _buf.emplace(argv[_index + _num_args - _incrementor]);
 
                     _function(_buf).unwrap(HSD_FUNCTION_NAME);

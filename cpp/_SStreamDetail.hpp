@@ -41,9 +41,9 @@ namespace hsd
             {
                 const char_type* _start_ptr = str;
 
-        	    for(; *str != '\0'; str++)
+        	    for (; *str != '\0'; str++)
         	    {
-        	    	if(*str == letter)
+        	    	if (*str == letter)
         	    		return static_cast<usize>(str - _start_ptr);
         	    }
 
@@ -54,7 +54,7 @@ namespace hsd
             const char_type* _iter_f = fmt.data;
             usize _pos_s = _find(_iter_f, '{');
 
-            if(_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
+            if (_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
             {
                 return runtime_error{"invalid character after \'{\'"};
             }
@@ -64,7 +64,7 @@ namespace hsd
                 _iter_f += _pos_s + 2;
                 _pos_s = _find(_iter_f, '{');
 
-                if(_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
+                if (_pos_s != static_cast<usize>(-1) && *(_iter_f + _pos_s + 1) != '}')
                     return runtime_error{"invalid character after \'{\'"};
             }
 
@@ -345,7 +345,7 @@ namespace hsd
         inline auto _sub_from(i32& from, i32 amount)
             -> Result< void, runtime_error >
         {
-            if(amount < 0)
+            if (amount < 0)
             {
                 return runtime_error{"Buffer too small"};
             }
@@ -360,7 +360,7 @@ namespace hsd
         inline auto _sub_from(usize& from, i32 amount)
             -> Result< void, runtime_error >
         {
-            if(amount < 0)
+            if (amount < 0)
             {
                 return runtime_error{"Buffer too small"};
             }
@@ -443,7 +443,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, (str + "%e").data, val);
             }
@@ -458,7 +458,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, (str + "%e").data, val);
             }
@@ -473,7 +473,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return snprintf(dest.first, dest.second, (str + "%Le").data, val);
             }
@@ -508,8 +508,13 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (_sub_from(_len, _write<2, " ">(val.template get<Ints>(), 
-                    {dest.first + (dest.second - _len), _len}))), ...
+                    (_sub_from(
+                        _len, _write<2, " ">(
+                            val.template get<Ints>(), {
+                                dest.first + (dest.second - _len), _len
+                            }
+                        )
+                    )), ...
                 );
             }(make_index_sequence<val.size()>{});
 
@@ -593,7 +598,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, (str + L"%e").data, val);
             }
@@ -608,7 +613,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, (str + L"%e").data, val);
             }
@@ -623,7 +628,7 @@ namespace hsd
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
                 return swprintf(dest.first, dest.second, (str + L"%Le").data, val);
             }
@@ -676,8 +681,13 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (_sub_from(_len, _write<2, L" ">(val.template get<Ints>(), 
-                    {dest.first + (dest.second - _len), _len}))), ...
+                    (_sub_from(
+                        _len, _write<2, L" ">(
+                            val.template get<Ints>(), {
+                                dest.first + (dest.second - _len), _len
+                            }
+                        )
+                    )), ...
                 );
             }(make_index_sequence<val.size()>{});
 

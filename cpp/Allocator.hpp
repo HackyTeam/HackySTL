@@ -96,25 +96,25 @@ namespace hsd
             {
                 if (!_block_ptr->in_use)
                 {
-                    if(_block_ptr->size == 0) 
+                    if (_block_ptr->size == 0) 
                     {
                         _block_ptr->size = size * sizeof(T);
                         _block_ptr->in_use = true;
                         return bit_cast<T*>(_block_ptr->data);
                     }
-                    else if(_block_ptr->size >= size * sizeof(T))
+                    else if (_block_ptr->size >= size * sizeof(T))
                     {
                         _block_ptr->in_use = true;
                         return bit_cast<T*>(_block_ptr->data);
                     }
                     else
                     {
-                        if(_block_back->in_use == true)
+                        if (_block_back->in_use == true)
                             _block_back = _block_ptr;
 
                         _free_size = static_cast<usize>(_block_ptr - _block_back) + _block_ptr->size;
 
-                        if(_free_size >= size * sizeof(T))
+                        if (_free_size >= size * sizeof(T))
                         {
                             _block_back->size = _free_size;
                             _block_back->in_use = true;
@@ -143,9 +143,9 @@ namespace hsd
         auto deallocate(T* ptr, usize)
             -> Result< void, allocator_detail::allocator_error >
         {
-            if(ptr != nullptr)
+            if (ptr != nullptr)
             {
-                if(bit_cast<uchar*>(ptr) >= _buf && bit_cast<uchar*>(ptr) < _buf + _size)
+                if (bit_cast<uchar*>(ptr) >= _buf && bit_cast<uchar*>(ptr) < _buf + _size)
                 {
                     auto* _block_ptr = bit_cast<block*>(
                         bit_cast<uchar*>(ptr) - sizeof(block)
@@ -165,7 +165,10 @@ namespace hsd
         #ifndef NDEBUG
         void print_buffer() const
         {
-            usize _vlen = static_cast<usize>(math::sqrt(static_cast<f64>(_size)));
+            usize _vlen = static_cast<usize>(
+                math::sqrt(static_cast<f64>(_size))
+            );
+
             usize _hlen = _vlen + (_size - _vlen * _vlen);
 
             for (usize _hindex = 0; _hindex < _hlen; _hindex++)
@@ -211,7 +214,7 @@ namespace hsd
         [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
         {
-            if(size > limits<usize>::max / sizeof(T))
+            if (size > limits<usize>::max / sizeof(T))
             {
                 return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
             }
@@ -229,7 +232,7 @@ namespace hsd
         inline auto deallocate(pointer_type ptr, usize size)
             -> Result< void, allocator_detail::allocator_error >
         {
-            if(size > limits<usize>::max / sizeof(T))
+            if (size > limits<usize>::max / sizeof(T))
             {
                 return allocator_detail::allocator_error{"Bad length for deallocation"};
             }

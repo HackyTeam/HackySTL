@@ -48,13 +48,13 @@ int main()
     file_status(p / ".." / "..");
     puts("");
 
-    for(const auto& path : p.list().unwrap())
+    for (const auto& path : p.list().unwrap())
     {
         file_status(path);
         puts("");
     }
 
-    for(auto& parent : p.parents())
+    for (auto& parent : p.parents())
     {
         hsd::io::print<" \"{}\" |">(parent);
     }
@@ -109,13 +109,13 @@ int main()
     file_status(p / L".." / L"..");
     puts("");
 
-    for(const auto& path : p.list().unwrap())
+    for (const auto& path : p.list().unwrap())
     {
         file_status(path);
         puts("");
     }
 
-    for(auto& parent : p.parents())
+    for (auto& parent : p.parents())
     {
         hsd::io::print<L" \"{}\" |">(parent);
     }

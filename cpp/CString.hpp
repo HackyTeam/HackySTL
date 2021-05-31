@@ -12,9 +12,9 @@ namespace hsd
     private:
         static constexpr bool _compare(const CharT* str, const CharT* substr)
         {
-        	for(; *str && *substr; str++, substr++)
+        	for (; *str && *substr; str++, substr++)
         	{
-        		if(*str != *substr)
+        		if (*str != *substr)
         			return false;
         	}
         	return (*substr == '\0');
@@ -23,7 +23,7 @@ namespace hsd
 		template <typename T>
 		static constexpr T _modulus(T num)
 		{
-			if(num < 0)
+			if (num < 0)
 				return -num;
 
 			return num;
@@ -34,15 +34,16 @@ namespace hsd
 		{
 			usize _len = 0;
 			
-			if(num == 0)
+			if (num == 0)
 			{
 				return 1;
 			}
-			while(num)
+			while (num)
 			{
 				_len++;
 				num /= 10;
 			}
+
 			return _len;
 		}
 
@@ -55,7 +56,7 @@ namespace hsd
 		{
 			if constexpr (sizeof(CharT) >= sizeof(char16))
 			{
-				return stack_array{
+				return stack_array {
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
 					static_cast<CharT>(0x0B),
@@ -87,7 +88,7 @@ namespace hsd
 			} 
 			else 
 			{
-				return stack_array{
+				return stack_array {
 					static_cast<CharT>(0x09),
 					static_cast<CharT>(0x0A),
 					static_cast<CharT>(0x0B),
@@ -111,7 +112,7 @@ namespace hsd
 
         static constexpr const CharT* find(const CharT* str, const CharT* substr)
         {
-        	for(; *str != '\0'; str++)
+        	for (; *str != '\0'; str++)
         	{
         		if ((*str == *substr) && _compare(str, substr))
         			return str;
@@ -122,9 +123,9 @@ namespace hsd
 
         static constexpr const CharT* find(const CharT* str, CharT letter)
         {
-        	for(; *str != '\0'; str++)
+        	for (; *str != '\0'; str++)
         	{
-        		if(*str == letter)
+        		if (*str == letter)
         			return str;
         	}
 
@@ -135,7 +136,7 @@ namespace hsd
         {
 			const CharT* rez = nullptr;
 
-        	for(; *str != '\0'; str++)
+        	for (; *str != '\0'; str++)
         	{
         		if ((*str == *substr) && _compare(str, substr))
         			rez = str;
@@ -148,9 +149,9 @@ namespace hsd
         {
         	const CharT* rez = nullptr;
 
-        	for(; *str != '\0'; str++)
+        	for (; *str != '\0'; str++)
         	{
-        		if(*str == letter)
+        		if (*str == letter)
         			rez = str;
         	}
 
@@ -159,7 +160,7 @@ namespace hsd
 
 		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr, usize pos)
         {
-        	for(; pos != 0; pos--)
+        	for (; pos != 0; pos--)
         	{
         		if ((str[pos] == *substr) && _compare(&str[pos], substr))
         			return &str[pos];
@@ -170,9 +171,9 @@ namespace hsd
 
         static constexpr const CharT* find_rev(const CharT* str, CharT letter, usize pos)
         {
-        	for(; pos != 0; pos--)
+        	for (; pos != 0; pos--)
         	{
-        		if(str[pos] == letter)
+        		if (str[pos] == letter)
         			return &str[pos];
         	}
 
@@ -183,18 +184,20 @@ namespace hsd
         {
         	usize _iter;
 
-        	for(_iter = 0; str[_iter] != '\0'; _iter++);
+        	for (_iter = 0; str[_iter] != '\0'; _iter++)
+				;
 
         	return _iter;
         }
 
         static constexpr const CharT* upper(CharT* str)
+		requires (is_same<CharT, char>::value)
         {
         	usize _iter;
 
-        	for(_iter = 0; str[_iter] != '\0'; _iter++)
+        	for (_iter = 0; str[_iter] != '\0'; _iter++)
         	{
-        		if(str[_iter] >= 'a' && str[_iter] <= 'z')
+        		if (str[_iter] >= 'a' && str[_iter] <= 'z')
         			str[_iter] -= 32;
         	}
 
@@ -202,12 +205,13 @@ namespace hsd
         }
 
         static constexpr const CharT* lower(CharT* str)
+		requires (is_same<CharT, char>::value)
         {
         	usize _iter;
 
-        	for(_iter = 0; str[_iter] != '\0'; _iter++)
+        	for (_iter = 0; str[_iter] != '\0'; _iter++)
         	{
-        		if(str[_iter] >= 'a' && str[_iter] <= 'z')
+        		if (str[_iter] >= 'a' && str[_iter] <= 'z')
         			str[_iter] += 32;
         	}
 
@@ -220,7 +224,7 @@ namespace hsd
 	        usize _end = size - 1;
 			CharT* _buf = nullptr;
 
-	        if(size == 0)
+	        if (size == 0)
 	        {
 				_end = length(str);
 				
@@ -229,12 +233,10 @@ namespace hsd
 			}
 			
 			_buf = new CharT[_end + 2];
-			hsd::copy(str, str + _end + 1, _buf);
+			copy(str, str + _end + 1, _buf);
 
-	    	for(; _begin <= _end; _begin++, _end--)
-	    	{
-	    		hsd::swap(_buf[_begin], _buf[_end]);
-	    	}
+	    	for (; _begin <= _end; _begin++, _end--)
+	    		swap(_buf[_begin], _buf[_end]);
 
 	    	return _buf;
 	    }
@@ -244,14 +246,14 @@ namespace hsd
 	    	usize _begin = 0;
 	        usize _end = size - 1;
 
-	        if(size == 0)
+	        if (size == 0)
 	        {
 				_end = length(str);
 				if(_end != 0){ _end--; }
 			}
-	    	for(; _begin <= _end; _begin++, _end--)
+	    	for (; _begin <= _end; _begin++, _end--)
 	    	{
-	    		hsd::swap(str[_begin], str[_end]);
+	    		swap(str[_begin], str[_end]);
 	    	}
 	    }
 
@@ -261,7 +263,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = nullptr;
 
-			if(_negative)
+			if (_negative)
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
@@ -275,12 +277,12 @@ namespace hsd
 				_buf[_len] = '\0';
 			}
 
-			if(num == 0)
+			if (num == 0)
 			{
 				_buf[--_len] = '0';
 			}
 
-			while(num)
+			while (num)
 			{
 				_buf[--_len] = '0' + (num % 10);
 				num /= 10;
@@ -296,7 +298,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = nullptr;
 
-			if(_negative)
+			if (_negative)
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
@@ -310,12 +312,12 @@ namespace hsd
 				_buf[_len] = '\0';
 			}
 
-			if(num == 0)
+			if (num == 0)
 			{
 				_buf[--_len] = '0';
 			}
 
-			while(num)
+			while (num)
 			{
 				_buf[--_len] = '0' + (num % 10);
 				num /= 10;
@@ -331,7 +333,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = nullptr;
 
-			if(_negative)
+			if (_negative)
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
@@ -345,12 +347,12 @@ namespace hsd
 				_buf[_len] = '\0';
 			}
 
-			if(num == 0)
+			if (num == 0)
 			{
 				_buf[--_len] = '0';
 			}
 
-			while(num)
+			while( num)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(num % 10);
 				num /= 10;
@@ -365,7 +367,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = nullptr;
 
-			if(_negative)
+			if (_negative)
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
@@ -379,12 +381,12 @@ namespace hsd
 				_buf[_len] = '\0';
 			}
 
-			if(num == 0)
+			if (num == 0)
 			{
 				_buf[--_len] = '0';
 			}
 
-			while(num)
+			while (num)
 			{
 				_buf[--_len] = '0' + (num % 10);
 				num /= 10;
@@ -399,7 +401,7 @@ namespace hsd
 			usize _len = _num_len(num);
 			CharT* _buf = nullptr;
 
-			if(_negative)
+			if (_negative)
 			{
 				_len += 1;
 				_buf = new CharT[_len + 1];
@@ -413,12 +415,12 @@ namespace hsd
 				_buf[_len] = '\0';
 			}
 
-			if(num == 0)
+			if (num == 0)
 			{
 				_buf[--_len] = '0';
 			}
 
-			while(num)
+			while (num)
 			{
 				_buf[--_len] = '0' + (num % 10);
 				num /= 10;
@@ -434,7 +436,7 @@ namespace hsd
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
-			for(; num != 0; num /= 10)
+			for (; num != 0; num /= 10)
 			{
 				_buf[--_len] = '0' + (num % 10);
 			}
@@ -450,10 +452,8 @@ namespace hsd
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
-			for(; num != 0; num /= 10)
-			{
+			for (; num != 0; num /= 10)
 				_buf[--_len] = '0' + (num % 10);
-			}
 
 			return _buf;
 		}
@@ -466,10 +466,8 @@ namespace hsd
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
-			for(; num != 0; num /= 10)
-			{
+			for (; num != 0; num /= 10)
 				_buf[--_len] = '0' + static_cast<CharT>(num % 10);
-			}
 
 			return _buf;
 		}
@@ -481,10 +479,8 @@ namespace hsd
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
-			for(; num != 0; num /= 10)
-			{
+			for (; num != 0; num /= 10)
 				_buf[--_len] = '0' + (num % 10);
-			}
 
 			return _buf;
 		}
@@ -496,10 +492,8 @@ namespace hsd
 			_buf[_len] = '\0';
 			_buf[0] = '0';
 
-			for(; num != 0; num /= 10)
-			{
+			for (; num != 0; num /= 10)
 				_buf[--_len] = '0' + (num % 10);
-			}
 
 			return _buf;
 		}
@@ -511,7 +505,7 @@ namespace hsd
 			bool _negative = (_round_num < 0);
 			usize _point_num = _modulus(num - _round_num) * 1000000 + 1;
 			
-			if(_negative)
+			if (_negative)
 				_len = _num_len(_round_num) + 8;
 			else
 				_len = _num_len(_round_num) + 7;
@@ -519,26 +513,26 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
-			if(_point_num == 0)
+			if (_point_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _point_num != 0; _point_num /= 10)
+			for (; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + (_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
 			
-			if(_round_num == 0)
+			if (_round_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _round_num != 0; _round_num /= 10)
+			for (; _round_num != 0; _round_num /= 10)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
 			}
-			if(_negative)
+			if (_negative)
 			{
 				_buf[--_len] = '-';
 			}
@@ -553,7 +547,7 @@ namespace hsd
 			bool _negative = (_round_num < 0);
 			usize _point_num = _modulus(num - _round_num) * 1000000 + 1;
 			
-			if(_negative)
+			if (_negative)
 				_len = _num_len(_round_num) + 8;
 			else
 				_len = _num_len(_round_num) + 7;
@@ -561,26 +555,26 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
-			if(_point_num == 0)
+			if (_point_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _point_num != 0; _point_num /= 10)
+			for (; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + (_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
 			
-			if(_round_num == 0)
+			if (_round_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _round_num != 0; _round_num /= 10)
+			for (; _round_num != 0; _round_num /= 10)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
 			}
-			if(_negative)
+			if (_negative)
 			{
 				_buf[--_len] = '-';
 			}
@@ -593,9 +587,11 @@ namespace hsd
 			usize _len = 0;
 			i64 _round_num = static_cast<i64>(num);
 			bool _negative = (_round_num < 0);
-			usize _point_num = static_cast<usize>(_modulus(num - static_cast<f32>(_round_num)) * 10000) + 1;
+			usize _point_num = static_cast<usize>(
+				_modulus(num - static_cast<f32>(_round_num)) * 10000
+			) + 1;
 			
-			if(_negative)
+			if (_negative)
 				_len = _num_len(_round_num) + 6;
 			else
 				_len = _num_len(_round_num) + 5;
@@ -603,26 +599,26 @@ namespace hsd
 			CharT* _buf = new CharT[_len + 1];
 			_buf[_len] = '\0';
 
-			if(_point_num == 0)
+			if (_point_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _point_num != 0; _point_num /= 10)
+			for (; _point_num != 0; _point_num /= 10)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(_point_num % 10);
 			}
 			
 			_buf[--_len] = '.';
 			
-			if(_round_num == 0)
+			if (_round_num == 0)
 			{
 				_buf[--_len] = '0';
 			}
-			for(; _round_num != 0; _round_num /= 10)
+			for (; _round_num != 0; _round_num /= 10)
 			{
 				_buf[--_len] = '0' + static_cast<CharT>(_round_num % 10);
 			}
-			if(_negative)
+			if (_negative)
 			{
 				_buf[--_len] = '-';
 			}
@@ -643,9 +639,10 @@ namespace hsd
 			isize _num = 0;
 			bool _negative = false;
 
-			for(; *str != '\0' && !_is_number(*str); str++);
+			for(; *str != '\0' && !_is_number(*str); str++)
+				;
+
 			_negative = *(str - 1) == '-';
-			
 			for(; *str != '\0' && _is_number(*str); str++)
 			{
 				_num *= 10;
@@ -658,9 +655,10 @@ namespace hsd
 		static constexpr usize parse_us(const CharT* str)
 		{
 			usize _num = 0;
+			for (; *str != '\0' && !_is_number(*str); str++)
+				;
 
-			for(; *str != '\0' && !_is_number(*str); str++);
-			for(; *str != '\0' && _is_number(*str); str++)
+			for (; *str != '\0' && _is_number(*str); str++)
 			{
 				_num *= 10;
 				_num += *str - '0';
@@ -676,29 +674,29 @@ namespace hsd
 			bool _negative = false;
 			usize _num_len = 0;
 
-			for(; *str != '\0' && !_is_number(*str); str++)
+			for (; *str != '\0' && !_is_number(*str); str++)
 			{
 				_negative = (*str == '-');
 			}
 
-			if(*str == '\0')
+			if (*str == '\0')
 				return 0.f;
 
-		    for(; *str != '\0' && *str != '.' && _is_number(*str); str++)
+		    for (; *str != '\0' && *str != '.' && _is_number(*str); str++)
 		    {
 		        _round_num *= 10;
 		        _round_num += *str - '0';
 		    }
 
-			if(*str == '\0' || !_is_number(*str))
+			if (*str == '\0' || !_is_number(*str))
 				return _negative ? -_round_num : _round_num;
 
-		    for(str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)
+		    for (str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)
 		    {
 		        _point_num *= 10;
 		        _point_num += *str - '0';
 		    }
-		    for(; _num_len != 0; _num_len--, _point_num *= 0.1f) {}
+		    for (; _num_len != 0; _num_len--, _point_num *= 0.1f) {}
 			
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
@@ -707,12 +705,16 @@ namespace hsd
 		{
 			usize _index = 0;
 
-			for(; lhs[_index] && rhs[_index]; _index++)
+			for (; lhs[_index] && rhs[_index]; _index++)
 			{
-				if(lhs[_index] < rhs[_index])
+				if (lhs[_index] < rhs[_index])
+				{
 					return -1;
-				else if(lhs[_index] > rhs[_index])
+				}
+				else if (lhs[_index] > rhs[_index])
+				{
 					return 1;
+				}
 			}
 			
 			if(lhs[_index] < rhs[_index])
@@ -727,20 +729,30 @@ namespace hsd
 		{
 			usize _index = 0;
 
-			for(; _index < len && lhs[_index] && rhs[_index]; _index++)
+			for (; _index < len && lhs[_index] && rhs[_index]; _index++)
 			{
-				if(lhs[_index] < rhs[_index])
+				if (lhs[_index] < rhs[_index])
+				{
 					return -1;
-				else if(lhs[_index] > rhs[_index])
+				}
+				else if (lhs[_index] > rhs[_index])
+				{
 					return 1;
+				}
 			}
 			
-			if(lhs[_index] < rhs[_index])
+			if (lhs[_index] < rhs[_index])
+			{
 				return -1;
+			}
 			else if(lhs[_index] > rhs[_index])
+			{
 				return 1;
+			}
 			else
+			{
 				return 0;
+			}
 		}
 
 		static constexpr CharT* copy(CharT* dest, const CharT* src, usize len)
@@ -764,7 +776,7 @@ namespace hsd
 			if (dest == nullptr)
 				return nullptr;
 
-			char* ptr = dest;
+			CharT* ptr = dest;
 
 			for (; *src; dest++, src++)
 				*dest = *src;
@@ -778,7 +790,7 @@ namespace hsd
 			if (dest == nullptr)
 				return nullptr;
 
-			char* ptr = dest;
+			CharT* ptr = dest;
 
 			for(; *src != '\0' && *src != letter; dest++, src++)
 				*dest = *src;

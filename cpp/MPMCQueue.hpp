@@ -75,7 +75,7 @@ namespace hsd
         MPMCQueue(usize capacity)
             : _capacity(capacity)
         {
-            if(_capacity < 1)
+            if (_capacity < 1)
             {
                 //This is UB
                 puts("Capacity is less than 1, this is UB, and an error\n");
@@ -91,13 +91,13 @@ namespace hsd
         {
             auto head = _head.load();
 
-            for(;;)
+            while (true)
             {
                 auto& slot = _allocation[mod(head)];
 
-                if(turn(head) * 2 == slot.ticket.load(hsd::memory_order_acquire))
+                if (turn(head) * 2 == slot.ticket.load(hsd::memory_order_acquire))
                 {
-                    if(_head.compare_exchange_strong(head, head + 1))
+                    if (_head.compare_exchange_strong(head, head + 1))
                     {
                         slot.storage = forward<T>(value);
                         slot.ticket.store(turn(head) * 2 + 1, hsd::memory_order_release);
@@ -109,7 +109,7 @@ namespace hsd
                     auto const prevHead = head;
                     head = _head.load(hsd::memory_order_acquire);
 
-                    if(head == prevHead)
+                    if (head == prevHead)
                     {
                         return false;
                     }
@@ -123,13 +123,13 @@ namespace hsd
         {
             auto tail = _tail.load();
 
-            for(;;)
+            while (true)
             {
                 auto& slot = _allocation[mod(tail)];
 
-                if(turn(tail) * 2 + 1 ==  slot.ticket.load(hsd::memory_order_acquire))
+                if (turn(tail) * 2 + 1 ==  slot.ticket.load(hsd::memory_order_acquire))
                 {
-                    if(_tail.compare_exchange_strong(tail, tail + 1))
+                    if (_tail.compare_exchange_strong(tail, tail + 1))
                     {
                         value = move(slot.storage);
                         slot.destroy();
@@ -142,7 +142,7 @@ namespace hsd
                     auto const prevTail = tail;
                     tail = _tail.load(hsd::memory_order_acquire);
 
-                    if(tail == prevTail)
+                    if (tail == prevTail)
                     {
                         return false;
                     }
@@ -155,7 +155,8 @@ namespace hsd
             auto const head = _head.fetch_add(1);
             auto& slot = _allocation[mod(head)];
 
-            while(turn(head) * 2 != slot.ticket.load(hsd::memory_order_acquire));
+            while (turn(head) * 2 != slot.ticket.load(hsd::memory_order_acquire))
+                ;
             
             slot.storage = forward<T>(value);
             slot.ticket.store(turn(head) * 2 + 1, hsd::memory_order_release);
@@ -166,7 +167,8 @@ namespace hsd
             auto const tail = _tail.fetch_add(1);
             auto& slot = _allocation[mod(tail)];
 
-            while(turn(tail) * 2 + 1 != slot.ticket.load(hsd::memory_order_acquire));
+            while (turn(tail) * 2 + 1 != slot.ticket.load(hsd::memory_order_acquire))
+                ;
 
             value = move(slot.storage);
             slot.destroy();

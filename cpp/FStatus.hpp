@@ -115,7 +115,7 @@ namespace hsd
             inline auto is_directory() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return S_ISDIR(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
@@ -124,7 +124,7 @@ namespace hsd
             inline auto is_character() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return S_ISCHR(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
@@ -133,7 +133,7 @@ namespace hsd
             inline auto is_block_file() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return S_ISBLK(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
@@ -142,7 +142,7 @@ namespace hsd
             inline auto is_regular_file() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return S_ISREG(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
@@ -151,7 +151,7 @@ namespace hsd
             inline auto is_fifo_file() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return S_ISFIFO(_status.st_mode);
 
                 return runtime_error{"File/Directory not found"};
@@ -160,7 +160,7 @@ namespace hsd
             inline auto is_symlink() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                 {
                     #if defined(HSD_PLATFORM_POSIX)
                     return S_ISLNK(_status.st_mode);
@@ -175,7 +175,7 @@ namespace hsd
             inline auto is_socket() const
                 -> Result<bool, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                 {
                     #if defined(HSD_PLATFORM_POSIX)
                     return S_ISSOCK(_status.st_mode);
@@ -190,9 +190,9 @@ namespace hsd
             inline auto permissions() const
                 -> Result<fs_permissions, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                 {
-                    return fs_permissions{
+                    return fs_permissions {
                         .can_owner_read           = (_status.st_mode & S_IRUSR) == S_IRUSR,
                         .can_owner_write          = (_status.st_mode & S_IWUSR) == S_IWUSR,
                         .can_owner_exec           = (_status.st_mode & S_IXUSR) == S_IXUSR,
@@ -215,7 +215,7 @@ namespace hsd
             inline auto size() const
                 -> Result<usize, runtime_error>
             {
-                if(_exists == true)
+                if (_exists == true)
                     return static_cast<usize>(_status.st_size);
 
                 return runtime_error{"File/Directory not found"};

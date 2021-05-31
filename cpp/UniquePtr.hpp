@@ -76,7 +76,7 @@ namespace hsd
             template <typename U = T>
             inline storage& operator=(storage<U, Allocator>&& rhs)
             {
-                _alloc.deallocate(_data, _size);
+                _alloc.deallocate(_data, _size).unwrap();
                 _alloc = rhs._alloc;
                 _data = exchange(rhs._data, nullptr);
                 swap(_size, rhs._size);

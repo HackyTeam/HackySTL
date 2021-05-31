@@ -72,7 +72,7 @@ namespace hsd
                         .ai_flags = AI_PASSIVE,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::dgram,
-                        .ai_protocol = 0,
+                        .ai_protocol = IPPROTO_UDP,
                         .ai_addrlen = 0,
                         #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,
@@ -288,7 +288,7 @@ namespace hsd
                         .ai_flags = AI_PASSIVE,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::stream,
-                        .ai_protocol = 0,
+                        .ai_protocol = IPPROTO_TCP,
                         .ai_addrlen = 0,
                         #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,

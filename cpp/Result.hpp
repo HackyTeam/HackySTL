@@ -232,7 +232,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr auto unwrap_or(Args&&... args)
         requires (Result_detail::IsReference<Ok>)
         {
             if (_initialized)
@@ -255,7 +255,7 @@ namespace hsd
         } 
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr auto unwrap_or(Args&&... args)
         requires (!Result_detail::IsReference<Ok>)
         {
             if (_initialized)
@@ -675,7 +675,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr auto unwrap_or(Args&&... args)
         requires (Result_detail::IsReference<Ok>)
         {
             if (_initialized)
@@ -698,7 +698,7 @@ namespace hsd
         } 
 
         template <typename... Args>
-        constexpr decltype(auto) unwrap_or(Args&&... args)
+        constexpr auto unwrap_or(Args&&... args)
         requires (!Result_detail::IsReference<Ok>)
         {
             if (_initialized)

@@ -283,7 +283,7 @@ namespace hsd
                         .ai_flags = 0,
                         .ai_family = static_cast<i32>(protocol),
                         .ai_socktype = net::socket_type::stream,
-                        .ai_protocol = IPPROTO_UDP,
+                        .ai_protocol = IPPROTO_TCP,
                         .ai_addrlen = 0,
                         #if defined(HSD_PLATFORM_POSIX)
                         .ai_addr = nullptr,

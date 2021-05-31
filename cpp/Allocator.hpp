@@ -55,7 +55,7 @@ namespace hsd
         }
 
         template <typename T, typename U, usize N> requires (N != 0)
-        [[nodiscard]] static inline auto allocate_multiple(usize size, U (&arr)[N])
+        [[nodiscard]] static inline auto allocate_multiple(usize size, const U (&arr)[N])
             -> Result< T*, allocator_detail::allocator_error >
         {
             if (size > limits<usize>::max / sizeof(T))

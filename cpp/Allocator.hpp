@@ -97,7 +97,7 @@ namespace hsd
         }
 
         template <typename T, typename... Args>
-        [[nodiscard]] static inline auto allocate_multiple(usize size, Args... args)
+        [[nodiscard]] static inline auto allocate_multiple(usize size, Args&&... args)
             -> Result< T*, allocator_detail::allocator_error >
         {
             if (size > limits<usize>::max / sizeof(T))
@@ -124,7 +124,7 @@ namespace hsd
 
                         [&]<usize... Ints>(hsd::index_sequence<Ints...>)
                         {
-                            (construct_at(_result + Ints, args), ...);
+                            (construct_at(_result + Ints, forward<Args>(args)), ...);
                         }(index_sequence_for<Args...>{});
 
                         for (; _index < size; _index++)

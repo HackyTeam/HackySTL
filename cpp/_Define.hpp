@@ -6,6 +6,14 @@
 	#define HSD_CONSTEXPR
 #endif
 
+#if defined(HSD_COMPILER_MSVC)
+    #define HSD_FUNCTION_NAME __FUNCSIG__
+#elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
+    #define HSD_FUNCTION_NAME __PRETTY_FUNCTION__
+#else
+    #define HSD_FUNCTION_NAME __builtin_FUNCTION()
+#endif
+
 #if defined(_WIN64) || defined(_WIN32) || defined(__WINDOWS__)
 	#define HSD_PLATFORM_WINDOWS
 #elif defined(__linux) || defined(linux) || defined(__linux__)

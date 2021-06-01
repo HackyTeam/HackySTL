@@ -5,7 +5,7 @@
 
 namespace hsd
 {
-    namespace detail
+    namespace logger_detail
     {
         class source_location
         {
@@ -83,13 +83,15 @@ namespace hsd
                 return _clk.elapsed_time();
             }
         };        
-    } // namespace detail
+    } // namespace logger_detail
     
     class stack_trace
     {
     private:
-        static inline hsd::vector<detail::source_location> _stack;
-        using stack_iterator = hsd::vector<detail::source_location>::iterator;
+        using stack_type = hsd::vector<logger_detail::source_location>;
+        using stack_iterator = typename stack_type::iterator;
+
+        static inline stack_type _stack;
 
     public:
 
@@ -122,7 +124,7 @@ namespace hsd
             }
         }
         
-        detail::source_location& get() const
+        logger_detail::source_location& get() const
         {
             return _stack.back();
         }
@@ -131,8 +133,10 @@ namespace hsd
     class profiler
     {
     private:
-        using iterator = hsd::vector<detail::profiler_value>::iterator;
-        static inline hsd::vector<detail::profiler_value> _stack;
+        using profiler_type = hsd::vector<logger_detail::profiler_value>;
+        using profiler_iterator = typename profiler_type::iterator;
+
+        static inline profiler_type _stack;
 
     public:
 
@@ -153,14 +157,14 @@ namespace hsd
         }
 
         profiler& add(
-            const char* func, usize line = __builtin_LINE(),
+            const char* func, i32 line = __builtin_LINE(),
             const char* file_name = __builtin_FILE())
         {
             _stack.emplace_back(file_name, func, line);
             return *this;
         }
         
-        detail::profiler_value& get() const
+        logger_detail::profiler_value& get() const
         {
             return _stack.back();
         }
@@ -168,7 +172,7 @@ namespace hsd
 
     thread_local inline stack_trace exec_stack;
     thread_local inline profiler profiler_stack;
-    using source_location = detail::source_location;
+    using source_location = logger_detail::source_location;
 
     #define invoke_profiler_func(func, ...) \
         func(hsd::profiler_stack.add(HSD_FUNCTION_NAME) __VA_OPT__(,) __VA_ARGS__)

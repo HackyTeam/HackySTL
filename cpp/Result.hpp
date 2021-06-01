@@ -7,14 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(HSD_COMPILER_MSVC)
-    #define HSD_FUNCTION_NAME __FUNCSIG__
-#elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-    #define HSD_FUNCTION_NAME __PRETTY_FUNCTION__
-#else
-    #define HSD_FUNCTION_NAME __builtin_FUNCTION()
-#endif
-
 #define hsd_fprint_check(stream, format, ...)\
 do {\
     if(fprintf(stream, format __VA_OPT__(,) __VA_ARGS__) == -1)\

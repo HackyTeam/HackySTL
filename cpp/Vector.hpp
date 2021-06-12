@@ -4,6 +4,7 @@
 #include "Utility.hpp"
 #include "Tuple.hpp"
 #include "Allocator.hpp"
+#include "Span.hpp"
 
 namespace hsd
 {
@@ -481,6 +482,16 @@ namespace hsd
             }
         }
 
+        inline auto to_span()
+        {
+            return span<iterator>{*this};
+        }
+
+        inline auto to_span() const
+        {
+            return span<const_iterator>{*this};
+        }
+
         inline usize size() const
         {
             return _size;
@@ -839,6 +850,16 @@ namespace hsd
                 at_unchecked(_size - 1).~T();
                 _size--;
             }
+        }
+
+        constexpr auto to_span()
+        {
+            return span<iterator>{*this};
+        }
+
+        constexpr auto to_span() const
+        {
+            return span<const_iterator>{*this};
         }
 
         constexpr usize size() const

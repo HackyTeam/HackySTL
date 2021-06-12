@@ -9,7 +9,7 @@ struct S
     }
 };
 
-static auto fail_func(int val) 
+static auto fail_func(hsd::i32 val) 
     -> hsd::Result<hsd::string, S>
 {
     if (val < 10)

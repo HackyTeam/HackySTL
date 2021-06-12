@@ -308,7 +308,7 @@ int main()
             }
         };
 
-        hsd::unordered_map<hsd::string_view, hsd::i32> vals = {{
+        hsd::unordered_map vals = {{
             hsd::pair{"first"_sv, 1}, 
             hsd::pair{"second"_sv, 2}, 
             hsd::pair{"third"_sv, 3}, 

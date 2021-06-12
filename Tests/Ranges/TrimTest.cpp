@@ -23,7 +23,7 @@ int main()
     hsd::io::print<"\"{}\"\n">(s);
  
     static constexpr hsd::stack_array v = {0, 1, 2, 3, 4, 5};
-    for (auto n : v | hsd::views::drop_while([](int i) { return i < 3; })) {
+    for (auto n : v | hsd::views::drop_while([](hsd::i32 i) { return i < 3; })) {
         hsd::io::print<"{} ">(n);
     }
 

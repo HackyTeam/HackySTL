@@ -85,7 +85,7 @@ constexpr bool operator==(B const& a, B const& b) noexcept
 
 int main() 
 {
-    hsd::variant<int, float> va1(5);
+    hsd::variant<hsd::i32, hsd::f32> va1(5);
     hsd::variant<A, B> va2(5);
     hsd::variant<A, B> va3{A()};
     auto va4(va2);
@@ -111,7 +111,7 @@ int main()
         hsd::io::err_print<"Caught error: {}\n">(_res.unwrap_err()());
     }
 
-    if (auto* val = hsd::get_if<float>(&va1)) 
+    if (auto* val = hsd::get_if<hsd::f32>(&va1)) 
     {
         hsd::io::print<"Got value: {}\n">(*val);
     } 

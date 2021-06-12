@@ -78,6 +78,7 @@ namespace hsd
                         _iter = _origin;
                         
                         usize _to = engine.generate<usize>(0u, _index + 1).unwrap();
+                        
                         for (usize _from = 0; _from < _to; _from++, _iter++)
                             ;
 
@@ -149,6 +150,7 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
+                            
                             for (; _index < quantity; _index++, _result_iter++)
                                 ;
 
@@ -231,6 +233,7 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
+                            
                             for (; _index < quantity; _index++, _result_iter++)
                                 ;
 
@@ -249,6 +252,7 @@ namespace hsd
                         {
                             usize _index = 0;
                             iter_type _result_iter = _begin;
+                            
                             for(; _index < quantity; _index++, _result_iter++)
                                 ;
 
@@ -347,12 +351,12 @@ namespace hsd
                 FuncType _func;
 
             public:
-                constexpr drop_while(FuncType func)
+                inline drop_while(FuncType func)
                     : _func(hsd::forward<FuncType>(func))
                 {}
 
                 template <views::IsView U>
-                constexpr friend auto operator|(const U& lhs, const drop_while& rhs)
+                inline friend auto operator|(const U& lhs, const drop_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
                     vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
@@ -371,8 +375,8 @@ namespace hsd
                     else
                     {
                         auto _iter = lhs.begin();
-                        for (; _iter != lhs.end() && 
-                            rhs._func(*_iter); _iter++);
+                        for (; _iter != lhs.end() && rhs._func(*_iter); _iter++)
+                            ;
 
                         for (; _iter != lhs.end(); _iter++)
                         {
@@ -384,7 +388,7 @@ namespace hsd
                 }
 
                 template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
-                constexpr friend auto operator|(const U& lhs, const drop_while& rhs)
+                inline friend auto operator|(const U& lhs, const drop_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
                     return span{lhs} | rhs;
@@ -422,12 +426,12 @@ namespace hsd
                 FuncType _func;
 
             public:
-                constexpr take_while(FuncType func)
+                inline take_while(FuncType func)
                     : _func(hsd::forward<FuncType>(func))
                 {}
 
                 template <views::IsView U>
-                constexpr friend auto operator|(const U& lhs, const take_while& rhs)
+                inline friend auto operator|(const U& lhs, const take_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
                     vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
@@ -453,7 +457,7 @@ namespace hsd
                 }
 
                 template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
-                constexpr friend auto operator|(const U& lhs, const take_while& rhs)
+                inline friend auto operator|(const U& lhs, const take_while& rhs)
                 requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
                 {
                     return span{lhs} | rhs;
@@ -468,12 +472,12 @@ namespace hsd
             FuncType _func;
 
         public:
-            constexpr filter(FuncType func)
+            inline filter(FuncType func)
                 : _func(hsd::forward<FuncType>(func))
             {}
 
             template <views::IsView U>
-            constexpr friend auto operator|(const U& lhs, const filter& rhs)
+            inline friend auto operator|(const U& lhs, const filter& rhs)
             requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
             {
                 vector<remove_cvref_t<decltype(*lhs.begin())>> _vec;
@@ -496,7 +500,7 @@ namespace hsd
             }
 
             template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
-            constexpr friend auto operator|(const U& lhs, const filter& rhs)
+            inline friend auto operator|(const U& lhs, const filter& rhs)
             requires (InvocableRet<bool, FuncType, decltype(*lhs.begin())>)
             {
                 return span{lhs} | rhs;
@@ -515,7 +519,7 @@ namespace hsd
             {}
 
             template <views::IsView U>
-            constexpr friend auto operator|(const U& lhs, const transform& rhs)
+            inline friend auto operator|(const U& lhs, const transform& rhs)
             requires (InvocableRet<
                 remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
             {
@@ -537,7 +541,7 @@ namespace hsd
             }
 
             template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
-            constexpr friend auto operator|(const U& lhs, const transform& rhs)
+            inline friend auto operator|(const U& lhs, const transform& rhs)
             requires (InvocableRet<
                 remove_cvref_t<decltype(*lhs.begin())>, FuncType, decltype(*lhs.begin())>)
             {
@@ -552,12 +556,12 @@ namespace hsd
             FuncType _func;
 
         public:
-            constexpr filter_map(FuncType func)
+            inline filter_map(FuncType func)
                 : _func(hsd::forward<FuncType>(func))
             {}
 
             template <views::IsView U>
-            constexpr friend auto operator|(const U& lhs, const filter_map& rhs)
+            inline friend auto operator|(const U& lhs, const filter_map& rhs)
             requires (InvocableRet<optional<
                     remove_cvref_t<decltype(*lhs.begin())>
                 >, FuncType, decltype(*lhs.begin())>)
@@ -578,7 +582,7 @@ namespace hsd
             }
 
             template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
-            constexpr friend auto operator|(const U& lhs, const filter_map& rhs)
+            inline friend auto operator|(const U& lhs, const filter_map& rhs)
             requires (InvocableRet<optional<
                     remove_cvref_t<decltype(*lhs.begin())>
                 >, FuncType, decltype(*lhs.begin())>)

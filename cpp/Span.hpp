@@ -8,11 +8,64 @@ namespace hsd
     namespace span_detail
     {
         template <ForwardIterable T>
+        class countable_iterator
+        {
+        private:
+            T _iter;
+            usize _count;
+        
+        public:
+            constexpr countable_iterator(T iter, usize count = 0)
+                : _iter{iter}, _count{count}
+            {}
+
+            constexpr auto& operator++()
+            {
+                _iter++;
+                _count++;
+                return *this;
+            }
+
+            constexpr auto operator++(i32)
+            {
+                countable_iterator tmp = *this;
+                operator++();
+                return tmp;
+            }
+
+            constexpr bool operator==(const countable_iterator& rhs) const
+            {
+                return _iter == rhs._iter;
+            }
+
+            constexpr bool operator!=(const countable_iterator& rhs) const
+            {
+                return _iter != rhs._iter;
+            }
+
+            constexpr auto operator*()
+            {
+                return hsd::pair<decltype(*_iter), usize>
+                {
+                    *_iter, _count
+                };
+            }
+            
+            constexpr decltype(auto) operator*() const
+            {
+                return hsd::pair<decltype(*_iter), usize>
+                {
+                    *_iter, _count
+                };
+            }
+        };
+
+        template <ForwardIterable T>
         class iterator
         {
         private:
             T _iter;
-        
+
         public:
             constexpr iterator(T iter)
                 : _iter{iter}
@@ -41,18 +94,17 @@ namespace hsd
                 return _iter != rhs._iter;
             }
 
-            constexpr auto& operator*()
+            constexpr decltype(auto) operator*()
             {
                 return *_iter;
             }
             
-            constexpr const auto& operator*() const
+            constexpr decltype(auto) operator*() const
             {
                 return *_iter;
             }
         };
     } // namespace span_detail
-    
 
     template <ForwardIterable T>
     class span
@@ -62,13 +114,22 @@ namespace hsd
         usize _view_size = 0;
         iter_type _begin;
         iter_type _end;
-    
+        
+    public:
+        using reference_type = T&;
+        using pointer_type = T*;
+        using value_type = T;
+
         constexpr span(const iter_type& begin, const iter_type& end, usize view_size)
             : _view_size{view_size}, _begin{begin}, _end{end}
         {}
-        
-    public:
-        using value_type = T;
+
+        template <IsForwardContainer U>
+        constexpr span(U& container)
+            : _view_size{container.size()}, 
+            _begin{container.begin()}, 
+            _end{container.end()}
+        {}
 
         template <IsForwardContainer U>
         constexpr span(const U& container)
@@ -76,6 +137,9 @@ namespace hsd
             _begin{container.begin()}, 
             _end{container.end()}
         {}
+
+        template <IsForwardContainer U>
+        constexpr span(U&& container) = delete;
 
         constexpr auto drop(usize quantity) const
             -> Result<span, runtime_error>
@@ -111,8 +175,18 @@ namespace hsd
                 for(; _index < quantity; _index++, _result_iter++)
                     ;
 
-                return span{_begin, _result_iter, _view_size - _index};
+                return span {
+                    _begin, _result_iter, _view_size - _index
+                };
             }
+        }
+
+        constexpr auto enumerate()
+        {
+            using span_detail::countable_iterator;
+            return span<countable_iterator<iter_type>> {
+                {_begin}, {_end}, _view_size
+            };
         }
 
         constexpr usize size() const
@@ -120,27 +194,29 @@ namespace hsd
             return _view_size;
         }
 
-        constexpr auto begin()
+        constexpr iter_type begin()
         {
             return _begin;
         }
 
-        constexpr const auto begin() const
+        constexpr const iter_type begin() const
         {
             return _begin;
         }
         
-        constexpr auto end()
+        constexpr iter_type end()
         {
             return _end;
         }
         
-        constexpr const auto end() const
+        constexpr const iter_type end() const
         {
             return _end;
         }
     };
 
+    template <IsForwardContainer U>
+    span(U& container) -> span<decltype(container.end())>;
     template <IsForwardContainer U>
     span(const U& container) -> span<decltype(container.end())>;
 } // namespace hsd

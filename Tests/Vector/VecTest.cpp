@@ -74,7 +74,7 @@ int main()
         // for function type deduction
         test(hsd::vector{{1, 2, 3, 4, 5, 6}});
         // alternatively you can do
-        test<int>({{1, 2, 3, 4, 5, 6}});
+        test<hsd::i32>({{1, 2, 3, 4, 5, 6}});
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
         // let's test constexpr vector (it works)
@@ -109,8 +109,8 @@ int main()
         // let's test the buffred vector
         hsd::uchar buf[1000]{};
         hsd::buffered_allocator<hsd::uchar> alloc = {buf, 200};
-        hsd::buffered_vector<int> vec{alloc};
-        hsd::buffered_vector<int> vec2{alloc};
+        hsd::buffered_vector<hsd::i32> vec{alloc};
+        hsd::buffered_vector<hsd::i32> vec2{alloc};
         vec.push_back(1);
         vec.push_back(2);
         vec.push_back(3);

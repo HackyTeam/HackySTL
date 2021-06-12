@@ -3,20 +3,20 @@
 
 // Pls -O3
 
-int add(int a, int b) 
+int add(hsd::i32 a, hsd::i32 b) 
 {
     return a + b;
 }
 
 // see: "extern_impl.cpp"
-extern "C" int bop(int a, int b) noexcept;
-extern "C" hsd::function<int()> f;
+extern "C" hsd::i32 bop(hsd::i32 a, hsd::i32 b) noexcept;
+extern "C" hsd::function<hsd::i32()> f;
 
 //static auto bopper = make_defaultcall<int(int, int)>(bop, 3, 4);
 //static auto funcer = make_defaultcall<int()>(f);
 hsd::defaultcall_t adder(&add, 3, 4);
 static auto bopper = hsd::defaultcall_t(bop, 3, 4);
-static auto funcer = hsd::defaultcall_t(hsd::forward<hsd::function<int()>>(f));
+static auto funcer = hsd::defaultcall_t(hsd::forward<hsd::function<hsd::i32()>>(f));
 
 int main() 
 {

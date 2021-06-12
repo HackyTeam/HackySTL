@@ -25,7 +25,7 @@ namespace hsd {
         }
 
         constexpr auto bs() const {
-            return static_cast<std::bitset<N> >(*this);
+            return static_cast<std::bitset<N>>(*this);
         }
     };
 

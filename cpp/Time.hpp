@@ -96,7 +96,7 @@ namespace hsd
 
         constexpr void set_month_day(u16 month_day)
         {
-            if (month_day < _month_table[get_month() - 1])
+            if (month_day < _month_table[get_month()])
             {
                 using CastToType = decltype(_time.tm_mday);
                 _time.tm_mday = static_cast<CastToType>(month_day);
@@ -108,7 +108,7 @@ namespace hsd
             if (month < 12)
             {
                 using CastToType = decltype(_time.tm_mon);
-                _time.tm_mon = static_cast<CastToType>(month);
+                _time.tm_mon = static_cast<CastToType>(month - 1);
             }
         }
 
@@ -851,44 +851,240 @@ namespace hsd
     {
         static consteval time operator""_s(u64 seconds)
         {
-            time new_time{};
-            new_time.set_seconds(seconds);
-            return new_time;
+            time _new_time{};
+            _new_time.set_seconds(seconds);
+            return _new_time;
         }
 
         static consteval time operator""_min(u64 minutes)
         {
-            time new_time{};
-            new_time.set_minutes(minutes);
-            return new_time;
+            time _new_time{};
+            _new_time.set_minutes(minutes);
+            return _new_time;
         }
 
         static consteval time operator""_h(u64 hour)
         {
-            time new_time{};
-            new_time.set_hour(hour);
-            return new_time;
+            time _new_time{};
+            _new_time.set_hour(hour);
+            return _new_time;
         }
 
         static consteval time operator""_md(u64 month_day)
         {
-            time new_time{};
-            new_time.set_month_day(month_day);
-            return new_time;
+            time _new_time{};
+            _new_time.set_month_day(month_day);
+            return _new_time;
         }
 
         static consteval time operator""_m(u64 month)
         {
-            time new_time{};
-            new_time.set_month(month);
-            return new_time;
+            time _new_time{};
+            _new_time.set_month(month);
+            return _new_time;
         }
 
         static consteval time operator""_yr(u64 year)
         {
-            time new_time{};
-            new_time.set_year(year);
-            return new_time;
+            time _new_time{};
+            _new_time.set_year(year);
+            return _new_time;
+        }
+
+        static consteval time operator""_dmy(const char* date_format, u64)
+        {
+            time _new_time{};
+            const char* _date_start = date_format;
+            char _separator_letter = '.';
+            usize _month_day = 0;
+
+            // Day
+            {
+                // Dot format
+                const auto* _day_border = cstring::find(
+                    _date_start, _separator_letter
+                );
+
+                // Slash format
+                if (_day_border == nullptr)
+                {
+                    // Make sure we are consistent
+                    _separator_letter = '/';
+                    _day_border = cstring::find(
+                        _date_start, _separator_letter
+                    );
+                }
+
+                // Because we do a month table check after
+                _month_day = cstring::parse_us(_date_start);
+                _date_start = _day_border + 1;
+            }
+
+            // Month
+            {
+                // Dot format
+                const auto* _month_border = cstring::find(
+                    _date_start, _separator_letter
+                );
+
+                _new_time.set_month(
+                    cstring::parse_us(_date_start)
+                );
+                
+                _new_time.set_month_day(_month_day);
+                _date_start = _month_border + 1;
+            }
+
+            // Year
+            {
+                /// Gap for HMS @see line 952
+                const auto* _year_border = 
+                    cstring::find(_date_start, ' ');
+
+                _new_time.set_year(
+                    cstring::parse_us(_date_start)
+                );
+                
+                if (_year_border != nullptr)
+                    _date_start = _year_border + 1;
+            }
+
+            // If we have hours, nimutes and seconds
+            if (*(_date_start - 1) == ' ')
+            {
+                // Hour
+                {
+                    // Colum format
+                    const auto* _hour_border = 
+                        cstring::find(_date_start, ':');
+
+                    _new_time.set_hour(
+                        cstring::parse_us(_date_start)
+                    );
+
+                    _date_start = _hour_border + 1;
+                }
+
+                // Minutes
+                {
+                    // Colum format
+                    const auto* _min_border = 
+                        cstring::find(_date_start, ':');
+
+                    _new_time.set_minutes(
+                        cstring::parse_us(_date_start)
+                    );
+
+                    _date_start = _min_border + 1;
+                }
+
+                // Seconds
+                {
+                    _new_time.set_seconds(
+                        cstring::parse_us(_date_start)
+                    );
+                }
+            }
+
+            return _new_time;
+        }
+
+        static consteval time operator""_mdy(const char* date_format, u64)
+        {
+            time _new_time{};
+            const char* _date_start = date_format;
+            char _separator_letter = '.';
+
+            // Month
+            {
+                // Dot format
+                const auto* _month_border = cstring::find(
+                    _date_start, _separator_letter
+                );
+
+                // Slash format
+                if (_month_border == nullptr)
+                {
+                    // Make sure we are consistent
+                    _separator_letter = '/';
+                    _month_border = cstring::find(
+                        _date_start, _separator_letter
+                    );
+                }
+
+                _new_time.set_month(
+                    cstring::parse_us(_date_start)
+                );
+
+                _date_start = _month_border + 1;
+            }
+
+            // Day
+            {
+                // Dot format
+                const auto* _day_border = cstring::find(
+                    _date_start, _separator_letter
+                );
+
+                _new_time.set_month_day(
+                    cstring::parse_us(_date_start)
+                );
+                
+                _date_start = _day_border + 1;
+            }
+
+            // Year
+            {
+                /// Gap for HMS @see line 952
+                const auto* _year_border = 
+                    cstring::find(_date_start, ' ');
+
+                _new_time.set_year(
+                    cstring::parse_us(_date_start)
+                );
+                
+                if (_year_border != nullptr)
+                    _date_start = _year_border + 1;
+            }
+
+            // If we have hours, nimutes and seconds
+            if (*(_date_start - 1) == ' ')
+            {
+                // Hour
+                {
+                    // Colum format
+                    const auto* _hour_border = 
+                        cstring::find(_date_start, ':');
+
+                    _new_time.set_hour(
+                        cstring::parse_us(_date_start)
+                    );
+
+                    _date_start = _hour_border + 1;
+                }
+
+                // Minutes
+                {
+                    // Colum format
+                    const auto* _min_border = 
+                        cstring::find(_date_start, ':');
+
+                    _new_time.set_minutes(
+                        cstring::parse_us(_date_start)
+                    );
+
+                    _date_start = _min_border + 1;
+                }
+
+                // Seconds
+                {
+                    _new_time.set_seconds(
+                        cstring::parse_us(_date_start)
+                    );
+                }
+            }
+
+            return _new_time;
         }
     } // namespace time_literals
 } // namespace hsd

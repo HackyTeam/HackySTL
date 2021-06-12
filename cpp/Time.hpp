@@ -30,8 +30,6 @@ namespace hsd
             _time.tm_mday = 1;
         }
 
-        constexpr ~time() {}
-
         constexpr u16 get_seconds() const
         {
             return static_cast<u16>(_time.tm_sec);

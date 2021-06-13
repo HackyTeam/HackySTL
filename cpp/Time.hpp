@@ -148,7 +148,47 @@ namespace hsd
 
         constexpr bool operator<(const time& rhs) const
         {
-            if (_time.tm_hour > rhs._time.tm_hour)
+            if (_time.tm_year > rhs._time.tm_year)
+            {
+                return false;
+            }
+            else if (_time.tm_year < rhs._time.tm_year)
+            {
+                return true;
+            }
+            else if (_time.tm_mon > rhs._time.tm_mon)
+            {
+                return true;
+            }
+            else if (_time.tm_mon < rhs._time.tm_mon)
+            {
+                return false;
+            }
+            else if (_time.tm_yday > rhs._time.tm_yday)
+            {
+                return false;
+            }
+            else if (_time.tm_yday < rhs._time.tm_yday)
+            {
+                return true;
+            }
+            else if (_time.tm_mday > rhs._time.tm_mday)
+            {
+                return false;
+            }
+            else if (_time.tm_mday < rhs._time.tm_mday)
+            {
+                return true;
+            }
+            else if (_time.tm_wday > rhs._time.tm_wday)
+            {
+                return false;
+            }
+            else if (_time.tm_wday < rhs._time.tm_wday)
+            {
+                return true;
+            }
+            else if (_time.tm_hour > rhs._time.tm_hour)
             {
                 return false;
             }
@@ -156,103 +196,79 @@ namespace hsd
             {
                 return true;
             }
+            else if (_time.tm_min > rhs._time.tm_min)
+            {
+                return false;
+            }
+            else if (_time.tm_min < rhs._time.tm_min)
+            {
+                return true;
+            }
+            else if (_time.tm_sec > rhs._time.tm_sec)
+            {
+                return false;
+            }
+            else if (_time.tm_sec < rhs._time.tm_sec)
+            {
+                return true;
+            }
+            else if (_time.tm_isdst > rhs._time.tm_isdst)
+            {
+                return false;
+            }
+            else if (_time.tm_isdst < rhs._time.tm_isdst)
+            {
+                return true;
+            }
             else
             {
-                if (_time.tm_isdst > rhs._time.tm_isdst)
-                {
-                    return true;
-                }
-                else if (_time.tm_isdst < rhs._time.tm_isdst)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (_time.tm_mday > rhs._time.tm_mday)
-                    {
-                        return false;
-                    }
-                    else if (_time.tm_mday < rhs._time.tm_mday)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (_time.tm_min > rhs._time.tm_min)
-                        {
-                            return false;
-                        }
-                        else if (_time.tm_min < rhs._time.tm_min)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            if (_time.tm_mon > rhs._time.tm_mon)
-                            {
-                                return false;
-                            }
-                            else if (_time.tm_mon < rhs._time.tm_mon)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                if (_time.tm_sec > rhs._time.tm_sec)
-                                {
-                                    return false;
-                                }
-                                else if (_time.tm_sec < rhs._time.tm_sec)
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    if (_time.tm_wday > rhs._time.tm_wday)
-                                    {
-                                        return false;
-                                    }
-                                    else if (_time.tm_wday < rhs._time.tm_wday)
-                                    {
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        if (_time.tm_yday > rhs._time.tm_yday)
-                                        {
-                                            return false;
-                                        }
-                                        else if (_time.tm_yday < rhs._time.tm_yday)
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            if (_time.tm_year > rhs._time.tm_year)
-                                            {
-                                                return false;
-                                            }
-                                            else if (_time.tm_year < rhs._time.tm_year)
-                                            {
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                return false;
             }
         }
 
         constexpr bool operator>(const time& rhs) const
         {
-            if (_time.tm_hour < rhs._time.tm_hour)
+            if (_time.tm_year < rhs._time.tm_year)
+            {
+                return false;
+            }
+            else if (_time.tm_year > rhs._time.tm_year)
+            {
+                return true;
+            }
+            else if (_time.tm_mon < rhs._time.tm_mon)
+            {
+                return true;
+            }
+            else if (_time.tm_mon > rhs._time.tm_mon)
+            {
+                return false;
+            }
+            else if (_time.tm_yday < rhs._time.tm_yday)
+            {
+                return false;
+            }
+            else if (_time.tm_yday > rhs._time.tm_yday)
+            {
+                return true;
+            }
+            else if (_time.tm_mday < rhs._time.tm_mday)
+            {
+                return false;
+            }
+            else if (_time.tm_mday > rhs._time.tm_mday)
+            {
+                return true;
+            }
+            else if (_time.tm_wday < rhs._time.tm_wday)
+            {
+                return false;
+            }
+            else if (_time.tm_wday > rhs._time.tm_wday)
+            {
+                return true;
+            }
+            else if (_time.tm_hour < rhs._time.tm_hour)
             {
                 return false;
             }
@@ -260,103 +276,79 @@ namespace hsd
             {
                 return true;
             }
+            else if (_time.tm_min < rhs._time.tm_min)
+            {
+                return false;
+            }
+            else if (_time.tm_min > rhs._time.tm_min)
+            {
+                return true;
+            }
+            else if (_time.tm_sec < rhs._time.tm_sec)
+            {
+                return false;
+            }
+            else if (_time.tm_sec > rhs._time.tm_sec)
+            {
+                return true;
+            }
+            else if (_time.tm_isdst < rhs._time.tm_isdst)
+            {
+                return false;
+            }
+            else if (_time.tm_isdst > rhs._time.tm_isdst)
+            {
+                return true;
+            }
             else
             {
-                if (_time.tm_isdst < rhs._time.tm_isdst)
-                {
-                    return true;
-                }
-                else if (_time.tm_isdst > rhs._time.tm_isdst)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (_time.tm_mday < rhs._time.tm_mday)
-                    {
-                        return false;
-                    }
-                    else if (_time.tm_mday > rhs._time.tm_mday)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (_time.tm_min < rhs._time.tm_min)
-                        {
-                            return false;
-                        }
-                        else if (_time.tm_min > rhs._time.tm_min)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            if (_time.tm_mon < rhs._time.tm_mon)
-                            {
-                                return false;
-                            }
-                            else if (_time.tm_mon > rhs._time.tm_mon)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                if (_time.tm_sec < rhs._time.tm_sec)
-                                {
-                                    return false;
-                                }
-                                else if (_time.tm_sec > rhs._time.tm_sec)
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    if (_time.tm_wday < rhs._time.tm_wday)
-                                    {
-                                        return false;
-                                    }
-                                    else if (_time.tm_wday > rhs._time.tm_wday)
-                                    {
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        if (_time.tm_yday < rhs._time.tm_yday)
-                                        {
-                                            return false;
-                                        }
-                                        else if (_time.tm_yday > rhs._time.tm_yday)
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            if (_time.tm_year < rhs._time.tm_year)
-                                            {
-                                                return false;
-                                            }
-                                            else if (_time.tm_year > rhs._time.tm_year)
-                                            {
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                return false;
             }
         }
 
         constexpr bool operator<=(const time& rhs) const
         {
-            if (_time.tm_hour > rhs._time.tm_hour)
+            if (_time.tm_year > rhs._time.tm_year)
+            {
+                return false;
+            }
+            else if (_time.tm_year < rhs._time.tm_year)
+            {
+                return true;
+            }
+            else if (_time.tm_mon > rhs._time.tm_mon)
+            {
+                return true;
+            }
+            else if (_time.tm_mon < rhs._time.tm_mon)
+            {
+                return false;
+            }
+            else if (_time.tm_yday > rhs._time.tm_yday)
+            {
+                return false;
+            }
+            else if (_time.tm_yday < rhs._time.tm_yday)
+            {
+                return true;
+            }
+            else if (_time.tm_mday > rhs._time.tm_mday)
+            {
+                return false;
+            }
+            else if (_time.tm_mday < rhs._time.tm_mday)
+            {
+                return true;
+            }
+            else if (_time.tm_wday > rhs._time.tm_wday)
+            {
+                return false;
+            }
+            else if (_time.tm_wday < rhs._time.tm_wday)
+            {
+                return true;
+            }
+            else if (_time.tm_hour > rhs._time.tm_hour)
             {
                 return false;
             }
@@ -364,103 +356,79 @@ namespace hsd
             {
                 return true;
             }
+            else if (_time.tm_min > rhs._time.tm_min)
+            {
+                return false;
+            }
+            else if (_time.tm_min < rhs._time.tm_min)
+            {
+                return true;
+            }
+            else if (_time.tm_sec > rhs._time.tm_sec)
+            {
+                return false;
+            }
+            else if (_time.tm_sec < rhs._time.tm_sec)
+            {
+                return true;
+            }
+            else if (_time.tm_isdst > rhs._time.tm_isdst)
+            {
+                return false;
+            }
+            else if (_time.tm_isdst < rhs._time.tm_isdst)
+            {
+                return true;
+            }
             else
             {
-                if (_time.tm_isdst > rhs._time.tm_isdst)
-                {
-                    return true;
-                }
-                else if (_time.tm_isdst < rhs._time.tm_isdst)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (_time.tm_mday > rhs._time.tm_mday)
-                    {
-                        return false;
-                    }
-                    else if (_time.tm_mday < rhs._time.tm_mday)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (_time.tm_min > rhs._time.tm_min)
-                        {
-                            return false;
-                        }
-                        else if (_time.tm_min < rhs._time.tm_min)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            if (_time.tm_mon > rhs._time.tm_mon)
-                            {
-                                return false;
-                            }
-                            else if (_time.tm_mon < rhs._time.tm_mon)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                if (_time.tm_sec > rhs._time.tm_sec)
-                                {
-                                    return false;
-                                }
-                                else if (_time.tm_sec < rhs._time.tm_sec)
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    if (_time.tm_wday > rhs._time.tm_wday)
-                                    {
-                                        return false;
-                                    }
-                                    else if (_time.tm_wday < rhs._time.tm_wday)
-                                    {
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        if (_time.tm_yday > rhs._time.tm_yday)
-                                        {
-                                            return false;
-                                        }
-                                        else if (_time.tm_yday < rhs._time.tm_yday)
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            if (_time.tm_year > rhs._time.tm_year)
-                                            {
-                                                return false;
-                                            }
-                                            else if (_time.tm_year < rhs._time.tm_year)
-                                            {
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                return true;
             }
         }
 
         constexpr bool operator>=(const time& rhs) const
         {
-           if (_time.tm_hour < rhs._time.tm_hour)
+            if (_time.tm_year < rhs._time.tm_year)
+            {
+                return false;
+            }
+            else if (_time.tm_year > rhs._time.tm_year)
+            {
+                return true;
+            }
+            else if (_time.tm_mon < rhs._time.tm_mon)
+            {
+                return true;
+            }
+            else if (_time.tm_mon > rhs._time.tm_mon)
+            {
+                return false;
+            }
+            else if (_time.tm_yday < rhs._time.tm_yday)
+            {
+                return false;
+            }
+            else if (_time.tm_yday > rhs._time.tm_yday)
+            {
+                return true;
+            }
+            else if (_time.tm_mday < rhs._time.tm_mday)
+            {
+                return false;
+            }
+            else if (_time.tm_mday > rhs._time.tm_mday)
+            {
+                return true;
+            }
+            else if (_time.tm_wday < rhs._time.tm_wday)
+            {
+                return false;
+            }
+            else if (_time.tm_wday > rhs._time.tm_wday)
+            {
+                return true;
+            }
+            else if (_time.tm_hour < rhs._time.tm_hour)
             {
                 return false;
             }
@@ -468,97 +436,33 @@ namespace hsd
             {
                 return true;
             }
+            else if (_time.tm_min < rhs._time.tm_min)
+            {
+                return false;
+            }
+            else if (_time.tm_min > rhs._time.tm_min)
+            {
+                return true;
+            }
+            else if (_time.tm_sec < rhs._time.tm_sec)
+            {
+                return false;
+            }
+            else if (_time.tm_sec > rhs._time.tm_sec)
+            {
+                return true;
+            }
+            else if (_time.tm_isdst < rhs._time.tm_isdst)
+            {
+                return false;
+            }
+            else if (_time.tm_isdst > rhs._time.tm_isdst)
+            {
+                return true;
+            }
             else
             {
-                if (_time.tm_isdst < rhs._time.tm_isdst)
-                {
-                    return true;
-                }
-                else if (_time.tm_isdst > rhs._time.tm_isdst)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (_time.tm_mday < rhs._time.tm_mday)
-                    {
-                        return false;
-                    }
-                    else if (_time.tm_mday > rhs._time.tm_mday)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (_time.tm_min < rhs._time.tm_min)
-                        {
-                            return false;
-                        }
-                        else if (_time.tm_min > rhs._time.tm_min)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            if (_time.tm_mon < rhs._time.tm_mon)
-                            {
-                                return false;
-                            }
-                            else if (_time.tm_mon > rhs._time.tm_mon)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                if (_time.tm_sec < rhs._time.tm_sec)
-                                {
-                                    return false;
-                                }
-                                else if (_time.tm_sec > rhs._time.tm_sec)
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    if (_time.tm_wday < rhs._time.tm_wday)
-                                    {
-                                        return false;
-                                    }
-                                    else if (_time.tm_wday > rhs._time.tm_wday)
-                                    {
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        if (_time.tm_yday < rhs._time.tm_yday)
-                                        {
-                                            return false;
-                                        }
-                                        else if (_time.tm_yday > rhs._time.tm_yday)
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            if (_time.tm_year < rhs._time.tm_year)
-                                            {
-                                                return false;
-                                            }
-                                            else if (_time.tm_year > rhs._time.tm_year)
-                                            {
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                return true;
             }
         }
     };

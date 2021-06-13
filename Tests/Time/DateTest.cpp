@@ -18,4 +18,5 @@ int main()
     // US date format
     constexpr auto random_date_us = "4.20.2021 12:33:00"_mdy;
     hsd::io::print<"{}">(random_date_us.to_text());
+    hsd::io::print<"{}\n">(random_date_eu > random_date_us);
 }

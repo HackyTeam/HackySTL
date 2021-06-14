@@ -372,73 +372,85 @@ namespace hsd
             return {};
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, str.data);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(char val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%c").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(char8 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zc").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(i16 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%hd").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(u16 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%hu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(i32 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%d").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(u32 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%u").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(i64 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%lld").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(u64 val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%llu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(long val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zd").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(ulong val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%zu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(f32 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -453,7 +465,8 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(f64 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -468,7 +481,8 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(f128 val, pair<char*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -483,25 +497,29 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(char* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(const char* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(const char8* val, pair<char*, usize> dest)
         {
             return snprintf(dest.first, dest.second, (str + "%s").data, val);
         }
         
-        template <usize N, string_literal<N> str, typename... Args>
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline i32 _write(const tuple<Args...>& val, pair<char*, usize> dest)
         {
             i32 _len = dest.second;
@@ -521,79 +539,92 @@ namespace hsd
             return dest.second - _len;
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, str.data);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(wchar val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%lc").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(char val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%c").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(char8 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zc").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(i16 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%hd").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(u16 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%hu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(i32 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%d").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(u32 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%u").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(i64 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%lld").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(u64 val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%llu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(long val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zd").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(ulong val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%zu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(f32 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -608,7 +639,8 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(f64 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -623,7 +655,8 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(f128 val, pair<wchar*, usize> dest)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -638,43 +671,50 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(char* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(const char* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(char8* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(const char8* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(wchar* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%ls").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(const wchar* val, pair<wchar*, usize> dest)
         {
             return swprintf(dest.first, dest.second, (str + L"%ls").data, val);
         }
 
-        template <usize N, wstring_literal<N> str, typename... Args>
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline i32 _write(const tuple<Args...>& val, pair<wchar*, usize> dest)
         {
             i32 _len = dest.second;

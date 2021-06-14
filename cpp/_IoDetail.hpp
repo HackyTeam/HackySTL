@@ -18,13 +18,15 @@ namespace hsd
             static inline wsstream _wio_buf{4096};
         };
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(FILE* file_buf = stdout)
         {
             fprintf(file_buf, str.data);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(bool val, FILE* file_buf = stdout)
         {
             if (val == true)
@@ -37,67 +39,78 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(char val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%c").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(char8 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%zc").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(i16 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%hd").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(u16 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%hu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(i32 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%d").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(u32 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%u").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(i64 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%lld").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(u64 val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%llu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(long val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%zd").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(ulong val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%zu").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -112,7 +125,8 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -127,7 +141,8 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(f128 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -142,61 +157,68 @@ namespace hsd
             }
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(char* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%s").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(char8* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%s").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(const char* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%s").data, val);
         }
 
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(const char8* val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "%s").data, val);
         }
         
-        template <usize N, string_literal<N> str, typename... Args>
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "(").data);
 
             if constexpr (val.size() == 1)
             {
-                _print<1, "">(val.template get<0>(), file_buf);
+                _print<"">(val.template get<0>(), file_buf);
             }
             else if constexpr (val.size() > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
-                        _print<1, "">(val.template get<Ints>(), file_buf), 
-                        _print<3, ", ">(file_buf)
+                        _print<"">(val.template get<Ints>(), file_buf), 
+                        _print<", ">(file_buf)
                     ), ...);
                 }(make_index_sequence<val.size() - 1>{});
                 
-                _print<1, "">(val.template get<val.size() - 1>());
+                _print<"">(val.template get<val.size() - 1>());
             }
 
             fprintf(file_buf, ")");
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(FILE* file_buf = stdout)
         {
             fwprintf(file_buf, str.data);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(bool val, FILE* file_buf = stdout)
         {
             if (val == true)
@@ -209,73 +231,85 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(wchar val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%lc").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(char val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%c").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(char8 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%zc").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(i16 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%hd").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(u16 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%hu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(i32 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%d").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(u32 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%u").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(i64 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%lld").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(u64 val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%llu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(long val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%zd").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(ulong val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%zu").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -290,7 +324,8 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -305,7 +340,8 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(f128 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
@@ -320,61 +356,68 @@ namespace hsd
             }
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(char* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(char8* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(wchar* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%ls").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(const char* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(const char8* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(const wchar* val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"%ls").data, val);
         }
 
-        template <usize N, wstring_literal<N> str, typename... Args>
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"(").data);
 
             if constexpr (val.size() == 1)
             {
-                _print<1, L"">(val.template get<0>(), file_buf);
+                _print<L"">(val.template get<0>(), file_buf);
             }
             else if constexpr (val.size() > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
-                        _print<1, L"">(val.template get<Ints>(), file_buf), 
-                        _print<3, L", ">(file_buf)
+                        _print<L"">(val.template get<Ints>(), file_buf), 
+                        _print<L", ">(file_buf)
                     ), ...);
                 }(make_index_sequence<val.size() - 1>{});
                 
-                _print<1, L"">(val.template get<val.size() - 1>());
+                _print<L"">(val.template get<val.size() - 1>());
             }
 
             fwprintf(file_buf, L")");

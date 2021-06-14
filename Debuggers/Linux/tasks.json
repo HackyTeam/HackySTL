@@ -5,17 +5,17 @@
             "label": "C/C++: clang++ build active file",
             "command": "/usr/bin/clang++",
             "args": [
-                "-O3",
-                "-std=c++20",
+                "-g",
                 "-fsanitize=address",
                 "-Wall",
                 "-Wextra",
-                "-Wpadded",
+                "-Wpedantic",
+                "-std=c++20",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
-                "-o",
                 "-lpthread",
+                "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {

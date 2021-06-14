@@ -91,19 +91,20 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (sstream_detail::_sub_from(_size, _write<
-                        _fmt_buf[Ints].second + 1, 
-                        basic_string_literal< 
-                            char_type, _fmt_buf[Ints].second + 1 
-                        >{
-                            _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                        }
-                    >(args, {_data + (_capacity - _size), _size})).unwrap(), ...)
+                    (sstream_detail::_sub_from(
+                        _size, _write<
+                            basic_string_literal< 
+                                char_type, _fmt_buf[Ints].second + 1 
+                            >{
+                                _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                            }
+                        >(args, {_data + (_capacity - _size), _size})
+                    ).unwrap(), ...)
                 );
             }(make_index_sequence<sizeof...(Args)>{});
 
-            usize _last_len = static_cast<usize>(_write<
-                _fmt_last_len + 1, _last>(
+            usize _last_len = static_cast<usize>(
+                _write<_last>(
                     {_data + (_capacity - _size), _size}
                 )
             );

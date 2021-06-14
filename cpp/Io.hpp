@@ -90,7 +90,6 @@ namespace hsd
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
                 (_print<
-                    _fmt_buf[Ints].second + 1, 
                     basic_string_literal< 
                         char_type, _fmt_buf[Ints].second + 1 
                     >{
@@ -99,7 +98,7 @@ namespace hsd
                 >(args), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_len + 1, _last>();
+            _print<_last>();
         }
 
         template < basic_string_literal fmt, typename... Args >
@@ -118,7 +117,6 @@ namespace hsd
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
                 (_print<
-                    _fmt_buf[Ints].second + 1, 
                     basic_string_literal< 
                         char_type, _fmt_buf[Ints].second + 1 
                     >{
@@ -127,7 +125,7 @@ namespace hsd
                 >(args, stderr), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_len + 1, _last>(stderr);
+            _print<_last>(stderr);
         }
     };
 
@@ -291,7 +289,6 @@ namespace hsd
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
                 (_print<
-                    _fmt_buf[Ints].second + 1, 
                     basic_string_literal< 
                         char_type, _fmt_buf[Ints].second + 1 
                     >{
@@ -300,7 +297,7 @@ namespace hsd
                 >(args, _file_buf), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_len + 1, _last>(_file_buf);
+            _print<_last>(_file_buf);
             return {};
         }
     };

@@ -22,7 +22,7 @@ namespace hsd
 
         inline void _reset()
         {
-            delete[] _data;
+            mallocator::deallocate(_data);
             _data = nullptr;
         }
 
@@ -806,61 +806,63 @@ namespace hsd
         val = move(basic_string<char>(str.first, str.second));
     }
 
-    /*template <typename T = wchar>
-    inline void _parse(pair<const wchar*, usize>& str, basic_string<char>& val)
-    {
-        val = move(basic_string<wchar>(str.first, str.second));
-    }*/
-
     template <typename T = wchar>
     inline void _parse(pair<const wchar*, usize>& str, basic_string<wchar>& val)
     {
         val = move(basic_string<wchar>(str.first, str.second));
     }
 
-    template <usize N, string_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<char, typename decltype(str)::char_type>)
     inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
     {
         return snprintf(dest.first, dest.second, (str + "%s").data, val.c_str());
     }
 
-    template <usize N, wstring_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<wchar, typename decltype(str)::char_type>)
     inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%s").data, val.c_str());
     }
 
-    template <usize N, wstring_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<wchar, typename decltype(str)::char_type>)
     inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
     {
         return swprintf(dest.first, dest.second, (str + L"%ls").data, val.c_str());
     }
 
-    template <usize N, string_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<char, typename decltype(str)::char_type>)
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
-    template <usize N, string_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<char, typename decltype(str)::char_type>)
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
         fprintf(file_buf, (str + "%s").data, val.c_str());
     }
 
-    template <usize N, wstring_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<wchar, typename decltype(str)::char_type>)
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
-    template <usize N, wstring_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<wchar, typename decltype(str)::char_type>)
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%s").data, val.c_str());
     }
 
-    template <usize N, wstring_literal<N> str>
+    template <basic_string_literal str>
+    requires (IsSame<wchar, typename decltype(str)::char_type>)
     inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
     {
         fwprintf(file_buf, (str + L"%ls").data, val.c_str());

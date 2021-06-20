@@ -190,8 +190,10 @@ namespace hsd
         inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fprintf(file_buf, (str + "(").data);
+            // Because clang is broken
+            constexpr usize _tup_size = sizeof...(Args);
 
-            if constexpr (val.size() == 1)
+            if constexpr (_tup_size == 1)
             {
                 _print<"">(val.template get<0>(), file_buf);
             }
@@ -202,9 +204,9 @@ namespace hsd
                         _print<"">(val.template get<Ints>(), file_buf), 
                         _print<", ">(file_buf)
                     ), ...);
-                }(make_index_sequence<val.size() - 1>{});
+                }(make_index_sequence<_tup_size - 1>{});
                 
-                _print<"">(val.template get<val.size() - 1>());
+                _print<"">(val.template get<_tup_size - 1>());
             }
 
             fprintf(file_buf, ")");
@@ -403,21 +405,23 @@ namespace hsd
         inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
             fwprintf(file_buf, (str + L"(").data);
+            // Because clang is broken
+            constexpr usize _tup_size = sizeof...(Args);
 
-            if constexpr (val.size() == 1)
+            if constexpr (_tup_size == 1)
             {
                 _print<L"">(val.template get<0>(), file_buf);
             }
-            else if constexpr (val.size() > 1)
+            else if constexpr (_tup_size > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
                         _print<L"">(val.template get<Ints>(), file_buf), 
                         _print<L", ">(file_buf)
                     ), ...);
-                }(make_index_sequence<val.size() - 1>{});
+                }(make_index_sequence<_tup_size - 1>{});
                 
-                _print<L"">(val.template get<val.size() - 1>());
+                _print<L"">(val.template get<_tup_size - 1>());
             }
 
             fwprintf(file_buf, L")");

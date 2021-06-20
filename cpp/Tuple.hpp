@@ -33,13 +33,27 @@ namespace hsd
             : _first{first}
         {}
 
+        constexpr tuple(T&& first) 
+            : _first{move(first)}
+        {}
+
         constexpr tuple(const tuple& other)
             : _first{other._first}
+        {}
+
+        constexpr tuple(tuple&& other)
+            : _first{move(other._first)}
         {}
 
         constexpr tuple& operator=(const tuple& other)
         {
             _first = other._first;
+            return *this;
+        }
+
+        constexpr tuple& operator=(tuple&& other)
+        {
+            _first = move(other._first);
             return *this;
         }
 
@@ -55,14 +69,28 @@ namespace hsd
                             tuple<decltype(args)...>
                         >::value, "Invalid concatenation"
                     );
-                }(get<0>(), rhs.template get<Ints>()...);
+                }(get_copy<0>(), rhs.template get_copy<Ints>()...);
 
-                return make_tuple<T, Args...>(get<0>(), rhs.template get<Ints>()...);
+                return make_tuple<T, Args...>(
+                    get_copy<0>(), rhs.template get_copy<Ints>()...
+                );
             }(index_sequence_for<Args...>{});
         }
 
         template <usize N> requires (N == 0)
-        constexpr auto get() const
+        constexpr auto& get()
+        {
+            return _first;
+        }
+
+        template <usize N> requires (N == 0)
+        constexpr const auto& get() const
+        {
+            return _first;
+        }
+
+        template <usize N> requires (N == 0)
+        constexpr auto get_copy() const
         {
             return _first;
         }
@@ -83,18 +111,33 @@ namespace hsd
     public:
         constexpr tuple() = default;
 
-        constexpr tuple(const T& first, const Rest&... rest) 
-            : _first(first), _rest(rest...)
+        constexpr tuple(const T& first, Rest&&... rest) 
+            : _first{first}, _rest{forward<Rest>(rest)...}
+        {}
+
+        constexpr tuple(T&& first, Rest&&... rest) 
+            : _first{move(first)}, _rest{forward<Rest>(rest)...}
         {}
 
         constexpr tuple(const tuple& other)
             : _first{other._first}, _rest{other._rest}
         {}
 
+        constexpr tuple(tuple&& other)
+            : _first{move(other._first)}, _rest{move(other._rest)}
+        {}
+
         constexpr tuple& operator=(const tuple& other)
         {
             _first = other._first;
             _rest = other._rest;
+            return *this;
+        }
+
+        constexpr tuple& operator=(tuple&& other)
+        {
+            _first = move(other._first);
+            _rest = move(other._rest);
             return *this;
         }
 
@@ -111,16 +154,16 @@ namespace hsd
                             tuple<decltype(args)...>
                         >::value, "Invalid concatenation"
                     );
-                }(get<Ints1>()..., rhs.template get<Ints2>()...);
+                }(get_copy<Ints1>()..., rhs.template get_copy<Ints2>()...);
 
                 return make_tuple<T, Rest..., Args...>(
-                    get<Ints1>()..., rhs.template get<Ints2>()...
+                    get_copy<Ints1>()..., rhs.template get_copy<Ints2>()...
                 );
             }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
         }
 
         template <usize N>
-        constexpr auto get() const
+        constexpr auto& get()
         {
             if constexpr(N == 0)
             {
@@ -129,6 +172,32 @@ namespace hsd
             else
             {
                 return _rest.template get<N - 1>();
+            }
+        }
+
+        template <usize N>
+        constexpr const auto& get() const
+        {
+            if constexpr(N == 0)
+            {
+                return _first;
+            }
+            else
+            {
+                return _rest.template get<N - 1>();
+            }
+        }
+
+        template <usize N>
+        constexpr auto get_copy() const
+        {
+            if constexpr(N == 0)
+            {
+                return _first;
+            }
+            else
+            {
+                return _rest.template get_copy<N - 1>();
             }
         }
 
@@ -144,7 +213,7 @@ namespace hsd
     template <typename... Args>
     static constexpr auto make_tuple(Args&&... args)
     {
-        return tuple<decay_t<Args>...>(hsd::forward<Args>(args)...);
+        return tuple<decay_t<Args>...>(forward<Args>(args)...);
     }
 
     template <typename... Args>
@@ -155,7 +224,8 @@ namespace hsd
 
     template < typename Func, typename T, typename... Args, usize... Is >
     requires (std::is_member_function_pointer_v<Func>)
-    static constexpr auto apply_impl(Func&& func, T&& value, index_sequence<Is...>, const tuple<Args...>& args) 
+    static constexpr auto apply_impl(
+        Func&& func, T&& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         if constexpr (is_pointer<T>::value)
         {
@@ -171,12 +241,16 @@ namespace hsd
     requires (std::is_member_function_pointer_v<Func>)
     static constexpr auto apply(Func&& func, T&& value, const tuple<Args...>& args)
     {
-        return apply_impl(forward<Func>(func), forward<T>(value), make_index_sequence<sizeof...(Args)>{}, args);
+        return apply_impl(
+            forward<Func>(func), forward<T>(value), 
+            make_index_sequence<sizeof...(Args)>{}, args
+        );
     }
 
     template < typename Func, typename T, typename... Args, usize... Is >
     requires (std::is_member_function_pointer_v<Func>)
-    static constexpr auto apply_impl(Func&& func, T& value, index_sequence<Is...>, const tuple<Args...>& args) 
+    static constexpr auto apply_impl(
+        Func&& func, T& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         if constexpr (is_pointer<T>::value)
         {
@@ -192,12 +266,15 @@ namespace hsd
     requires (std::is_member_function_pointer_v<Func>)
     static constexpr auto apply(Func&& func, T& value, const tuple<Args...>& args)
     {
-        return apply_impl(forward<Func>(func), value, make_index_sequence<sizeof...(Args)>{}, args);
+        return apply_impl(
+            forward<Func>(func), value, make_index_sequence<sizeof...(Args)>{}, args
+        );
     }
 
     template < typename Func, typename... Args, usize... Is >
     requires (!std::is_member_function_pointer_v<Func>)
-    static constexpr auto apply_impl(Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
+    static constexpr auto apply_impl(
+        Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
         return func(args.template get<Is>()...);
     }
@@ -206,6 +283,8 @@ namespace hsd
     requires (!std::is_member_function_pointer_v<Func>)
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
-        return apply_impl(forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args);
+        return apply_impl(
+            forward<Func>(func), make_index_sequence<sizeof...(Args)>{}, args
+        );
     }
 }

@@ -598,7 +598,7 @@ namespace hsd
                     _new_buf[_index] = move(_value);
                 }
 
-                delete[] _data;
+                mallocator::deallocate(_data);
                 _data = _new_buf;
                 _capacity = _new_capacity;
             }

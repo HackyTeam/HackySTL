@@ -31,7 +31,7 @@ namespace hsd
 
         ~basic_sstream()
         {
-            delete[] _data;
+            mallocator::deallocate(_data);
         }
 
         void add_raw_data(const CharT* raw_data)

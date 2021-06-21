@@ -667,9 +667,11 @@ namespace hsd
 			return _buf;
 		}
 
-		static constexpr isize parse_i(const CharT* str)
+		template <typename T>
+		static constexpr T parse(const CharT* str)
+		requires (is_integral<T>::value && !is_unsigned<T>::value)
 		{
-			isize _num = 0;
+			T _num = 0;
 			bool _negative = false;
 
 			for(; *str != '\0' && !_is_number(*str); str++)
@@ -685,9 +687,10 @@ namespace hsd
 			return _negative ? -_num : _num;
 		}
 
-		static constexpr usize parse_us(const CharT* str)
+		template <typename T> requires (is_unsigned<T>::value)
+		static constexpr T parse(const CharT* str)
 		{
-			usize _num = 0;
+			T _num = 0;
 			for (; *str != '\0' && !_is_number(*str); str++)
 				;
 
@@ -700,10 +703,11 @@ namespace hsd
 			return _num;
 		}
 
-		static constexpr f64 parse_f(const CharT* str)
+		template <typename T> requires (is_floating_point<T>::value)
+		static constexpr T parse(const CharT* str)
 		{
-		    f64 _round_num = 0;
-			f64 _point_num = 0;
+		    T _round_num = 0;
+			T _point_num = 0;
 			bool _negative = false;
 			usize _num_len = 0;
 
@@ -711,25 +715,28 @@ namespace hsd
 			{
 				_negative = (*str == '-');
 			}
-
 			if (*str == '\0')
-				return 0.f;
+			{
+				return static_cast<T>(0);
+			}
 
 		    for (; *str != '\0' && *str != '.' && _is_number(*str); str++)
 		    {
 		        _round_num *= 10;
 		        _round_num += *str - '0';
 		    }
-
 			if (*str == '\0' || !_is_number(*str))
+			{
 				return _negative ? -_round_num : _round_num;
+			}
 
 		    for (str += 1; *str != '\0' && _is_number(*str); str++, _num_len++)
 		    {
 		        _point_num *= 10;
 		        _point_num += *str - '0';
 		    }
-		    for (; _num_len != 0; _num_len--, _point_num *= 0.1f) {}
+		    for (; _num_len != 0; _num_len--, _point_num *= static_cast<T>(0.1))
+				;
 			
 			return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
 		}
@@ -750,12 +757,18 @@ namespace hsd
 				}
 			}
 			
-			if(lhs[_index] < rhs[_index])
+			if (lhs[_index] < rhs[_index])
+			{
 				return -1;
-			else if(lhs[_index] > rhs[_index])
+			}
+			else if (lhs[_index] > rhs[_index])
+			{
 				return 1;
+			}
 			else
+			{
 				return 0;
+			}
 		}
 
 		static constexpr i32 compare(const CharT* lhs, const CharT* rhs, usize len)
@@ -778,7 +791,7 @@ namespace hsd
 			{
 				return -1;
 			}
-			else if(lhs[_index] > rhs[_index])
+			else if (lhs[_index] > rhs[_index])
 			{
 				return 1;
 			}

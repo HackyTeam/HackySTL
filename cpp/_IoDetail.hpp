@@ -22,7 +22,7 @@ namespace hsd
         requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(FILE* file_buf = stdout)
         {
-            fprintf(file_buf, str.data);
+            fputs(str.data, file_buf);
         }
 
         template <basic_string_literal str>
@@ -31,11 +31,11 @@ namespace hsd
         {
             if (val == true)
             {
-                fprintf(file_buf, (str + "true").data);
+                fputs((str + "true").data, file_buf);
             }
             else
             {
-                fprintf(file_buf, (str + "false").data);
+                fputs((str + "false").data, file_buf);
             }
         }
 
@@ -225,11 +225,11 @@ namespace hsd
         {
             if (val == true)
             {
-                fwprintf(file_buf, (str + L"true").data);
+                fputws((str + L"true").data, file_buf);
             }
             else
             {
-                fwprintf(file_buf, (str + L"false").data);
+                fputws((str + L"false").data, file_buf);
             }
         }
 

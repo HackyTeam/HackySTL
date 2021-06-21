@@ -793,7 +793,7 @@ namespace hsd
             return _new_time;
         }
 
-        static consteval time operator""_dmy(const char* date_format, u64)
+        static consteval time operator""_dmy(const char* date_format, usize)
         {
             time _new_time{};
             const char* _date_start = date_format;
@@ -818,7 +818,7 @@ namespace hsd
                 }
 
                 // Because we do a month table check after
-                _month_day = cstring::parse_us(_date_start);
+                _month_day = cstring::parse<usize>(_date_start);
                 _date_start = _day_border + 1;
             }
 
@@ -830,7 +830,7 @@ namespace hsd
                 );
 
                 _new_time.set_month(
-                    cstring::parse_us(_date_start)
+                    cstring::parse<usize>(_date_start)
                 );
                 
                 _new_time.set_month_day(_month_day);
@@ -844,7 +844,7 @@ namespace hsd
                     cstring::find(_date_start, ' ');
 
                 _new_time.set_year(
-                    cstring::parse_us(_date_start)
+                    cstring::parse<usize>(_date_start)
                 );
                 
                 if (_year_border != nullptr)
@@ -861,7 +861,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_hour(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
 
                     _date_start = _hour_border + 1;
@@ -874,7 +874,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_minutes(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
 
                     _date_start = _min_border + 1;
@@ -883,7 +883,7 @@ namespace hsd
                 // Seconds
                 {
                     _new_time.set_seconds(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
                 }
             }
@@ -891,7 +891,7 @@ namespace hsd
             return _new_time;
         }
 
-        static consteval time operator""_mdy(const char* date_format, u64)
+        static consteval time operator""_mdy(const char* date_format, usize)
         {
             time _new_time{};
             const char* _date_start = date_format;
@@ -915,7 +915,7 @@ namespace hsd
                 }
 
                 _new_time.set_month(
-                    cstring::parse_us(_date_start)
+                    cstring::parse<usize>(_date_start)
                 );
 
                 _date_start = _month_border + 1;
@@ -929,7 +929,7 @@ namespace hsd
                 );
 
                 _new_time.set_month_day(
-                    cstring::parse_us(_date_start)
+                    cstring::parse<usize>(_date_start)
                 );
                 
                 _date_start = _day_border + 1;
@@ -942,7 +942,7 @@ namespace hsd
                     cstring::find(_date_start, ' ');
 
                 _new_time.set_year(
-                    cstring::parse_us(_date_start)
+                    cstring::parse<usize>(_date_start)
                 );
                 
                 if (_year_border != nullptr)
@@ -959,7 +959,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_hour(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
 
                     _date_start = _hour_border + 1;
@@ -972,7 +972,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_minutes(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
 
                     _date_start = _min_border + 1;
@@ -981,7 +981,7 @@ namespace hsd
                 // Seconds
                 {
                     _new_time.set_seconds(
-                        cstring::parse_us(_date_start)
+                        cstring::parse<usize>(_date_start)
                     );
                 }
             }

@@ -302,3 +302,41 @@ namespace hsd
         }
     };
 } // namespace hsd
+
+#define hsd_print(fmt, ...)\
+do\
+{\
+    hsd::io::print<fmt>(__VA_ARGS__);\
+} while (false)
+
+#define hsd_print_err(fmt, ...)\
+do\
+{\
+    hsd::io::err_print<fmt>(__VA_ARGS__);\
+} while (false)
+
+#define hsd_println(fmt, ...)\
+do\
+{\
+    if constexpr (hsd::is_same<decltype(fmt), const hsd::wchar*>::value)\
+    {\
+        hsd::io::print<fmt L"\n">(__VA_ARGS__);\
+    }\
+    else\
+    {\
+        hsd::io::print<fmt "\n">(__VA_ARGS__);\
+    }\
+} while (false)
+
+#define hsd_println_err(fmt, ...)\
+do\
+{\
+    if constexpr (hsd::is_same<decltype(fmt), const hsd::wchar*>::value)\
+    {\
+        hsd::io::err_print<fmt L"\n">(__VA_ARGS__);\
+    }\
+    else\
+    {\
+        hsd::io::err_print<fmt "\n">(__VA_ARGS__);\
+    }\
+} while (false)

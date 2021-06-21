@@ -227,7 +227,7 @@ namespace hsd
                         {
                             tokens.push(current_token);
                             qtok_number.push(
-                                static_cast<i32>(basic_cstring<CharT>::parse_i(token_str.c_str()))
+                                basic_cstring<CharT>::template parse<i32>(token_str.c_str())
                             );
                             current_token = JsonToken::Empty;
                             token_position = 0;
@@ -277,7 +277,7 @@ namespace hsd
             {
                 tokens.push(current_token);
                 qtok_number.push(
-                    static_cast<i32>(basic_cstring<CharT>::parse_i(token_str.c_str()))
+                    basic_cstring<CharT>::template parse<i32>(token_str.c_str())
                 );
                 current_token = JsonToken::Empty;
                 token_position = 0;

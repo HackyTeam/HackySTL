@@ -239,9 +239,57 @@ namespace hsd
     }
 
     template <typename T, typename Func>
-    using EqualCase = CasePair<case_operators::OpEqual, T, Func>;
+    class EqualCase : 
+        public CasePair<case_operators::OpEqual, T, Func>
+    {
+    private:
+        using _Base = CasePair<case_operators::OpEqual, T, Func>;
+
+    public:
+        constexpr EqualCase(const T& value, const Func& invoke_func)
+            : _Base{value, invoke_func}
+        {}
+
+        constexpr EqualCase(const EqualCase& other) = default;
+        constexpr EqualCase& operator=(const EqualCase&) = delete;
+    };
+    
     template <typename T, typename Func>
-    using LessCase = CasePair<case_operators::OpLess, T, Func>;
+    class LessCase : 
+        public CasePair<case_operators::OpLess, T, Func>
+    {
+    private:
+        using _Base = CasePair<case_operators::OpLess, T, Func>;
+
+    public:
+        constexpr LessCase(const T& value, const Func& invoke_func)
+            : _Base{value, invoke_func}
+        {}
+
+        constexpr LessCase(const LessCase& other) = default;
+        constexpr LessCase& operator=(const LessCase&) = delete;
+    };
+    
     template <typename T, typename Func>
-    using GreaterCase = CasePair<case_operators::OpGreater, T, Func>;
+    class GreaterCase : 
+        public CasePair<case_operators::OpGreater, T, Func>
+    {
+    private:
+        using _Base = CasePair<case_operators::OpGreater, T, Func>;
+
+    public:
+        constexpr GreaterCase(const T& value, const Func& invoke_func)
+            : _Base{value, invoke_func}
+        {}
+
+        constexpr GreaterCase(const GreaterCase& other) = default;
+        constexpr GreaterCase& operator=(const GreaterCase&) = delete;
+    };
+
+    template <typename T, typename Func>
+    EqualCase(T, Func) -> EqualCase<decay_t<T>, Func>;
+    template <typename T, typename Func>
+    LessCase(T, Func) -> LessCase<decay_t<T>, Func>;
+    template <typename T, typename Func>
+    GreaterCase(T, Func) -> GreaterCase<decay_t<T>, Func>;
 } // namespace hsd

@@ -111,12 +111,16 @@ namespace hsd
     public:
         constexpr tuple() = default;
 
-        constexpr tuple(const T& first, Rest&&... rest) 
-            : _first{first}, _rest{forward<Rest>(rest)...}
+        template <typename... Args> 
+        requires (std::is_constructible_v<tuple<Rest...>, Args...>)
+        constexpr tuple(const T& first, Args&&... rest) 
+            : _first{first}, _rest{forward<Args>(rest)...}
         {}
 
-        constexpr tuple(T&& first, Rest&&... rest) 
-            : _first{move(first)}, _rest{forward<Rest>(rest)...}
+        template <typename... Args> 
+        requires (std::is_constructible_v<tuple<Rest...>, Args...>)
+        constexpr tuple(T&& first, Args&&... rest) 
+            : _first{move(first)}, _rest{forward<Args>(rest)...}
         {}
 
         constexpr tuple(const tuple& other)
@@ -207,7 +211,7 @@ namespace hsd
         }
     };
 
-    template <typename... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
+    template < typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
     template < typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;
 
     template <typename... Args>

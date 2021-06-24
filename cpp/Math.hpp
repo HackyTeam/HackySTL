@@ -3,6 +3,7 @@
 #include "IntegerSequence.hpp"
 #include "Limits.hpp"
 #include "Concepts.hpp"
+#include "Utility.hpp"
 #include <cmath>
 
 /// The implementations are NOT original, they are, in fact
@@ -492,7 +493,7 @@ namespace hsd
                     {
                         return (
                             static_cast<T>(math::constants::pi / 2) - static_cast<T>(1) / value + 
-                            atan_series_order<Order + 1, MaxOrder>(value * value, pow(value, 3))
+                            atan_series_order<Order + 1, MaxOrder>(value * value, pow_type_check(value, 3))
                         );
                     }
                     else if constexpr (Order < MaxOrder)

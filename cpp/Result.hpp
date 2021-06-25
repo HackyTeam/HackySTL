@@ -8,16 +8,47 @@
 #include <stdlib.h>
 
 #define hsd_fprint_check(stream, format, ...)\
-do {\
+do\
+{\
     if(fprintf(stream, format __VA_OPT__(,) __VA_ARGS__) == -1)\
         fwprintf(stream, L##format __VA_OPT__(,) __VA_ARGS__);\
-}while(0)
+} while (0)
 
 #define hsd_fputs_check(stream, string)\
-do {\
+do\
+{\
     if(fputs(string "\n", stream) == -1)\
         fputws(L##string L"\n", stream);\
-}while(0)
+} while (0)
+
+#define hsd_panic(message)\
+do\
+{\
+    hsd_fprint_check(\
+        stderr, "Got an error in file:"\
+        "\n%s\nInvoked from: %s at line:"\
+        " %zu\nWith the Err result value:"\
+        " %s\n", __FILE__, \
+        __builtin_FUNCTION(), \
+        __LINE__, message\
+    );\
+    \
+    abort();\
+} while (0) 
+
+#define hsd_unimplemented()\
+do\
+{\
+    hsd_fprint_check(\
+        stderr, "Got an error in file:"\
+        "\n%s\nInvoked from: %s at line:"\
+        " %zu\nWith the Err result value:"\
+        " This funcion is unimplemented\n", \
+        __FILE__, __builtin_FUNCTION(), __LINE__\
+    );\
+    \
+    abort();\
+} while (0) 
 
 namespace hsd
 {

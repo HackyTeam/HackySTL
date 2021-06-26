@@ -79,24 +79,7 @@ namespace hsd
                 template <IsFloat T>
                 static constexpr bool sign_bit(const T& value)
                 {
-                    if constexpr (IsSame<T, f32>)
-                    {
-                        return bit_cast<u32>(value) >> 31;
-                    }
-                    else if constexpr (IsSame<T, f64>)
-                    {
-                        return bit_cast<u64>(value) >> 63;
-                    }
-                    else
-                    {
-                        struct upair
-                        {
-                            hsd::u64 first;
-                            hsd::u64 second;
-                        };
-
-                        return bit_cast<upair>(value).second >> 15;
-                    }
+                    return bit_cast<u32>(static_cast<f32>(value)) >> 31;
                 }
 
                 template <IsFloat T>

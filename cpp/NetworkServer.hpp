@@ -57,7 +57,7 @@ namespace hsd
 
                 inline sockaddr* get_hint()
                 {
-                    return bit_cast<sockaddr*>(&_peer_addr);
+                    return reinterpret_cast<sockaddr*>(&_peer_addr);
                 }
 
                 inline void switch_to(net::protocol_type protocol, const char* ip_addr)
@@ -393,7 +393,7 @@ namespace hsd
 
                 inline sockaddr* _get_hint()
                 {
-                    return bit_cast<sockaddr*>(&_sock_hint);
+                    return reinterpret_cast<sockaddr*>(&_sock_hint);
                 }
 
             public:

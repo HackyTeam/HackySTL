@@ -133,6 +133,28 @@ namespace hsd
         	return nullptr;
         }
 
+		static constexpr const CharT* find_or_end(const CharT* str, const CharT* substr)
+        {
+        	for (; *str != '\0'; str++)
+        	{
+        		if ((*str == *substr) && _compare(str, substr))
+        			return str;
+        	}
+
+        	return str;
+        }
+
+        static constexpr const CharT* find_or_end(const CharT* str, CharT letter)
+        {
+        	for (; *str != '\0'; str++)
+        	{
+        		if (*str == letter)
+        			return str;
+        	}
+
+        	return str;
+        }
+
 		static constexpr const CharT* find_rev(const CharT* str, const CharT* substr)
         {
 			const CharT* rez = nullptr;

@@ -15,13 +15,19 @@ namespace hsd
             class socket
             {
             private:
-                #if defined(HSD_PLATFORM_POSIX)
-                i32 _listening = -1;
+                #if defined(HSD_PLATFORM_WINDOWS)
+                SOCKET _sock = -1;
                 #else
-                SOCKET _listening = -1;
+                i32 _sock = -1;
                 #endif
 
             public:
+                #if defined(HSD_PLATFORM_WINDOWS)
+                static constexpr SOCKET invalid_socket = -1;
+                #else
+                static constexpr i32 invalid_socket = -1;
+                #endif
+
                 inline socket(protocol_type protocol = protocol_type::ipv4, 
                     const char* ip_addr = "127.0.0.1:54000")
                 {
@@ -32,6 +38,20 @@ namespace hsd
                     switch_to(protocol, ip_addr);
                 }
 
+                inline socket(const socket&) = delete;
+                inline socket& operator=(const socket&) = delete;
+
+                inline socket(socket&& other)
+                {
+                    _sock = exchange(other._sock, invalid_socket);
+                }
+
+                inline socket& operator=(socket&& rhs)
+                {
+                    _sock = exchange(rhs._sock, invalid_socket);
+                    return *this;
+                }
+
                 inline ~socket()
                 {
                     close();
@@ -39,23 +59,27 @@ namespace hsd
 
                 inline void close()
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
-                    ::close(_listening);
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    ::closesocket(_sock);
                     #else
-                    ::closesocket(_listening);
+                    ::close(_sock);
                     #endif
 
-                    _listening = -1;
+                    _sock = -1;
                 }
 
+                #if defined(HSD_PLATFORM_WINDOWS)
+                inline SOCKET get_listening()
+                #else
                 inline i32 get_listening()
+                #endif
                 {
-                    return _listening;
+                    return _sock;
                 }
 
                 inline i32 switch_to(protocol_type protocol, const char* ip_addr)
                 {
-                    if (_listening != static_cast<decltype(_listening)>(-1))
+                    if (_sock != invalid_socket)
                         close();
 
                     addrinfo* _result = nullptr;
@@ -68,12 +92,12 @@ namespace hsd
                         .ai_socktype = net::socket_type::dgram,
                         .ai_protocol = 0,
                         .ai_addrlen = 0,
-                        #if defined(HSD_PLATFORM_POSIX)
-                        .ai_addr = nullptr,
+                        #if defined(HSD_PLATFORM_WINDOWS)
                         .ai_canonname = nullptr,
+                        .ai_addr = nullptr,
                         #else
-                        .ai_canonname = nullptr,
                         .ai_addr = nullptr,
+                        .ai_canonname = nullptr,
                         #endif
                         .ai_next = nullptr
                     };
@@ -128,13 +152,13 @@ namespace hsd
 
                     for (_rp = _result; _rp != nullptr; _rp = _rp->ai_next)
                     {
-                        _listening = ::socket(
+                        _sock = ::socket(
                             _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
                         );
 
-                        if (_listening != static_cast<decltype(_listening)>(-1))
+                        if (_sock != invalid_socket)
                         {
-                            if (connect(_listening, _rp->ai_addr, _rp->ai_addrlen) != -1)
+                            if (connect(_sock, _rp->ai_addr, _rp->ai_addrlen) != -1)
                                 break;
 
                             close();
@@ -235,13 +259,19 @@ namespace hsd
             class socket
             {
             private:
-                #if defined(HSD_PLATFORM_POSIX)
-                i32 _sock = -1;
-                #else
+                #if defined(HSD_PLATFORM_WINDOWS)
                 SOCKET _sock = -1;
+                #else
+                i32 _sock = -1;
                 #endif
 
             public:
+                #if defined(HSD_PLATFORM_WINDOWS)
+                static constexpr SOCKET invalid_socket = -1;
+                #else
+                static constexpr i32 invalid_socket = -1;
+                #endif
+
                 inline socket(protocol_type protocol = protocol_type::ipv4, 
                     const char* ip_addr = "127.0.0.1:54000")
                 {
@@ -252,6 +282,20 @@ namespace hsd
                     switch_to(protocol, ip_addr);
                 }
 
+                inline socket(const socket&) = delete;
+                inline socket& operator=(const socket&) = delete;
+
+                inline socket(socket&& other)
+                {
+                    _sock = exchange(other._sock, invalid_socket);
+                }
+
+                inline socket& operator=(socket&& rhs)
+                {
+                    _sock = exchange(rhs._sock, invalid_socket);
+                    return *this;
+                }
+
                 inline ~socket()
                 {
                     close();
@@ -259,23 +303,27 @@ namespace hsd
 
                 inline void close()
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
-                    ::close(_sock);
-                    #else
+                    #if defined(HSD_PLATFORM_WINDOWS)
                     ::closesocket(_sock);
+                    #else
+                    ::close(_sock);
                     #endif
 
                     _sock = -1;
                 }
 
+                #if defined(HSD_PLATFORM_WINDOWS)
+                inline SOCKET get_sock()
+                #else
                 inline i32 get_sock()
+                #endif
                 {
                     return _sock;
                 }
 
                 inline i32 switch_to(net::protocol_type protocol, const char* ip_addr)
                 {
-                    if (_sock != static_cast<decltype(_sock)>(-1))
+                    if (_sock != invalid_socket)
                         close();
 
                     addrinfo* _result = nullptr;
@@ -288,12 +336,12 @@ namespace hsd
                         .ai_socktype = net::socket_type::stream,
                         .ai_protocol = IPPROTO_TCP,
                         .ai_addrlen = 0,
-                        #if defined(HSD_PLATFORM_POSIX)
-                        .ai_addr = nullptr,
+                        #if defined(HSD_PLATFORM_WINDOWS)
                         .ai_canonname = nullptr,
+                        .ai_addr = nullptr,
                         #else
-                        .ai_canonname = nullptr,
                         .ai_addr = nullptr,
+                        .ai_canonname = nullptr,
                         #endif
                         .ai_next = nullptr
                     };
@@ -352,7 +400,7 @@ namespace hsd
                             _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
                         );
 
-                        if (_sock != static_cast<decltype(_sock)>(-1))
+                        if (_sock != invalid_socket)
                         {
                             if (connect(_sock, _rp->ai_addr, _rp->ai_addrlen) != -1)
                                 break;

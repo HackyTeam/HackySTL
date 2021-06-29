@@ -43,11 +43,20 @@ namespace hsd
             _data[_size] = static_cast<CharT>('\0');
         }
 
+        Result<void, runtime_error> update_size()
+        {
+            if (_data == nullptr)
+                return runtime_error{"Invalid data"};
+
+            _size = basic_cstring<CharT>::length(_data);
+            return {};
+        }
+
 		template <typename... Args>
 		Result<void, runtime_error> set_data(Args&... args)
 		{
             using sstream_detail::_parse;
-            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data, _capacity);
+            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
 
             if (sizeof...(Args) > _data_set.size())
             {
@@ -68,9 +77,7 @@ namespace hsd
         T parse()
         {
             T _value{};
-            using sstream_detail::_parse;
-            auto _str = pair{c_str(), size()};
-            _parse(_str, _value);
+            set_data(_value).unwrap();
             return _value;
         }
 

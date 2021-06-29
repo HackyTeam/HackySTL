@@ -14,7 +14,7 @@ namespace hsd
         class bufferable
         {
         protected:
-            static inline sstream _u8io_buf{4096};
+            static inline sstream _io_buf{4096};
             static inline wsstream _wio_buf{4096};
         };
 

@@ -11,20 +11,20 @@ namespace hsd
     namespace sstream_detail
     {
         template <usize N, typename CharT>
-        inline auto split_data(const CharT* str, usize size)
+        inline auto split_data(const CharT* str)
         {
             static_vector< pair<const CharT*, usize>, N > _buf;
             const CharT* _iter_f = str;
-            const CharT* _iter_s = basic_cstring<CharT>::find(_iter_f, ' ');
+            const CharT* _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
 
-            while (_iter_s != nullptr && *_iter_s != '\0')
+            while (*_iter_s != '\0')
             {
                 _buf.emplace_back(_iter_f, static_cast<usize>(_iter_s - _iter_f));
                 _iter_f = _iter_s + 1;
-                _iter_s = basic_cstring<CharT>::find(_iter_f, ' ');
+                _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
             }
             
-            _buf.emplace_back(_iter_f, static_cast<usize>((str + size) - _iter_f));
+            _buf.emplace_back(_iter_f, static_cast<usize>(_iter_s - _iter_f));
             return _buf;
         }
 

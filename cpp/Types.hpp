@@ -48,6 +48,7 @@ namespace hsd
     using i128 = __int128_t;
     #endif
 
+    using ushort = unsigned short;
     using ulong = unsigned long;
     using u64 = unsigned long long;
     using u32 = unsigned int;
@@ -60,6 +61,7 @@ namespace hsd
     using i8 = char;
 
     using wchar = wchar_t;
+    using schar = signed char;
     using uchar = unsigned char;
     using char8 = char8_t;
     using char16 = char16_t;
@@ -70,4 +72,12 @@ namespace hsd
     using f32 = float;
     
     using NullType = decltype(nullptr);
+
+    namespace trivial_literals
+    {
+        usize operator""_sz(u64 value)
+        {
+            return static_cast<usize>(value);
+        }
+    } // namespace trivial_type_literals
 } // namespace hsd

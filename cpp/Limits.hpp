@@ -23,7 +23,7 @@ namespace hsd
         {
             constexpr auto _lshf = static_cast<T>(1) << (digits_byte<T, B>() - 1);
 
-            if constexpr(is_signed_byte<T>())
+            if constexpr (is_signed_byte<T>())
             {
                 return ((_lshf - 1) << 1) + 1;
             }
@@ -34,7 +34,7 @@ namespace hsd
         template <typename T, usize B>
         constexpr T min_byte()
         {
-            if constexpr(is_signed_byte<T>())
+            if constexpr (is_signed_byte<T>())
             {
                 return -max_byte<T, B>() - 1;
             }
@@ -143,7 +143,7 @@ namespace hsd
         static constexpr f128 max = 1.7976931348623157e+308l;
         #else
         static constexpr f128 min = 3.36210314311209350626e-4932l;
-        static constexpr f128 max = 1.18973149535723176502e+4932l
+        static constexpr f128 max = 1.18973149535723176502e+4932l;
         #endif
         static constexpr bool is_signed = true;
         static constexpr i32 digits = 64;

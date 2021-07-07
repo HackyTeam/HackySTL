@@ -23,7 +23,7 @@ namespace hsd
         };
 
         template <typename _Ty>
-        using is_empty = std::bool_constant<_is_empty<_Ty>::value>;
+        using is_empty = literal_constant<bool, _is_empty<_Ty>::value>;
     } // namespace detail
 
     template <typename _Ta, typename _Tb>

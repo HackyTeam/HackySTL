@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../../cpp/HeapArray.hpp"
+#include <HeapArray.hpp>
 
 int main()
 {
@@ -7,15 +7,7 @@ int main()
     int v = 33;
     printf("%d\n", harr.at(5).unwrap_or(v));
     
-    for(auto i : harr)
-    {
-        printf("%d\n", i);
-    }
-
-    auto harr2 = harr.gen_range<0, 3>();
-    puts("=======");
-
-    for(auto i : harr2)
+    for (auto i : harr)
     {
         printf("%d\n", i);
     }

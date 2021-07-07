@@ -13,8 +13,12 @@
 
 namespace hsd
 {
-    template <typename T>
-    concept Copyable = std::is_copy_constructible_v<T>;
+    namespace any_detail
+    {
+        template <typename T>
+        concept Copyable = std::is_copy_constructible_v<T>;
+    } // namespace any_detail
+    
 
     struct bad_any_cast
     {
@@ -36,20 +40,20 @@ namespace hsd
         #endif
     };
 
-    template <Copyable T>
+    template <any_detail::Copyable T>
     class _any_derived : public _any_base 
     {
         T _value;
         friend class any;
 
     public:
-        HSD_CONSTEXPR _any_derived(T value) 
+        inline _any_derived(T value) 
             : _value(move(value)) 
         {}
 
         hsd::unique_ptr<_any_base> clone() const override 
         {
-            return hsd::make_unique<_any_derived, allocator>(_value);
+            return hsd::make_unique<_any_derived>(_value);
         }
 
         #ifdef HSD_ANY_ENABLE_TYPEINFO
@@ -66,40 +70,41 @@ namespace hsd
         hsd::unique_ptr<_any_base> _data = nullptr;
 
     public:
-        HSD_CONSTEXPR any() noexcept = default;
+        inline any() noexcept = default;
 
-        template <Copyable T>
-        HSD_CONSTEXPR any(T other)
+        template <any_detail::Copyable T>
+        inline any(T other)
         {
             _data = hsd::make_unique<_any_derived<T>>(move(other));
         }
 
-        any(const any& other)
+        inline any(const any& other)
         {
             _data = other._data->clone();
         }
 
-        any(any&& other)
+        inline any(any&& other)
         {
             this->swap(other);
         }
 
-        ~any() = default;
+        inline ~any() = default;
 
-        any& operator=(any rhs)
+        inline any& operator=(any rhs)
         {
             this->swap(rhs);
             return *this;
         }
 
         template <typename T>
-        HSD_CONSTEXPR auto cast_to() const -> Result<T, bad_any_cast>
+        inline auto cast_to() const
+            -> Result<reference<T>, bad_any_cast>
         {
             using type = typename std::remove_pointer<T>::type;
 
-            if(auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
+            if (auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
-                return static_cast<T>(p_base->_value);
+                return p_base->_value;
             }
             else
             {
@@ -108,7 +113,7 @@ namespace hsd
         }
 
         template <typename T>
-        T* cast_if() const
+        inline T* cast_if() const
         {
             if (auto* p_base = dynamic_cast<_any_derived<T>*>(_data.get()))
                 return &p_base->_value;
@@ -117,19 +122,19 @@ namespace hsd
         }
 
         template <typename T>
-        bool holds_type() const
+        inline bool holds_type() const
         {
             return dynamic_cast<_any_derived<T>*>(_data.get());
         }
 
         #ifdef HSD_ANY_ENABLE_TYPEINFO
-        const std::type_info& type() const noexcept
+        inline const std::type_info& type() const noexcept
         {
             return _data != nullptr ? _data->get_typeinfo() : typeid(void);
         }
         #endif
 
-        void swap(any& other) noexcept
+        inline void swap(any& other) noexcept
         {
             hsd::swap(_data, other._data);
         }
@@ -140,17 +145,17 @@ namespace hsd
         }
 
         template < typename T, typename... Args >
-        void emplace(Args&&... args)
+        inline void emplace(Args&&... args)
         {
             _data = hsd::make_unique<_any_derived<T>>(T(forward<Args>(args)...));
         }
 
-        bool has_value() const
+        inline bool has_value() const
         {
             return _data != nullptr;
         }
 
-        HSD_CONSTEXPR void reset()
+        inline void reset()
         {
             _data = nullptr;
         }

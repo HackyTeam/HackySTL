@@ -20,7 +20,7 @@ namespace hsd
         }
         
         reference(const reference&) noexcept = default;
-        reference& operator=(const reference&) noexcept = delete;
+        reference& operator=(const reference&) noexcept = default;
 
         constexpr operator T&() const 
         { 

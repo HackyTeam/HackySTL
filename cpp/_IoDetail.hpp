@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <locale.h>
-#include <stdexcept>
+
+#include "_IoOverload.hpp"
 #include "SStream.hpp"
 
 namespace hsd
@@ -13,341 +14,414 @@ namespace hsd
         class bufferable
         {
         protected:
-            static inline sstream _u8io_buf{4096};
+            static inline sstream _io_buf{4096};
             static inline wsstream _wio_buf{4096};
         };
 
-        template <string_literal str>
-        static void _print(FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(FILE* file_buf = stdout)
         {
-            fprintf(file_buf, str.data);
+            fputs(str.data, file_buf);
         }
 
-        template <string_literal str>
-        static void _print(char val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(bool val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "%c").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(char8 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%zc").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(i16 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%hd").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(u16 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%hu").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(i32 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%d").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(u32 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%u").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(i64 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%lld").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(u64 val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%llu").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(long val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%zd").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(ulong val, FILE* file_buf = stdout)
-        {
-            fprintf(file_buf, basic_string_literal(str, "%zu").data, val);
-        }
-
-        template <string_literal str>
-        static void _print(f32 val, FILE* file_buf = stdout)
-        {
-            auto _res = math::abs(math::floor(val) - val);
-
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if (val == true)
             {
-                fprintf(file_buf, basic_string_literal(str, "%e").data, val);
+                fputs((str + "true").data, file_buf);
             }
             else
             {
-                fprintf(file_buf, basic_string_literal(str, "%f").data, val);
+                fputs((str + "false").data, file_buf);
             }
         }
 
-        template <string_literal str>
-        static void _print(f64 val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(char val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%c").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(char8 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%zc").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(i16 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%hd").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(u16 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%hu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(i32 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%d").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(u32 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%u").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(i64 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%lld").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(u64 val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%llu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(long val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%zd").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(ulong val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%zu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
-                fprintf(file_buf, basic_string_literal(str, "%e").data, val);
+                fprintf(file_buf, (str + "%e").data, val);
             }
             else
             {
-                fprintf(file_buf, basic_string_literal(str, "%lf").data, val);
+                fprintf(file_buf, (str + "%f").data, val);
             }
         }
 
-        template <string_literal str>
-        static void _print(f128 val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
-                fprintf(file_buf, basic_string_literal(str, "%Le").data, val);
+                fprintf(file_buf, (str + "%e").data, val);
             }
             else
             {
-                fprintf(file_buf, basic_string_literal(str, "%Lf").data, val);
+                fprintf(file_buf, (str + "%lf").data, val);
             }
         }
 
-        template <string_literal str>
-        static void _print(const char* val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(f128 val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "%s").data, val);
+            auto _res = math::abs(math::floor(val) - val);
+
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            {
+                fprintf(file_buf, (str + "%Le").data, val);
+            }
+            else
+            {
+                fprintf(file_buf, (str + "%Lf").data, val);
+            }
         }
 
-        template <string_literal str>
-        static void _print(const char8* val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(char* val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "%s").data, val);
+            fprintf(file_buf, (str + "%s").data, val);
         }
 
-        template <string_literal str>
-        static void _print(const string& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(char8* val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+            fprintf(file_buf, (str + "%s").data, val);
         }
 
-        template <string_literal str>
-        static void _print(const u8string& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(const char* val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "%s").data, val.c_str());
+            fprintf(file_buf, (str + "%s").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(const char8* val, FILE* file_buf = stdout)
+        {
+            fprintf(file_buf, (str + "%s").data, val);
         }
         
-        template <string_literal str, typename... Args>
-        static void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<char, typename decltype(str)::char_type>)
+        inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
         {
-            fprintf(file_buf, basic_string_literal(str, "(").data);
+            fprintf(file_buf, (str + "(").data);
+            // Because clang is broken
+            constexpr usize _tup_size = sizeof...(Args);
 
-            if constexpr(val.size() == 1)
+            if constexpr (_tup_size == 1)
             {
                 _print<"">(val.template get<0>(), file_buf);
             }
-            else if constexpr(val.size() > 1)
+            else if constexpr (val.size() > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
                         _print<"">(val.template get<Ints>(), file_buf), 
                         _print<", ">(file_buf)
                     ), ...);
-                }(make_index_sequence<val.size() - 1>{});
+                }(make_index_sequence<_tup_size - 1>{});
                 
-                _print<"">(val.template get<val.size() - 1>());
+                _print<"">(val.template get<_tup_size - 1>());
             }
 
             fprintf(file_buf, ")");
         }
 
-        template <wstring_literal str>
-        static void _print(FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(FILE* file_buf = stdout)
         {
             fwprintf(file_buf, str.data);
         }
 
-        template <wstring_literal str>
-        static void _print(wchar val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(bool val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%lc").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(char val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%c").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(char8 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%zc").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(i16 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%hd").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(u16 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%hu").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(i32 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%d").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(u32 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%u").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(i64 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%lld").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(u64 val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%llu").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(long val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%zd").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(ulong val, FILE* file_buf = stdout)
-        {
-            fwprintf(file_buf, basic_string_literal(str, L"%zu").data, val);
-        }
-
-        template <wstring_literal str>
-        static void _print(f32 val, FILE* file_buf = stdout)
-        {
-            auto _res = math::abs(math::floor(val) - val);
-
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if (val == true)
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%e").data, val);
+                fputws((str + L"true").data, file_buf);
             }
             else
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%f").data, val);
+                fputws((str + L"false").data, file_buf);
             }
         }
 
-        template <wstring_literal str>
-        static void _print(f64 val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(wchar val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%lc").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(char val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%c").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(char8 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%zc").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(i16 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%hd").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(u16 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%hu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(i32 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%d").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(u32 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%u").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(i64 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%lld").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(u64 val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%llu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(long val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%zd").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(ulong val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"%zu").data, val);
+        }
+
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(f32 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%e").data, val);
+                fwprintf(file_buf, (str + L"%e").data, val);
             }
             else
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%lf").data, val);
+                fwprintf(file_buf, (str + L"%f").data, val);
             }
         }
 
-        template <wstring_literal str>
-        static void _print(f128 val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(f64 val, FILE* file_buf = stdout)
         {
             auto _res = math::abs(math::floor(val) - val);
 
-            if((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%Le").data, val);
+                fwprintf(file_buf, (str + L"%e").data, val);
             }
             else
             {
-                fwprintf(file_buf, basic_string_literal(str, L"%Lf").data, val);
+                fwprintf(file_buf, (str + L"%lf").data, val);
             }
         }
 
-        template <wstring_literal str>
-        static void _print(const char* val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(f128 val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%s").data, val);
+            auto _res = math::abs(math::floor(val) - val);
+
+            if ((_res < 0.0001 && _res != 0) || math::abs(val) > 1.e+10)
+            {
+                fwprintf(file_buf, (str + L"%Le").data, val);
+            }
+            else
+            {
+                fwprintf(file_buf, (str + L"%Lf").data, val);
+            }
         }
 
-        template <wstring_literal str>
-        static void _print(const char8* val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(char* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%s").data, val);
+            fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
-        static void _print(const wchar* val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(char8* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val);
+            fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
-        static void _print(const string& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(wchar* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+            fwprintf(file_buf, (str + L"%ls").data, val);
         }
 
-        template <wstring_literal str>
-        static void _print(const u8string& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(const char* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%s").data, val.c_str());
+            fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str>
-        static void _print(const wstring& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(const char8* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"%ls").data, val.c_str());
+            fwprintf(file_buf, (str + L"%s").data, val);
         }
 
-        template <wstring_literal str, typename... Args>
-        static void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(const wchar* val, FILE* file_buf = stdout)
         {
-            fwprintf(file_buf, basic_string_literal(str, L"(").data);
+            fwprintf(file_buf, (str + L"%ls").data, val);
+        }
 
-            if constexpr(val.size() == 1)
+        template <basic_string_literal str, typename... Args>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
+        inline void _print(const tuple<Args...>& val, FILE* file_buf = stdout)
+        {
+            fwprintf(file_buf, (str + L"(").data);
+            // Because clang is broken
+            constexpr usize _tup_size = sizeof...(Args);
+
+            if constexpr (_tup_size == 1)
             {
                 _print<L"">(val.template get<0>(), file_buf);
             }
-            else if constexpr(val.size() > 1)
+            else if constexpr (_tup_size > 1)
             {
                 [&]<usize... Ints>(index_sequence<Ints...>) {
                     ((
                         _print<L"">(val.template get<Ints>(), file_buf), 
                         _print<L", ">(file_buf)
                     ), ...);
-                }(make_index_sequence<val.size() - 1>{});
+                }(make_index_sequence<_tup_size - 1>{});
                 
-                _print<L"">(val.template get<val.size() - 1>());
+                _print<L"">(val.template get<_tup_size - 1>());
             }
 
             fwprintf(file_buf, L")");

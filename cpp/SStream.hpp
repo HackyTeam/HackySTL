@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_SStreamDetail.hpp"
+#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -16,50 +17,67 @@ namespace hsd
     public:
 		using iterator = CharT*;
         using const_iterator = const CharT*;
-        basic_sstream(const basic_sstream& other) = delete;
+        basic_sstream(const basic_sstream&) = delete;
+        basic_sstream& operator=(const basic_sstream&) = delete;
 
         basic_sstream(usize size)
         {
-            _data = new CharT[size + 1];
+            _data = mallocator::allocate_multiple<
+                CharT>(size + 1).unwrap();
+
             _data[size] = '\0';
             _capacity = size;
         }
 
         ~basic_sstream()
         {
-            delete[] _data;
+            mallocator::deallocate(_data);
+        }
+
+        void add_raw_data(const CharT* raw_data)
+        {
+            _size += static_cast<usize>(
+                sstream_detail::_write<"">(raw_data, {_data + _size, _capacity - _size})
+            );
+            _data[_size++] = static_cast<CharT>(' ');
+            _data[_size] = static_cast<CharT>('\0');
+        }
+
+        Result<void, runtime_error> update_size()
+        {
+            if (_data == nullptr)
+                return runtime_error{"Invalid data"};
+
+            _size = basic_cstring<CharT>::length(_data);
+            return {};
         }
 
 		template <typename... Args>
-		void set_data(Args&... args)
+		Result<void, runtime_error> set_data(Args&... args)
 		{
-            auto _data_set = sstream_detail::split_data(_data, _capacity);
+            using sstream_detail::_parse;
+            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
 
-            if(sizeof...(Args) > _data_set.size())
+            if (sizeof...(Args) > _data_set.size())
             {
-                hsd_fputs_check(stderr, "Input too small to parse");
-                abort();
-            }
-            else if(sizeof...(Args) < _data_set.size())
-            {
-                hsd_fputs_check(stderr, "Warning: Possible Undefined Behavior");
+                return runtime_error{"Input too small to parse"};
             }
             else
             {
                 [&]<usize... Ints>(index_sequence<Ints...>)
                 {
-                    (sstream_detail::_parse(_data_set[Ints], args), ...);
+                    (_parse(_data_set[Ints], args), ...);
                 }(make_index_sequence<sizeof...(Args)>{});
             }
+
+            return {};
 		}
 
         template <typename T>
         T parse()
         {
             T _value{};
-            using sstream_detail::_parse;
-            auto _str = pair{c_str(), size()};
-            _parse(_str, _value);
+            set_data(_value).unwrap();
             return _value;
         }
 
@@ -80,21 +98,25 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (sstream_detail::_sub_from(_size, _write<
-                    basic_string_literal< char_type, _fmt_buf[Ints].second + 1 >{
-                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                    }>(args, {_data + (_capacity - _size), _size})).unwrap(), ...)
+                    (sstream_detail::_sub_from(
+                        _size, _write<
+                            basic_string_literal< 
+                                char_type, _fmt_buf[Ints].second + 1 
+                            >{
+                                _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                            }
+                        >(args, {_data + (_capacity - _size), _size})
+                    ).unwrap(), ...)
                 );
             }(make_index_sequence<sizeof...(Args)>{});
 
-            usize _last_len = static_cast<usize>(_write<_last>({_data + (_capacity - _size), _size}));
+            usize _last_len = static_cast<usize>(
+                _write<_last>(
+                    {_data + (_capacity - _size), _size}
+                )
+            );
             _size = _capacity - _size + _last_len;
 		}
-
-        basic_string<CharT> to_string()
-        {
-            return basic_string<CharT>(_data);
-        }
 
 		void pop_back()
         {
@@ -103,12 +125,8 @@ namespace hsd
 
         void clear()
         {
-            if(_data != nullptr)
-                delete[] _data;
-    
-            _data = new CharT[1];
-            _data[0] = '\0';
-            _capacity = 0;
+            while(size() != 0)
+                pop_back();
         }
 
         void reset_data()
@@ -119,7 +137,7 @@ namespace hsd
 
         usize capacity() const
         {
-            return _size;
+            return _capacity;
         }
 
         usize size() const
@@ -135,36 +153,6 @@ namespace hsd
         const_iterator c_str() const
         {
             return _data;
-        }
-    
-        iterator begin()
-        {
-            return data();
-        }
-
-        iterator begin() const
-        {
-            return cbegin();
-        }
-
-        iterator end()
-        {
-            return begin() + size();
-        }
-
-        const_iterator end() const
-        {
-            return cend();
-        }
-
-        const_iterator cbegin() const
-        {
-            return c_str();
-        }
-
-        const_iterator cend() const
-        {
-            return cbegin() + size();
         }
     };
     

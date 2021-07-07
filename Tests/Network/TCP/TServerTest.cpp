@@ -1,23 +1,27 @@
-#include "../../../cpp/NetworkServer.hpp"
+#include <NetworkServer.hpp>
 
 int main()
 {
-    hsd::tcp::server server{hsd::net::protocol_type::ipv4, 48000, "0.0.0.0"};
+    hsd::tcp::server server{hsd::net::protocol_type::ipv4, "0.0.0.0:48000"};
+    char raw_buf[1024];
 
-    while(true)
+    while (true)
     {
         auto [buf, code] = server.receive();
         
-        if(code == hsd::net::received_state::ok)
+        if (code == hsd::net::received_state::ok)
         {
-            hsd::io::print<"CLIENT> {}">(buf.data());
-            server.respond<"Good\n">();
+            hsd::io::print<"CLIENT> {}\n">(buf.data());
+            
+            // Copy the data to a buffer
+            hsd::cstring::copy(raw_buf, buf.c_str());
+            server.respond<"{}">(raw_buf);
         }
         
-        if(buf.to_string() == "exit")
+        if (hsd::cstring::compare(raw_buf, "exit") == 0)
             break;
 
-        if(code != hsd::net::received_state::ok)
+        if (code != hsd::net::received_state::ok)
             break;
     }
 }

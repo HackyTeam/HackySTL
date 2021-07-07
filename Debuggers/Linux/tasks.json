@@ -6,9 +6,15 @@
             "command": "/usr/bin/clang++",
             "args": [
                 "-g",
+                "-fsanitize=address",
+                "-Wall",
+                "-Wextra",
+                "-Wpedantic",
                 "-std=c++20",
                 "${file}",
+                "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
+                "-lpthread",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
@@ -29,9 +35,17 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-g",
+                "-fsanitize=address",
+                "-Wall",
+                "-Wextra",
+                "-Wpedantic",
+                "-fanalyzer",
+                "-fconcepts-diagnostics-depth=5",
                 "-std=c++20",
                 "${file}",
+                "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
+                "-lpthread",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

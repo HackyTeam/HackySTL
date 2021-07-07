@@ -25,7 +25,7 @@ namespace hsd
         constexpr auto at(usize index)
             -> Result< reference<T>, runtime_error >
         {
-            if(index >= N)
+            if (index >= N)
             {
                 return runtime_error{"Tried to access elements out of bounds"};
             }
@@ -36,23 +36,12 @@ namespace hsd
         constexpr auto at(usize index) const
             -> Result< reference<const T>, runtime_error >
         {
-            if(index >= N)
+            if (index >= N)
             {
                 return runtime_error{"Tried to access elements out of bounds"};
             }
 
             return {_array[index]};
-        }
-
-        template < usize U, usize L >
-        constexpr auto gen_range()
-        {
-            static_assert(L - U <= N, "Out of range\n");
-
-            return [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                return stack_array<T, L - U>{_array[Ints]...};
-            }(make_index_sequence<L - U>{});
         }
 
         constexpr usize size() const
@@ -106,7 +95,7 @@ namespace hsd
     template <typename T, usize N>
     static constexpr void swap(stack_array<T, N>& first, stack_array<T, N>& second)
     {
-        for(usize _index = 0; _index < N; _index++)
+        for (usize _index = 0; _index < N; _index++)
         {
             swap(first[_index], second[_index]);
         }

@@ -129,6 +129,7 @@
         "nullptr",
         "posix",
         "printf",
+        "println",
         "qookie",
         "reimplementation",
         "s",

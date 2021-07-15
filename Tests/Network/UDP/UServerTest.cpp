@@ -2,7 +2,7 @@
 
 int main()
 {
-    hsd::tcp_server_v4 server{"0.0.0.0:48000"};
+    hsd::udp_server_v4 server{"0.0.0.0:54000"};
     char raw_buf[1024];
 
     while (true)

@@ -150,7 +150,6 @@ namespace hsd
             auto _sock_copy = new_socket;
             new_socket = accept(_sock_copy, sock_hint, &_size);
             close_socket(_sock_copy);
-
         }
         
         bool get_addr_info(
@@ -231,9 +230,7 @@ namespace hsd
                 }
                 else
                 {
-                    if (get_addr_info(
-                        ip_addr, nullptr, &_hints, &_result
-                    ) == false)
+                    if (get_addr_info(ip_addr, nullptr, &_hints, &_result) == false)
                     {
                         return _new_sock;
                     }
@@ -325,10 +322,7 @@ namespace hsd
             inline void close()
             {
                 if (is_valid())
-                {
                     close_socket(_socket_value);
-                    _socket_value = invalid_socket;
-                }
             }
 
             inline auto* get_addr()

@@ -6,24 +6,30 @@
             "command": "/usr/bin/clang++",
             "args": [
                 "-g",
+                "-std=c++20",
                 "-fsanitize=address",
                 "-Wall",
                 "-Wextra",
-                "-Wpedantic",
-                "-std=c++20",
+                "-Wclobbered",
+                "-Wcast-function-type",
+                "-Wempty-body",
+                "-Wignored-qualifiers",
+                "-Wimplicit-fallthrough=3",
+                "-Wmissing-field-initializers",
+                "-Wstring-compare",
+                "-Wtype-limits",
+                "-Wuninitialized",
+                "-Wunused-parameter", 
+                "-Wunused-but-set-parameter",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
-                "-lpthread",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${fileDirname}"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -35,13 +41,13 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-g",
-                "-fsanitize=address",
+                "-std=c++20",
+                //"-fsanitize=address",
                 "-Wall",
                 "-Wextra",
                 "-Wpedantic",
                 "-fanalyzer",
                 "-fconcepts-diagnostics-depth=5",
-                "-std=c++20",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
@@ -50,11 +56,8 @@
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${fileDirname}"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
             "group": {
                 "kind": "build",
                 "isDefault": true

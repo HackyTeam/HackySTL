@@ -23,7 +23,7 @@ namespace hsd
         {
             do
             {
-                _io_buf.reset_data();
+                _io_buf.clear();
                 char* _str = fgets(_io_buf.data(), 4096, stdin);
 
                 if (_str == nullptr)
@@ -39,7 +39,7 @@ namespace hsd
         {
             do
             {
-                _io_buf.reset_data();
+                _io_buf.clear();
                 scanf("%s", _io_buf.data());
             } while (_io_buf.c_str()[0] == '\n');
 
@@ -51,7 +51,7 @@ namespace hsd
         {
             do
             {
-                _wio_buf.reset_data();
+                _wio_buf.clear();
                 wchar* _str = fgetws(_wio_buf.data(), 4096, stdin);
 
                 if (_str == nullptr)
@@ -67,7 +67,7 @@ namespace hsd
         {
             do
             {
-                _wio_buf.reset_data();
+                _wio_buf.clear();
                 wscanf(L"%ls", _wio_buf.data());
             } while (_wio_buf.c_str()[0] == '\n');
 
@@ -202,7 +202,7 @@ namespace hsd
 
         Result< reference<sstream>, runtime_error > read_line()
         {
-            _io_buf.reset_data();
+            _io_buf.clear();
             
             if (only_write())
             {
@@ -210,7 +210,7 @@ namespace hsd
             }
             if (fgets(_io_buf.data(), 4096, _file_buf) == nullptr)
             { 
-                _io_buf.reset_data();
+                _io_buf.clear();
             }
             
             return {_io_buf};
@@ -218,7 +218,7 @@ namespace hsd
 
         Result< reference<wsstream>, runtime_error > wread_line()
         {
-            _wio_buf.reset_data();
+            _wio_buf.clear();
             
             if (only_write())
             {
@@ -226,7 +226,7 @@ namespace hsd
             }
             if (fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
             { 
-                _wio_buf.reset_data();
+                _wio_buf.clear();
             }
             
             return {_wio_buf};
@@ -234,7 +234,7 @@ namespace hsd
 
         Result< reference<sstream>, runtime_error > read()
         {
-            _io_buf.reset_data();
+            _io_buf.clear();
 
             if (only_write())
             {
@@ -242,7 +242,7 @@ namespace hsd
             }
             if (fscanf(_file_buf, "%s", _io_buf.data()) == EOF)
             {
-                _io_buf.reset_data();
+                _io_buf.clear();
             }
             
             return {_io_buf};
@@ -250,7 +250,7 @@ namespace hsd
 
         Result< reference<wsstream>, runtime_error > wread()
         {
-            _wio_buf.reset_data();
+            _wio_buf.clear();
 
             if (only_write())
             {
@@ -258,7 +258,7 @@ namespace hsd
             }
             if (fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
             {
-                _wio_buf.reset_data();
+                _wio_buf.clear();
             }
 
             return {_wio_buf};

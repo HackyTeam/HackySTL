@@ -1,8 +1,9 @@
 #include <Logging.hpp>
 #include <stdio.h>
+#include <limits>
 
 template <hsd::usize N>
-auto test_trace(hsd::stack_trace tr, const char* msg)
+auto test_trace(hsd::stack_trace, const char* msg)
     -> hsd::Result<void, hsd::stack_trace_error>
 {
     invoke_stacktrace_func(test_trace<N - 1>, msg).unwrap();

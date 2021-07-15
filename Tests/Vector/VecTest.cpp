@@ -1,6 +1,6 @@
-#include <Vector.hpp>
 #include <cstdio>
 #include <iterator>
+#include <Vector.hpp>
 
 struct S
 {

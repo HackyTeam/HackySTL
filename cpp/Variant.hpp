@@ -412,7 +412,7 @@ namespace hsd
                 constexpr asmv_base& operator=(asmv_base const&) = default;
             };
             template <typename... _Ts>
-            using asmv_for = conditional< conjunction< std::is_trivially_move_assignable<_Ts>... >::value,
+            using asmv_for = typename conditional< conjunction< std::is_trivially_move_assignable<_Ts>... >::value,
                                         cscp_for<_Ts...>, asmv_base<_Ts...> >::type;
 
             template <typename... _Ts>

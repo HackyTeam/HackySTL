@@ -25,10 +25,12 @@ namespace hsd
 
     namespace io_detail
     {
-        template <usize N, string_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<char, typename decltype(str)::char_type>)
         inline void _print(auto, FILE*) = delete;
 
-        template <usize N, wstring_literal<N> str>
+        template <basic_string_literal str>
+        requires (IsSame<wchar, typename decltype(str)::char_type>)
         inline void _print(auto, FILE*) = delete;
     } // namespace io_detail
 } // namespace hsd

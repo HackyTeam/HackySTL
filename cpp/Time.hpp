@@ -7,6 +7,20 @@
 #include <time.h>
 #include <wchar.h>
 
+#if defined(HSD_COMPILER_MSVC)
+#include <Windows.h>
+#define CLOCK_PROCESS_CPUTIME_ID 1
+
+int clock_gettime(hsd::i32, struct timespec *spec)      //C-file part
+{  
+    __int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
+    wintime      -= 116444736000000000i64;  //1jan1601 to 1jan1970
+    spec->tv_sec  = wintime / 10000000i64;           //seconds
+    spec->tv_nsec = wintime % 10000000i64 *100;      //nano-seconds
+    return 0;
+}
+#endif
+
 namespace hsd
 {
     class time
@@ -62,7 +76,13 @@ namespace hsd
 
         inline string to_text() const
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            char _new_buf[128]{};
+            asctime_s(_new_buf, 127, &_time);
+            return {_new_buf};
+            #else
             return asctime(&_time);
+            #endif
         }
 
         constexpr void set_seconds(u16 seconds)
@@ -478,15 +498,26 @@ namespace hsd
         inline date()
             : _epoch_date{::time(nullptr)}
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            time_ptr _date_val = nullptr;
+            localtime_s(_date_val, &_epoch_date);
+            #else
             auto* _date_val = localtime(&_epoch_date);
+            #endif
+            
             set_time_value(_date_val);
         }
 
         inline date& update()
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            time_ptr _date_val = nullptr;
+            localtime_s(_date_val, &_epoch_date);
+            #else
             auto* _date_val = localtime(&_epoch_date);
-            set_time_value(_date_val);
+            #endif
 
+            set_time_value(_date_val);
             return *this;
         }
 
@@ -754,14 +785,14 @@ namespace hsd
         static consteval time operator""_s(u64 seconds)
         {
             time _new_time{};
-            _new_time.set_seconds(seconds);
+            _new_time.set_seconds(static_cast<u16>(seconds));
             return _new_time;
         }
 
         static consteval time operator""_min(u64 minutes)
         {
             time _new_time{};
-            _new_time.set_minutes(minutes);
+            _new_time.set_minutes(static_cast<u16>(minutes));
             return _new_time;
         }
 
@@ -775,21 +806,21 @@ namespace hsd
         static consteval time operator""_md(u64 month_day)
         {
             time _new_time{};
-            _new_time.set_month_day(month_day);
+            _new_time.set_month_day(static_cast<u16>(month_day));
             return _new_time;
         }
 
         static consteval time operator""_m(u64 month)
         {
             time _new_time{};
-            _new_time.set_month(month);
+            _new_time.set_month(static_cast<u16>(month));
             return _new_time;
         }
 
         static consteval time operator""_yr(u64 year)
         {
             time _new_time{};
-            _new_time.set_year(year);
+            _new_time.set_year(static_cast<u16>(year));
             return _new_time;
         }
 
@@ -830,10 +861,10 @@ namespace hsd
                 );
 
                 _new_time.set_month(
-                    cstring::parse<usize>(_date_start)
+                    cstring::parse<u16>(_date_start)
                 );
                 
-                _new_time.set_month_day(_month_day);
+                _new_time.set_month_day(static_cast<u16>(_month_day));
                 _date_start = _month_border + 1;
             }
 
@@ -874,7 +905,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_minutes(
-                        cstring::parse<usize>(_date_start)
+                        cstring::parse<u16>(_date_start)
                     );
 
                     _date_start = _min_border + 1;
@@ -883,7 +914,7 @@ namespace hsd
                 // Seconds
                 {
                     _new_time.set_seconds(
-                        cstring::parse<usize>(_date_start)
+                        cstring::parse<u16>(_date_start)
                     );
                 }
             }
@@ -915,7 +946,7 @@ namespace hsd
                 }
 
                 _new_time.set_month(
-                    cstring::parse<usize>(_date_start)
+                    cstring::parse<u16>(_date_start)
                 );
 
                 _date_start = _month_border + 1;
@@ -929,7 +960,7 @@ namespace hsd
                 );
 
                 _new_time.set_month_day(
-                    cstring::parse<usize>(_date_start)
+                    cstring::parse<u16>(_date_start)
                 );
                 
                 _date_start = _day_border + 1;
@@ -972,7 +1003,7 @@ namespace hsd
                         cstring::find(_date_start, ':');
 
                     _new_time.set_minutes(
-                        cstring::parse<usize>(_date_start)
+                        cstring::parse<u16>(_date_start)
                     );
 
                     _date_start = _min_border + 1;
@@ -981,7 +1012,7 @@ namespace hsd
                 // Seconds
                 {
                     _new_time.set_seconds(
-                        cstring::parse<usize>(_date_start)
+                        cstring::parse<u16>(_date_start)
                     );
                 }
             }

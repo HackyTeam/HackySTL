@@ -51,34 +51,34 @@ namespace hsd
             precise_clock _clk{};
 
         public:
-            profiler_value(
+            inline profiler_value(
                 const char* file_name = __builtin_FILE(),
                 const char* func = __builtin_FUNCTION(), 
                 i32 line = __builtin_LINE(), i32 column = 0)
                 : _loc{file_name, func, line, column}
             {}
 
-            const char* file_name() const
+            inline const char* file_name() const
             {
                 return _loc.file_name();
             }
 
-            const char* function_name() const
+            inline const char* function_name() const
             {
                 return _loc.function_name();
             }
 
-            i32 line() const
+            inline i32 line() const
             {
                 return _loc.line();
             }
 
-            i32 column() const
+            inline i32 column() const
             {
                 return _loc.column();
             }
 
-            precise_clock elapsed_time() const
+            inline precise_clock elapsed_time() const
             {
                 return _clk.elapsed_time();
             }
@@ -91,19 +91,19 @@ namespace hsd
         using stack_type = hsd::vector<logger_detail::source_location>;
         using stack_iterator = typename stack_type::iterator;
 
-        static inline stack_type _stack;
+        stack_type _stack;
 
     public:
 
-        stack_trace() = default;
-        stack_trace(const stack_trace&) = default;
+        inline stack_trace() = default;
+        inline stack_trace(const stack_trace&) = default;
 
-        ~stack_trace()
+        inline ~stack_trace()
         {
             _stack.pop_back();
         }
 
-        stack_trace& add(
+        inline stack_trace& add(
             const char* func, 
             const char* file_name = __builtin_FILE(),
             i32 line = __builtin_LINE(), i32 column = 0)
@@ -112,7 +112,7 @@ namespace hsd
             return *this;
         }
 
-        void print_stack()
+        inline void print_stack()
         {
             for (auto it = _stack.rbegin(); it != _stack.rend(); it--)
             {
@@ -124,7 +124,7 @@ namespace hsd
             }
         }
         
-        logger_detail::source_location& get() const
+        inline const logger_detail::source_location& get() const
         {
             return _stack.back();
         }
@@ -136,19 +136,19 @@ namespace hsd
         using profiler_type = hsd::vector<logger_detail::profiler_value>;
         using profiler_iterator = typename profiler_type::iterator;
 
-        static inline profiler_type _stack;
+        profiler_type _stack;
 
     public:
 
-        profiler() = default;
-        profiler(const profiler&) = default;
+        inline profiler() = default;
+        inline profiler(const profiler&) = default;
 
-        ~profiler()
+        inline ~profiler()
         {
             if(_stack.size() > 0)
             {
                 printf(
-                    "Info: %s:%d\n\tFunction: %s, time taken: %lluus\n", 
+                    "Info: %s:%d\n\tFunction: %s, time taken: %llu\n", 
                     get().file_name(), get().line(), get().function_name(),
                     get().elapsed_time().to_microseconds()
                 );
@@ -156,7 +156,7 @@ namespace hsd
             _stack.pop_back();
         }
 
-        profiler& add(
+        inline profiler& add(
             const char* func, i32 line = __builtin_LINE(),
             const char* file_name = __builtin_FILE())
         {
@@ -164,7 +164,7 @@ namespace hsd
             return *this;
         }
         
-        logger_detail::profiler_value& get() const
+        inline const logger_detail::profiler_value& get() const
         {
             return _stack.back();
         }
@@ -181,11 +181,11 @@ namespace hsd
 
     struct stack_trace_error
     {
-        const char* operator()() const
+        inline const char* operator()() const
         {   
             exec_stack.print_stack();
             fputc('\n', stderr);
-            return "The stack was unwined up there";
+            return "The stack was unwind up there";
         }
     };
 } // namespace hsd

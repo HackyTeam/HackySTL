@@ -6,6 +6,18 @@
 	#define HSD_CONSTEXPR
 #endif
 
+#if defined(__GNUC__)
+	#define HSD_COMPILER_GCC
+#elif defined(__INTEL_COMPILER)
+	#define HSD_COMPILER_INTEL
+#elif defined(__clang__)
+	#define HSD_COMPILER_CLANG
+#elif defined(_MSC_VER)
+	#define HSD_COMPILER_MSVC
+#else
+	#define HSD_COMPILER_UNKNOWN
+#endif
+
 #if defined(HSD_COMPILER_MSVC)
     #define HSD_FUNCTION_NAME __FUNCSIG__
 #elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
@@ -32,16 +44,4 @@
 #if defined(HSD_PLATFORM_LINUX) || defined(HSD_PLATFORM_BSD) || \
 	defined(HSD_PLATFORM_OSX) || defined(HSD_PLATFORM_UNIX)
 	#define HSD_PLATFORM_POSIX
-#endif
-
-#if defined(__GNUC__)
-	#define HSD_COMPILER_GCC
-#elif defined(__INTEL_COMPILER)
-	#define HSD_COMPILER_INTEL
-#elif defined(__clang__)
-	#define HSD_COMPILER_CLANG
-#elif defined(_MSC_VER)
-	#define HSD_COMPILER_MSVC
-#else
-	#define HSD_COMPILER_UNKNOWN
 #endif

@@ -89,13 +89,7 @@ namespace hsd
 
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (_print<
-                    basic_string_literal< 
-                        char_type, _fmt_buf[Ints].second + 1 
-                    >{
-                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                    }
-                >(args), ...);
+                (_print<basic_string_literal<char_type, _fmt_buf[Ints].second + 1>{_fmt_buf[Ints].first, _fmt_buf[Ints].second}>(args), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<_last>();

@@ -7,12 +7,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(HSD_COMPILER_MSVC)
+
+#define hsd_fprint_check(stream, format, ...)\
+do\
+{\
+    fprintf(stream, format __VA_OPT__(,) __VA_ARGS__);\
+} while (0)
+
+#else
+
 #define hsd_fprint_check(stream, format, ...)\
 do\
 {\
     if(fprintf(stream, format __VA_OPT__(,) __VA_ARGS__) == -1)\
         fwprintf(stream, L##format __VA_OPT__(,) __VA_ARGS__);\
 } while (0)
+
+#endif
+
+#if defined(HSD_COMPILER_MSVC)
+
+#define hsd_fputs_check(stream, string)\
+do\
+{\
+    fputs(string "\n", stream);\
+} while (0)
+
+#else
 
 #define hsd_fputs_check(stream, string)\
 do\
@@ -21,6 +43,8 @@ do\
         fputws(L##string L"\n", stream);\
 } while (0)
 
+#endif
+
 #define hsd_panic(message)\
 do\
 {\
@@ -28,8 +52,7 @@ do\
         stderr, "Got an error in file:"\
         "\n%s\nInvoked from: %s at line:"\
         " %zu\nWith the Err result value:"\
-        " %s\n", __FILE__, \
-        __builtin_FUNCTION(), \
+        " %s\n", __FILE__, HSD_FUNCTION_NAME,\
         __LINE__, message\
     );\
     \
@@ -44,7 +67,7 @@ do\
         "\n%s\nInvoked from: %s at line:"\
         " %zu\nWith the Err result value:"\
         " This funcion is unimplemented\n", \
-        __FILE__, __builtin_FUNCTION(), __LINE__\
+        __FILE__,  HSD_FUNCTION_NAME, __LINE__\
     );\
     \
     abort();\
@@ -186,7 +209,7 @@ namespace hsd
             }
             else
             {
-                if constexpr (requires {_err_data();})
+                if constexpr (Invocable<Err>)
                 {
                     static_assert(
                         is_same<const char*, Result_detail::InvokeType<Err>>::value, 
@@ -450,7 +473,7 @@ namespace hsd
         {
             if (!_initialized)
             {
-                if constexpr (requires {_err_data();})
+                if constexpr (Invocable<Err>)
                 {
                     static_assert(
                         is_same<const char*, Result_detail::InvokeType<Err>>::value, 

@@ -2,7 +2,7 @@
 
 int main()
 {
-    hsd::udp::client client{hsd::net::protocol_type::ipv4, "127.0.0.1:54000"};
+    hsd::udp::client client{hsd::net::protocol_type::ipv4, "192.168.0.104:54000"};
     char raw_buf[1024];
 
     while (true)

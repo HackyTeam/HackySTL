@@ -5,16 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "clang++ - Build and debug active file",
-            "type": "cppvsdbg",
+            "name": "cl.exe - Build and debug active file",
+            "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}.exe",
+            "program": "${workspaceFolder}\\Tests\\ExecDumps\\${fileBasenameNoExtension}.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": false,
-            "preLaunchTask": "C/C++: clang++ build active file"
+            "preLaunchTask": "C/C++: cl.exe build active file"
         }
     ]
 }

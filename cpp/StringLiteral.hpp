@@ -17,6 +17,11 @@ namespace hsd
             copy_n(str, N, data);
         }
 
+        consteval basic_string_literal(const CharT* str, usize len)
+        {
+            copy_n(str, len, data);
+        }
+
         template <usize N2>
         consteval auto operator+(
             const basic_string_literal<CharT, N2>& rhs) const
@@ -34,11 +39,6 @@ namespace hsd
             copy_n(data, N, _str.data);
             copy_n(rhs, N2, (_str.data + N - 1));
             return _str;
-        }
-
-        consteval basic_string_literal(const CharT* str, usize len)
-        {
-            copy_n(str, len, data);
         }
 
         consteval usize size() const

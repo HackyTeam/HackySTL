@@ -2,14 +2,14 @@
 
 int main()
 {
-    hsd::tcp_server_v4 server{"0.0.0.0:48000"};
+    hsd::tcp_server_v4 server{"0.0.0.0:54000"};
     char raw_buf[1024];
 
     while (true)
     {
         auto [code, buf] = server.receive();
         
-        if (code == static_cast<hsd::isize>(hsd::net::received_state::ok))
+        if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
         {
             hsd::io::print<"CLIENT> {}\n">(buf.data());
             

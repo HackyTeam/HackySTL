@@ -30,7 +30,7 @@ namespace hsd
 
         enum class received_state
         {
-            err = -1,
+            error = -1,
             disconnected,
             ok
         };
@@ -149,6 +149,7 @@ namespace hsd
             sockaddr* sock_hint, socklen_t* hint_size)
         {
             auto _sock_copy = new_socket;
+            listen(_sock_copy, SOMAXCONN);
             new_socket = accept(_sock_copy, sock_hint, hint_size);
             close_socket(_sock_copy);
         }

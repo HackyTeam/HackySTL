@@ -9,7 +9,7 @@ int main()
     {
         auto [code, buf] = server.receive();
         
-        if (code == static_cast<hsd::isize>(hsd::net::received_state::ok))
+        if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
         {
             hsd::io::print<"CLIENT> {}\n">(buf.data());
             

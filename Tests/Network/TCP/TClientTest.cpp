@@ -22,9 +22,10 @@ int main()
         auto [code, buf] = client.receive();
         
         if (code == static_cast<hsd::isize>(hsd::net::received_state::ok))
+        {
             hsd::io::print<"SERVER> {}\n">(buf.data());
-        
-        if (code != static_cast<hsd::isize>(hsd::net::received_state::ok))
+        }
+        else
         {
             hsd_println_err("Error: {}", client.error_message());
             break;

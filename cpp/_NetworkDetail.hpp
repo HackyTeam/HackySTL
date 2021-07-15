@@ -139,16 +139,17 @@ namespace hsd
 
         template <net::socket_type, net::socket_kind>
         static inline void handle_new_socket(
-            net::native_socket_type&, sockaddr*) {}
+            net::native_socket_type&, sockaddr*, socklen_t*) {}
 
         template <>
         inline void handle_new_socket<
             net::socket_type::server, net::socket_kind::tcp
-        >(net::native_socket_type& new_socket, sockaddr* sock_hint)
+        >(
+            net::native_socket_type& new_socket, 
+            sockaddr* sock_hint, socklen_t* hint_size)
         {
-            socklen_t _size = sizeof(sockaddr_storage);
             auto _sock_copy = new_socket;
-            new_socket = accept(_sock_copy, sock_hint, &_size);
+            new_socket = accept(_sock_copy, sock_hint, hint_size);
             close_socket(_sock_copy);
         }
         
@@ -348,7 +349,9 @@ namespace hsd
                     SocketType, SocketOption
                 >(ip_addr, port);
 
-                handle_new_socket<SocketType, SocketKind>(_socket_value, get_addr());
+                handle_new_socket<SocketType, SocketKind>(
+                    _socket_value, get_addr(), get_addr_len()
+                );
             }
         };
     } // network_core

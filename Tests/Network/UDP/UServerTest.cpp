@@ -16,12 +16,11 @@ int main()
             // Copy the data to a buffer
             hsd::cstring::copy(raw_buf, buf.c_str());
             server.send<"{}">(raw_buf);
-        }
-        
-        if (hsd::cstring::compare(raw_buf, "exit") == 0)
-            break;
 
-        if (code != static_cast<hsd::isize>(hsd::net::received_state::ok))
+            if (hsd::cstring::compare(raw_buf, "exit") == 0)
+                break;
+        }
+        else
         {
             hsd_println_err("Error: {}", server.error_message());
             break;

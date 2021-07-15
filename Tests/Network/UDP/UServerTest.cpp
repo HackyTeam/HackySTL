@@ -11,7 +11,7 @@ int main()
         
         if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
         {
-            hsd::io::print<"CLIENT> {}\n">(buf.data());
+            hsd_println("CLIENT> {}", buf.data());
             
             // Copy the data to a buffer
             hsd::cstring::copy(raw_buf, buf.c_str());

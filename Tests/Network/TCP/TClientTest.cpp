@@ -23,7 +23,7 @@ int main()
         
         if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
         {
-            hsd::io::print<"SERVER> {}\n">(buf.data());
+            hsd_println("SERVER> {}", buf.data());
         }
         else
         {

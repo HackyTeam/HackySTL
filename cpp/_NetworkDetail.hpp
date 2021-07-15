@@ -3,9 +3,9 @@
 #include "Io.hpp"
 #include "Types.hpp"
 #include "_Define.hpp"
-#include <netinet/in.h>
 
 #if defined(HSD_PLATFORM_POSIX)
+#include <netinet/in.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -251,7 +251,7 @@ namespace hsd
                     _rp->ai_family, _rp->ai_socktype, _rp->ai_protocol
                 );
 
-                if (_new_sock != -1)
+                if (_new_sock != static_cast<decltype(_new_sock)>(-1))
                 {
                     if (use_socket<SocketType>(_new_sock, _rp))
                         break;

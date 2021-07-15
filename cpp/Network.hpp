@@ -11,10 +11,13 @@ namespace hsd
         template <net::socket_kind, net::socket_type>
         struct send;
 
+        template <net::socket_kind, net::socket_type>
+        struct receive;
+
         template <net::socket_type SockType>
         struct send<net::socket_kind::tcp, SockType>
         {
-            static isize invoke(auto& socket, const void* buffer, usize size)
+            static isize invoke(auto& socket, const auto* buffer, usize size)
             requires (IsSame<decltype(socket.get()), net::native_socket_type>)
             {
                 return ::send(socket.get(), buffer, size, 0);
@@ -24,7 +27,7 @@ namespace hsd
         template <>
         struct send<net::socket_kind::udp, net::socket_type::server>
         {
-            static isize invoke(auto& socket, const void* buffer, usize size)
+            static isize invoke(auto& socket, const auto* buffer, usize size)
             requires (IsSame<decltype(socket.get()), net::native_socket_type>)
             {
                 return ::sendto(
@@ -37,7 +40,7 @@ namespace hsd
         template <>
         struct send<net::socket_kind::udp, net::socket_type::client>
         {
-            static isize invoke(auto& socket, const void* buffer, usize size)
+            static isize invoke(auto& socket, const auto* buffer, usize size)
             requires (IsSame<decltype(socket.get()), net::native_socket_type>)
             {
                 return ::sendto(
@@ -46,13 +49,10 @@ namespace hsd
             }
         };
 
-        template <net::socket_kind, net::socket_type>
-        struct receive;
-
         template <net::socket_type SockType>
         struct receive<net::socket_kind::tcp, SockType>
         {
-            static isize invoke(auto& socket, void* buffer, usize size)
+            static isize invoke(auto& socket, auto* buffer, usize size)
             requires (IsSame<decltype(socket.get()), net::native_socket_type>)
             {
                 return ::recv(socket.get(), buffer, size, 0);
@@ -62,7 +62,7 @@ namespace hsd
         template <net::socket_type SockType>
         struct receive<net::socket_kind::udp, SockType>
         {
-            static isize invoke(auto& socket, void* buffer, usize size)
+            static isize invoke(auto& socket, auto* buffer, usize size)
             requires (IsSame<decltype(socket.get()), net::native_socket_type>)
             {
                 return ::recvfrom(

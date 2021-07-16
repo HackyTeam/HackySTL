@@ -92,6 +92,8 @@ namespace hsd
         using buffer_type = hsd::static_sstream<4096>;
         static thread_local inline buffer_type _buffer_recv{};
         static thread_local inline buffer_type _buffer_send{};
+        static thread_local inline bool _has_recv{};
+        static thread_local inline bool _has_send{};
 
     public:
         inline socket(const char* addr)
@@ -109,24 +111,45 @@ namespace hsd
 
         template <hsd::basic_string_literal fmt, typename... Args>
         requires (IsSame<typename decltype(fmt)::char_type, char>)
-        inline isize send(Args&&... args)
+        inline bool send(Args&&... args)
         {
+            _has_recv = false;
             memset(_buffer_send.data(), 0, _buffer_send.capacity());
             _buffer_send.template write_data<fmt>(forward<Args>(args)...);
             
-            return network_core::send<SocketKind, SocketType>::template invoke(
-                _sock, _buffer_send.data(), _buffer_send.size()
-            );
+            auto _length = network_core::send<
+                SocketKind, SocketType>::template invoke(
+                    _sock, _buffer_send.data(), _buffer_send.size()
+                );
+
+            if (_length <= 0)
+            {
+                return false;
+            }
+            else
+            {
+                _has_send = true;
+                return true;
+            }
         }
 
-        inline hsd::pair<isize, buffer_type&> receive()
+        inline hsd::pair<bool, buffer_type&> receive()
         {
+            _has_send = false;
             memset(_buffer_recv.data(), 0, _buffer_recv.capacity());
             isize _size = network_core::receive<SocketKind, SocketType>::invoke(
                 _sock, _buffer_recv.data(), _buffer_recv.capacity()
             );
-            
-            return {_size, _buffer_recv};
+
+            if (_size <= 0)
+            {
+                return {false, _buffer_recv};
+            }
+            else
+            {
+                _has_recv = true;
+                return {true, _buffer_recv};
+            }
         }
     };
 

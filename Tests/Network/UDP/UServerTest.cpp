@@ -7,15 +7,22 @@ int main()
 
     while (true)
     {
-        auto [code, buf] = server.receive();
+        auto [recv_state, buf] = server.receive();
         
-        if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
+        if (recv_state == true)
         {
             hsd_println("CLIENT> {}", buf.data());
             
             // Copy the data to a buffer
             hsd::cstring::copy(raw_buf, buf.c_str());
-            server.send<"{}">(raw_buf);
+            bool send_state = server.send<"{}">(raw_buf);
+
+            if (send_state == false)
+            {
+                hsd_println_err(
+                    "Error: {}", server.error_message()
+                );
+            }
 
             if (hsd::cstring::compare(raw_buf, "exit") == 0)
                 break;

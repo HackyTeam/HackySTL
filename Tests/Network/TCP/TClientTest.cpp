@@ -11,17 +11,17 @@ int main()
         
         auto& stream_ref = hsd::io::read_line().unwrap();
         hsd::cstring::copy_until(raw_buf, stream_ref.c_str(), '\n');
-        auto state = client.send<"{}">(raw_buf);
+        auto send_state = client.send<"{}">(raw_buf);
 
-        if (state == static_cast<hsd::isize>(hsd::net::received_state::error))
+        if (send_state == false)
         {
             hsd_println_err("Error: {}", client.error_message());
             continue;
         }
 
-        auto [code, buf] = client.receive();
+        auto [recv_state, buf] = client.receive();
         
-        if (code != static_cast<hsd::isize>(hsd::net::received_state::error))
+        if (recv_state == true)
         {
             hsd_println("SERVER> {}", buf.data());
         }

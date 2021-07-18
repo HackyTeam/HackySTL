@@ -5,7 +5,9 @@
 #include "_Define.hpp"
 
 #if defined(HSD_PLATFORM_POSIX)
+#include <poll.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -16,6 +18,7 @@
 #else
 #include <unistd.h>
 #include <ws2tcpip.h>
+#include <winsock2.h>
 #endif
 
 namespace hsd
@@ -37,7 +40,8 @@ namespace hsd
 
         enum class socket_type
         {
-            server,
+            direct_server,
+            multi_server,
             client
         };
 
@@ -105,10 +109,7 @@ namespace hsd
             }
         }
         #endif
-    } // namespace network_detail
 
-    namespace network_core
-    {
         static inline void close_socket(net::native_socket_type& socket)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
@@ -120,11 +121,36 @@ namespace hsd
             socket = -1;
         }
 
+        static inline const char* error_message()
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            static char _msg_buf[256];
+            FormatMessageA(
+                FORMAT_MESSAGE_FROM_SYSTEM | 
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, WSAGetLastError(), 
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+                _msg_buf, 256, nullptr
+            );
+
+            return buf;
+            #else
+            return strerror(errno);
+            #endif
+        }
+
         template <net::socket_type>
         static inline bool use_socket(net::native_socket_type, addrinfo*) = delete;
 
         template <>
-        inline bool use_socket<net::socket_type::server>(
+        inline bool use_socket<net::socket_type::direct_server>(
+            net::native_socket_type sock, addrinfo* rp)
+        {
+            return bind(sock, rp->ai_addr, rp->ai_addrlen) != -1;
+        }
+
+        template <>
+        inline bool use_socket<net::socket_type::multi_server>(
             net::native_socket_type sock, addrinfo* rp)
         {
             return bind(sock, rp->ai_addr, rp->ai_addrlen) != -1;
@@ -138,21 +164,63 @@ namespace hsd
         }
 
         template <net::socket_type, net::socket_kind>
-        static inline void handle_new_socket(
-            net::native_socket_type&, sockaddr*, socklen_t*) {}
+        struct new_socket_handler
+        {
+            static inline void invoke(auto&) {}
+        };
 
         template <>
-        inline void handle_new_socket<
-            net::socket_type::server, net::socket_kind::tcp
-        >(
-            net::native_socket_type& new_socket, 
-            sockaddr* sock_hint, socklen_t* hint_size)
+        struct new_socket_handler<net::socket_type::direct_server, net::socket_kind::tcp>
         {
-            auto _sock_copy = new_socket;
-            listen(_sock_copy, SOMAXCONN);
-            new_socket = accept(_sock_copy, sock_hint, hint_size);
-            close_socket(_sock_copy);
-        }
+            static inline void invoke(auto& new_socket)
+            {
+                auto _sock_copy = new_socket.get_socket();
+                listen(_sock_copy, SOMAXCONN);
+                new_socket.get_socket() = accept(
+                    _sock_copy, new_socket.get_addr(), new_socket.get_addr_len()
+                );
+                
+                close_socket(_sock_copy);
+            }
+        };
+
+        template <>
+        struct new_socket_handler<net::socket_type::multi_server, net::socket_kind::tcp>
+        {
+            static inline void invoke(auto& new_socket)
+            {
+                static i32 on = 1;
+                auto _listening = new_socket.get_socket();
+
+                auto _rc = setsockopt(
+                    _listening, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)
+                );
+                
+                if (_rc < 0)
+                {
+                    perror("setsockopt() failed");
+                    close_socket(_listening);
+                    abort();
+                }
+
+            
+                #if defined(HSD_PLATFORM_WINDOWS)
+                _rc = ioctlsocket(_listening, FIONBIO, &on);
+                #else
+                _rc = ioctl(_listening, FIONBIO, &on);
+                #endif
+
+                if (_rc < 0)
+                {
+                    perror("ioctl() failed");
+                    close_socket(_listening);
+                    abort();
+                }
+
+                new_socket.get_server_socket() = _listening;
+                listen(_listening, SOMAXCONN);
+            }
+        };
         
         bool get_addr_info(
             const char* name, const char* service,
@@ -266,94 +334,5 @@ namespace hsd
             freeaddrinfo(_result);
             return _new_sock;
         }
-
-        template <
-            net::socket_kind SocketKind, 
-            net::ip_protocol_type IpProtocol,
-            net::socket_type SocketType, 
-            net::socket_option SocketOption
-        >
-        class socket
-        {
-        private:
-            net::native_socket_type _socket_value = -1;
-            sockaddr_storage _local_addr{};
-            socklen_t _local_addr_len = sizeof(sockaddr_storage);
-
-        public:
-            static constexpr net::native_socket_type invalid_socket = -1;
-
-            inline socket(const char* ip_addr = "0.0.0.0:54000", const char* port = nullptr)
-            {
-                #if defined(HSD_PLATFORM_WINDOWS)
-                network_detail::init_winsock();
-                #endif
-
-                switch_to(ip_addr, port);
-            }
-
-            inline socket(const socket&) = delete;
-            inline socket& operator=(const socket&) = delete;
-
-            inline socket(socket&& other)
-            {
-                _socket_value = exchange(other._socket_value, invalid_socket);
-            }
-
-            inline socket& operator=(socket&& rhs)
-            {
-                _socket_value = exchange(rhs._socket_value, invalid_socket);
-                return *this;
-            }
-
-            inline ~socket()
-            {
-                close();
-            }
-
-            inline bool is_valid() const
-            {
-                return _socket_value != invalid_socket;
-            }
-
-            inline bool is_invalid() const
-            {
-                return _socket_value == invalid_socket;
-            }
-
-            inline void close()
-            {
-                if (is_valid())
-                    close_socket(_socket_value);
-            }
-
-            inline auto* get_addr()
-            {
-                return reinterpret_cast<sockaddr*>(&_local_addr);
-            }
-
-            inline auto* get_addr_len()
-            {
-                return &_local_addr_len;
-            }
-
-            inline auto get() const
-            {
-                return _socket_value;
-            }
-
-            inline void switch_to(const char* ip_addr, const char* port = nullptr)
-            {
-                close();
-                _socket_value = network_core::switch_to<
-                    SocketKind, IpProtocol, 
-                    SocketType, SocketOption
-                >(ip_addr, port);
-
-                handle_new_socket<SocketType, SocketKind>(
-                    _socket_value, get_addr(), get_addr_len()
-                );
-            }
-        };
-    } // network_core
+    } // namespace network_detail
 } // namespace hsd

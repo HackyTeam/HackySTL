@@ -13,7 +13,7 @@ int main()
         {
             while (poll_server.check_current_index())
             {
-                if (!poll_server.check_and_add_socket())
+                if (!poll_server.check_and_add_socket() && poll_server.is_readable())
                 {
                     // This means we need to receive data and send it back
                     auto [receive_status, buf] = server.receive();

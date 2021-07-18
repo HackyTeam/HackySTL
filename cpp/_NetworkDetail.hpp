@@ -189,12 +189,22 @@ namespace hsd
         {
             static inline void invoke(auto& new_socket)
             {
-                static i32 on = 1;
                 auto _listening = new_socket.get_socket();
 
+                #if defined(HSD_PLATFORM_WINDOWS)
+                static ulong _on = 1;
                 auto _rc = setsockopt(
-                    _listening, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)
+                    _listening, SOL_SOCKET, SO_REUSEADDR, 
+                    reinterpret_cast<char*>(&_on), sizeof(_on)
                 );
+                #else
+                static i32 _on = 1;
+                auto _rc = setsockopt(
+                    _listening, SOL_SOCKET, 
+                    SO_REUSEADDR,
+                    &_on, sizeof(_on)
+                );
+                #endif
                 
                 if (_rc < 0)
                 {
@@ -202,12 +212,11 @@ namespace hsd
                     close_socket(_listening);
                     abort();
                 }
-
             
                 #if defined(HSD_PLATFORM_WINDOWS)
-                _rc = ioctlsocket(_listening, FIONBIO, &on);
+                _rc = ioctlsocket(_listening, FIONBIO, &_on);
                 #else
-                _rc = ioctl(_listening, FIONBIO, &on);
+                _rc = ioctl(_listening, FIONBIO, &_on);
                 #endif
 
                 if (_rc < 0)

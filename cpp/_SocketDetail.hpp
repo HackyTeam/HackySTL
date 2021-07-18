@@ -22,6 +22,7 @@ namespace hsd
 
             virtual inline usize get_size() const = 0;
             virtual inline bool is_empty() const = 0;
+            virtual inline bool is_readable() const = 0;
             virtual inline bool check_current_index() = 0;
             virtual inline void advance() = 0;
             virtual inline i32 poll(i32 timeout_ms) = 0;
@@ -137,14 +138,19 @@ namespace hsd
                 }
             }
 
-            inline bool is_valid() const override
+            virtual inline bool is_valid() const override
             {
                 return _sock_infos[_current_index].fd != invalid_socket;
             }
 
-            inline bool is_invalid() const override
+            virtual inline bool is_invalid() const override
             {
                 return _sock_infos[_current_index].fd == invalid_socket;
+            }
+
+            virtual inline bool is_readable() const override
+            {
+                return _sock_infos[_current_index].revents & POLLIN;
             }
 
             virtual inline void close() override
@@ -236,6 +242,8 @@ namespace hsd
                         });
                     }
 
+                    // Return true on both cases 
+                    // in order to skip the current
                     return true;
                 }
 

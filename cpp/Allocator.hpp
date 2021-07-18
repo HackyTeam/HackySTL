@@ -350,7 +350,7 @@ namespace hsd
                 }
                 else
                 {
-                    return _result;
+                    return {_result, ok_value{}};
                 }
             }
         }

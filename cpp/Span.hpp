@@ -7,7 +7,7 @@ namespace hsd
 {
     namespace span_detail
     {
-        template <ForwardIterable T>
+        template <ContiguousForwardIterable T>
         class countable_iterator
         {
         private:
@@ -31,6 +31,11 @@ namespace hsd
                 countable_iterator tmp = *this;
                 operator++();
                 return tmp;
+            }
+
+            constexpr isize operator-(countable_iterator other) const
+            {
+                return _iter - other._iter;
             }
 
             constexpr bool operator==(const countable_iterator& rhs) const
@@ -60,7 +65,7 @@ namespace hsd
             }
         };
 
-        template <ForwardIterable T>
+        template <ContiguousForwardIterable T>
         class iterator
         {
         private:
@@ -82,6 +87,11 @@ namespace hsd
                 iterator tmp = *this;
                 operator++();
                 return tmp;
+            }
+
+            constexpr isize operator-(iterator other) const
+            {
+                return _iter - other._iter;
             }
 
             constexpr bool operator==(const iterator& rhs) const
@@ -106,7 +116,7 @@ namespace hsd
         };
     } // namespace span_detail
 
-    template <ForwardIterable T>
+    template <ContiguousForwardIterable T>
     class span
     {
     private:
@@ -120,7 +130,8 @@ namespace hsd
         using pointer_type = T*;
         using value_type = T;
 
-        constexpr span(const iter_type& begin, const iter_type& end, usize view_size)
+        constexpr span(const iter_type& begin, 
+            const iter_type& end, usize view_size)
             : _view_size{view_size}, _begin{begin}, _end{end}
         {}
 

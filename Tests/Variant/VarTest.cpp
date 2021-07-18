@@ -99,7 +99,7 @@ int main()
 
     hsd::io::print<"{}\n">(va1.get<0>().unwrap());
     
-    auto _res = va1.get<float>();
+    auto _res = va1.get<hsd::f32>();
 
     if(_res) 
     {

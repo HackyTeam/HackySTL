@@ -8,10 +8,11 @@ int main()
 {
     {
         puts("hsd::vector:");
-        constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
-        constexpr auto square = [](auto val){ return val * val; };
-        constexpr auto less = [](auto val){ return val < 5; };
-        constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
+        constexpr auto is_even = [](const auto& val){ return (val & 1) == 0; };
+        constexpr auto square = [](const auto& val){ return val * val; };
+        constexpr auto less = [](const auto& val){ return val < 5; };
+        constexpr auto is_even_square = [](const auto& val) 
+            -> hsd::optional<hsd::remove_cvref_t<decltype(val)>>
         {
             if ((val & 1) == 0)
             {
@@ -150,10 +151,11 @@ int main()
 
     {
         puts("hsd::list:");
-        constexpr auto is_even = [](auto val){ return (val & 1) == 0; };
-        constexpr auto square = [](auto val){ return val * val; };
-        constexpr auto less = [](auto val){ return val < 5; };
-        constexpr auto is_even_square = [](auto val) -> hsd::optional<decltype(val)>
+        constexpr auto is_even = [](const auto& val){ return (val & 1) == 0; };
+        constexpr auto square = [](const auto& val){ return val * val; };
+        constexpr auto less = [](const auto& val){ return val < 5; };
+        constexpr auto is_even_square = [](const auto& val)
+            -> hsd::optional<hsd::remove_cvref_t<decltype(val)>>
         {
             if ((val & 1) == 0)
             {
@@ -296,7 +298,8 @@ int main()
         constexpr auto less = [](const auto& val){ return val.second < 5; };
         constexpr auto is_even = [](const auto& val){ return (val.second & 1) == 0; };
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };
-        constexpr auto is_even_square = []<typename T>(const T& val) -> hsd::optional<T>
+        constexpr auto is_even_square = [](const auto& val) 
+            -> hsd::optional<hsd::remove_cvref_t<decltype(val)>>
         {
             if ((val.second & 1) == 0)
             {

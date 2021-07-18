@@ -60,6 +60,12 @@ namespace hsd
     );
 
     template <typename T>
+    concept ContiguousForwardIterable = (
+        requires(T first, T second) { {first - second} -> IsSame<isize>; } &&
+        requires(T value) { value++; } && BasicIterable<T>
+    );
+
+    template <typename T>
     concept ReverseIterable = (
         requires(T value) { value--; } && BasicIterable<T>
     );

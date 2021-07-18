@@ -137,12 +137,12 @@ namespace hsd
                 }
             }
 
-            inline bool is_valid() const
+            inline bool is_valid() const override
             {
                 return _sock_infos[_current_index].fd != invalid_socket;
             }
 
-            inline bool is_invalid() const
+            inline bool is_invalid() const override
             {
                 return _sock_infos[_current_index].fd == invalid_socket;
             }
@@ -186,7 +186,7 @@ namespace hsd
                 return _sock_infos.size();
             }
 
-            virtual inline bool is_empty() const
+            virtual inline bool is_empty() const override
             {
                 return _sock_infos.size() == 0;
             }
@@ -209,7 +209,16 @@ namespace hsd
 
             virtual inline i32 poll(i32 timeout_ms) override
             {
-                return ::poll(_sock_infos.data(), _sock_infos.size(), timeout_ms);
+                if (is_valid())
+                {
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    return ::WSAPoll(_sock_infos.data(), _sock_infos.size(), timeout_ms);
+                    #else
+                    return ::poll(_sock_infos.data(), _sock_infos.size(), timeout_ms);
+                    #endif
+                }
+
+                return -1;
             }
 
             virtual inline bool check_and_add_socket() override

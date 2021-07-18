@@ -130,10 +130,10 @@ namespace hsd
                 FORMAT_MESSAGE_IGNORE_INSERTS,
                 nullptr, WSAGetLastError(), 
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
-                _msg_buf, 256, nullptr
+                _msg_buf, sizeof(_msg_buf), nullptr
             );
 
-            return buf;
+            return _msg_buf;
             #else
             return strerror(errno);
             #endif

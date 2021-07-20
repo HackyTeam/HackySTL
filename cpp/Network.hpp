@@ -75,6 +75,23 @@ namespace hsd
             }
         };
 
+        template <>
+        struct receive<net::socket_kind::tcp, net::socket_type::multi_server>
+        {
+            static isize invoke(auto& socket, auto* buffer, usize size)
+            requires (IsSame<
+                remove_cvref_t<
+                    decltype(socket.get_socket())
+                >, net::native_socket_type
+            >)
+            {
+                if (socket.is_readable())
+                    return ::recv(socket.get_socket(), buffer, size, 0);
+
+                return 0;
+            }
+        };
+
         template <net::socket_type SockType>
         struct receive<net::socket_kind::udp, SockType>
         {
@@ -109,8 +126,6 @@ namespace hsd
 
         static inline buffer_type _buffer_recv{};
         static inline buffer_type _buffer_send{};
-        static inline bool _has_recv{};
-        static inline bool _has_send{};
 
         inline void switch_to(const char* ip_addr, const char* port = nullptr)
         {
@@ -169,30 +184,20 @@ namespace hsd
         requires (IsSame<typename decltype(fmt)::char_type, char>)
         inline bool send(Args&&... args)
         {
-            _has_recv = false;
             memset(_buffer_send.data(), 0, _buffer_send.capacity());
             _buffer_send.template write_data<fmt>(forward<Args>(args)...);
             
-            auto _length = network_detail::send<
+            auto _size = network_detail::send<
                 SocketKind, SocketType>::template invoke(
                     static_cast<base_type&>(*this), 
                     _buffer_send.data(), _buffer_send.size()
                 );
 
-            if (_length <= 0)
-            {
-                return false;
-            }
-            else
-            {
-                _has_send = true;
-                return true;
-            }
+            return (_size > 0);
         }
 
         inline hsd::pair<bool, buffer_type&> receive()
         {
-            _has_send = false;
             memset(_buffer_recv.data(), 0, _buffer_recv.capacity());
             
             isize _size = network_detail::receive<SocketKind, SocketType>::invoke(
@@ -200,15 +205,7 @@ namespace hsd
                 _buffer_recv.data(), _buffer_recv.capacity()
             );
 
-            if (_size <= 0)
-            {
-                return {false, _buffer_recv};
-            }
-            else
-            {
-                _has_recv = true;
-                return {true, _buffer_recv};
-            }
+            return {_size > 0, _buffer_recv};
         }
     };
 

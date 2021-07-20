@@ -22,10 +22,9 @@ namespace hsd
 
             virtual inline usize get_size() const = 0;
             virtual inline bool is_empty() const = 0;
-            virtual inline bool is_readable() const = 0;
             virtual inline bool check_current_index() = 0;
             virtual inline void advance() = 0;
-            virtual inline i32 poll(i32 timeout_ms) = 0;
+            virtual inline i32 poll() = 0;
             virtual inline bool check_and_add_socket() = 0;
         };
 
@@ -148,9 +147,14 @@ namespace hsd
                 return _sock_infos[_current_index].fd == invalid_socket;
             }
 
-            virtual inline bool is_readable() const override
+            inline bool is_readable() const
             {
-                return _sock_infos[_current_index].revents & POLLIN;
+                return (_sock_infos[_current_index].revents & POLLIN);
+            }
+
+            inline bool is_writeable() const
+            {
+                return (_sock_infos[_current_index].revents & POLLOUT);
             }
 
             virtual inline void close() override
@@ -213,14 +217,14 @@ namespace hsd
                 ++_current_index;
             }
 
-            virtual inline i32 poll(i32 timeout_ms) override
+            virtual inline i32 poll() override
             {
                 if (is_valid())
                 {
                     #if defined(HSD_PLATFORM_WINDOWS)
-                    return ::WSAPoll(_sock_infos.data(), _sock_infos.size(), timeout_ms);
+                    return ::WSAPoll(_sock_infos.data(), _sock_infos.size(), -1);
                     #else
-                    return ::poll(_sock_infos.data(), _sock_infos.size(), timeout_ms);
+                    return ::poll(_sock_infos.data(), _sock_infos.size(), -1);
                     #endif
                 }
 
@@ -231,15 +235,18 @@ namespace hsd
             {
                 if (_sock_infos[_current_index].fd == _server_sock)
                 {
-                    auto _new_sock = accept(_server_sock, nullptr, nullptr);
-
-                    if (_new_sock != invalid_socket)
+                    if (is_readable() == true)
                     {
-                        _sock_infos.push_back(pollfd {
-                            .fd = _new_sock, 
-                            .events = POLLIN,
-                            .revents = 0
-                        });
+                        auto _new_sock = accept(_server_sock, nullptr, nullptr);
+
+                        if (_new_sock != invalid_socket)
+                        {
+                            _sock_infos.push_back(pollfd {
+                                .fd = _new_sock, 
+                                .events = POLLIN,
+                                .revents = 0
+                            });
+                        }
                     }
 
                     // Return true on both cases 

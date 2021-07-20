@@ -7,13 +7,13 @@ int main()
     while (true)
     {
         auto& poll_server = server.get();
-        auto poll_result = poll_server.poll(4);
+        auto poll_result = poll_server.poll();
 
         if (poll_result > 0)
         {
             while (poll_server.check_current_index())
             {
-                if (!poll_server.check_and_add_socket() && poll_server.is_readable())
+                if (!poll_server.check_and_add_socket())
                 {
                     // This means we need to receive data and send it back
                     auto [receive_status, buf] = server.receive();

@@ -1,31 +1,33 @@
 #include <Network.hpp>
+#include <Io.hpp>
 
 int main()
 {
     hsd::tcp_client_v4 client{"127.0.0.1:54000"};
-    char raw_buf[1024];
+    char send_buffer[1024]{};
+    char recv_buffer[1024]{};
 
     while (true)
     {
         hsd::io::print<"> ">();
         
         auto& stream_ref = hsd::io::read_line().unwrap();
-        hsd::cstring::copy_until(raw_buf, stream_ref.c_str(), '\n');
-        auto send_state = client.send<"{}">(raw_buf);
+        hsd::cstring::copy_until(send_buffer, stream_ref.c_str(), '\n');
+        auto send_state = client.send(send_buffer, 1024);
 
-        if (send_state == false)
+        if (send_state > 0)
         {
             hsd_println_err("Error: {}", client.error_message());
             continue;
         }
 
-        auto [recv_state, buf] = client.receive();
+        auto recv_state = client.receive(recv_buffer, 1024);
         
-        if (recv_state == true)
+        if (recv_state > 0)
         {
-            hsd_println("SERVER> {}", buf.data());
+            hsd_println("SERVER> {}", recv_buffer);
         }
-        else
+        else if (recv_state < 0)
         {
             hsd_println_err("Error: {}", client.error_message());
             break;

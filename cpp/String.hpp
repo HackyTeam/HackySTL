@@ -117,6 +117,18 @@ namespace hsd
             return *this;
         }
 
+        inline basic_string& operator=(const basic_string_view<CharT>& rhs)
+        {
+            _reset();
+            _size = rhs.size();
+            _capacity = _size;
+            _data = mallocator::allocate_multiple<
+                CharT>(_size + 1).unwrap();
+
+            copy_n(rhs.data(), _size, _data);
+            return *this;
+        }
+
         inline basic_string& operator=(const basic_string& rhs)
         {
             _reset();
@@ -139,33 +151,97 @@ namespace hsd
 
         inline basic_string operator+(const basic_string& rhs) const
         {
-            basic_string _buf(_size + rhs._size);
-            _str_utils::copy(_buf._data, _data, _size);
-            _str_utils::add(_buf._data, rhs._data, _size);
-            return _buf;
+            if (rhs.data() == nullptr || _data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else
+            {
+                basic_string _buf(_size + rhs._size);
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs._data, _size);
+                return _buf;
+            }
+        }
+
+        inline basic_string operator+(const basic_string_view<CharT>& rhs) const
+        {
+            if (rhs.data() == nullptr || _data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else
+            {
+                basic_string _buf(_size + rhs.size());
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs.data(), _size);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                return _buf;
+            }
         }
 
         inline basic_string operator+(const CharT* rhs) const
         {
-            usize _rhs_len = _str_utils::length(rhs);
-            basic_string _buf(_size + _rhs_len);
-            _str_utils::copy(_buf._data, _data, _size);
-            _str_utils::add(_buf._data, rhs, _size);
-            return _buf;
+            if (rhs == nullptr || _data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else
+            {
+                usize _rhs_len = _str_utils::length(rhs);
+                basic_string _buf(_size + _rhs_len);
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs, _size);
+                return _buf;
+            }
+        }
+
+        inline friend basic_string operator+(
+            const basic_string_view<CharT>& lhs, const basic_string& rhs)
+        {
+            if (lhs.data() == nullptr || rhs._data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else
+            {
+                basic_string _buf(rhs._size + lhs.size());
+                _str_utils::copy(_buf._data, lhs.data(), lhs.size());
+                _str_utils::add(_buf._data, rhs._data, lhs.size());
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                return _buf;
+            }
         }
 
         inline friend basic_string operator+(const CharT* lhs, const basic_string& rhs)
         {
-            usize _lhs_len = _str_utils::length(lhs);
-            basic_string _buf(rhs._size + _lhs_len);
-            _str_utils::copy(_buf._data, lhs, _lhs_len);
-            _str_utils::add(_buf._data, rhs._data, _lhs_len);
-            return _buf;
+            if (lhs == nullptr || rhs._data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else
+            {
+                usize _lhs_len = _str_utils::length(lhs);
+                basic_string _buf(rhs._size + _lhs_len);
+                _str_utils::copy(_buf._data, lhs, _lhs_len);
+                _str_utils::add(_buf._data, rhs._data, _lhs_len);
+                return _buf;
+            }
         }
 
         inline basic_string& operator+=(const basic_string& rhs)
         {
-            if (_capacity <= _size + rhs._size)
+            if (rhs.data() == nullptr || _data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else if (_capacity <= _size + rhs._size)
             {
                 basic_string _buf(_size + rhs._size);
                 _str_utils::copy(_buf._data, _data, _size);
@@ -176,26 +252,60 @@ namespace hsd
             else
             {
                 _str_utils::add(_data, rhs._data, _size);
+                _size += rhs._size;
+                return *this;
+            }
+        }
+
+        inline basic_string& operator+=(const basic_string_view<CharT>& rhs)
+        {
+            if (rhs.data() == nullptr || _data == nullptr)
+            {
+                fputs("Error: nullptr argument.", stderr);
+                abort();
+            }
+            else if (_capacity <= _size + rhs.size())
+            {
+                basic_string _buf(_size + rhs.size());
+                _str_utils::copy(_buf._data, _data, _size);
+                _str_utils::add(_buf._data, rhs.data(), _size);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                operator=(hsd::move(_buf));
+                return *this;
+            }
+            else
+            {
+                _str_utils::add(_data, rhs.data(), _size);
+                _size += rhs.size();
+                _data[_size] = static_cast<CharT>(0);
                 return *this;
             }
         }
 
         inline basic_string& operator+=(const CharT* rhs)
         {
-            usize _rhs_len = _str_utils::length(rhs);
-
-            if (_capacity <= _size + _rhs_len)
+            if (rhs == nullptr || _data == nullptr)
             {
-                basic_string _buf(_size + _rhs_len);
-                _str_utils::copy(_buf._data, _data, _size);
-                _str_utils::add(_buf._data, rhs, _size);
-                operator=(hsd::move(_buf));
-                return *this;
+                fputs("Error: nullptr argument.", stderr);
+                abort();
             }
-            else
+            else 
             {
-                _str_utils::add(_data, rhs, _size);
-                return *this;
+                usize _rhs_len = _str_utils::length(rhs);
+
+                if (_capacity <= _size + _rhs_len)
+                {
+                    basic_string _buf(_size + _rhs_len);
+                    _str_utils::copy(_buf._data, _data, _size);
+                    _str_utils::add(_buf._data, rhs, _size);
+                    operator=(hsd::move(_buf));
+                    return *this;
+                }
+                else
+                {
+                    _str_utils::add(_data, rhs, _size);
+                    return *this;
+                }
             }
         }
 
@@ -624,7 +734,7 @@ namespace hsd
 
         inline void clear()
         {
-            if (_size != 0)
+            if (_capacity != 0)
             {
                 _data[0] = '\0';
                 _size = 0;

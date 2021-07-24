@@ -1,261 +1,425 @@
-#include "_NetworkDetail.hpp"
+#include "_NetworkFuncs.hpp"
 
-namespace hsd
+namespace hsd::network_detail
 {
-    namespace socket_detail
+    template <ip_protocol Protocol>
+    class tcp_socket
     {
-        template <net::socket_type SocketType>
-        struct socket_exposable
+    private:
+        pollfd _data;
+
+        inline bool _handle_server(const addrinfo* const info)
         {
-            virtual ~socket_exposable() {}
-
-            virtual inline bool is_valid() const = 0;
-            virtual inline bool is_invalid() const = 0;
-            virtual inline void close() = 0;
-        };
-
-        template <>
-        struct socket_exposable<net::socket_type::multi_server>
-            : public socket_exposable<net::socket_type::direct_server>
-        {
-            virtual ~socket_exposable() {}
-
-            virtual inline usize get_size() const = 0;
-            virtual inline bool is_empty() const = 0;
-            virtual inline bool check_current_index() = 0;
-            virtual inline void advance() = 0;
-            virtual inline i32 poll() = 0;
-            virtual inline bool check_and_add_socket() = 0;
-        };
-
-        template <net::socket_type SocketType>
-        class socket_base
-            : public socket_exposable<SocketType>
-        {
-        private:
-            using sock_value_t = tuple<net::native_socket_type, sockaddr_storage, socklen_t>;
-            static constexpr net::native_socket_type invalid_socket = -1;
-            static constexpr socklen_t invalid_addr_len = 0;
-            static constexpr sockaddr_storage invalid_addr = {};
-
-            sock_value_t _sock_info;
-            
-        public:
-            inline socket_base()
-                : _sock_info{invalid_socket, invalid_addr, invalid_addr_len}
-            {}
-
-            inline ~socket_base()
-            {
-                close();
-            }
-
-            inline socket_base(const socket_base&) = delete;
-            inline socket_base& operator=(const socket_base&) = delete; 
-
-            inline socket_base(socket_base&& other)
-                : _sock_info{move(other)}
-            {}
-
-            inline socket_base& operator=(socket_base&& rhs)
-            {
-                _sock_info = move(rhs._sock_info);
-                return *this;
-            }
-
-            virtual inline bool is_valid() const override
-            {
-                return _sock_info.get<0>() != invalid_socket;
-            }
-
-            virtual inline bool is_invalid() const override
-            {
-                return _sock_info.get<0>() == invalid_socket;
-            }
-
-            virtual inline void close() override
-            {
-                if (is_valid())
+            if (info->ai_socktype == SOCK_STREAM)
+            {   
+                if (is_valid() == false)
                 {
-                    network_detail::close_socket(_sock_info.get<0>());
-                    _sock_info = hsd::make_tuple(
-                        invalid_socket, invalid_addr, invalid_addr_len
-                    );
+                    return false;
                 }
-            }
-
-            static inline auto get_invalid_socket()
-            {
-                return invalid_socket;
-            }
-            
-            inline auto& get_socket()
-            {
-                return _sock_info.get<0>();
-            }
-
-            inline auto* get_addr()
-            {
-                return reinterpret_cast<sockaddr*>(&_sock_info.get<1>());
-            }
-            
-            inline auto* get_addr_len()
-            {
-                return &_sock_info.get<2>();
-            }
-        };
-
-        template <>
-        class socket_base<net::socket_type::multi_server>
-            : public socket_exposable<net::socket_type::multi_server>
-        {
-        private:
-            static constexpr net::native_socket_type invalid_socket = -1;
-            socklen_t _addr_len = sizeof(sockaddr_storage);
-            sockaddr_storage _addr = {};
-            
-            net::native_socket_type _server_sock = invalid_socket;
-            vector<pollfd> _sock_infos;
-            usize _current_index = 0;
-
-        public:
-            inline socket_base()
-            {
-                _sock_infos.push_back(pollfd {
-                    .fd = invalid_socket, 
-                    .events = POLLIN, 
-                    .revents = 0
-                });
-            }
-
-            inline ~socket_base()
-            {
-                for (auto& _sock_info : _sock_infos)
+                
+                _data.events = POLLIN;
+                _data.revents = 0;
+                
+                if (::bind(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
                 {
-                    if (_sock_info.fd != invalid_socket)
-                        network_detail::close_socket(_sock_info.fd);
+                    close();
+                    return false;
                 }
-            }
 
-            virtual inline bool is_valid() const override
-            {
-                return _sock_infos[_current_index].fd != invalid_socket;
-            }
-
-            virtual inline bool is_invalid() const override
-            {
-                return _sock_infos[_current_index].fd == invalid_socket;
-            }
-
-            inline bool is_readable() const
-            {
-                return (_sock_infos[_current_index].revents & POLLIN);
-            }
-
-            inline bool is_writeable() const
-            {
-                return (_sock_infos[_current_index].revents & POLLOUT);
-            }
-
-            virtual inline void close() override
-            {
-                if (is_valid())
+                #if defined(HSD_PLATFORM_WINDOWS)
+                static ulong _on = 1;
+                auto _rc = setsockopt(
+                    _data.fd, SOL_SOCKET, SO_REUSEADDR, 
+                    reinterpret_cast<char*>(&_on), sizeof(_on)
+                );
+                #else
+                static i32 _on = 1;
+                auto _rc = setsockopt(
+                    _data.fd, SOL_SOCKET, 
+                    SO_REUSEADDR,
+                    &_on, sizeof(_on)
+                );
+                #endif
+                
+                if (_rc < 0)
                 {
-                    network_detail::close_socket(_sock_infos[_current_index].fd);
-                    _sock_infos.erase(_sock_infos.begin() + _current_index).unwrap();
+                    perror("setsockopt() failed");
+                    close(); abort();
                 }
-            }
+            
+                #if defined(HSD_PLATFORM_WINDOWS)
+                _rc = ioctlsocket(_data.fd, FIONBIO, &_on);
+                #else
+                _rc = ioctl(_data.fd, FIONBIO, &_on);
+                #endif
 
-            static inline auto get_invalid_socket()
-            {
-                return invalid_socket;
-            }
-
-            inline auto& get_server_socket()
-            {
-                return _server_sock;
-            }
-
-            inline auto& get_socket()
-            {
-                return _sock_infos[_current_index].fd;
-            }
-
-            inline auto* get_addr()
-            {
-                return reinterpret_cast<sockaddr*>(&_addr);
-            }
-
-            inline auto* get_addr_len()
-            {
-                return &_addr_len;
-            }
-
-            virtual inline usize get_size() const override
-            {
-                return _sock_infos.size();
-            }
-
-            virtual inline bool is_empty() const override
-            {
-                return _sock_infos.size() == 0;
-            }
-
-            virtual inline bool check_current_index() override
-            {
-                if (_current_index >= _sock_infos.size())
+                if (_rc < 0)
                 {
-                    _current_index = 0;
+                    perror("ioctl() failed");
+                    close(); abort();
+                }
+
+                if (::listen(_data.fd, SOMAXCONN) == -1)
+                {
                     return false;
                 }
 
                 return true;
             }
 
-            virtual inline void advance() override
-            {
-                ++_current_index;
-            }
+            return false;
+        }
 
-            virtual inline i32 poll() override
+        inline bool _handle_client(const addrinfo* const info)
+        {
+            if (info->ai_socktype == SOCK_STREAM)
             {
-                if (is_valid())
+                if (is_valid() == false)
                 {
-                    #if defined(HSD_PLATFORM_WINDOWS)
-                    return ::WSAPoll(_sock_infos.data(), _sock_infos.size(), -1);
-                    #else
-                    return ::poll(_sock_infos.data(), _sock_infos.size(), -1);
-                    #endif
+                    return false;
                 }
 
-                return -1;
-            }
-
-            virtual inline bool check_and_add_socket() override
-            {
-                if (_sock_infos[_current_index].fd == _server_sock)
+                _data.events = POLLOUT;
+                _data.revents = 0;
+                
+                if (::connect(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
                 {
-                    if (is_readable() == true)
-                    {
-                        auto _new_sock = accept(_server_sock, nullptr, nullptr);
-
-                        if (_new_sock != invalid_socket)
-                        {
-                            _sock_infos.push_back(pollfd {
-                                .fd = _new_sock, 
-                                .events = POLLIN,
-                                .revents = 0
-                            });
-                        }
-                    }
-
-                    // Return true on both cases 
-                    // in order to skip the current
-                    return true;
+                    close();
+                    return false;
                 }
 
+                return true;
+            }
+
+            return false;
+        }
+
+    public:
+        inline tcp_socket(const tcp_socket& other) = delete;
+        inline tcp_socket& operator=(const tcp_socket& other) = delete;
+        
+        inline tcp_socket(pollfd&& data)
+            : _data(data)
+        {}
+
+        inline tcp_socket(tcp_socket&& other)
+            : _data(move(other._data))
+        {
+            other._data.fd = static_cast<network_detail::native_socket_type>(-1);
+        }
+    
+        inline tcp_socket(const char* const addr, bool is_server = false)
+        {
+            _data = pollfd{
+                .fd = static_cast<network_detail::native_socket_type>(-1),
+                .events = 0,
+                .revents = 0
+            };
+
+            if (switch_to(addr, is_server) == false)
+            {
+                fputs("hsd::network_detail::tcp_socket::switch_to() failed.\n", stderr);
+                close();
+            }
+        }
+
+        inline ~tcp_socket()
+        {
+            close();
+        }
+
+        inline tcp_socket& operator=(tcp_socket&& other)
+        {
+            close();
+            _data = other._data;
+            other.close();
+            return *this;
+        }
+
+        inline tcp_socket& operator=(pollfd&& rhs)
+        {
+            close();
+            _data = rhs;
+            return *this;
+        }
+
+        inline void close()
+        {
+            if (is_valid() == true)
+            {
+                close_socket(_data.fd);
+                _data.fd = static_cast<native_socket_type>(-1);
+                _data.events = _data.revents = 0;
+            }
+        }
+
+        inline bool handle(const addrinfo* const info, bool is_server)
+        {
+            if (is_valid() == false)
+            {
+                fputs("tcp_socket::handle() called on invalid socket\n", stderr);
+                return false;
+            } 
+            else if (is_server == true)
+            {
+                return _handle_server(info);
+            }
+            else
+            {
+                return _handle_client(info);
+            }
+        }
+
+        [[nodiscard]] inline bool switch_to(const char* const addr, bool is_server = false)
+        {
+            return hsd::network_detail::switch_to(*this, addr, is_server);
+        }
+
+        inline bool is_valid() const
+        {
+            return _data.fd != static_cast<native_socket_type>(-1);
+        }
+
+        inline bool is_readable() const
+        {
+            return _data.revents & POLLIN;
+        }
+
+        inline bool is_writable() const
+        {
+            return _data.revents & POLLOUT;
+        }
+
+        static consteval auto ip_protocol()
+        {
+            return static_cast<i32>(Protocol);
+        }
+
+        static consteval auto sock_type()
+        {
+            return static_cast<i32>(socket_type::stream);
+        }
+
+        static consteval auto net_protocol()
+        {
+            return static_cast<i32>(socket_protocol::tcp);
+        }
+
+        inline const auto& fd()
+        {
+            return _data.fd;
+        }
+
+        inline isize send(const void* const buffer, const usize size) const
+        {
+            if (is_valid() == false)
+            {
+                return 0;
+            }
+            else if (is_writable() == true)
+            {
+                return ::send(_data.fd, buffer, size, 0);
+            }
+
+            return 0;
+        }
+
+        inline isize receive(void* const buffer, const usize size) const
+        {
+            if (is_valid() == false)
+            {
+                return 0;
+            }
+            else if (is_readable() == true)
+            {
+                return ::recv(_data.fd, buffer, size, 0);
+            }
+
+            return 0;
+        }
+    };
+
+    template <ip_protocol Protocol>
+    class udp_socket
+    {
+    private:
+        pollfd _data;
+
+        inline bool _handle_server(const addrinfo* const info)
+        {
+            if (info->ai_socktype == SOCK_DGRAM)
+            {
+                if (is_valid() == false)
+                {
+                    return false;
+                }
+                
+                _data.events = POLLIN;
+                _data.revents = 0;
+
+                if (::bind(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                {
+                    close();
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        inline bool _handle_client(const addrinfo* const info)
+        {
+            if (info->ai_socktype == SOCK_DGRAM)
+            {
+                if (is_valid() == false)
+                {
+                    return false;
+                }
+
+                _data.events = POLLOUT;
+                _data.revents = 0;
+
+                if (::connect(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                {
+                    close();
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+    public:
+        inline udp_socket(const udp_socket& other) = delete;
+        inline udp_socket& operator=(const udp_socket& other) = delete;
+
+        inline udp_socket(pollfd&& data)
+            : _data(data)
+        {}
+
+        inline udp_socket(udp_socket&& other)
+            : _data(move(other._data))
+        {
+            other._data.fd = static_cast<network_detail::native_socket_type>(-1);
+        }
+
+        inline ~udp_socket()
+        {
+            close();
+        }
+
+        inline udp_socket& operator=(udp_socket&& other)
+        {
+            close();
+            _data = other._data;
+            other.close();
+            return *this;
+        }
+
+        inline udp_socket& operator=(pollfd&& rhs)
+        {
+            close();
+            _data = rhs;
+            return *this;
+        }
+
+        inline void close()
+        {
+            if (is_valid() == true)
+            {
+                close_socket(_data.fd);
+                _data.fd = static_cast<native_socket_type>(-1);
+                _data.events = _data.revents = 0;
+            }
+        }
+
+        inline bool handle(const addrinfo* const info, bool is_server)
+        {
+            if (is_valid() == false)
+            {
+                fputs("udp_socket::handle() called on invalid socket\n", stderr);
                 return false;
             }
-        };  
-    } // namespace socket_detail
-} // namespace hsd
+            else if (is_server == true)
+            {
+                return _handle_server(info);
+            }
+            else
+            {
+                return _handle_client(info);
+            }
+        }
+
+        inline bool is_valid() const
+        {
+            return _data.fd != static_cast<native_socket_type>(-1);
+        }
+
+        inline bool is_readable() const
+        {
+            return _data.revents & POLLIN;
+        }
+
+        inline bool is_writable() const
+        {
+            return _data.revents & POLLOUT;
+        }
+
+        static consteval auto ip_protocol()
+        {
+            return static_cast<i32>(Protocol);
+        }
+
+        static consteval auto sock_type()
+        {
+            return static_cast<i32>(socket_type::dgram);
+        }
+
+        static consteval auto net_protocol()
+        {
+            return static_cast<i32>(socket_protocol::udp);
+        }
+
+        inline const auto& fd()
+        {
+            return _data.fd;
+        }
+
+        inline bool switch_to(const char* const addr, bool is_server = false)
+        {
+            return hsd::network_detail::switch_to(*this, addr, is_server);
+        }
+
+        inline isize send(const void* const buffer, const usize size) const
+        {
+            if (is_valid() == false)
+            {
+                return 0;
+            }
+            else if (is_writable() == true)
+            {
+                return ::sendto(_data.fd, buffer, size, 0, nullptr, 0);
+            }
+
+            return 0;
+        }
+
+        inline isize receive(void* const buffer, const usize size) const
+        {
+            if (is_valid() == false)
+            {
+                return 0;
+            }
+            else if (is_readable() == true)
+            {
+                return ::recvfrom(_data.fd, buffer, size, 0, nullptr, nullptr);
+            }
+            
+            return 0;
+        }
+    };
+} // namespace hsd::network_detail

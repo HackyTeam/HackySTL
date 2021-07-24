@@ -38,8 +38,8 @@ namespace hsd
         
         constexpr pair& operator=(pair&& rhs)
         {
-            first = forward<T1>(rhs.first);
-            second = forward<T2>(rhs.second);
+            first = move(rhs.first);
+            second = move(rhs.second);
             return *this;
         }
 

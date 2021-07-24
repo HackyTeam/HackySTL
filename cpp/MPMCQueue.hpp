@@ -68,7 +68,7 @@ namespace hsd
      * Probably not the best optimized implementation, but it works well enough.
      * Works as a stack-machine, FIFO
     */
-    template<typename T>
+    template <typename T>
     class MPMCQueue
     {
     public:

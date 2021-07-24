@@ -76,7 +76,12 @@ namespace hsd
         inline T parse()
         {
             T _value{};
-            set_data(_value).unwrap();
+            pair _parse_data = {
+                c_str(), basic_cstring<CharT>::length(_data)
+            };
+
+            using sstream_detail::_parse;
+            _parse(_parse_data, _value);
             return _value;
         }
 

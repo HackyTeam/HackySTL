@@ -143,6 +143,16 @@ namespace hsd::network_detail
             return *this;
         }
 
+        inline bool operator==(const tcp_socket& rhs) const
+        {
+            return _data.fd == rhs._data.fd;
+        }
+
+        inline bool operator!=(const tcp_socket& rhs) const
+        {
+            return _data.fd != rhs._data.fd;
+        }
+
         inline void close()
         {
             if (is_valid() == true)
@@ -323,6 +333,16 @@ namespace hsd::network_detail
             return *this;
         }
 
+        inline bool operator==(const udp_socket& rhs) const
+        {
+            return _data.fd == rhs._data.fd;
+        }
+
+        inline bool operator!=(const udp_socket& rhs) const
+        {
+            return _data.fd != rhs._data.fd;
+        }
+
         inline void close()
         {
             if (is_valid() == true)
@@ -394,21 +414,17 @@ namespace hsd::network_detail
         {
             if (is_valid() == false)
             {
-                return 0;
+                return -1;
             }
-            else if (is_writable() == true)
-            {
-                return ::sendto(_data.fd, buffer, size, 0, nullptr, 0);
-            }
-
-            return 0;
+                
+            return ::sendto(_data.fd, buffer, size, 0, nullptr, 0);
         }
 
         inline isize receive(void* const buffer, const usize size) const
         {
             if (is_valid() == false)
             {
-                return 0;
+                return -1;
             }
             else if (is_readable() == true)
             {

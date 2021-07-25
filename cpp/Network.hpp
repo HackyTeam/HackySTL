@@ -25,11 +25,19 @@ namespace hsd
         
         inline void poll()
         {
+            #if defined(HSD_PLATFORM_WINDOWS)
+            auto _result = ::WSAPoll(
+                reinterpret_cast<pollfd*>(
+                    _sockets.data()
+                ), _sockets.size(), -1
+            );
+            #else
             auto _result = ::poll(
                 reinterpret_cast<pollfd*>(
                     _sockets.data()
                 ), _sockets.size(), -1
             );
+            #endif
 
             if (_result < 0)
             {
@@ -39,8 +47,12 @@ namespace hsd
 
             if (_sockets.front().is_readable())
             {
-                auto _new_socket = accept(_sockets.front().fd(), nullptr, nullptr);
-                _sockets.emplace_back(pollfd{_new_socket, POLLIN | POLLOUT, 0});
+                auto _new_socket = accept(
+                    _sockets.front().fd(), nullptr, nullptr
+                );
+                _sockets.emplace_back(
+                    pollfd{_new_socket, POLLIN | POLLOUT, 0}
+                );
             }
         }
 

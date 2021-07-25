@@ -23,7 +23,7 @@ int main()
 
                 if (send_state < 0)
                 {
-                    hsd_println("Error: {}", strerror(send_state));
+                    hsd_println("Error: {}", server.error_message());
                 }
             }
             else if (recv_state < 0)

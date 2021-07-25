@@ -15,7 +15,7 @@ int main()
         hsd::cstring::copy_until(send_buffer, stream_ref.c_str(), '\n');
         auto send_state = client.send(send_buffer, 1024);
 
-        if (send_state > 0)
+        if (send_state < 0)
         {
             hsd_println_err("Error: {}", client.error_message());
             continue;

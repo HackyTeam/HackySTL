@@ -40,7 +40,7 @@ namespace hsd
             if (_sockets.front().is_readable())
             {
                 auto _new_socket = accept(_sockets.front().fd(), nullptr, nullptr);
-                _sockets.emplace_back(pollfd{_new_socket, POLLIN, 0});
+                _sockets.emplace_back(pollfd{_new_socket, POLLIN | POLLOUT, 0});
             }
         }
 
@@ -76,7 +76,7 @@ namespace hsd
             network_detail::init_winsock();
             #endif
 
-            if (_socket.switch_to(addr, false))
+            if (_socket.switch_to(addr, false) == false)
             {
                 fputs("Error in initializing socket", stderr);
             }

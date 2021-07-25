@@ -80,7 +80,7 @@ namespace hsd::network_detail
                 }
 
                 _data.events = POLLOUT;
-                _data.revents = 0;
+                _data.revents = POLLOUT | POLLIN;
                 
                 if (::connect(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
                 {
@@ -110,7 +110,7 @@ namespace hsd::network_detail
     
         inline tcp_socket(const char* const addr, bool is_server = false)
         {
-            _data = pollfd{
+            _data = pollfd {
                 .fd = static_cast<network_detail::native_socket_type>(-1),
                 .events = 0,
                 .revents = 0
@@ -212,23 +212,19 @@ namespace hsd::network_detail
 
         inline isize send(const void* const buffer, const usize size) const
         {
-            if (is_valid() == false)
+            if (is_valid() == false || size > 65635)
             {
-                return 0;
+                return -1;
             }
-            else if (is_writable() == true)
-            {
-                return ::send(_data.fd, buffer, size, 0);
-            }
-
-            return 0;
+            
+            return ::send(_data.fd, buffer, size, 0);
         }
 
         inline isize receive(void* const buffer, const usize size) const
         {
             if (is_valid() == false)
             {
-                return 0;
+                return -1;
             }
             else if (is_readable() == true)
             {

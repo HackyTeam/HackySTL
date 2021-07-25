@@ -6,7 +6,6 @@
             "command": "g++",
             "args": [
                 "-g",
-                "-fsanitize=address",
                 "-Wall",
                 "-Wextra",
                 "-Wclobbered",

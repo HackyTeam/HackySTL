@@ -227,7 +227,13 @@ namespace hsd::network_detail
                 return -1;
             }
             
+            #if defined(HSD_PLATFORM_WINDOWS)
+            return ::send(
+                _data.fd, reinterpret_cast<const char* const>(buffer), size, 0
+            );
+            #else
             return ::send(_data.fd, buffer, size, 0);
+            #endif
         }
 
         inline isize receive(void* const buffer, const usize size) const
@@ -238,7 +244,13 @@ namespace hsd::network_detail
             }
             else if (is_readable() == true)
             {
+                #if defined(HSD_PLATFORM_WINDOWS)
+                return ::recv(
+                    _data.fd, reinterpret_cast<char* const>(buffer), size, 0
+                );
+                #else
                 return ::recv(_data.fd, buffer, size, 0);
+                #endif
             }
 
             return 0;
@@ -304,11 +316,11 @@ namespace hsd::network_detail
         inline udp_socket& operator=(const udp_socket& other) = delete;
 
         inline udp_socket(pollfd&& data)
-            : _data(data)
+            : _data{data}
         {}
 
         inline udp_socket(udp_socket&& other)
-            : _data(move(other._data))
+            : _data{move(other._data)}
         {
             other._data.fd = static_cast<network_detail::native_socket_type>(-1);
         }

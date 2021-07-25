@@ -77,12 +77,13 @@ namespace hsd
     class tcp_client
     {
     private:
+        using underlying_socket = network_detail::native_socket_type;
         using socket_type = network_detail::tcp_socket<Protocol>;
         socket_type _socket;
 
     public:
         inline tcp_client(const char* const addr)
-            : _socket{pollfd{-1, POLLOUT, 0}}
+            : _socket{pollfd{static_cast<underlying_socket>(-1), POLLOUT, 0}}
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             network_detail::init_winsock();

@@ -132,7 +132,7 @@ namespace hsd::network_detail
         {
             close();
             _data = other._data;
-            other.close();
+            other._data.fd = static_cast<network_detail::native_socket_type>(-1);
             return *this;
         }
 
@@ -261,7 +261,9 @@ namespace hsd::network_detail
     class udp_socket
     {
     private:
-        pollfd _data;
+        native_socket_type _data;
+        sockaddr_storage _addr;
+        socklen_t _addr_len;
 
         inline bool _handle_server(const addrinfo* const info)
         {
@@ -271,14 +273,47 @@ namespace hsd::network_detail
                 {
                     return false;
                 }
-                
-                _data.events = POLLIN;
-                _data.revents = 0;
 
-                if (::bind(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                if (::bind(_data, info->ai_addr, info->ai_addrlen) == -1)
                 {
                     close();
                     return false;
+                }
+
+                memcpy(&_addr, info->ai_addr, sizeof(sockaddr_storage));
+                _addr_len = info->ai_addrlen;
+
+                #if defined(HSD_PLATFORM_WINDOWS)
+                static ulong _on = 1;
+                auto _rc = setsockopt(
+                    _data, SOL_SOCKET, SO_REUSEADDR, 
+                    reinterpret_cast<char*>(&_on), sizeof(_on)
+                );
+                #else
+                static i32 _on = 1;
+                auto _rc = setsockopt(
+                    _data, SOL_SOCKET, 
+                    SO_REUSEADDR,
+                    &_on, sizeof(_on)
+                );
+                #endif
+                
+                if (_rc < 0)
+                {
+                    perror("setsockopt() failed");
+                    close(); abort();
+                }
+            
+                #if defined(HSD_PLATFORM_WINDOWS)
+                _rc = ioctlsocket(_data, FIONBIO, &_on);
+                #else
+                _rc = ioctl(_data, FIONBIO, &_on);
+                #endif
+
+                if (_rc < 0)
+                {
+                    perror("ioctl() failed");
+                    close(); abort();
                 }
 
                 return true;
@@ -296,15 +331,14 @@ namespace hsd::network_detail
                     return false;
                 }
 
-                _data.events = POLLOUT;
-                _data.revents = 0;
-
-                if (::connect(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                if (::connect(_data, info->ai_addr, info->ai_addrlen) == -1)
                 {
                     close();
                     return false;
                 }
 
+                memcpy(&_addr, info->ai_addr, sizeof(sockaddr_storage));
+                _addr_len = info->ai_addrlen;
                 return true;
             }
 
@@ -315,14 +349,28 @@ namespace hsd::network_detail
         inline udp_socket(const udp_socket& other) = delete;
         inline udp_socket& operator=(const udp_socket& other) = delete;
 
-        inline udp_socket(pollfd&& data)
-            : _data{data}
+        inline udp_socket(const char* const addr, bool is_server = false)
+        {
+            _data = static_cast<network_detail::native_socket_type>(-1);
+
+            if (switch_to(addr, is_server) == false)
+            {
+                fputs("hsd::network_detail::udp_socket::switch_to() failed.\n", stderr);
+                close();
+            }
+        }
+
+
+        inline udp_socket(native_socket_type data, 
+            const sockaddr_storage& info, socklen_t addr_len)
+            : _data{data}, _addr{info}, _addr_len{addr_len}
         {}
 
         inline udp_socket(udp_socket&& other)
-            : _data{move(other._data)}
+            : _data{other._data}, _addr{move(other._addr)}, _addr_len{other._addr_len}
         {
-            other._data.fd = static_cast<network_detail::native_socket_type>(-1);
+            other._addr_len = 0;
+            other._data = static_cast<network_detail::native_socket_type>(-1);
         }
 
         inline ~udp_socket()
@@ -330,38 +378,40 @@ namespace hsd::network_detail
             close();
         }
 
-        inline udp_socket& operator=(udp_socket&& other)
-        {
-            close();
-            _data = other._data;
-            other.close();
-            return *this;
-        }
-
         inline udp_socket& operator=(pollfd&& rhs)
         {
             close();
-            _data = rhs;
+            _data = rhs.fd;
+            return *this;
+        }
+
+        inline udp_socket& operator=(udp_socket&& rhs)
+        {
+            close();
+            _data = rhs._data;
+            _addr_len = rhs._addr_len;
+            memcpy(&_addr, &rhs._addr, sizeof(sockaddr_storage));
+            rhs._data = static_cast<network_detail::native_socket_type>(-1);
+            rhs._addr_len = 0;
             return *this;
         }
 
         inline bool operator==(const udp_socket& rhs) const
         {
-            return _data.fd == rhs._data.fd;
+            return memcmp(&_addr, &rhs._addr, sizeof(sockaddr_storage)) == 0;
         }
 
         inline bool operator!=(const udp_socket& rhs) const
         {
-            return _data.fd != rhs._data.fd;
+            return memcmp(&_addr, &rhs._addr, sizeof(sockaddr_storage)) != 0;
         }
 
         inline void close()
         {
             if (is_valid() == true)
             {
-                close_socket(_data.fd);
-                _data.fd = static_cast<native_socket_type>(-1);
-                _data.events = _data.revents = 0;
+                close_socket(_data);
+                _data = static_cast<native_socket_type>(-1);
             }
         }
 
@@ -384,17 +434,7 @@ namespace hsd::network_detail
 
         inline bool is_valid() const
         {
-            return _data.fd != static_cast<native_socket_type>(-1);
-        }
-
-        inline bool is_readable() const
-        {
-            return _data.revents & POLLIN;
-        }
-
-        inline bool is_writable() const
-        {
-            return _data.revents & POLLOUT;
+            return _data != static_cast<native_socket_type>(-1);
         }
 
         static consteval auto ip_protocol()
@@ -414,7 +454,7 @@ namespace hsd::network_detail
 
         inline const auto& fd()
         {
-            return _data.fd;
+            return _data;
         }
 
         inline bool switch_to(const char* const addr, bool is_server = false)
@@ -429,7 +469,19 @@ namespace hsd::network_detail
                 return -1;
             }
                 
-            return ::sendto(_data.fd, buffer, size, 0, nullptr, 0);
+            #if defined(HSD_PLATFORM_WINDOWS)
+            return ::sendto(
+                _data, reinterpret_cast<const char*>(buffer), 
+                static_cast<i32>(size), 0, 
+                reinterpret_cast<const sockaddr*>(&_addr), _addr_len
+            );
+            #else
+            return ::sendto(
+                _data, buffer, size, 0, 
+                reinterpret_cast<sockaddr*>(&_addr), 
+                _addr_len
+            );
+            #endif
         }
 
         inline isize receive(void* const buffer, const usize size) const
@@ -438,12 +490,23 @@ namespace hsd::network_detail
             {
                 return -1;
             }
-            else if (is_readable() == true)
-            {
-                return ::recvfrom(_data.fd, buffer, size, 0, nullptr, nullptr);
-            }
-            
-            return 0;
+
+            // TODO: This is not a good way to do this.
+            auto& _sock_addr = const_cast<sockaddr_storage&>(_addr);
+            auto& _sock_addr_len = const_cast<socklen_t&>(_addr_len);
+
+            #if defined(HSD_PLATFORM_WINDOWS)
+            return ::recvfrom(
+                _data, reinterpret_cast<char*>(buffer),
+                static_cast<i32>(size), 0,
+                reinterpret_cast<sockaddr*>(&_sock_addr), &_sock_addr_len
+            );
+            #else
+            return ::recvfrom(
+                _data, buffer, size, 0,
+                reinterpret_cast<sockaddr*>(&_addr), &_addr_len
+            );
+            #endif
         }
     };
 } // namespace hsd::network_detail

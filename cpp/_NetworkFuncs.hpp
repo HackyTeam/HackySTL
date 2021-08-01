@@ -79,6 +79,15 @@ namespace hsd::network_detail
         #endif
     }
 
+    static inline auto error_code()
+    {
+        #if defined(HSD_PLATFORM_WINDOWS)
+        return WSAGetLastError();
+        #else
+        return errno;
+        #endif
+    }
+
     template <typename SocketType>
     static inline bool switch_to(
         SocketType& new_socket, const char* ip_addr, bool is_server)
@@ -93,12 +102,12 @@ namespace hsd::network_detail
             .ai_socktype = new_socket.sock_type(),
             .ai_protocol = new_socket.net_protocol(),
             .ai_addrlen = 0,
-            #if defined(HSD_PLATFORM_POSIX)
-            .ai_addr = nullptr,
+            #if defined(HSD_PLATFORM_WINDOWS)
             .ai_canonname = nullptr,
+            .ai_addr = nullptr,
             #else
-            .ai_canonname = nullptr,
             .ai_addr = nullptr,
+            .ai_canonname = nullptr,
             #endif
             .ai_next = nullptr
         };

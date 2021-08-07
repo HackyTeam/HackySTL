@@ -226,7 +226,7 @@ namespace hsd
     public:
         using iterator = list_detail::iterator<T>;
         using const_iterator = const iterator;
-        inline list() {}
+        inline list() = default;
 
         inline list(const list& other)
         {
@@ -374,7 +374,9 @@ namespace hsd
                 _tail = _head;
             }
             else
+            {
                 _tail.emplace_back(forward<Args>(args)...);
+            }
 
             _size++;
         }
@@ -417,7 +419,9 @@ namespace hsd
                 _tail = _head;
             }
             else
+            {
                 _head.emplace_front(forward<Args>(args)...);
+            }
 
             _size++;
         }
@@ -429,7 +433,9 @@ namespace hsd
                 _head.pop_front();
             }
             else
+            {
                 _tail = _head;
+            }
 
             _size--;
         }

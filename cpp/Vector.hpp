@@ -40,9 +40,11 @@ namespace hsd
         }
 
         inline vector() 
-            requires (std::is_default_constructible_v<alloc_type>) = default;
+        requires (std::is_default_constructible_v<alloc_type>) = default;
 
         inline vector(usize size)
+        requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}
         {
             resize(size);
         }
@@ -50,20 +52,20 @@ namespace hsd
         template <typename Alloc = alloc_type>
         inline vector(const Alloc& alloc)
         requires (std::is_constructible_v<alloc_type, Alloc>)
-            : _alloc(alloc)
+            : _alloc{alloc}
         {}
 
         template <typename Alloc = alloc_type>
         inline vector(usize size, const Alloc& alloc)
         requires (std::is_constructible_v<alloc_type, Alloc>)
-            : _alloc(alloc)
+            : _alloc{alloc}
         {
             resize(size);
         }
 
         inline vector(const vector& other)
         requires (std::is_copy_constructible_v<alloc_type>)
-            : _alloc(other._alloc), _size(other._size), _capacity(other._capacity)
+            : _alloc{other._alloc}, _size{other._size}, _capacity{other._capacity}
         {
             _data = _alloc.allocate(other._capacity).unwrap();
 
@@ -73,7 +75,7 @@ namespace hsd
 
         inline vector(const vector& other)
         requires (!std::is_copy_constructible_v<alloc_type>)
-            : _size(other._size), _capacity(other._capacity)
+            : _size{other._size}, _capacity{other._capacity}
         {
             _data = _alloc.allocate(other._capacity).unwrap();
 
@@ -83,7 +85,7 @@ namespace hsd
 
         inline vector(vector&& other)
         requires (std::is_move_constructible_v<alloc_type>)
-            : _alloc(move(other._alloc))
+            : _alloc{move(other._alloc)}
         {
             swap(_data, other._data);
             swap(_size, other._size);
@@ -100,7 +102,7 @@ namespace hsd
 
         template <usize N>
         inline vector(const T (&arr)[N])
-            : _size(N), _capacity(N)
+            : _size{N}, _capacity{N}
         {
             _data = _alloc.allocate(N).unwrap();
 
@@ -110,7 +112,7 @@ namespace hsd
 
         template <usize N>
         inline vector(T (&&arr)[N])
-            : _size(N), _capacity(N)
+            : _size{N}, _capacity{N}
         {
             _data = _alloc.allocate(N).unwrap();
 
@@ -603,7 +605,7 @@ namespace hsd
         }
 
         constexpr static_vector(const static_vector& other)
-            : _size(other._size)
+            : _size{other._size}
         {
             for (usize _index = 0; _index < _size; ++_index)
                 _data[_index] = other[_index];
@@ -616,14 +618,14 @@ namespace hsd
         }
 
         constexpr static_vector(const T (&arr)[N])
-            : _size(N)
+            : _size{N}
         {
             for (usize _index = 0; _index < _size; ++_index)
                 _data[_index] = arr[_index];
         }
 
         constexpr static_vector(T (&&arr)[N])
-            : _size(N)
+            : _size{N}
         {
             for (usize _index = 0; _index < _size; ++_index)
                 _data[_index] = move(arr[_index]);
@@ -812,10 +814,22 @@ namespace hsd
         {
             if (new_size > _size)
             {
-                for (usize _index = _size; _index < new_size; ++_index)
-                    _data[_index] = T{};
+                if (new_size <= _capacity)
+                {
+                    for (usize _index = _size; _index < new_size; ++_index)
+                        _data[_index] = T{};
 
-                _size = new_size;
+                    _size = new_size;
+                }
+                else
+                {
+                    hsd_fprint_check(
+                        stderr, "Error at static_vector::resize(%zu): "
+                        "new size is greater than capacity.\n", new_size
+                    );
+
+                    abort();
+                }
             }
             else if (new_size < _size)
             {
@@ -839,8 +853,20 @@ namespace hsd
         template <typename... Args>
         constexpr void emplace_back(Args&&... args)
         {
-            _data[_size] = T{forward<Args>(args)...};
-            ++_size;
+            if (_size + 1 <= _capacity)
+            {
+                _data[_size] = T{forward<Args>(args)...};
+                ++_size;
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_vector:"
+                    ": emplace_back: Vector is full\n"
+                );
+                
+                abort();
+            }
         }
 
         constexpr void pop_back() noexcept

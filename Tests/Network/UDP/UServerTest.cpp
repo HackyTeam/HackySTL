@@ -11,7 +11,7 @@ int main()
     {
         server.poll();
 
-        for (auto& socket : server)
+        for (auto& [_, socket] : server)
         {
             auto recv_state = socket.receive(recv_buffer, 1024);
             

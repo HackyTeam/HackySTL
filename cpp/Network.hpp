@@ -2,7 +2,7 @@
 
 #include "_SocketDetail.hpp"
 #include "Concepts.hpp"
-#include "Vector.hpp"
+#include "UnorderedMap.hpp"
 
 namespace hsd
 {
@@ -10,7 +10,7 @@ namespace hsd
     class tcp_server
     {
     private:
-        using socket_type = network_detail::tcp_socket<Protocol>;
+        using socket_type = network_detail::tcp_child_socket<Protocol>;
         vector<socket_type> _sockets;
 
     public:
@@ -66,13 +66,15 @@ namespace hsd
             return network_detail::error_code();
         }
 
-        inline auto begin() const
+        inline auto begin()
         {
             // Always skip the first element.
+            // Note: the first element is
+            // always the listening socket.
             return _sockets.begin() + 1;
         }
 
-        inline auto end() const
+        inline auto end()
         {
             return _sockets.end();
         }
@@ -110,12 +112,12 @@ namespace hsd
             return network_detail::error_code();
         }
 
-        inline isize send(const char* const data, const usize size) const
+        inline isize send(const char* const data, const usize size)
         {
             return _socket.send(data, size);
         }
 
-        inline isize receive(char* const data, const usize size) const
+        inline isize receive(char* const data, const usize size)
         {
             return _socket.receive(data, size);
         }
@@ -131,17 +133,19 @@ namespace hsd
     {
     private:
         using underlying_socket = network_detail::native_socket_type;
-        using socket_type = network_detail::udp_socket<Protocol>;
-        vector<socket_type> _sockets;
+        using socket_type = network_detail::udp_child_socket<Protocol>;
+        network_detail::udp_socket<Protocol> _master_socket;
+        unordered_map<static_string<18>, socket_type> _sockets{};
 
     public:
         inline udp_server(const char* const addr)
+            : _master_socket{static_cast<underlying_socket>(-1), sockaddr_storage{}, 0}
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             network_detail::init_winsock();
             #endif
 
-            _sockets.emplace_back(addr, true);
+            _master_socket.switch_to(addr, true);
         }
 
         static inline const char* error_message()
@@ -156,40 +160,47 @@ namespace hsd
 
         inline void poll()
         {
-            static char _dummy = '\0';
-            static sockaddr_storage _addr{};
-            static socklen_t _size = sizeof(_addr);
-
-            auto _result = recvfrom(
-                _sockets.front().fd(), &_dummy, 0, 0,
-                reinterpret_cast<sockaddr*>(&_addr),
-                &_size
+            static static_vector<char, 1024> _buffer;
+            _buffer.resize(1024);
+            memset(&_master_socket.addr(), 0, _master_socket.length());
+            auto _result = _master_socket.receive(
+                _buffer.data(), _buffer.size()
             );
             
             if (_result < 0)
             {
+                #if defined(HSD_PLATFORM_WINDOWS)
                 if (error_code() != WSAEWOULDBLOCK)
+                #else
+                if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)
+                #endif
                 {
-                    fputs("recvfrom error", stderr);
+                    hsd_fprint_check(
+                        stderr, "udp_server: error in receive"
+                        ", error: %s", error_message()
+                    );
+                    
                     abort();
                 }
             }
             else
             {
-                _sockets.emplace_back(
-                    _sockets.front().fd(), _addr, _size
-                );
+                auto _key_string = network_detail::to_str(&_master_socket.addr());
+                auto& _find_result = _sockets.emplace(
+                    _key_string, _master_socket.fd(), 
+                    _master_socket.addr(), _master_socket.length()
+                ).first->second;
 
-                memset(&_addr, 0, sizeof(_addr));
+                _buffer.resize(_result);
+                _find_result.add(_buffer);
             }
         }
 
-        inline auto begin() const
+        inline auto begin()
         {
-            // Always skip the first element.
-            return _sockets.begin() + 1;
+            return _sockets.begin();
         }
-        inline auto end() const
+        inline auto end()
         {
             return _sockets.end();
         }
@@ -215,10 +226,6 @@ namespace hsd
             {
                 fputs("Error in initializing socket", stderr);
             }
-
-            // Send a dummy packet to make the
-            // server know that we are connected.
-            _socket.send("", 0);
         }
 
         static inline const char* error_message()
@@ -231,12 +238,12 @@ namespace hsd
             return network_detail::error_code();
         }
 
-        inline isize send(const char* const data, const usize size) const
+        inline isize send(const char* const data, const usize size)
         {
             return _socket.send(data, size);
         }
 
-        inline isize receive(char* const data, const usize size) const
+        inline isize receive(char* const data, const usize size)
         {
             return _socket.receive(data, size);
         }

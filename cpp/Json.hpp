@@ -255,16 +255,20 @@ namespace hsd
             while (true)
             {
                 auto chunk = read_chunk(stream);
+                
                 if (chunk.size() == 0)
                     break;
+                
                 auto res = lex(chunk);
+                
                 if (!res)
                 {
-                    std::fclose(stream);
+                    fclose(stream);
                     return res.unwrap_err();
                 }
             }
-            std::fclose(stream);
+            
+            fclose(stream);
             return {};
         }
 
@@ -276,9 +280,11 @@ namespace hsd
             if (current_token == JsonToken::Number)
             {
                 tokens.push(current_token);
+                
                 qtok_number.push(
                     basic_cstring<CharT>::template parse<i32>(token_str.c_str())
                 );
+                
                 current_token = JsonToken::Empty;
                 token_position = 0;
                 token_str.clear();

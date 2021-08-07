@@ -49,7 +49,11 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
 }
 
 template <typename T>
-void test(hsd::vector<T>&&) {}
+void test(hsd::vector<T>&& vec)
+{
+    auto v = vec;
+    auto v2 = hsd::move(v);
+}
 
 constexpr auto make_constexpr_vec()
 {

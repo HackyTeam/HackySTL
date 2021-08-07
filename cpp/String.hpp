@@ -10,19 +10,22 @@ namespace hsd
 {
     struct move_data_pointer {};
 
-    template <typename CharT>
+    template < typename CharT, template <typename> typename Allocator = allocator >
     class basic_string
     {
     private:
         using _str_utils = basic_cstring<CharT>;
         static inline const CharT _s_empty = 0;
+        using alloc_type = Allocator<CharT>;
+        
+        alloc_type _alloc;
         CharT* _data = nullptr;
         usize _size = 0;
         usize _capacity = 0;
 
         inline void _reset()
         {
-            mallocator::deallocate(_data);
+            _alloc.deallocate(_data, _capacity + 1).unwrap();
             _data = nullptr;
         }
 
@@ -31,69 +34,131 @@ namespace hsd
         using const_iterator = const CharT*;
         static constexpr usize npos = static_cast<usize>(-1);
 
-        inline basic_string() = default;
+        inline basic_string()
+        requires (std::is_default_constructible_v<alloc_type>) = default;
+
+        template <typename Alloc = alloc_type>
+        inline basic_string(const Alloc& alloc)
+        requires (std::is_constructible_v<alloc_type, const Alloc&>)
+            : _alloc{alloc}
+        {}
 
         inline basic_string(usize size)
+        requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}
         {
-            _data = mallocator::allocate_multiple<
-                CharT>(size + 1).unwrap();
+            _data = _alloc.allocate(size).unwrap();
+            _size = size;
+            _capacity = _size;
+        }
 
+        template <typename Alloc = alloc_type>
+        inline basic_string(usize size, const Alloc& alloc)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : _alloc{alloc}
+        {
+            _data = _alloc.allocate(size).unwrap();
             _size = size;
             _capacity = _size;
         }
 
         inline basic_string(const CharT* cstr)
+        requires (std::is_default_constructible_v<alloc_type>)
         {
             _size = _str_utils::length(cstr);
             _capacity = _size;
-            _data = mallocator::allocate_multiple<
-                CharT>(_size + 1).unwrap();
+            _data = _alloc.allocate(_size + 1).unwrap();
+            _str_utils::copy(_data, cstr, _size);
+            _data[_size] = static_cast<CharT>(0);
+        }
 
+        template <typename Alloc = alloc_type>
+        inline basic_string(const CharT* cstr, const Alloc& alloc)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : _alloc{alloc}
+        {
+            _size = _str_utils::length(cstr);
+            _capacity = _size;
+            _data = _alloc.allocate(_size + 1).unwrap();
             _str_utils::copy(_data, cstr, _size);
             _data[_size] = static_cast<CharT>(0);
         }
 
         inline basic_string(const CharT* cstr, usize size)
+        requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}
         {
             _size = size;
             _capacity = _size;
-            _data = mallocator::allocate_multiple<
-                CharT>(size + 1).unwrap();
+            _data = _alloc.allocate(_size + 1).unwrap();
+            _str_utils::copy(_data, cstr, _size);
+            _data[_size] = static_cast<CharT>(0);
+        }
 
+        template <typename Alloc = alloc_type>
+        inline basic_string(const CharT* cstr, usize size, const Alloc& alloc)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : _alloc{alloc}
+        {
+            _size = size;
+            _capacity = _size;
+            _data = _alloc.allocate(_size + 1).unwrap();
             _str_utils::copy(_data, cstr, _size);
             _data[_size] = static_cast<CharT>(0);
         }
 
         inline basic_string(CharT* cstr, move_data_pointer)
+        requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}
         {
             _size = _str_utils::length(cstr);
             _capacity = _size;
             _data = cstr;
         }
 
-        inline basic_string(CharT* cstr, 
-            usize size, move_data_pointer)
+        template <typename Alloc = alloc_type>
+        inline basic_string(CharT* cstr, const Alloc& alloc, move_data_pointer)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : _alloc{alloc}
         {
-            _size = size;
+            _size = _str_utils::length(cstr);
             _capacity = _size;
             _data = cstr;
         }
 
+        inline basic_string(CharT* cstr, usize size, move_data_pointer)
+        requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}, _data{cstr}, _size{size}, _capacity{size}
+        {}
+
+        template <typename Alloc = alloc_type>
+        inline basic_string(CharT* cstr, usize size, const Alloc& alloc, move_data_pointer)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : _alloc{alloc}, _data{cstr}, _size{size}, _capacity{size}
+        {}
+
         inline basic_string(basic_string_view<CharT> view)
+        requires (std::is_default_constructible_v<alloc_type>)
             : basic_string(view.data(), view.size())
         {}
 
+        template <typename Alloc = alloc_type>
+        inline basic_string(basic_string_view<CharT> view, const Alloc& alloc)
+        requires (std::is_constructible_v<alloc_type, Alloc>)
+            : basic_string(view.data(), view.size(), alloc)
+        {}
+
         inline basic_string(const basic_string& other)
+            : _alloc{other._alloc}
         {
             _size = other._size;
             _capacity = other._capacity;
-            _data = mallocator::allocate_multiple<
-                CharT>(_capacity + 1).unwrap();
-
+            _data = _alloc.allocate(_capacity + 1).unwrap();
             _str_utils::copy(_data, other._data, _size);
         }
 
         inline basic_string(basic_string&& other)
+            : _alloc{move(other._alloc)}
         {
             swap(_size, other._size);
             swap(_capacity, other._capacity);
@@ -110,9 +175,7 @@ namespace hsd
             _reset();
             _size = _str_utils::length(rhs);
             _capacity = _size;
-            _data = mallocator::allocate_multiple<
-                CharT>(_size + 1).unwrap();
-
+            _data = _alloc.allocate(_size + 1).unwrap();
             _str_utils::copy(_data, rhs, _size);
             return *this;
         }
@@ -122,9 +185,7 @@ namespace hsd
             _reset();
             _size = rhs.size();
             _capacity = _size;
-            _data = mallocator::allocate_multiple<
-                CharT>(_size + 1).unwrap();
-
+            _data = _alloc.allocate(_size + 1).unwrap();
             copy_n(rhs.data(), _size, _data);
             return *this;
         }
@@ -132,17 +193,17 @@ namespace hsd
         inline basic_string& operator=(const basic_string& rhs)
         {
             _reset();
+            _alloc = rhs._alloc;
             _size = rhs.size();
             _capacity = _size;
-            _data = mallocator::allocate_multiple<
-                CharT>(_size + 1).unwrap();
-
+            _data = _alloc.allocate(_size + 1).unwrap();
             copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
 
         inline basic_string& operator=(basic_string&& rhs)
         {
+            swap(_alloc, rhs._alloc);
             swap(_size, rhs._size);
             swap(_capacity, rhs._capacity);
             swap(_data, rhs._data);
@@ -153,7 +214,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else
@@ -169,7 +230,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else
@@ -186,7 +247,7 @@ namespace hsd
         {
             if (rhs == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else
@@ -204,7 +265,7 @@ namespace hsd
         {
             if (lhs.data() == nullptr || rhs._data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else
@@ -221,7 +282,7 @@ namespace hsd
         {
             if (lhs == nullptr || rhs._data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else
@@ -238,7 +299,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else if (_capacity <= _size + rhs._size)
@@ -261,7 +322,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else if (_capacity <= _size + rhs.size())
@@ -286,7 +347,7 @@ namespace hsd
         {
             if (rhs == nullptr || _data == nullptr)
             {
-                fputs("Error: nullptr argument.", stderr);
+                hsd_fputs_check(stderr, "Error: nullptr argument.");
                 abort();
             }
             else 
@@ -697,8 +758,8 @@ namespace hsd
                     _new_capacity += (_new_capacity + 1) / 2;
 
                 // Allocate space for NULL byte
-                auto* _new_buf = mallocator::allocate_multiple<
-                    CharT>(_new_capacity + 1).unwrap();
+                auto* _new_buf = 
+                    _alloc.allocate(_new_capacity + 1).unwrap();
 
                 _new_buf[_new_capacity] = 0;
                 
@@ -708,7 +769,7 @@ namespace hsd
                     _new_buf[_index] = move(_value);
                 }
 
-                mallocator::deallocate(_data);
+                _alloc.deallocate(_data, _capacity + 1).unwrap();
                 _data = _new_buf;
                 _capacity = _new_capacity;
             }
@@ -807,6 +868,672 @@ namespace hsd
         }
 
         inline const_iterator cend() const
+        {
+            return end();
+        }
+
+        explicit constexpr operator basic_string_view<CharT>() const
+        {
+            return basic_string_view<CharT>(_data, _size);
+        }
+    };
+
+    template <typename CharT, usize N>
+    class static_basic_string
+    {
+    private:
+        using _str_utils = basic_cstring<CharT>;
+        CharT _data[N]{};
+        usize _size = 0;
+        usize _capacity = N;
+
+    public:
+        using iterator = CharT*;
+        using const_iterator = const CharT*;
+        static constexpr usize npos = static_cast<usize>(-1);
+
+        constexpr static_basic_string() = default;
+
+        constexpr static_basic_string(usize size)
+        {
+            if (size < N)
+            {
+                _size = size;
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%zu)"
+                    ": size is too big\n", size
+                );
+
+                abort();
+            }
+        }
+
+        constexpr static_basic_string(const CharT* cstr)
+        {
+            _size = _str_utils::length(cstr);
+
+            if (_size < N)
+            {
+                _str_utils::copy(_data, cstr, _size);
+                _data[_size] = static_cast<CharT>(0);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%s)"
+                    ": cstr is too big to be contained\n", cstr
+                );
+
+                abort();
+            }
+        }
+
+        constexpr static_basic_string(const CharT* cstr, usize size)
+        {
+            if (size < N)
+            {
+                _size = size;
+                _str_utils::copy(_data, cstr, _size);
+                _data[_size] = static_cast<CharT>(0);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%s, %zu)"
+                    ": size is too big\n", cstr, size
+                );
+
+                abort();
+            } 
+        }
+
+        constexpr static_basic_string(basic_string_view<CharT> view)
+            : static_basic_string(view.data(), view.size())
+        {}
+
+        constexpr static_basic_string(const static_basic_string& other)
+        {
+            _size = other._size;
+            _str_utils::copy(_data, other._data, _size);
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr static_basic_string(const static_basic_string<CharT, N2>& other)
+        {
+            _size = other._size;
+            _str_utils::copy(_data, other._data, _size);
+        }
+
+        constexpr static_basic_string(static_basic_string&& other)
+        {
+            swap(_size, other._size);
+            move(other._data, other._data + _size, _data);
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr static_basic_string(static_basic_string<CharT, N2>&& other)
+        {
+            swap(_size, other._size);
+            move(other._data, other._data + _size, _data);
+        }
+
+        constexpr static_basic_string& operator=(const CharT* rhs)
+        {
+            auto _old_size = _size;
+            _size = _str_utils::length(rhs);
+
+            if (_size < N)
+            {
+                _str_utils::copy(_data, rhs, _size);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at operator=(%s): rhs"
+                    " is too big to be contained\n", rhs
+                );
+
+                abort();
+            }
+
+            return *this;
+        }
+
+        constexpr static_basic_string& operator=(const basic_string_view<CharT>& rhs)
+        {
+            if (rhs.size() < N)
+            {
+                _size = rhs.size();
+                copy_n(rhs.data(), _size, _data);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string::operator"
+                    "=(%s): rhs is too big to be contained\n", rhs
+                );
+
+                abort();
+            }
+
+            return *this;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr static_basic_string& operator=(const static_basic_string<CharT, N2>& rhs)
+        {
+            _size = rhs.size();
+            copy_n(rhs.c_str(), _size, _data);
+            return *this;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr static_basic_string& operator=(static_basic_string<CharT, N2>&& rhs)
+        {
+            swap(_size, rhs._size);
+            swap(_capacity, rhs._capacity);
+            move(rhs._data, rhs._data + _size, _data);
+            return *this;
+        }
+
+        constexpr CharT& operator[](usize index)
+        {
+            return _data[index];
+        }
+
+        constexpr const CharT& operator[](usize index) const
+        {
+            return _data[index];
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator==(const static_basic_string<CharT, N2>& rhs) const
+        {
+            return _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            ) == 0;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator!=(const static_basic_string<CharT, N2>& rhs) const
+        {
+            return !operator==(rhs);
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator<(const static_basic_string<CharT, N2>& rhs) const
+        {
+            return _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            ) == -1;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator<=(const static_basic_string<CharT, N2>& rhs) const
+        {
+            auto _comp_rez = _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == -1 || _comp_rez == 0;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator>(const static_basic_string<CharT, N2>& rhs) const
+        {
+            return _str_utils::compare(
+                _data, rhs._data, 
+                (_size < rhs._size ? 
+                _size : rhs._size)
+            ) == 1;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool operator>=(const static_basic_string<CharT, N2>& rhs) const
+        {
+            auto _comp_rez = _str_utils::compare(
+                _data, rhs._data, 
+                _size < rhs._size ? 
+                _size : rhs._size
+            );
+            return _comp_rez == 1 || _comp_rez == 0;
+        }
+
+        constexpr auto at(usize index)
+            -> Result< reference<CharT>, bad_access >
+        {
+            if(index >= _size)
+                return bad_access{};
+
+            return {_data[index]};
+        }
+
+        constexpr auto at(usize index) const
+            -> Result< reference<const CharT>, bad_access >
+        {
+            if(index >= _size)
+                return bad_access{};
+
+            return {_data[index]};
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr usize find(const static_basic_string<CharT, N2>& str, usize pos = 0) const
+        {
+            if (pos >= _size)
+            {
+                return npos;
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], str._data
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        constexpr usize find(const CharT* str, usize pos = 0) const
+        {
+            if (pos >= _size)
+            {
+                return npos;
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], str
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        constexpr usize find(CharT letter, usize pos = 0) const
+        {
+            if (pos >= _size)
+            {
+                return npos;
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find(
+                    &_data[pos], letter
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr usize rfind(const static_basic_string<CharT, N2>& str, usize pos = npos) const
+        {
+            if (pos >= _size && pos != npos)
+            {
+                return npos;
+            }
+            else if (pos == npos)
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str._data, _size
+                );
+
+                if(_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str._data, _size - pos
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        constexpr usize rfind(const CharT* str, usize pos = npos) const
+        {
+            if (pos >= _size && pos != npos)
+            {
+                return npos;
+            }
+            else if (pos == npos)
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size - pos
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        constexpr usize rfind(CharT str, usize pos = npos) const
+        {
+            if (pos >= _size && pos != npos)
+            {
+                return npos;
+            }
+            else if (pos == npos)
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+            else
+            {
+                const CharT* _find_addr = _str_utils::find_rev(
+                    &_data[pos], str, _size - pos
+                );
+
+                if (_find_addr == nullptr)
+                {
+                    return npos;
+                }
+                else
+                {
+                    return static_cast<usize>(_find_addr - _data);
+                }
+            }
+        }
+
+        constexpr bool starts_with(CharT letter) const
+        {
+            if (_size != 0)
+                return _data[0] == letter;
+
+            return false;
+        }
+
+        constexpr bool starts_with(const CharT* str) const
+        {
+            if (_size != 0)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool starts_with(const static_basic_string<CharT, N2>& str) const
+        {
+            if (_size != 0)
+                return find(str) == 0;
+
+            return false;
+        }
+
+        constexpr bool contains(CharT letter) const
+        {
+            if (_size != 0)
+                return find(letter) != npos;
+
+            return false;
+        }
+
+        constexpr bool contains(const CharT* str) const
+        {
+            if (_size != 0)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool contains(const static_basic_string<CharT, N2>& str) const
+        {
+            if (_size != 0)
+                return find(str) != npos;
+
+            return false;
+        }
+
+        constexpr bool ends_with(CharT letter) const
+        {
+            if (_size != 0)
+                return _data[size() - 1] == letter;
+
+            return false;
+        }
+
+        constexpr bool ends_with(const CharT* str) const
+        {
+            usize _len = cstring::length(str);
+
+            if (_size != 0)
+                return rfind(str) == (size() - _len);
+
+            return false;
+        }
+
+        template <usize N2> requires (N2 <= N)
+        constexpr bool ends_with(const static_basic_string<CharT, N2>& str) const
+        {
+            if (_size != 0)
+                return rfind(str) == (size() - str.size());
+
+            return false;
+        }
+
+        constexpr auto erase(const_iterator pos)
+            -> Result<iterator, bad_access>
+        {
+            return erase_for(pos, pos + 1);
+        }
+
+        constexpr auto erase_for(const_iterator from, const_iterator to)
+            -> Result<iterator, bad_access>
+        {
+            if (from < begin() || from > end() || to < begin() || to > end() || from > to)
+                return bad_access{};
+
+            usize _current_pos = static_cast<usize>(from - begin());
+            usize _last_pos = static_cast<usize>(to - begin());
+
+            for (usize _index = 0; _index < _capacity - _last_pos + 1; _index++)
+            {
+                this->_data[_current_pos + _index] = 
+                    move(this->_data[_last_pos + _index]);
+            }
+
+            _size -= static_cast<usize>(to - from) + 1;
+            return begin() + _last_pos;
+        }
+
+        template <typename... Args>
+        constexpr void emplace_back(Args&&... args)
+        {
+            if (_size < _capacity)
+            {
+                _data[_size] = CharT{forward<Args>(args)...};
+                _data[++_size] = '\0';
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string"
+                    ":: emplace_back: String is full\n"
+                );
+
+                abort();
+            }
+        }
+
+        constexpr void push_back(const CharT& val)
+        {
+            emplace_back(val);
+        }
+
+        constexpr void push_back(CharT&& val)
+        {
+            emplace_back(move(val));
+        }
+
+        constexpr void clear()
+        {
+            if (_capacity != 0)
+            {
+                _data[0] = '\0';
+                _size = 0;
+            }
+        }
+
+        constexpr void resize(usize size)
+        {
+            if (size > _capacity)
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string::resize"
+                    "(%zu): size is bigger than capacity\n", size
+                );
+
+                abort();
+            }
+            else if (size < _capacity)
+            {
+                _size = size;
+            }
+        }
+
+        constexpr void pop_back()
+        {
+            if (_size != 0)
+                _data[--_size] = '\0';
+        }
+
+        constexpr CharT& front()
+        {
+            return _data[0];
+        }
+
+        constexpr CharT& back()
+        {
+            return _data[_size - 1];
+        }
+
+        constexpr usize size() const
+        {
+            return _size;
+        }
+
+        constexpr usize capacity() const
+        {
+            return _capacity;
+        }
+
+        constexpr iterator data()
+        {
+            return _data;
+        }
+
+        constexpr const_iterator data() const
+        {
+            return _data;
+        }
+
+        constexpr const_iterator c_str() const
+        {
+            return _data;
+        }
+
+        constexpr iterator begin()
+        {
+            return data();
+        }
+
+        constexpr const_iterator begin() const
+        {
+            return data();
+        }
+
+        constexpr iterator end()
+        {
+            return begin() + size();
+        }
+
+        constexpr const_iterator end() const
+        {
+            return begin() + size();
+        }
+
+        constexpr const_iterator cbegin() const
+        {
+            return begin();
+        }
+
+        constexpr const_iterator cend() const
         {
             return end();
         }
@@ -988,9 +1715,34 @@ namespace hsd
         }
     };
 
+    template <typename HashType, typename CharT, usize N>
+    struct hash<HashType, static_basic_string<CharT, N>>
+    {
+        using ResultType = HashType;
+
+        static constexpr ResultType get_hash(const static_basic_string<CharT, N>& str) {
+            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end());
+        }
+    };
+
     using string = basic_string<char>;
     using wstring = basic_string<wchar>;
     using u8string = basic_string<char8>;
     using u16string = basic_string<char16>;
     using u32string = basic_string<char32>;
+    
+    template <usize N>
+    using static_string = static_basic_string<char, N>;
+    
+    template <usize N>
+    using static_wstring = static_basic_string<wchar, N>;
+    
+    template <usize N>
+    using static_u8string = static_basic_string<char8, N>;
+    
+    template <usize N>
+    using static_u16string = static_basic_string<char16, N>;
+    
+    template <usize N>
+    using static_u32string = static_basic_string<char32, N>;
 } // namespace hsd

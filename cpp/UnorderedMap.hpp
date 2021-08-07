@@ -66,7 +66,7 @@ namespace hsd
 
             for (auto& _val : _buckets[_index])
             {
-                if (_key_hash == _val.first)
+                if (_key_hash == _val.first && _data[_val.second].first == key)
                     return {_val.second, _index};
             }
 
@@ -81,7 +81,7 @@ namespace hsd
 
             for (auto _val = _buckets[_index].begin(); _val != _buckets[_index].end(); _val++)
             {
-                if (_key_hash == _val->first)
+                if (_key_hash == _val->first && _data[_val->second].first == key)
                     return pair{_val, _index};
             }
 
@@ -221,7 +221,7 @@ namespace hsd
             return *this;
         }
 
-        inline auto& operator[](const Key& key) noexcept
+        inline auto& operator[](const Key& key)
         {
             return emplace(key).first->second;
         }

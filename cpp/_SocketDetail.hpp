@@ -1,4 +1,6 @@
 #include "_NetworkFuncs.hpp"
+#include "List.hpp"
+#include "Vector.hpp"
 
 namespace hsd::network_detail
 {
@@ -215,12 +217,12 @@ namespace hsd::network_detail
             return static_cast<i32>(socket_protocol::tcp);
         }
 
-        inline const auto& fd()
+        inline auto fd() const
         {
             return _data.fd;
         }
 
-        inline isize send(const void* const buffer, const usize size) const
+        inline isize send(const void* const buffer, const usize size)
         {
             if (is_valid() == false || size > 65635)
             {
@@ -236,7 +238,7 @@ namespace hsd::network_detail
             #endif
         }
 
-        inline isize receive(void* const buffer, const usize size) const
+        inline isize receive(void* const buffer, const usize size)
         {
             if (is_valid() == false)
             {
@@ -255,6 +257,48 @@ namespace hsd::network_detail
 
             return 0;
         }
+    };
+
+    template <ip_protocol Protocol>
+    class tcp_child_socket
+        : private tcp_socket<Protocol>
+    {
+    public:
+        using tcp_socket<Protocol>::tcp_socket;
+
+        inline tcp_child_socket(pollfd&& data)
+            : tcp_socket<Protocol>(move(data))
+        {}
+
+        inline tcp_child_socket(tcp_child_socket&& other)
+            : tcp_socket<Protocol>(move(other))
+        {}
+
+        inline tcp_child_socket(const char* const addr, bool is_server = false)
+            : tcp_socket<Protocol>(addr, is_server)
+        {}
+
+        inline tcp_child_socket& operator=(tcp_child_socket&& other)
+        {
+            static_cast<tcp_socket<Protocol>&>(*this) = move(other);
+            return *this;
+        }
+
+        inline tcp_child_socket& operator=(pollfd&& rhs)
+        {
+            static_cast<tcp_socket<Protocol>&>(*this) = move(rhs);
+            return *this;
+        }
+
+        using tcp_socket<Protocol>::is_valid;
+        using tcp_socket<Protocol>::is_readable;
+        using tcp_socket<Protocol>::is_writable;
+        using tcp_socket<Protocol>::fd;
+        using tcp_socket<Protocol>::ip_protocol;
+        using tcp_socket<Protocol>::sock_type;
+        using tcp_socket<Protocol>::net_protocol;
+        using tcp_socket<Protocol>::send;
+        using tcp_socket<Protocol>::receive;
     };
 
     template <ip_protocol Protocol>
@@ -360,7 +404,6 @@ namespace hsd::network_detail
             }
         }
 
-
         inline udp_socket(native_socket_type data, 
             const sockaddr_storage& info, socklen_t addr_len)
             : _data{data}, _addr{info}, _addr_len{addr_len}
@@ -452,9 +495,19 @@ namespace hsd::network_detail
             return static_cast<i32>(socket_protocol::udp);
         }
 
-        inline const auto& fd()
+        inline auto fd()
         {
             return _data;
+        }
+
+        inline auto& addr()
+        {
+            return _addr;
+        }
+
+        inline auto& length()
+        {
+            return _addr_len;
         }
 
         inline bool switch_to(const char* const addr, bool is_server = false)
@@ -462,7 +515,7 @@ namespace hsd::network_detail
             return hsd::network_detail::switch_to(*this, addr, is_server);
         }
 
-        inline isize send(const void* const buffer, const usize size) const
+        inline isize send(const void* const buffer, const usize size)
         {
             if (is_valid() == false)
             {
@@ -484,22 +537,18 @@ namespace hsd::network_detail
             #endif
         }
 
-        inline isize receive(void* const buffer, const usize size) const
+        inline isize receive(void* const buffer, const usize size)
         {
             if (is_valid() == false)
             {
                 return -1;
             }
 
-            // TODO: This is not a good way to do this.
-            auto& _sock_addr = const_cast<sockaddr_storage&>(_addr);
-            auto& _sock_addr_len = const_cast<socklen_t&>(_addr_len);
-
             #if defined(HSD_PLATFORM_WINDOWS)
             return ::recvfrom(
                 _data, reinterpret_cast<char*>(buffer),
                 static_cast<i32>(size), 0,
-                reinterpret_cast<sockaddr*>(&_sock_addr), &_sock_addr_len
+                reinterpret_cast<sockaddr*>(&_addr), &_addr_len
             );
             #else
             return ::recvfrom(
@@ -507,6 +556,98 @@ namespace hsd::network_detail
                 reinterpret_cast<sockaddr*>(&_addr), &_addr_len
             );
             #endif
+        }
+    };
+
+    template <ip_protocol Protocol>
+    struct udp_child_socket
+    {
+    private:
+        native_socket_type _data;
+        sockaddr_storage _addr{};
+        socklen_t _addr_len{};
+
+        list<static_vector<char, 1024>> _recv_buffer{};
+
+    public:
+        inline udp_child_socket() 
+            : _data{static_cast<native_socket_type>(-1)}
+        {}
+
+        inline udp_child_socket(native_socket_type data,
+            const sockaddr_storage& info, socklen_t addr_len)
+            : _data{data}, _addr_len{addr_len}
+        {
+            memcpy(&_addr, &info, sizeof(sockaddr_storage));
+        }
+
+        inline udp_child_socket(udp_child_socket&& other)
+            : _data{other._data}, _addr_len{other._addr_len}, 
+            _recv_buffer{move(other._recv_buffer)}
+        {
+            memcpy(&_addr, &other._addr, sizeof(sockaddr_storage));
+        }
+
+        inline udp_child_socket& operator=(udp_child_socket&& rhs)
+        {
+            _data = rhs._data;
+            _addr_len = rhs._addr_len;
+            memcpy(&_addr, &rhs._addr, sizeof(sockaddr_storage));
+            _recv_buffer = move(rhs._recv_buffer);
+
+            return *this;
+        }
+
+        inline bool operator==(const udp_child_socket& rhs) const
+        {
+            auto _res = memcmp(&_addr, &rhs._addr, sizeof(sockaddr_storage));
+            return _res == 0 && rhs._data == _data;
+        }
+
+        inline bool operator!=(const udp_child_socket& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        inline bool is_valid() const
+        {
+            return _data != static_cast<native_socket_type>(-1);
+        }
+
+        inline void add(const static_vector<char, 1024>& buffer)
+        {
+            _recv_buffer.push_back(buffer);
+        }
+
+        inline isize send(const void* const buffer, const usize size)
+        {
+            if (is_valid() == false)
+            {
+                return -1;
+            }
+
+            return ::sendto(
+                _data, reinterpret_cast<const char*>(buffer),
+                static_cast<i32>(size), 0,
+                reinterpret_cast<const sockaddr*>(&_addr), _addr_len
+            );
+        }
+
+        inline isize receive(void* const buffer, const usize size)
+        {
+            if (is_valid() == false || size < 1024)
+            {
+                return -1;
+            }
+            else if (_recv_buffer.empty())
+            {
+                return 0;
+            }
+
+            auto _min_size = size < 1024 ? size : 1024;
+            memcpy(buffer, _recv_buffer.front().data(), _min_size);
+            _recv_buffer.pop_front();
+            return _min_size;
         }
     };
 } // namespace hsd::network_detail

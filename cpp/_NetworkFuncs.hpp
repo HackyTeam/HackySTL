@@ -88,6 +88,52 @@ namespace hsd::network_detail
         #endif
     }
 
+    inline auto to_str(const sockaddr_storage* addr)
+    {
+        if (addr == nullptr)
+        {
+            hsd_fputs_check(
+                stderr, "Error at to_str, addr is nullptr"
+            );
+
+            abort();
+        }
+
+        if (addr->ss_family == AF_INET)
+        {
+            auto* _addr = reinterpret_cast<const sockaddr_in*>(addr);
+            static_string<18> _ip_str;
+            _ip_str.push_back(_addr->sin_addr.s_addr & 0xff);
+            _ip_str.push_back((_addr->sin_addr.s_addr >> 8) & 0xff);
+            _ip_str.push_back((_addr->sin_addr.s_addr >> 16) & 0xff);
+            _ip_str.push_back((_addr->sin_addr.s_addr >> 24) & 0xff);
+            _ip_str.push_back(_addr->sin_port & 0xff);
+            _ip_str.push_back((_addr->sin_port >> 8) & 0xff);
+
+            return _ip_str;
+        }
+        else if (addr->ss_family == AF_INET6)
+        {
+            auto* _addr = reinterpret_cast<const sockaddr_in6*>(addr);
+            static_string<18> _ip_str;
+            
+            for (i32 _index = 0; _index < 16; _index++)
+                _ip_str.push_back(_addr->sin6_addr.s6_addr[_index]);
+
+            _ip_str.push_back(_addr->sin6_port & 0xff);
+            _ip_str.push_back((_addr->sin6_port >> 8) & 0xff);
+            return _ip_str;
+        }
+        else
+        {
+            hsd_fputs_check(
+                stderr, "Error at to_str, unknown family"
+            );
+
+            abort();
+        }
+    }
+
     template <typename SocketType>
     static inline bool switch_to(
         SocketType& new_socket, const char* ip_addr, bool is_server)
@@ -113,7 +159,7 @@ namespace hsd::network_detail
         };
 
         static string _domain_addr = "";
-        auto* _port = cstring::find(ip_addr, ':');
+        auto* _port = cstring::find_rev(ip_addr, ':');
 
         if (_port != nullptr)
         {

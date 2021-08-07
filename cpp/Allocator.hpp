@@ -195,7 +195,7 @@ namespace hsd
             new (ptr) T{forward<Args>(args)...};
         }
 
-        [[nodiscard]] constexpr auto allocate(usize size)
+        [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
         {
             auto* _block_ptr = bit_cast<block*>(_buf);
@@ -256,7 +256,7 @@ namespace hsd
             return allocator_detail::allocator_error{"Insufficient memory"};
         }
 
-        auto deallocate(T* ptr, usize)
+        inline auto deallocate(T* ptr, usize)
             -> Result< void, allocator_detail::allocator_error >
         {
             if (ptr != nullptr)
@@ -279,7 +279,7 @@ namespace hsd
         }
 
         #ifndef NDEBUG
-        void print_buffer() const
+        inline void print_buffer() const
         {
             usize _vlen = static_cast<usize>(
                 math::sqrt(static_cast<f64>(_size))

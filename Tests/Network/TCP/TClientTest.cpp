@@ -3,7 +3,7 @@
 
 int main()
 {
-    hsd::tcp_client_v4 client{"127.0.0.1:54000"};
+    hsd::tcp_client_v4 client = "127.0.0.1:54000";
     char send_buffer[1024]{};
     char recv_buffer[1024]{};
 

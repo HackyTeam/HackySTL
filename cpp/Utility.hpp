@@ -107,8 +107,10 @@ namespace hsd
     template < typename InIt, typename OutIt >
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
-        while (first != last) 
+        while (first != last)
+        { 
             *dest++ = *first++;
+        }
 
         return dest;
     }
@@ -119,7 +121,9 @@ namespace hsd
         using value_type = remove_reference_t<decltype(*dest)>;
 
         for (usize _index = 0; _index != n; _index++)
+        {
             *dest++ = static_cast<value_type>(*first++);
+        }
     
         return dest;
     }
@@ -137,7 +141,9 @@ namespace hsd
         while (first != last) 
         {
             if (pred(*first))
+            {
                 *dest++ = *first;
+            }
                 
             first++;
         }
@@ -148,6 +154,12 @@ namespace hsd
     static constexpr Elem* begin(Elem (&arr)[Count])
     {
         return static_cast<Elem*>(arr);
+    }
+
+    template < typename Elem, usize Count >
+    static constexpr Elem* end(Elem (&arr)[Count])
+    {
+        return static_cast<Elem*>(arr) + Count;
     }
 
     template < typename Elem, usize Count >

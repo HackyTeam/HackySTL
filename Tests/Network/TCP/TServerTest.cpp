@@ -3,7 +3,7 @@
 
 int main()
 {
-    hsd::tcp_server_v4 server{"0.0.0.0:54000"};
+    hsd::tcp_server_v4 server = "0.0.0.0:54000";
     char send_buffer[1024]{};
     char recv_buffer[1024]{};
 

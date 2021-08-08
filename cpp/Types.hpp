@@ -4,10 +4,13 @@
 
 namespace hsd
 {
-    namespace detail
+    namespace type_detail
     {
-        template <typename>
-        struct remove_unsigned;
+        template <typename T>
+        struct remove_unsigned
+        {
+            using type = T;
+        };
 
         template <>
         struct remove_unsigned<unsigned char>
@@ -38,10 +41,46 @@ namespace hsd
         {
             using type = long long;
         };
-    } // namespace detail
+
+        template <typename T>
+        struct add_unsigned
+        {
+            using type = T;
+        };
+
+        template <>
+        struct add_unsigned<char>
+        {
+            using type = unsigned char;
+        };
+
+        template <>
+        struct add_unsigned<short>
+        {
+            using type = unsigned short;
+        };
+
+        template <>
+        struct add_unsigned<int>
+        {
+            using type = unsigned int;
+        };
+
+        template <>
+        struct add_unsigned<long>
+        {
+            using type = unsigned long;
+        };
+
+        template <>
+        struct add_unsigned<long long>
+        {
+            using type = unsigned long long;
+        };
+    } // namespace type_detail
 
     using usize = decltype(sizeof(int));
-    using isize = detail::remove_unsigned<usize>::type;
+    using isize = type_detail::remove_unsigned<usize>::type;
 
     #ifdef HSD_COMPILER_GCC
     using u128 = __uint128_t;
@@ -72,6 +111,12 @@ namespace hsd
     using f32 = float;
     
     using NullType = decltype(nullptr);
+
+    template <typename T>
+    using add_unsigned_t = typename type_detail::add_unsigned<T>::type;
+
+    template <typename T>
+    using remove_unsigned_t = typename type_detail::remove_unsigned<T>::type;
 
     namespace trivial_literals
     {

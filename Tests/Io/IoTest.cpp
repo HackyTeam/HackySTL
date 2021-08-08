@@ -69,7 +69,8 @@ int main()
     hsd::io::read_line().unwrap().set_data(x, y, z).unwrap();
     hsd::io::print<L"{}, {}, {}\n">(x, y, z);
     
-    auto file = hsd::file("test.txt", hsd::file::options::text::read);
+    auto file = hsd::file("test.txt", hsd::file::options::text::read_write);
     
     [[maybe_unused]] auto c = file.read_line().unwrap().parse<hsd::i32>();
+    file.print<"{} {} {}">("Hello", 12, -3.4).unwrap();
 }

@@ -180,6 +180,11 @@ namespace hsd
         {};
 
         template <>
+        struct is_integral<wchar>
+            : public true_type
+        {};
+
+        template <>
         struct is_integral<i16>
             : public true_type
         {};
@@ -273,12 +278,16 @@ namespace hsd
 
         template <typename T>
         struct is_signed<T, true>
-            : public literal_constant< bool, T(-1) < T(0) >
+            : public literal_constant< 
+                bool, is_number<T>::value && (T(-1) < T(0)) 
+            >
         {};
 
         template <typename T>
         struct is_unsigned
-            : public negation<is_signed<T>>
+            : public literal_constant< 
+                bool, is_number<T>::value && (T(-1) > T(0)) 
+            >
         {};
     }
 

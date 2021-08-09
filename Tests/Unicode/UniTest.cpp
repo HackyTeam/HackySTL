@@ -9,7 +9,7 @@ int main()
         const hsd::char8* test = u8"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char32 result[255]{};
 
-        hsd::to_utf32(result, test);
+        hsd::unicode::to_utf32(result, test);
         assert(hsd::u32cstring::compare(result, expected) == 0);
     }
 
@@ -19,7 +19,7 @@ int main()
         const hsd::char8* expected = u8"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char8 result[255]{};
 
-        hsd::to_utf8(result, test);
+        hsd::unicode::to_utf8(result, test);
         assert(hsd::u8cstring::compare(result, expected) == 0);
     }
 
@@ -29,7 +29,7 @@ int main()
         const hsd::char8* test = u8"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char16 result[255]{};
 
-        hsd::to_utf16(result, test);
+        hsd::unicode::to_utf16(result, test);
         assert(hsd::u16cstring::compare(result, expected) == 0);
     }
 
@@ -39,7 +39,7 @@ int main()
         const hsd::char8* expected = u8"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char8 result[255]{};
 
-        hsd::to_utf8(result, test);
+        hsd::unicode::to_utf8(result, test);
         assert(hsd::u8cstring::compare(result, expected) == 0);
     }
 
@@ -49,7 +49,7 @@ int main()
         const hsd::char16* test = u"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char32 result[255]{};
 
-        hsd::to_utf32(result, test);
+        hsd::unicode::to_utf32(result, test);
         assert(hsd::u32cstring::compare(result, expected) == 0);
     }
 
@@ -59,7 +59,7 @@ int main()
         const hsd::char32* test = U"🌠¾Ðæ ĲŁƝɆˠϖж";
         hsd::char16 result[255]{};
 
-        hsd::to_utf16(result, test);
+        hsd::unicode::to_utf16(result, test);
         assert(hsd::u16cstring::compare(result, expected) == 0);
     }
 }

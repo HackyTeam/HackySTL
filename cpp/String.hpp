@@ -157,6 +157,32 @@ namespace hsd
             _str_utils::copy(_data, other._data, _size);
         }
 
+        template <typename CharT2>
+        inline basic_string(const basic_string<CharT2, Allocator>& other)
+            : _alloc{other._alloc}
+        {
+            _size = _capacity = unicode::length(other._data);
+            _data = _alloc.allocate(_capacity + 1).unwrap();
+            
+            if constexpr (sizeof(CharT) == 1)
+            {
+                unicode::to_utf8(_data, other._data);
+            }
+            else if constexpr (sizeof(CharT) == 2)
+            {
+                unicode::to_utf16(_data, other._data);
+            }
+            else if constexpr (sizeof(CharT) == 4)
+            {
+                unicode::to_utf32(_data, other._data);
+            }
+            else
+            {
+                hsd_fputs_check(stderr, "Unsupported char size");
+                abort();
+            }
+        }
+
         inline basic_string(basic_string&& other)
             : _alloc{move(other._alloc)}
         {
@@ -172,20 +198,16 @@ namespace hsd
 
         inline basic_string& operator=(const CharT* rhs)
         {
-            _reset();
             _size = _str_utils::length(rhs);
-            _capacity = _size;
-            _data = _alloc.allocate(_size + 1).unwrap();
+            reserve(_size);
             _str_utils::copy(_data, rhs, _size);
             return *this;
         }
 
         inline basic_string& operator=(const basic_string_view<CharT>& rhs)
         {
-            _reset();
             _size = rhs.size();
-            _capacity = _size;
-            _data = _alloc.allocate(_size + 1).unwrap();
+            reserve(_size);
             copy_n(rhs.data(), _size, _data);
             return *this;
         }
@@ -198,6 +220,35 @@ namespace hsd
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
             copy_n(rhs.c_str(), _size, _data);
+            return *this;
+        }
+
+        template <typename CharT2>
+        inline basic_string& operator=(const basic_string<CharT2, Allocator>& rhs)
+        {
+            _reset();
+            _alloc = rhs._alloc;
+            _size = _capacity = unicode::length(rhs._data);
+            _data = _alloc.allocate(_size + 1).unwrap();
+            
+            if constexpr (sizeof(CharT) == 1)
+            {
+                unicode::to_utf8(_data, rhs._data);
+            }
+            else if constexpr (sizeof(CharT) == 2)
+            {
+                unicode::to_utf16(_data, rhs._data);
+            }
+            else if constexpr (sizeof(CharT) == 4)
+            {
+                unicode::to_utf32(_data, rhs._data);
+            }
+            else
+            {
+                hsd_fputs_check(stderr, "Unsupported char size");
+                abort();
+            }
+
             return *this;
         }
 
@@ -382,11 +433,7 @@ namespace hsd
 
         inline bool operator==(const basic_string& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            ) == 0;
+            return _size == rhs._size && _str_utils::compare(_data, rhs._data) == 0;
         }
 
         inline bool operator!=(const basic_string& rhs) const
@@ -396,39 +443,25 @@ namespace hsd
 
         inline bool operator<(const basic_string& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            ) == -1;
+            return _str_utils::compare(_data, rhs._data) == -1;
         }
 
         inline bool operator<=(const basic_string& rhs) const
         {
-            auto _comp_rez = _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            );
+            auto _comp_rez = _str_utils::compare(_data, rhs._data);
+
             return _comp_rez == -1 || _comp_rez == 0;
         }
 
         inline bool operator>(const basic_string& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                (_size < rhs._size ? 
-                _size : rhs._size)
-            ) == 1;
+            return _str_utils::compare(_data, rhs._data) == 1;
         }
 
         inline bool operator>=(const basic_string& rhs) const
         {
-            auto _comp_rez = _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            );
+            auto _comp_rez = _str_utils::compare(_data, rhs._data);
+
             return _comp_rez == 1 || _comp_rez == 0;
         }
 
@@ -960,11 +993,65 @@ namespace hsd
             _str_utils::copy(_data, other._data, _size);
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr static_basic_string(const static_basic_string<CharT, N2>& other)
         {
-            _size = other._size;
-            _str_utils::copy(_data, other._data, _size);
+            if (other._size < N)
+            {
+                _size = other._size;
+                _str_utils::copy(_data, other._data, _size);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%s)"
+                    ": other is too big to be contained\n", other._data
+                );
+
+                abort();
+            }
+        }
+
+        template <typename CharT2, usize N2>
+        constexpr static_basic_string(const static_basic_string<CharT2, N2>& other)
+        {
+            auto _len = unicode::length(other._data);
+
+            if (_len < N2)
+            {
+                _size = _len;
+                
+                if constexpr (sizeof(CharT) == 1)
+                {
+                    unicode::to_utf8(_data, other._data, _size);
+                }
+                else if constexpr (sizeof(CharT) == 2)
+                {
+                    unicode::to_utf16(_data, other._data, _size);
+                }
+                else if constexpr (sizeof(CharT) == 4)
+                {
+                    unicode::to_utf32(_data, other._data, _size);
+                }
+                else
+                {
+                    hsd_fprint_check(
+                        stderr, "Error at static_basic_string(%s, %zu)"
+                        ": sizeof(CharT) is not 1, 2 or 4\n", other._data, other._size
+                    );
+
+                    abort();
+                }
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%s, %zu)"
+                    ": cstr is too big to be contained\n", other._data, other._size
+                );
+
+                abort();
+            }
         }
 
         constexpr static_basic_string(static_basic_string&& other)
@@ -973,11 +1060,21 @@ namespace hsd
             move(other._data, other._data + _size, _data);
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr static_basic_string(static_basic_string<CharT, N2>&& other)
         {
-            swap(_size, other._size);
-            move(other._data, other._data + _size, _data);
+            if (other._size < N)
+            {
+                swap(_size, other._size);
+                move(other._data, other._data + _size, _data);
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string(%s, %zu)"
+                    ": other is too big to be contained\n", other._data
+                );
+            }
         }
 
         constexpr static_basic_string& operator=(const CharT* rhs)
@@ -1030,6 +1127,48 @@ namespace hsd
             return *this;
         }
 
+        template <typename CharT2, usize N2>
+        constexpr static_basic_string& operator=(const static_basic_string<CharT2, N2>& rhs)
+        {
+            auto _len = unicode::length(rhs);
+
+            if (_len < N2)
+            {
+                _size = _len;
+
+                if constexpr (sizeof(CharT) == 1)
+                {
+                    unicode::to_utf8(_data, rhs, _size);
+                }
+                else if constexpr (sizeof(CharT) == 2)
+                {
+                    unicode::to_utf16(_data, rhs, _size);
+                }
+                else if constexpr (sizeof(CharT) == 4)
+                {
+                    unicode::to_utf32(_data, rhs, _size);
+                }
+                else
+                {
+                    hsd_fprint_check(
+                        stderr, "Error at static_basic_string::operator"
+                        "=(%s): sizeof(CharT) is not 1, 2 or 4\n", rhs
+                    );
+                }
+            }
+            else
+            {
+                hsd_fprint_check(
+                    stderr, "Error at static_basic_string::operator"
+                    "=(%s): rhs is too big to be contained\n", rhs
+                );
+
+                abort();
+            }
+
+            return *this;
+        }
+
         template <usize N2> requires (N2 <= N)
         constexpr static_basic_string& operator=(static_basic_string<CharT, N2>&& rhs)
         {
@@ -1049,61 +1188,43 @@ namespace hsd
             return _data[index];
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator==(const static_basic_string<CharT, N2>& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            ) == 0;
+            return _size == rhs._size && _str_utils::compare(_data, rhs._data) == 0;
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator!=(const static_basic_string<CharT, N2>& rhs) const
         {
             return !operator==(rhs);
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator<(const static_basic_string<CharT, N2>& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            ) == -1;
+            return _str_utils::compare(_data, rhs._data) == -1;
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator<=(const static_basic_string<CharT, N2>& rhs) const
         {
-            auto _comp_rez = _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            );
+            auto _comp_rez = _str_utils::compare(_data, rhs._data);
+
             return _comp_rez == -1 || _comp_rez == 0;
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator>(const static_basic_string<CharT, N2>& rhs) const
         {
-            return _str_utils::compare(
-                _data, rhs._data, 
-                (_size < rhs._size ? 
-                _size : rhs._size)
-            ) == 1;
+            return _str_utils::compare(_data, rhs._data) == 1;
         }
 
-        template <usize N2> requires (N2 <= N)
+        template <usize N2>
         constexpr bool operator>=(const static_basic_string<CharT, N2>& rhs) const
         {
-            auto _comp_rez = _str_utils::compare(
-                _data, rhs._data, 
-                _size < rhs._size ? 
-                _size : rhs._size
-            );
+            auto _comp_rez = _str_utils::compare(_data, rhs._data);
+
             return _comp_rez == 1 || _comp_rez == 0;
         }
 
@@ -1125,8 +1246,9 @@ namespace hsd
             return {_data[index]};
         }
 
-        template <usize N2> requires (N2 <= N)
-        constexpr usize find(const static_basic_string<CharT, N2>& str, usize pos = 0) const
+        template <usize N2>
+        constexpr usize find(
+            const static_basic_string<CharT, N2>& str, usize pos = 0) const
         {
             if (pos >= _size)
             {
@@ -1195,8 +1317,9 @@ namespace hsd
             }
         }
 
-        template <usize N2> requires (N2 <= N)
-        constexpr usize rfind(const static_basic_string<CharT, N2>& str, usize pos = npos) const
+        template <usize N2>
+        constexpr usize rfind(
+            const static_basic_string<CharT, N2>& str, usize pos = npos) const
         {
             if (pos >= _size && pos != npos)
             {
@@ -1326,8 +1449,9 @@ namespace hsd
             return false;
         }
 
-        template <usize N2> requires (N2 <= N)
-        constexpr bool starts_with(const static_basic_string<CharT, N2>& str) const
+        template <usize N2>
+        constexpr bool starts_with(
+            const static_basic_string<CharT, N2>& str) const
         {
             if (_size != 0)
                 return find(str) == 0;
@@ -1351,8 +1475,9 @@ namespace hsd
             return false;
         }
 
-        template <usize N2> requires (N2 <= N)
-        constexpr bool contains(const static_basic_string<CharT, N2>& str) const
+        template <usize N2>
+        constexpr bool contains(
+            const static_basic_string<CharT, N2>& str) const
         {
             if (_size != 0)
                 return find(str) != npos;
@@ -1378,8 +1503,9 @@ namespace hsd
             return false;
         }
 
-        template <usize N2> requires (N2 <= N)
-        constexpr bool ends_with(const static_basic_string<CharT, N2>& str) const
+        template <usize N2>
+        constexpr bool ends_with(
+            const static_basic_string<CharT, N2>& str) const
         {
             if (_size != 0)
                 return rfind(str) == (size() - str.size());

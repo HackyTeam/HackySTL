@@ -68,10 +68,10 @@ namespace hsd
             else
             {
                 // 21-bit
-                dest[0] = static_cast<CharT1>(0xF0 | ((_expr - 0x10000) >> 18));
+                dest[0] = static_cast<CharT1>(0xF0 | (_expr >> 18));
                 dest[1] = static_cast<CharT1>(0x80 | ((_expr >> 12) & 0x3F));
-                dest[2] = static_cast<CharT1>(0x80 | ((_expr - 0x10000) >> 6 & 0x3F));
-                dest[3] = static_cast<CharT1>(0x80 | ((_expr - 0x10000) & 0x3F));
+                dest[2] = static_cast<CharT1>(0x80 | ((_expr >> 6) & 0x3F));
+                dest[3] = static_cast<CharT1>(0x80 | (_expr & 0x3F));
                 
                 dest += 4; src += 2;
             }
@@ -86,67 +86,42 @@ namespace hsd
     {
         while (*src != static_cast<CharT2>('\0'))
         {
-            if (*src < 0x7FFFF)
+            if (*src < 0x10000)
             {
-                dest[0] = static_cast<CharT1>(0xF0 | (
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 18
-                    )
-                );
-
-                dest[1] = static_cast<CharT1>(0x80 | ((
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 12
-                    ) & 0x3F)
-                );
-                dest[2] = static_cast<CharT1>(0x80 | ((
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 6
-                    ) & 0x3F)
-                );
-                
-                dest[3] = static_cast<CharT1>(0x80 | (
-                    static_cast<add_unsigned_t<CharT2>>(*src) & 0x3F
-                    )
-                );
-                
-                dest += 4; src += 1;
-            }
-            else if (*src < 0x1FFF)
-            {
-                dest[0] = static_cast<CharT1>(0xE0 | (
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 12
-                    )
-                );
-
-                dest[1] = static_cast<CharT1>(0x80 | ((
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 6
-                    ) & 0x3F)
-                );
-
-                dest[2] = static_cast<CharT1>(0x80 | (
-                        static_cast<add_unsigned_t<CharT2>>(*src) & 0x3F
-                    )
-                );
-
-                dest += 3; src += 1;
-            }
-            else if (*src < 0x7FF)
-            {
-                dest[0] = static_cast<CharT1>(0xC0 | (
-                        static_cast<add_unsigned_t<CharT2>>(*src) >> 6
-                    )
-                );
-
-                dest[1] = static_cast<CharT1>(0x80 | (
-                        static_cast<add_unsigned_t<CharT2>>(*src) & 0x3F
-                    )
-                );
-                
-                dest += 2; src += 1;
+                if (*src < 0x80)
+                {
+                    // ASCII
+                    dest[0] = static_cast<CharT1>(*src);
+                    
+                    dest += 1; src += 1;
+                }
+                else if (*src < 0x800)
+                {
+                    // 11-bit
+                    dest[0] = static_cast<CharT1>(0xC0 | ((*src >> 6) & 0x1F));
+                    dest[1] = static_cast<CharT1>(0x80 | (*src & 0x3F));
+                    
+                    dest += 2; src += 1;
+                }
+                else
+                {
+                    // 16-bit
+                    dest[0] = static_cast<CharT1>(0xE0 | ((*src >> 12) & 0x0F));
+                    dest[1] = static_cast<CharT1>(0x80 | ((*src >> 6) & 0x3F));
+                    dest[2] = static_cast<CharT1>(0x80 | (*src & 0x3F));
+                    
+                    dest += 3; src += 1;
+                }
             }
             else
             {
-                dest[0] = static_cast<CharT1>(*src);
+                // 21-bit
+                dest[0] = static_cast<CharT1>(0xF0 | (*src >> 18));
+                dest[1] = static_cast<CharT1>(0x80 | ((*src >> 12) & 0x3F));
+                dest[2] = static_cast<CharT1>(0x80 | ((*src >> 6) & 0x3F));
+                dest[3] = static_cast<CharT1>(0x80 | (*src & 0x3F));
                 
-                dest += 1; src += 1;
+                dest += 4; src += 1;
             }
         }
         
@@ -173,8 +148,8 @@ namespace hsd
 					(static_cast<add_unsigned_t<CharT2>>(src[3]) & 0x3F)
 				);
 
-        	    dest[0] = static_cast<CharT1>(0xD800 | ((expr - 0x10000) >> 10));
-        	    dest[1] = static_cast<CharT1>(0xDC00 | ((expr - 0x10000) & 0x3FF));
+        	    dest[0] = static_cast<CharT1>(0xD800 | ((expr >> 10) - 0x40));
+        	    dest[1] = static_cast<CharT1>(0xDC00 | (expr & 0x3FF));
 				
 				dest += 2; src += 4;
         	}
@@ -198,8 +173,8 @@ namespace hsd
         	    }
         	    else
         	    {
-        	        dest[0] = static_cast<CharT1>(0xD800 | ((expr - 0x10000) >> 10));
-        	        dest[1] = static_cast<CharT1>(0xDC00 | ((expr - 0x10000) & 0x3FF));
+        	        dest[0] = static_cast<CharT1>(0xD800 | (expr >> 10));
+        	        dest[1] = static_cast<CharT1>(0xDC00 | (expr & 0x3FF));
         	        
 					dest += 2; src += 3;
         	    }
@@ -255,14 +230,14 @@ namespace hsd
         	else
         	{
         	    dest[0] = static_cast<CharT1>(
-					0xD800 | ((
-                        static_cast<add_unsigned_t<CharT2>>(*src) - 0x10000
-                    ) >> 10)
+					0xD800 | (
+                        (static_cast<add_unsigned_t<CharT2>>(*src) >> 10) - 0x40
+					)
 				);
         	    dest[1] = static_cast<CharT1>( 
-					0xDC00 | ((
-                        static_cast<add_unsigned_t<CharT2>>(*src) - 0x10000
-                    ) & 0x3FF)
+					0xDC00 | (
+                        static_cast<add_unsigned_t<CharT2>>(*src) & 0x3FF
+					)
 				);
         	    
 				dest += 2; src += 1;

@@ -9,37 +9,37 @@ static void file_status(const fs::path& p)
     auto file_stat = p.status();
     auto file_perms = file_stat.permissions().unwrap();
 
-    hsd::io::print<"Name:           {}\n">(p.relative_name()                   );
-    hsd::io::print<"Extension:      {}\n">(p.extension()                       );
-    hsd::io::print<"Directory size: {}\n">(file_stat.size()           .unwrap());
-    hsd::io::print<"Is Directory:   {}\n">(file_stat.is_directory()   .unwrap());
-    hsd::io::print<"Is Symlink:     {}\n">(file_stat.is_symlink()     .unwrap());
-    hsd::io::print<"Is Block file:  {}\n">(file_stat.is_block_file()  .unwrap());
-    hsd::io::print<"Is Character:   {}\n">(file_stat.is_character()   .unwrap());
-    hsd::io::print<"Is FIFO file:   {}\n">(file_stat.is_fifo_file()   .unwrap());
-    hsd::io::print<"Is File:        {}\n">(file_stat.is_regular_file().unwrap());
-    hsd::io::print<"Is Socket:      {}\n">(file_stat.is_socket()      .unwrap());
+    hsd_println("Name:           {}", p.relative_name()                   );
+    hsd_println("Extension:      {}", p.extension()                       );
+    hsd_println("Directory size: {}", file_stat.size()           .unwrap());
+    hsd_println("Is Directory:   {}", file_stat.is_directory()   .unwrap());
+    hsd_println("Is Symlink:     {}", file_stat.is_symlink()     .unwrap());
+    hsd_println("Is Block file:  {}", file_stat.is_block_file()  .unwrap());
+    hsd_println("Is Character:   {}", file_stat.is_character()   .unwrap());
+    hsd_println("Is FIFO file:   {}", file_stat.is_fifo_file()   .unwrap());
+    hsd_println("Is File:        {}", file_stat.is_regular_file().unwrap());
+    hsd_println("Is Socket:      {}", file_stat.is_socket()      .unwrap());
     
     puts("\nFile Permissions:");
 
-    hsd::io::print<"Can Owner Read:             {}\n">(file_perms.can_owner_read          );
-    hsd::io::print<"Can Owner Write:            {}\n">(file_perms.can_owner_write         );
-    hsd::io::print<"Can Owner Execute:          {}\n">(file_perms.can_owner_exec          );
-    hsd::io::print<"Can Owner Do everything:    {}\n">(file_perms.can_owner_do_everything );
-    hsd::io::print<"Can Group Read:             {}\n">(file_perms.can_group_read          );
-    hsd::io::print<"Can Group Write:            {}\n">(file_perms.can_group_write         );
-    hsd::io::print<"Can Group Execute:          {}\n">(file_perms.can_group_exec          );
-    hsd::io::print<"Can Group Do everything:    {}\n">(file_perms.can_group_do_everything );
-    hsd::io::print<"Can Others Read:            {}\n">(file_perms.can_others_read         );
-    hsd::io::print<"Can Others Write:           {}\n">(file_perms.can_others_write        );
-    hsd::io::print<"Can Others Execute:         {}\n">(file_perms.can_others_exec         );
-    hsd::io::print<"Can Others Do everything:   {}\n">(file_perms.can_others_do_everything);
-    hsd::io::print<"Can Everyone Do everything: {}\n">(file_perms.can_all_do_everything   );
+    hsd_println("Can Owner Read:             {}", file_perms.can_owner_read          );
+    hsd_println("Can Owner Write:            {}", file_perms.can_owner_write         );
+    hsd_println("Can Owner Execute:          {}", file_perms.can_owner_exec          );
+    hsd_println("Can Owner Do everything:    {}", file_perms.can_owner_do_everything );
+    hsd_println("Can Group Read:             {}", file_perms.can_group_read          );
+    hsd_println("Can Group Write:            {}", file_perms.can_group_write         );
+    hsd_println("Can Group Execute:          {}", file_perms.can_group_exec          );
+    hsd_println("Can Group Do everything:    {}", file_perms.can_group_do_everything );
+    hsd_println("Can Others Read:            {}", file_perms.can_others_read         );
+    hsd_println("Can Others Write:           {}", file_perms.can_others_write        );
+    hsd_println("Can Others Execute:         {}", file_perms.can_others_exec         );
+    hsd_println("Can Others Do everything:   {}", file_perms.can_others_do_everything);
+    hsd_println("Can Everyone Do everything: {}", file_perms.can_all_do_everything   );
 }
 
 int main()
 {
-    fs::path p{"cpp"};
+    fs::path p{"../../cpp"};
 
     file_status(p);
     puts("");
@@ -56,7 +56,7 @@ int main()
 
     for (auto& parent : p.parents())
     {
-        hsd::io::print<" \"{}\" |">(parent);
+        hsd_print(" \"{}\" |", parent);
     }
 
     //fs::path p2{"testsrc"};
@@ -70,32 +70,32 @@ static void file_status(const fs::path& p)
     auto file_stat = p.status();
     auto file_perms = file_stat.permissions().unwrap();
 
-    hsd::io::print<L"Name:           {}\n">(p.relative_name()                   );
-    hsd::io::print<L"Extension:      {}\n">(p.extension()                       );
-    hsd::io::print<L"Directory size: {}\n">(file_stat.size()           .unwrap());
-    hsd::io::print<L"Is Directory:   {}\n">(file_stat.is_directory()   .unwrap());
-    hsd::io::print<L"Is Symlink:     {}\n">(file_stat.is_symlink()     .unwrap());
-    hsd::io::print<L"Is Block file:  {}\n">(file_stat.is_block_file()  .unwrap());
-    hsd::io::print<L"Is Character:   {}\n">(file_stat.is_character()   .unwrap());
-    hsd::io::print<L"Is FIFO file:   {}\n">(file_stat.is_fifo_file()   .unwrap());
-    hsd::io::print<L"Is File:        {}\n">(file_stat.is_regular_file().unwrap());
-    hsd::io::print<L"Is Socket:      {}\n">(file_stat.is_socket()      .unwrap());
+    hsd_println(L"Name:           {}", p.relative_name()                   );
+    hsd_println(L"Extension:      {}", p.extension()                       );
+    hsd_println(L"Directory size: {}", file_stat.size()           .unwrap());
+    hsd_println(L"Is Directory:   {}", file_stat.is_directory()   .unwrap());
+    hsd_println(L"Is Symlink:     {}", file_stat.is_symlink()     .unwrap());
+    hsd_println(L"Is Block file:  {}", file_stat.is_block_file()  .unwrap());
+    hsd_println(L"Is Character:   {}", file_stat.is_character()   .unwrap());
+    hsd_println(L"Is FIFO file:   {}", file_stat.is_fifo_file()   .unwrap());
+    hsd_println(L"Is File:        {}", file_stat.is_regular_file().unwrap());
+    hsd_println(L"Is Socket:      {}", file_stat.is_socket()      .unwrap());
     
     puts("\nFile Permissions:");
 
-    hsd::io::print<L"Can Owner Read:             {}\n">(file_perms.can_owner_read          );
-    hsd::io::print<L"Can Owner Write:            {}\n">(file_perms.can_owner_write         );
-    hsd::io::print<L"Can Owner Execute:          {}\n">(file_perms.can_owner_exec          );
-    hsd::io::print<L"Can Owner Do everything:    {}\n">(file_perms.can_owner_do_everything );
-    hsd::io::print<L"Can Group Read:             {}\n">(file_perms.can_group_read          );
-    hsd::io::print<L"Can Group Write:            {}\n">(file_perms.can_group_write         );
-    hsd::io::print<L"Can Group Execute:          {}\n">(file_perms.can_group_exec          );
-    hsd::io::print<L"Can Group Do everything:    {}\n">(file_perms.can_group_do_everything );
-    hsd::io::print<L"Can Others Read:            {}\n">(file_perms.can_others_read         );
-    hsd::io::print<L"Can Others Write:           {}\n">(file_perms.can_others_write        );
-    hsd::io::print<L"Can Others Execute:         {}\n">(file_perms.can_others_exec         );
-    hsd::io::print<L"Can Others Do everything:   {}\n">(file_perms.can_others_do_everything);
-    hsd::io::print<L"Can Everyone Do everything: {}\n">(file_perms.can_all_do_everything   );
+    hsd_println(L"Can Owner Read:             {}", file_perms.can_owner_read          );
+    hsd_println(L"Can Owner Write:            {}", file_perms.can_owner_write         );
+    hsd_println(L"Can Owner Execute:          {}", file_perms.can_owner_exec          );
+    hsd_println(L"Can Owner Do everything:    {}", file_perms.can_owner_do_everything );
+    hsd_println(L"Can Group Read:             {}", file_perms.can_group_read          );
+    hsd_println(L"Can Group Write:            {}", file_perms.can_group_write         );
+    hsd_println(L"Can Group Execute:          {}", file_perms.can_group_exec          );
+    hsd_println(L"Can Group Do everything:    {}", file_perms.can_group_do_everything );
+    hsd_println(L"Can Others Read:            {}", file_perms.can_others_read         );
+    hsd_println(L"Can Others Write:           {}", file_perms.can_others_write        );
+    hsd_println(L"Can Others Execute:         {}", file_perms.can_others_exec         );
+    hsd_println(L"Can Others Do everything:   {}", file_perms.can_others_do_everything);
+    hsd_println(L"Can Everyone Do everything: {}", file_perms.can_all_do_everything   );
 }
 
 int main()
@@ -117,7 +117,7 @@ int main()
 
     for (auto& parent : p.parents())
     {
-        hsd::io::print<L" \"{}\" |">(parent);
+        hsd_print(L" \"{}\" |", parent);
     }
 
     //fs::path p2{"testsrc"};

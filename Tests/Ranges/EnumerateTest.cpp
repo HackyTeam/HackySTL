@@ -8,16 +8,16 @@ int main()
 
     for (auto [val, count] : vec.to_span().enumerate())
     {
-        hsd::io::print<"({}, {}) ">(val, count);
+        hsd_print("({}, {}) ", val, count);
         val = val + 1;
     }
 
-    hsd::io::print<"\n">();
+    hsd_println("");
 
     for (auto& val : vec)
     {
-        hsd::io::print<"{} ">(val);
+        hsd_print("{} ", val);
     }
 
-    hsd::io::print<"\n">();
+    hsd_println("");
 }

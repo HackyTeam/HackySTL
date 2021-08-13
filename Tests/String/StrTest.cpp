@@ -5,7 +5,7 @@ int main()
 {
     // copy and move
     {
-        hsd::io::print<"Copy and move:\n">();
+        hsd_println("Copy and move:");
         hsd::string str = "Test String";
         auto copy_str = str;
         auto move_str = hsd::move(copy_str);
@@ -16,40 +16,40 @@ int main()
 
     // printing
     {
-        hsd::io::print<"\nPrinting:\n">();
+        hsd_print("\nPrinting:\n");
         hsd::string str = "Test String";
-        hsd::io::print<"{}\n">(str);
+        hsd_println("{}", str);
     }
 
     // iterating
     {
-        hsd::io::print<"\nIterating:\n">();
+        hsd_print("\nIterating:\n");
         hsd::string str = "Test String";
 
         for (char& ch : str)
             ch++;
 
-        hsd::io::print<"{}\n">(str);
+        hsd_println("{}", str);
     }
 
     // find
     {
-        hsd::io::print<"\nFinding:\n">();
+        hsd_print("\nFinding:\n");
         hsd::string str = "Test String";
 
-        hsd::io::print<"{}\n">(str.find('r'));
-        hsd::io::print<"{}\n">(str.find("ring"));
-        hsd::io::print<"{}\n">(str.rfind('t'));
-        hsd::io::print<"{}\n">(str.rfind("es"));
-        hsd::io::print<"{}\n">(str.find('w'));
-        hsd::io::print<"{}\n">(str.find("ete"));
-        hsd::io::print<"{}\n">(str.rfind('w'));
-        hsd::io::print<"{}\n">(str.rfind("ete"));
+        hsd_println("{}", str.find('r'));
+        hsd_println("{}", str.find("ring"));
+        hsd_println("{}", str.rfind('t'));
+        hsd_println("{}", str.rfind("es"));
+        hsd_println("{}", str.find('w'));
+        hsd_println("{}", str.find("ete"));
+        hsd_println("{}", str.rfind('w'));
+        hsd_println("{}", str.rfind("ete"));
     }
 
     // comparison take 1
     {
-        hsd::io::print<"\nComparison 1:\n">();
+        hsd_print("\nComparison 1:\n");
         hsd::string str = "Test String";
         hsd::string str2 = "Test String2";
 
@@ -57,33 +57,33 @@ int main()
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str < str2)
             {
-                hsd::io::print<"OK!\n">();
+                hsd_println("OK!");
             }
         }
         if (str >= str2)
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str > str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
         }
         if (str != str2)
         {
-            hsd::io::print<"OK!\n">();
+            hsd_println("OK!");
         }
     }
 
     // comparison take 2
     {
-        hsd::io::print<"\nComparison 2:\n">();
+        hsd_print("\nComparison 2:\n");
         hsd::string str = "Test String3";
         hsd::string str2 = "Test String2";
 
@@ -91,33 +91,33 @@ int main()
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str < str2)
             {
-                hsd::io::print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
         }
         if (str >= str2)
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str > str2)
             {
-                hsd::io::err_print<"OK!\n">();
+                hsd_println("OK!");
             }
         }
         if (str != str2)
         {
-            hsd::io::print<"OK!\n">();
+            hsd_println("OK!");
         }
     }
 
     // comparison take 3
     {
-        hsd::io::print<"\nComparison 3:\n">();
+        hsd_print("\nComparison 3:\n");
         hsd::string str = "Test String2";
         hsd::string str2 = "Test String2";
 
@@ -125,33 +125,33 @@ int main()
         {
             if (str == str2)
             {
-                hsd::io::err_print<"OK!\n">();
+                hsd_println("OK!");
             }
             if (str < str2)
             {
-                hsd::io::print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
         }
         if (str >= str2)
         {
             if (str == str2)
             {
-                hsd::io::err_print<"OK!\n">();
+                hsd_println("OK!");
             }
             if (str > str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
         }
         if (str != str2)
         {
-            hsd::io::print<"BUG!\n">();
+            hsd_println("BUG!");
         }
     }
 
     // comparison take 4
     {
-        hsd::io::print<"\nComparison 4:\n">();
+        hsd_print("\nComparison 4:\n");
         hsd::string str = "Test String34";
         hsd::string str2 = "Test String2";
 
@@ -159,33 +159,33 @@ int main()
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str < str2)
             {
-                hsd::io::print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
         }
         if (str >= str2)
         {
             if (str == str2)
             {
-                hsd::io::err_print<"BUG!\n">();
+                hsd_println_err("BUG!");
             }
             if (str > str2)
             {
-                hsd::io::err_print<"OK!\n">();
+                hsd_println("OK!");
             }
         }
         if (str != str2)
         {
-            hsd::io::print<"OK!\n">();
+            hsd_println("OK!");
         }
     }
 
     // erasing
     {
-        hsd::io::print<"\nErasing:\n">();
+        hsd_print("\nErasing:\n");
         hsd::string str = "Test long String";
 
         for (auto it = str.begin(); it != str.end();)
@@ -200,62 +200,62 @@ int main()
             }
         }
 
-        hsd::io::print<"{}\n">(str);
+        hsd_println("{}", str);
     }
 
     // push/emplace_back
     {
-        hsd::io::print<"\nPushing:\n">();
+        hsd_print("\nPushing:\n");
         hsd::string str;
 
         for (hsd::i32 index = 0; index < 10; index++)
             str.push_back('0' + static_cast<char>(index));
 
-        hsd::io::print<"{}\n">(str);
+        hsd_println("{}", str);
     }
 
     // contains, starts/ends_with
     {
-        hsd::io::print<"\n\"contains, starts/ends_with\":\n">();
+        hsd_print("\n\"contains, starts/ends_with\":\n");
         hsd::string str = "Test String";
 
-        hsd::io::print<"Starts with letter:\n">();
-        hsd::io::print<"{}\n">(str.starts_with('T'));
-        hsd::io::print<"{}\n">(str.starts_with('E'));
-        hsd::io::print<"Starts with sequence:\n">();
-        hsd::io::print<"{}\n">(str.starts_with("Tes"));
-        hsd::io::print<"{}\n">(str.starts_with("Ter"));
-        hsd::io::print<"Starts with string:\n">();
-        hsd::io::print<"{}\n">(str.starts_with(hsd::string{"Tes"}));
-        hsd::io::print<"{}\n">(str.starts_with(hsd::string{"Ter"}));
-        hsd::io::print<"Contains letter:\n">();
-        hsd::io::print<"{}\n">(str.contains('t'));
-        hsd::io::print<"{}\n">(str.contains('q'));
-        hsd::io::print<"Contains sequence:\n">();
-        hsd::io::print<"{}\n">(str.contains("Str"));
-        hsd::io::print<"{}\n">(str.contains("Ste"));
-        hsd::io::print<"Contains string:\n">();
-        hsd::io::print<"{}\n">(str.contains(hsd::string{"Str"}));
-        hsd::io::print<"{}\n">(str.contains(hsd::string{"Ste"}));
-        hsd::io::print<"Ends with letter:\n">();
-        hsd::io::print<"{}\n">(str.ends_with('g'));
-        hsd::io::print<"{}\n">(str.ends_with('e'));
-        hsd::io::print<"Ends with sequence:\n">();
-        hsd::io::print<"{}\n">(str.ends_with("ing"));
-        hsd::io::print<"{}\n">(str.ends_with("ind"));
-        hsd::io::print<"Ends with string:\n">();
-        hsd::io::print<"{}\n">(str.ends_with(hsd::string{"ing"}));
-        hsd::io::print<"{}\n">(str.ends_with(hsd::string{"ind"}));
+        hsd_println("Starts with letter:");
+        hsd_println("{}", str.starts_with('T'));
+        hsd_println("{}", str.starts_with('E'));
+        hsd_println("Starts with sequence:");
+        hsd_println("{}", str.starts_with("Tes"));
+        hsd_println("{}", str.starts_with("Ter"));
+        hsd_println("Starts with string:");
+        hsd_println("{}", str.starts_with(hsd::string{"Tes"}));
+        hsd_println("{}", str.starts_with(hsd::string{"Ter"}));
+        hsd_println("Contains letter:");
+        hsd_println("{}", str.contains('t'));
+        hsd_println("{}", str.contains('q'));
+        hsd_println("Contains sequence:");
+        hsd_println("{}", str.contains("Str"));
+        hsd_println("{}", str.contains("Ste"));
+        hsd_println("Contains string:");
+        hsd_println("{}", str.contains(hsd::string{"Str"}));
+        hsd_println("{}", str.contains(hsd::string{"Ste"}));
+        hsd_println("Ends with letter:");
+        hsd_println("{}", str.ends_with('g'));
+        hsd_println("{}", str.ends_with('e'));
+        hsd_println("Ends with sequence:");
+        hsd_println("{}", str.ends_with("ing"));
+        hsd_println("{}", str.ends_with("ind"));
+        hsd_println("Ends with string:");
+        hsd_println("{}", str.ends_with(hsd::string{"ing"}));
+        hsd_println("{}", str.ends_with(hsd::string{"ind"}));
     }
 
     // sub_string
     {
-        hsd::io::print<"\n\"sub_string\":\n">();
+        hsd_print("\n\"sub_string\":\n");
         hsd::string str = "Test String";
 
-        hsd::io::print<"{}\n">(str.sub_string(5, 3).unwrap());
-        hsd::io::print<"{}\n">(str.sub_string(5).unwrap());
-        hsd::io::print<"{}\n">(str.sub_string(4, 8).unwrap_err()());
+        hsd_println("{}", str.sub_string(5, 3).unwrap());
+        hsd_println("{}", str.sub_string(5).unwrap());
+        hsd_println("{}", str.sub_string(4, 8).unwrap_err()());
     }
 
     return 0;

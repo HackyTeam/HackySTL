@@ -246,6 +246,7 @@ namespace hsd
                     {_data + (capacity() - _size), _size}
                 )
             );
+
             _size = capacity() - _size + _last_len;
 		}
 

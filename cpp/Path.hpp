@@ -747,10 +747,10 @@ namespace hsd
 
                 #if defined(HSD_PLATFORM_POSIX)
                 vector<string> _parents;
-                _parents.emplace_back("/", 1);
+                _parents.emplace_back("/", 1u);
                 #elif defined(HSD_PLATFORM_WINDOWS)
                 vector<wstring> _parents;
-                _parents.emplace_back(L"C:\\", 3);
+                _parents.emplace_back(L"C:\\", 3uz);
                 #endif
 
                 #if defined(HSD_PLATFORM_POSIX)

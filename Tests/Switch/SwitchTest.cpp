@@ -5,29 +5,29 @@ int main()
 {
     using namespace hsd::string_view_literals;
     hsd::switch_cases("Test value"_sv, 
-        hsd::EqualCase{"test",       []{hsd::io::print<"1\n">();}},
-        hsd::EqualCase{"value",      []{hsd::io::print<"2\n">();}},
-        hsd::EqualCase{"Test",       []{hsd::io::print<"3\n">();}},
-        hsd::EqualCase{"Value",      []{hsd::io::print<"4\n">();}},
-        hsd::EqualCase{"test value", []{hsd::io::print<"5\n">();}},
-        hsd::EqualCase{"test Value", []{hsd::io::print<"6\n">();}},
+        hsd::EqualCase{"test",       []{hsd_println("1");}},
+        hsd::EqualCase{"value",      []{hsd_println("2");}},
+        hsd::EqualCase{"Test",       []{hsd_println("3");}},
+        hsd::EqualCase{"Value",      []{hsd_println("4");}},
+        hsd::EqualCase{"test value", []{hsd_println("5");}},
+        hsd::EqualCase{"test Value", []{hsd_println("6");}},
         hsd::EqualCase{
             "Test value", []() -> hsd::Result<void, hsd::runtime_error>
             {
-                hsd::io::print<"7\n">();
+                hsd_println("7");
                 return {};
                 // return hsd::runtime_error{"Got the 7th value"};
             }
         },
-        hsd::EqualCase{"Test Value", []{hsd::io::print<"8\n">();}},
-        hsd::DefaultCase{[]{hsd::io::print<"Default\n">();}}
+        hsd::EqualCase{"Test Value", []{hsd_println("8");}},
+        hsd::DefaultCase{[]{hsd_print("Default");}}
     );
 
     hsd::switch_cases(
         -234,
-        hsd::LessCase   {120, []{hsd::io::print<"Less than 120\n">();   }},
-        hsd::EqualCase  {120, []{hsd::io::print<"Equal than 120\n">();  }},
-        hsd::GreaterCase{120, []{hsd::io::print<"Greater than 120\n">();}},
+        hsd::LessCase   {120, []{hsd_println("Less than 120"   );}},
+        hsd::EqualCase  {120, []{hsd_println("Equal than 120"  );}},
+        hsd::GreaterCase{120, []{hsd_println("Greater than 120");}},
         hsd::DefaultCase{
             []() -> hsd::Result<void, hsd::runtime_error>
             {
@@ -37,9 +37,9 @@ int main()
     );
 
     hsd::switch_cases("Test value"_sv, 
-        hsd::LessCase   {"Tf", []{hsd::io::print<"Less than Tf\n">();   }},
-        hsd::EqualCase  {"Tf", []{hsd::io::print<"Equal than Tf\n">();  }},
-        hsd::GreaterCase{"Tf", []{hsd::io::print<"Greater than Tf\n">();}},
-        hsd::DefaultCase{[]{hsd::io::print<"HOW\n">();}}
+        hsd::LessCase   {"Tf", []{hsd_println("Less than Tf\n"   );}},
+        hsd::EqualCase  {"Tf", []{hsd_println("Equal than Tf\n"  );}},
+        hsd::GreaterCase{"Tf", []{hsd_println("Greater than Tf\n");}},
+        hsd::DefaultCase{[]{hsd_println_err("HOW");}}
     );
 }

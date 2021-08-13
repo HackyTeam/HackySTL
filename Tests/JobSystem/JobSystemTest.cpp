@@ -4,7 +4,8 @@
 
 void print()
 {
-    hsd::io::print<L"hello, and other words {}\n">(
+    hsd_println(
+        L"hello, and other words {}", 
         hsd::job_system.get_current_thread()
     );
 }
@@ -16,7 +17,7 @@ void foo(int a, float b)
 
     z = (a & (a + 1)) + b - z / a;
     
-    hsd::io::print<L"Result: {}\n">(z);
+    hsd_println(L"Result: {}", z);
 
     return;
 }

@@ -54,13 +54,13 @@ int main()
 void print_prefix(hsd::vector<hsd::wstring_view>& path)
 {
     if (path.size() == 0)
-        hsd::io::print<L"<root>">();
+        hsd_print(L"<root>");
     else
     {
         for (auto part : path)
-            hsd::io::print<L"{}:">(part);
+            hsd_print(L"{}:", part);
     }
-    hsd::io::print<L" ">();
+    hsd_print(L" ");
 }
 
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
@@ -71,29 +71,29 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     switch (type)
     {
         case hsd::JsonValueType::Null:
-            hsd::io::print<L"null">();
+            hsd_print(L"null");
             break;
         case hsd::JsonValueType::True:
-            hsd::io::print<L"true">();
+            hsd_print(L"true");
             break;
         case hsd::JsonValueType::False:
-            hsd::io::print<L"false">();
+            hsd_print(L"false");
             break;
         case hsd::JsonValueType::Number:
-            hsd::io::print<L"{}">(v.as_num().unwrap());
+            hsd_print(L"{}", v.as_num().unwrap());
             break;
         case hsd::JsonValueType::String:
             // TODO: Escape?
-            hsd::io::print<L"\"{}\"">(v.as_str<hsd::wchar>().unwrap());
+            hsd_print(L"\"{}\"", v.as_str<hsd::wchar>().unwrap());
             break;
         case hsd::JsonValueType::Array:
-            hsd::io::print<L"array">();
+            hsd_print(L"array");
             break;
         case hsd::JsonValueType::Object:
-            hsd::io::print<L"object">();
+            hsd_print(L"object");
             break;
         }
-    hsd::io::print<L"\n">();
+    hsd_println(L"");
 
     if (type == hsd::JsonValueType::Array)
     {

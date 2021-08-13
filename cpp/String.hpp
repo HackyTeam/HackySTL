@@ -45,9 +45,8 @@ namespace hsd
 
         inline basic_string(usize size)
         requires (std::is_default_constructible_v<alloc_type>)
-            : _alloc{}
         {
-            _data = _alloc.allocate(size).unwrap();
+            _data = _alloc.allocate(size + 1).unwrap();
             _size = size;
             _capacity = _size;
         }
@@ -57,13 +56,14 @@ namespace hsd
         requires (std::is_constructible_v<alloc_type, Alloc>)
             : _alloc{alloc}
         {
-            _data = _alloc.allocate(size).unwrap();
+            _data = _alloc.allocate(size + 1).unwrap();
             _size = size;
             _capacity = _size;
         }
 
         inline basic_string(const CharT* cstr)
         requires (std::is_default_constructible_v<alloc_type>)
+            : _alloc{}
         {
             _size = _str_utils::length(cstr);
             _capacity = _size;
@@ -1674,7 +1674,8 @@ namespace hsd
     static inline auto to_string(T val)
     {
         char* _cstr_buf = cstring::to_string(val);
-        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        auto _str_buf = basic_string(_cstr_buf);
+        mallocator::deallocate(_cstr_buf);
         return _str_buf;
     }
 
@@ -1687,7 +1688,8 @@ namespace hsd
     static inline auto to_wstring(T val)
     {
         wchar* _cstr_buf = wcstring::to_string(val);
-        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        auto _str_buf = basic_string(_cstr_buf);
+        mallocator::deallocate(_cstr_buf);
         return _str_buf;
     }
 
@@ -1700,7 +1702,8 @@ namespace hsd
     static inline auto to_u8string(T val)
     {
         char8* _cstr_buf = u8cstring::to_string(val);
-        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        auto _str_buf = basic_string(_cstr_buf);
+        mallocator::deallocate(_cstr_buf);
         return _str_buf;
     }
 
@@ -1713,7 +1716,8 @@ namespace hsd
     static inline auto to_u16string(T val)
     {
         char16* _cstr_buf = u16cstring::to_string(val);
-        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        auto _str_buf = basic_string(_cstr_buf);
+        mallocator::deallocate(_cstr_buf);
         return _str_buf;
     }
 
@@ -1726,7 +1730,8 @@ namespace hsd
     static inline auto to_u32string(T val)
     {
         char32* _cstr_buf = u32cstring::to_string(val);
-        auto _str_buf = basic_string(_cstr_buf, move_data_pointer{});
+        auto _str_buf = basic_string(_cstr_buf);
+        mallocator::deallocate(_cstr_buf);
         return _str_buf;
     }
 

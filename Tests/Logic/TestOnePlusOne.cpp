@@ -20,24 +20,32 @@ int main()
         >::value
     );
 
-    hsd::io::print<"natural::one is {}\n">(
+    hsd_println(
+        "natural::one is {}",
         serialize_bitset<hsd::natural::one>()
         .to_string().c_str()
     );
-    hsd::io::print<"natural::two is {}\n">(
+
+    hsd_println(
+        "natural::two is {}", 
         serialize_bitset<hsd::natural::two>()
         .to_string().c_str()
     );
-    hsd::io::print<"natural::three is {}\n">(
+    
+    hsd_println(
+        "natural::three is {}", 
         serialize_bitset<hsd::natural::three>()
         .to_string().c_str()
     );
-    hsd::io::print<"natural::four is {}\n">(
+    
+    hsd_println(
+        "natural::four is {}", 
         serialize_bitset<hsd::natural::four>()
         .to_string().c_str()
     );
 
-    hsd::io::print<"natural::two + natural::four is {}\n">(
+    hsd_println(
+        "natural::two + natural::four is {}", 
         serialize_bitset<
             hsd::ripple_adder<
                 hsd::natural::two, 
@@ -47,7 +55,8 @@ int main()
         >().to_string().c_str()
     );
 
-    hsd::io::print<"5 + natural::four is {}\n">(
+    hsd_println(
+        "5 + natural::four is {}", 
         serialize_bitset<hsd::ripple_adder<
             hsd::cons_pair<
                 hsd::bit::one, hsd::cons_pair<

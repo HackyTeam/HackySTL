@@ -14,7 +14,7 @@ public:
 
 	void foo() 
 	{
-		hsd::io::print<"{} {}\n">(_a, _b);
+		hsd_println("{} {}", _a, _b);
 	}
 };
 

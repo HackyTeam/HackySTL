@@ -20,12 +20,12 @@ static auto funcer = hsd::defaultcall_t(hsd::forward<hsd::function<hsd::i32()>>(
 
 int main() 
 {
-    hsd::io::print<"{}\n">(bopper(hsd::default_v, hsd::default_v));
-    hsd::io::print<"{}\n">(bopper(hsd::default_v, 1));
-    hsd::io::print<"{}\n">(bopper(2, hsd::default_v));
-    hsd::io::print<"{}\n">(bopper(2, 1));
+    hsd_println("{}", bopper(hsd::default_v, hsd::default_v));
+    hsd_println("{}", bopper(hsd::default_v, 1));
+    hsd_println("{}", bopper(2, hsd::default_v));
+    hsd_println("{}", bopper(2, 1));
 
-    hsd::io::print<"{}\n">(adder(5, hsd::default_v));
+    hsd_println("{}", adder(5, hsd::default_v));
 
-    hsd::io::print<"{}\n">(funcer());
+    hsd_println("{}", funcer());
 }

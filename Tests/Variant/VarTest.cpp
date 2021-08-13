@@ -6,33 +6,33 @@ struct verbose
 {
     verbose() 
     {
-        hsd::io::print<"{} default constructor\n">(T::name());
+        hsd_println("{} default constructor", T::name());
     }
 
     ~verbose() 
     {
-        hsd::io::print<"{} destructor\n">(T::name());
+        hsd_println("{} destructor", T::name());
     }
 
     verbose(verbose const&) 
     {
-        hsd::io::print<"{} copy constructor\n">(T::name());
+        hsd_println("{} copy constructor", T::name());
     }
 
     verbose(verbose&&) 
     {
-        hsd::io::print<"{} move constructor\n">(T::name());
+        hsd_println("{} move constructor", T::name());
     }
 
     auto& operator=(verbose const&) 
     {
-        hsd::io::print<"{} copy assignment\n">(T::name());
+        hsd_println("{} copy assignment", T::name());
         return *this;
     }
 
     auto& operator=(verbose&&) 
     {
-        hsd::io::print<"{} move assignment\n">(T::name());
+        hsd_println("{} move assignment", T::name());
         return *this;
     }
     
@@ -69,7 +69,7 @@ struct B : verbose<B>
     B(int a) 
         : verbose<B>(0), _a(a) 
     {
-        hsd::io::print<"B constructor\n">();
+        hsd_println("B constructor");
     }
 };
 
@@ -90,64 +90,64 @@ int main()
     hsd::variant<A, B> va3{A()};
     auto va4(va2);
     
-    hsd::io::print<"{}\n">(hsd::variant_size<decltype(va4)>::value);
+    hsd_println("{}", hsd::variant_size<decltype(va4)>::value);
 
-    hsd::io::print<"{}\n">(va1.index());
-    hsd::io::print<"{}\n">(va2.index());
-    hsd::io::print<"{}\n">(va3.index());
-    hsd::io::print<"{}\n">(va4.index());
+    hsd_println("{}", va1.index());
+    hsd_println("{}", va2.index());
+    hsd_println("{}", va3.index());
+    hsd_println("{}", va4.index());
 
-    hsd::io::print<"{}\n">(va1.get<0>().unwrap());
+    hsd_println("{}", va1.get<0>().unwrap());
     
     auto _res = va1.get<hsd::f32>();
 
     if(_res) 
     {
         // This actually throws 
-        hsd::io::print<"{}\n">(_res.unwrap());
+        hsd_println("{}", _res.unwrap());
     } 
     else
     {
-        hsd::io::err_print<"Caught error: {}\n">(_res.unwrap_err()());
+        hsd_println_err("Caught error: {}", _res.unwrap_err()());
     }
 
     if (auto* val = hsd::get_if<hsd::f32>(&va1)) 
     {
-        hsd::io::print<"Got value: {}\n">(*val);
+        hsd_println("Got value: {}", *val);
     } 
     else 
     {
-        hsd::io::print<"No value of type float in va1\n">();
+        hsd_println("No value of type float in va1");
     }
     if (auto* val = va2.get_if<B>()) 
     {
-        hsd::io::print<"B inside va2: {}\n">(val->_a);
+        hsd_println("B inside va2: {}", val->_a);
     } 
     else 
     {
-        hsd::io::print<"No B in va2\n">();
+        hsd_println("No B in va2");
     }
 
-    hsd::io::print<"va2 == va3: {}\n">(va2 == va3);
+    hsd_println("va2 == va3: {}", va2 == va3);
     va2 = va3;
-    hsd::io::print<"(after assignment) {}\n">(va2 == va3);
+    hsd_println("(after assignment) {}", va2 == va3);
     va3 = hsd::variant<A, B>(6);
-    hsd::io::print<"(after new assignment)\nva3 == va4: {}\n">(va3 == va4);
+    hsd_println("(after new assignment)\nva3 == va4: {}", va3 == va4);
     va3.get<B>().unwrap()._a = 5;
-    hsd::io::print<"(after modification) {}\n">(va3 == va4);
+    hsd_println("(after modification) {}\n", va3 == va4);
 
     hsd::variant<A, B> va5;
 
     va5.visit([](auto&&) 
     {
-        hsd::io::print<"Auto deduction: {}\n">(HSD_FUNCTION_NAME + 28);
+        hsd_println("Auto deduction: {}", HSD_FUNCTION_NAME + 28);
     });
 
     va5 = B(42);
 
     va5.visit([](auto&&) 
     {
-        hsd::io::print<"Auto deduction: {}\n">(HSD_FUNCTION_NAME + 28);
+        hsd_println("Auto deduction: {}", HSD_FUNCTION_NAME + 28);
     });
 
     hsd::variant<verbose<void>, verbose<void>> va6;

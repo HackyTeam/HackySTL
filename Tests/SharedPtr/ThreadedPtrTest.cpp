@@ -20,8 +20,10 @@ static inline hsd::safe_shared_ptr<S> elm =
 
 static void print(hsd::safe_shared_ptr<S> ptr)
 {
-    hsd::io::print<"{}\n{}\n{}\n{}\n">(
-        ptr->_a, ptr->_b, ptr->_c, ptr->_d
+    hsd_println(
+        "{}\n{}\n{}\n{}", 
+        ptr->_a, ptr->_b, 
+        ptr->_c, ptr->_d
     );
 }
 

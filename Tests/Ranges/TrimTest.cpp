@@ -20,11 +20,11 @@ hsd::string trim(hsd::string_view const in)
 int main()
 {
     const auto s = trim(" \f\n\t\r\vHello, C++20!\f\n\t\r\v ");
-    hsd::io::print<"\"{}\"\n">(s);
+    hsd_println("\"{}\"", s);
  
     static constexpr hsd::stack_array v = {0, 1, 2, 3, 4, 5};
     for (auto n : v | hsd::views::drop_while([](hsd::i32 i) { return i < 3; })) {
-        hsd::io::print<"{} ">(n);
+        hsd_print("{} ", n);
     }
 
     puts("");

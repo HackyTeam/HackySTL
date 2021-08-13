@@ -23,9 +23,9 @@ int main()
     // it fails because e has a size of 1
     // there is no such thing as sizeof(something) == 0
 
-    hsd::io::print<"({}, {})\n">(a.first(), a.get<1>());
-    hsd::io::print<"({}, {})\n">(b.get<0>(), b.second());
-    hsd::io::print<"({}, empty)\n">(c.first());
+    hsd_println("({}, {})", a.first(), a.get<1>());
+    hsd_println("({}, {})", b.get<0>(), b.second());
+    hsd_println("({}, empty)", c.first());
 
     // Compile-time error
     //a.get<2>();

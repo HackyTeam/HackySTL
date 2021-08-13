@@ -7,143 +7,12 @@ namespace hsd
 {
     class io : private io_detail::bufferable
     {
-    public:
-        static void flush()
-        {
-            fflush(stdout);
-        }
-
-        static void err_flush()
-        {
-            fflush(stderr);
-        }
-
-        static auto read_line()
-            -> Result< reference<sstream>, runtime_error >
-        {
-            do
-            {
-                _io_buf.clear();
-                char* _str = fgets(_io_buf.data(), 4096, stdin);
-
-                if (_str == nullptr)
-                {
-                    return runtime_error{"Input requirements not satisfied"};
-                }
-            } while (_io_buf.c_str()[0] == '\n');
-
-            return {_io_buf};
-        }
-
-        static sstream& read()
-        {
-            do
-            {
-                _io_buf.clear();
-                scanf("%s", _io_buf.data());
-            } while (_io_buf.c_str()[0] == '\n');
-
-            return _io_buf;
-        }
-
-        static auto wread_line()
-            -> Result< reference<wsstream>, runtime_error >
-        {
-            do
-            {
-                _wio_buf.clear();
-                wchar* _str = fgetws(_wio_buf.data(), 4096, stdin);
-
-                if (_str == nullptr)
-                {
-                    return runtime_error{"Input requirements not satisfied"};
-                }
-            } while (_wio_buf.c_str()[0] == '\n');
-
-            return {_wio_buf};
-        }
-
-        static wsstream& wread()
-        {
-            do
-            {
-                _wio_buf.clear();
-                wscanf(L"%ls", _wio_buf.data());
-            } while (_wio_buf.c_str()[0] == '\n');
-
-            return _wio_buf;
-        }
-
-        template < basic_string_literal fmt, typename... Args >
-        static void print(Args&&... args)
-        {
-            using io_detail::_print;
-            using char_type = typename decltype(fmt)::char_type;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<
-                fmt, sizeof...(Args) + 1>().unwrap();
-
-            static_assert(
-                _fmt_buf.size() == sizeof...(Args) + 1, 
-                "The number of arguments doesn\'t match"
-            );
-
-            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
-            constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf[sizeof...(Args)].first, _len
-            };
-
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                (
-                    _print<basic_string_literal<
-                        char_type, _fmt_buf[Ints].second + 1 >{
-                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                    }>(args), ...
-                );
-            }(make_index_sequence<sizeof...(Args)>{});
-
-            _print<_last>();
-        }
-
-        template < basic_string_literal fmt, typename... Args >
-        static void err_print(Args&&... args)
-        {
-            using io_detail::_print;
-            using char_type = typename decltype(fmt)::char_type;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<
-                fmt, sizeof...(Args) + 1>().unwrap();
-            
-            static_assert(
-                _fmt_buf.size() == sizeof...(Args) + 1, 
-                "The number of arguments doesn\'t match"
-            );
-
-            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
-            constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf[sizeof...(Args)].first, _len
-            };
-
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                (
-                    _print<basic_string_literal< 
-                        char_type, _fmt_buf[Ints].second + 1 >{
-                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                    }>(args, stderr), ...
-                );
-            }(make_index_sequence<sizeof...(Args)>{});
-
-            _print<_last>(stderr);
-        }
-    };
-
-    class file : private io_detail::bufferable
-    {
     private:
         FILE* _file_buf = nullptr;
-        const char* _file_mode;
+        const char* _file_mode = "";
+        bool _is_console_file = false;
 
-        bool only_write()
+        inline bool only_write()
         {
             return (
                 cstring::compare(_file_mode, "w") == 0 || 
@@ -151,7 +20,7 @@ namespace hsd
             );
         }
 
-        bool only_read()
+        inline bool only_read()
         {
             return (
                 cstring::compare(_file_mode, "r") == 0 || 
@@ -183,24 +52,97 @@ namespace hsd
             };
         };
 
-        file(const char* file_path, const char* open_option = hsd::file::options::text::read)
+        inline io() = default;
+        inline io(const io&) = delete;
+        inline io& operator=(const io&) = delete;
+
+        inline io(io&& other)
+            : _file_buf{exchange(other._file_buf, nullptr)}, 
+            _file_mode{exchange(other._file_mode, nullptr)},
+            _is_console_file{exchange(other._is_console_file, true)}
+        {}
+
+        inline io& operator=(io&& rhs)
         {
-            _file_buf = fopen(file_path, open_option);
-            _file_mode = open_option;
+            _file_buf = exchange(rhs._file_buf, nullptr);
+            _file_mode =exchange(rhs._file_mode, nullptr);
+            _is_console_file = exchange(rhs._is_console_file, true);
+
+            return *this;
+        }
+
+        inline ~io()
+        {
+            if (!_is_console_file)
+                fclose(_file_buf);
+        }
+
+        static inline auto load_file(const char* file_path, 
+            const char* open_option = options::text::read)
+            -> Result<io, runtime_error>
+        {
+            io _file;
             
-            if (_file_buf == nullptr)
+            _file._is_console_file = false;
+            _file._file_buf = fopen(file_path, open_option);
+            _file._file_mode = open_option;
+            
+            if (_file._file_buf == nullptr)
+                runtime_error{"File not found"};
+
+            return _file;
+        }
+
+        static inline io& cout()
+        {
+            static io _instance;
+            _instance._is_console_file = true;
+            _instance._file_mode = options::text::write;
+            _instance._file_buf = stdout;
+
+            return _instance;
+        }
+
+        static inline io& cerr()
+        {
+            static io _instance;
+            _instance._is_console_file = true;
+            _instance._file_mode = options::text::write;
+            _instance._file_buf = stderr;
+
+            return _instance;
+        }
+
+        static inline io& cin()
+        {
+            static io _instance;
+            _instance._is_console_file = true;
+            _instance._file_mode = options::text::read;
+            _instance._file_buf = stdin;
+
+            return _instance;
+        }
+
+        inline bool exists() const
+        {
+            return (_file_buf != nullptr);
+        }
+
+        inline Result< void, runtime_error > close()
+        {
+            if (!_is_console_file)
             {
-                hsd_fputs_check(stderr, "File not found");
-                abort();
+                fclose(_file_buf);
+                _file_buf = nullptr;
+                return {};
+            }
+            else
+            {
+                return runtime_error{"Cannot close console file"};
             }
         }
 
-        ~file()
-        {
-            fclose(_file_buf);
-        }
-
-        Result< void, runtime_error > flush()
+        inline Result< void, runtime_error > flush()
         {
             if (only_read())
             {
@@ -214,7 +156,7 @@ namespace hsd
             return {};
         }
 
-        Result< reference<sstream>, runtime_error > read_line()
+        inline Result< reference<sstream>, runtime_error > read_line()
         {
             _io_buf.clear();
             
@@ -230,7 +172,7 @@ namespace hsd
             return {_io_buf};
         }
 
-        Result< reference<wsstream>, runtime_error > wread_line()
+        inline Result< reference<wsstream>, runtime_error > wread_line()
         {
             _wio_buf.clear();
             
@@ -246,7 +188,7 @@ namespace hsd
             return {_wio_buf};
         }
 
-        Result< reference<sstream>, runtime_error > read()
+        inline Result< reference<sstream>, runtime_error > read()
         {
             _io_buf.clear();
 
@@ -262,7 +204,7 @@ namespace hsd
             return {_io_buf};
         }
 
-        Result< reference<wsstream>, runtime_error > wread()
+        inline Result< reference<wsstream>, runtime_error > wread()
         {
             _wio_buf.clear();
 
@@ -279,7 +221,7 @@ namespace hsd
         }
 
         template < basic_string_literal fmt, typename... Args >
-        Result< void, runtime_error > print(Args&&... args)
+        inline Result< void, runtime_error > print(Args&&... args)
         {
             if(only_read() == true)
             {
@@ -320,39 +262,13 @@ namespace hsd
 } // namespace hsd
 
 #define hsd_print(fmt, ...)\
-do\
-{\
-    hsd::io::print<fmt>(__VA_ARGS__);\
-} while (false)
+    hsd::io::cout().template print<fmt>(__VA_ARGS__).unwrap()
 
 #define hsd_print_err(fmt, ...)\
-do\
-{\
-    hsd::io::err_print<fmt>(__VA_ARGS__);\
-} while (false)
+    hsd::io::cerr().template print<fmt>(__VA_ARGS__).unwrap()
 
 #define hsd_println(fmt, ...)\
-do\
-{\
-    if constexpr (hsd::is_same<decltype(fmt), const hsd::wchar*>::value)\
-    {\
-        hsd::io::print<fmt L"\n">(__VA_ARGS__);\
-    }\
-    else\
-    {\
-        hsd::io::print<fmt "\n">(__VA_ARGS__);\
-    }\
-} while (false)
+    hsd::io::cout().template print<fmt "\n">(__VA_ARGS__).unwrap()
 
 #define hsd_println_err(fmt, ...)\
-do\
-{\
-    if constexpr (hsd::is_same<decltype(fmt), const hsd::wchar*>::value)\
-    {\
-        hsd::io::err_print<fmt L"\n">(__VA_ARGS__);\
-    }\
-    else\
-    {\
-        hsd::io::err_print<fmt "\n">(__VA_ARGS__);\
-    }\
-} while (false)
+    hsd::io::cerr().template print<fmt "\n">(__VA_ARGS__).unwrap()

@@ -3,15 +3,15 @@
 
 static void print(size_t S)
 {
-    hsd::io::print<"{} ">(S);
+    hsd_print("{} ", S);
 }
 
 template<typename T, T... ints>
 static void print_sequence(hsd::integer_sequence<T, ints...> int_seq)
 {
-    hsd::io::print<"The sequence of size {}: ">(int_seq.size());
+    hsd_print("The sequence of size {}: ", int_seq.size());
     (print(ints), ...);
-    hsd::io::print<"\n">();
+    hsd_println("");
 }
 
 int main()

@@ -3,7 +3,7 @@
 
 int main(int argc, const char** argv)
 {
-    auto arg_parser = hsd::argument_parser{"This is a test"};
+    hsd::argument_parser arg_parser = "This is a test";
 
     arg_parser.add("-clear", 0, 
         [](hsd::parser_stream&){printf("\e[1;1H\e[2J");}, 

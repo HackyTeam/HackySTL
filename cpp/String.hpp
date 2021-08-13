@@ -8,8 +8,6 @@
 
 namespace hsd
 {
-    struct move_data_pointer {};
-
     template < typename CharT, template <typename> typename Allocator = allocator >
     class basic_string
     {
@@ -106,36 +104,6 @@ namespace hsd
             _str_utils::copy(_data, cstr, _size);
             _data[_size] = static_cast<CharT>(0);
         }
-
-        inline basic_string(CharT* cstr, move_data_pointer)
-        requires (std::is_default_constructible_v<alloc_type>)
-            : _alloc{}
-        {
-            _size = _str_utils::length(cstr);
-            _capacity = _size;
-            _data = cstr;
-        }
-
-        template <typename Alloc = alloc_type>
-        inline basic_string(CharT* cstr, const Alloc& alloc, move_data_pointer)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
-            : _alloc{alloc}
-        {
-            _size = _str_utils::length(cstr);
-            _capacity = _size;
-            _data = cstr;
-        }
-
-        inline basic_string(CharT* cstr, usize size, move_data_pointer)
-        requires (std::is_default_constructible_v<alloc_type>)
-            : _alloc{}, _data{cstr}, _size{size}, _capacity{size}
-        {}
-
-        template <typename Alloc = alloc_type>
-        inline basic_string(CharT* cstr, usize size, const Alloc& alloc, move_data_pointer)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
-            : _alloc{alloc}, _data{cstr}, _size{size}, _capacity{size}
-        {}
 
         inline basic_string(basic_string_view<CharT> view)
         requires (std::is_default_constructible_v<alloc_type>)

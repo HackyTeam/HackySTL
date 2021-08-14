@@ -1047,7 +1047,6 @@ namespace hsd
 
         constexpr static_basic_string& operator=(const CharT* rhs)
         {
-            auto _old_size = _size;
             _size = _str_utils::length(rhs);
 
             if (_size < N)

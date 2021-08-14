@@ -20,82 +20,78 @@ namespace hsd
             low
         };
 
+        enum class pins
+        {
+            pin_0 , pin_1 , pin_2 , pin_3 , 
+            pin_4 , pin_5 , pin_6 , pin_7 , 
+            pin_8 , pin_9 , pin_10, pin_11, 
+            pin_12, pin_13, pin_14, pin_15, 
+            pin_16, pin_17, pin_18, pin_19, 
+            pin_20, pin_21, pin_22, pin_23, 
+            pin_24, pin_25, pin_26, pin_27
+        };
+
         class pin
         {
         private:
             i32 _pin = -1;
+            bool _is_initialized = false;
             direction _direction = direction::input;
-            io _direction_file;
-            io _value_file;
 
         public:
             inline pin(const pin&) = delete;
             inline pin& operator=(const pin&) = delete;
 
-            inline pin(i32 pin)
-                : _pin{pin}
-            {
-                namespace fs = filesystem;
-                static static_sstream<255> _stream;
-                static auto _init_file = io::load_file(
+            inline pin(pins pin)
+                : _pin{static_cast<i32>(pin)}
+            {                
+                auto _init_file = io::load_file(
                     "/sys/class/gpio/export", io::options::text::write
                 ).unwrap();
 
-                _init_file.print<"{}\n">(pin);
-
-                _stream.write_data<"/sys/class/gpio{}/direction">(pin);
-
-                if (!fs::path{_stream.c_str()}.status().exists())
-                {
-                    hsd_fprint_check(
-                        stderr, "Error: GPIO pin %d does not exist.\n", pin
-                    );
-
-                    abort();
-                }
-                
-                _direction_file = io::load_file(
-                    _stream.c_str(), io::options::text::write
-                ).unwrap();
-                
-                _stream.write_data<"/sys/class/gpio{}/value">(pin);
-                
-                _value_file = io::load_file(
-                    _stream.c_str(), io::options::text::read_write
-                ).unwrap();
+                _init_file.print<"{}">(_pin).unwrap();
+                _init_file.close();
+                _is_initialized = true;
             }
 
             inline pin(pin&& other)
                 : _pin{other._pin}, _direction{other._direction}, 
-                _direction_file{move(other._direction_file)}, 
-                _value_file{move(other._value_file)}
-            {}
+                _is_initialized{other._is_initialized}
+            {
+                other._pin = -1;
+                other._is_initialized = false;
+            }
 
             inline ~pin()
-            {
-                _direction_file.close();
-                _value_file.close();
-                
-                static auto _clear_file = io::load_file(
-                    "/sys/class/gpio/unexport", io::options::text::write
-                ).unwrap();
+            {                
+                if (_is_initialized == true)
+                {
+                    static auto _clear_file = io::load_file(
+                        "/sys/class/gpio/unexport", io::options::text::write
+                    ).unwrap();
 
-                _clear_file.print<"{}\n">(_pin);
+                    _clear_file.print<"{}">(_pin);
+                }
             }
 
             inline pin& operator=(pin&& rhs)
             {
                 swap(_pin, rhs._pin);
                 swap(_direction, rhs._direction);
-                swap(_direction_file, rhs._direction_file);
-                swap(_value_file, rhs._value_file);
+                swap(_is_initialized, rhs._is_initialized);
 
                 return *this;
             }
 
             inline void set_direction(direction dir)
             {
-                _direction_file.print<"{}\n">(
+                static static_sstream<255> _stream;
+                _stream.write_data<"/sys/class/gpio/gpio{}/direction">(_pin);
+                auto _direction_file = io::load_file(
+                    _stream.c_str(), io::options::text::write
+                ).unwrap();
+                
+                _direction_file.print<"{}">(
                     dir == direction::input ? "in" : "out"
                 ).unwrap();
                 
@@ -106,7 +102,14 @@ namespace hsd
             {
                 if (_direction == direction::output)
                 {
-                    _value_file.print<"{}\n">(
+                    static static_sstream<255> _stream;
+                    _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
+                    
+                    auto _value_file = io::load_file(
+                        _stream.c_str(), io::options::text::write
+                    ).unwrap();
+
+                    _value_file.print<"{}">(
                         val == value::high ? "1" : "0"
                     ).unwrap();
                     
@@ -118,11 +121,21 @@ namespace hsd
                 }
             }
 
-            inline Result<i32, runtime_error> get_value()
+            inline Result<value, runtime_error> get_value()
             {
                 if (_direction == direction::input)
                 {
-                    return _value_file.read().unwrap().parse<i32>();
+                    static static_sstream<255> _stream;
+                    _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
+                    
+                    auto _value_file = io::load_file(
+                        _stream.c_str(), io::options::text::read
+                    ).unwrap();
+                    
+                    auto _res = _value_file.read().unwrap().parse<char>();
+                    
+                    _value_file.close();
+                    return _res == '1' ? value::high : value::low;
                 }
                 else
                 {
@@ -131,10 +144,13 @@ namespace hsd
             }
         };
 
-        static inline pin& get_pin(i32 pin_value)
+        static inline pin& get_pin(pins pin_value)
         {
             static auto _pin_map = unordered_map<i32, pin>{};
-            return _pin_map.emplace(pin_value, pin_value).first->second;
+            
+            return _pin_map.emplace(
+                static_cast<i32>(pin_value), pin_value
+            ).first->second;
         }
     } // namespace gpio
 } // namespace hsd

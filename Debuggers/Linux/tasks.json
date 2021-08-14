@@ -10,48 +10,16 @@
                 "-fsanitize=address",
                 "-Wall",
                 "-Wextra",
-                "-Wclobbered",
-                "-Wcast-function-type",
                 "-Wempty-body",
                 "-Wignored-qualifiers",
-                "-Wimplicit-fallthrough=3",
                 "-Wmissing-field-initializers",
                 "-Wstring-compare",
                 "-Wtype-limits",
                 "-Wuninitialized",
                 "-Wunused-parameter", 
-                "-Wunused-but-set-parameter",
                 "${file}",
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
-            ],
-            "options": {
-                "cwd": "${fileDirname}"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "type": "shell",
-            "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/g++",
-            "args": [
-                "-g",
-                "-std=c++20",
-                "-fsanitize=address",
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                "-fanalyzer",
-                "-fconcepts-diagnostics-depth=5",
-                "${file}",
-                "-I${workspaceFolder}/cpp",
-                "-fno-exceptions",
-                "-lpthread",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

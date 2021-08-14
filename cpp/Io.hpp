@@ -73,8 +73,7 @@ namespace hsd
 
         inline ~io()
         {
-            if (!_is_console_file)
-                fclose(_file_buf);
+            close();
         }
 
         static inline auto load_file(const char* file_path, 
@@ -88,7 +87,7 @@ namespace hsd
             _file._file_mode = open_option;
             
             if (_file._file_buf == nullptr)
-                runtime_error{"File not found"};
+                return runtime_error{"File not found"};
 
             return _file;
         }
@@ -123,22 +122,17 @@ namespace hsd
             return _instance;
         }
 
-        inline bool exists() const
+        inline bool is_open() const
         {
             return (_file_buf != nullptr);
         }
 
-        inline Result< void, runtime_error > close()
+        inline void close()
         {
-            if (!_is_console_file)
+            if (!_is_console_file && _file_buf != nullptr)
             {
                 fclose(_file_buf);
                 _file_buf = nullptr;
-                return {};
-            }
-            else
-            {
-                return runtime_error{"Cannot close console file"};
             }
         }
 

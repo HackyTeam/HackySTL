@@ -17,6 +17,14 @@ namespace hsd
             : first{first_val}, second{second_val}
         {}
 
+        constexpr pair(const T1& first_val, T2&& second_val)
+            : first{first_val}, second{forward<T2>(second_val)}
+        {}
+
+        constexpr pair(T1&& first_val, const T2& second_val)
+            : first{forward<T1>(first_val)}, second{second_val}
+        {}
+
         constexpr pair(T1&& first_val, T2&& second_val)
             : first{forward<T1>(first_val)}, second{forward<T2>(second_val)}
         {}

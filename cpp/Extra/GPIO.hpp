@@ -42,6 +42,8 @@ namespace hsd
             inline pin(const pin&) = delete;
             inline pin& operator=(const pin&) = delete;
 
+            inline pin() = default;
+
             inline pin(pins pin)
                 : _pin{static_cast<i32>(pin)}
             {                
@@ -66,11 +68,11 @@ namespace hsd
             {                
                 if (_is_initialized == true)
                 {
-                    static auto _clear_file = io::load_file(
+                    auto _clear_file = io::load_file(
                         "/sys/class/gpio/unexport", io::options::text::write
                     ).unwrap();
 
-                    _clear_file.print<"{}">(_pin);
+                    _clear_file.print<"{}">(_pin).unwrap();
                 }
             }
 
@@ -144,13 +146,33 @@ namespace hsd
             }
         };
 
-        static inline pin& get_pin(pins pin_value)
+        class pin_ref
+        {
+        private:
+            using pin_map = unordered_map<i32, pin>;
+            pins _pin = pins::pin_0;
+            reference<pin_map> _map;
+
+        public:
+            inline pin_ref(pins pin, pin_map& map)
+                : _pin{pin}, _map{map}
+            {}
+
+            inline pin& get()
+            {
+                return _map.get()[static_cast<i32>(_pin)];
+            }
+        };
+
+        static inline pin_ref get_pin(pins pin_value)
         {
             static auto _pin_map = unordered_map<i32, pin>{};
             
-            return _pin_map.emplace(
+            _pin_map.emplace(
                 static_cast<i32>(pin_value), pin_value
-            ).first->second;
+            );
+
+            return {pin_value, _pin_map};
         }
     } // namespace gpio
 } // namespace hsd

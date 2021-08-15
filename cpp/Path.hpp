@@ -750,7 +750,7 @@ namespace hsd
                 _parents.emplace_back("/", 1u);
                 #elif defined(HSD_PLATFORM_WINDOWS)
                 vector<wstring> _parents;
-                _parents.emplace_back(L"C:\\", 3uz);
+                _parents.emplace_back(L"C:\\", 3u);
                 #endif
 
                 #if defined(HSD_PLATFORM_POSIX)

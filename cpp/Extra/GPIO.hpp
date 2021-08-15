@@ -35,8 +35,8 @@ namespace hsd
         {
         private:
             i32 _pin = -1;
-            bool _is_initialized = false;
             direction _direction = direction::input;
+            bool _is_initialized = false;
 
         public:
             inline pin(const pin&) = delete;

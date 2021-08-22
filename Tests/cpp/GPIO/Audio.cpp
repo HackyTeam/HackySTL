@@ -25,13 +25,14 @@ void play_note(hsd::gpio::pin_ref& pin, char note, hsd::i32 duration)
     constexpr hsd::f32 tones[] = {
         0.001915f, 0.001700f, 0.001519f, 0.001432f, 0.001275f, 0.001136f, 0.001014f,
         0.000956f, 0.000834f, 0.000765f, 0.000593f, 0.000468f, 0.000346f, 0.000224f,
-        0.000655f, 0.000715f};
+        0.000655f, 0.000715f
+    };
 
     hsd::i32 spee = 5;
 
     // play the tone corresponding to the note name
 
-    for (int i = 0; i < 16; i++)
+    for (hsd::i32 i = 0; i < 16; i++)
     {
         if (names[i] == note)
         {
@@ -49,11 +50,11 @@ int main()
     constexpr char notes[] = "GGAGcB GGAGdc GGxecBA yyecdc";
 
     constexpr hsd::f32 beats[] = {
-        0.002, 0.002, 0.008, 0.008, 0.008, 0.016,
-        0.001, 0.002, 0.002, 0.008, 0.008, 0.008,
-        0.016, 0.001, 0.002, 0.002, 0.008, 0.008,
-        0.008, 0.008, 0.016, 0.001, 0.002, 0.002,
-        0.008, 0.008, 0.008, 0.016
+        0.002f, 0.002f, 0.008f, 0.008f, 0.008f, 0.016f,
+        0.001f, 0.002f, 0.002f, 0.008f, 0.008f, 0.008f,
+        0.016f, 0.001f, 0.002f, 0.002f, 0.008f, 0.008f,
+        0.008f, 0.008f, 0.016f, 0.001f, 0.002f, 0.002f,
+        0.008f, 0.008f, 0.008f, 0.016f
     };
 
     constexpr hsd::f32 tempo = 150.f;

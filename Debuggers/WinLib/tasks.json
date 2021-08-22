@@ -21,7 +21,7 @@
                 "-Wunused-but-set-parameter",
                 "-std=c++20",
                 "${file}",
-                "-I${workspaceFolder}/cpp",
+                "-I${workspaceFolder}/lib",
                 "-fno-exceptions",
                 "-o",
                 "${workspaceFolder}/Tests/ExecDumps/${fileBasenameNoExtension}.exe",

@@ -15,7 +15,7 @@
                 "/Fe:",
                 "${workspaceFolder}\\Tests\\ExecDumps\\${fileBasenameNoExtension}.exe",
                 "${file}",
-                "-I${workspaceFolder}/cpp"
+                "-I${workspaceFolder}\\lib"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

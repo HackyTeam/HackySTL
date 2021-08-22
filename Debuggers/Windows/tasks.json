@@ -13,7 +13,7 @@
                 "/analyze-",
                 "/nologo",
                 "/Fe:",
-                "${workspaceFolder}\\Tests\\cpp\\ExecDumps\\${fileBasenameNoExtension}.exe",
+                "${workspaceFolder}\\Tests\\ExecDumps\\${fileBasenameNoExtension}.exe",
                 "${file}",
                 "-I${workspaceFolder}/cpp"
             ],

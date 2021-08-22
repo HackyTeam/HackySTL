@@ -24,7 +24,7 @@
                 "-I${workspaceFolder}/cpp",
                 "-fno-exceptions",
                 "-o",
-                "${workspaceFolder}/Tests/cpp/ExecDumps/${fileBasenameNoExtension}.exe",
+                "${workspaceFolder}/Tests/ExecDumps/${fileBasenameNoExtension}.exe",
                 "-lws2_32"
             ],
             "options": {

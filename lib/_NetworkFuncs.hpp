@@ -1,3 +1,5 @@
+#pragma once
+
 #include "_NetworkDetail.hpp"
 
 namespace hsd::network_detail

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "_NetworkFuncs.hpp"
 #include "List.hpp"
 #include "Vector.hpp"

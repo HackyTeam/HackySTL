@@ -123,6 +123,7 @@ namespace hsd
             _capacity = other._capacity;
             _data = _alloc.allocate(_capacity + 1).unwrap();
             _str_utils::copy(_data, other._data, _size);
+            _data[_size] = static_cast<CharT>(0);
         }
 
         template <typename CharT2>
@@ -149,6 +150,8 @@ namespace hsd
                 hsd_fputs_check(stderr, "Unsupported char size");
                 abort();
             }
+
+            _data[_size] = static_cast<CharT>(0);
         }
 
         inline basic_string(basic_string&& other)
@@ -169,6 +172,7 @@ namespace hsd
             _size = _str_utils::length(rhs);
             reserve(_size);
             _str_utils::copy(_data, rhs, _size);
+            _data[_size] = static_cast<CharT>(0);
             return *this;
         }
 
@@ -177,6 +181,7 @@ namespace hsd
             _size = rhs.size();
             reserve(_size);
             copy_n(rhs.data(), _size, _data);
+            _data[_size] = static_cast<CharT>(0);
             return *this;
         }
 
@@ -188,6 +193,7 @@ namespace hsd
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
             copy_n(rhs.c_str(), _size, _data);
+            _data[_size] = static_cast<CharT>(0);
             return *this;
         }
 
@@ -217,6 +223,7 @@ namespace hsd
                 abort();
             }
 
+            _data[_size] = static_cast<CharT>(0);
             return *this;
         }
 
@@ -241,6 +248,7 @@ namespace hsd
                 basic_string _buf(_size + rhs._size);
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -275,6 +283,7 @@ namespace hsd
                 basic_string _buf(_size + _rhs_len);
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs, _size);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -310,6 +319,7 @@ namespace hsd
                 basic_string _buf(rhs._size + _lhs_len);
                 _str_utils::copy(_buf._data, lhs, _lhs_len);
                 _str_utils::add(_buf._data, rhs._data, _lhs_len);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -326,6 +336,7 @@ namespace hsd
                 basic_string _buf(_size + rhs._size);
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
+                _buf._data[_buf.size()] = static_cast<CharT>(0);
                 operator=(hsd::move(_buf));
                 return *this;
             }
@@ -333,6 +344,7 @@ namespace hsd
             {
                 _str_utils::add(_data, rhs._data, _size);
                 _size += rhs._size;
+                _data[_size] = static_cast<CharT>(0);
                 return *this;
             }
         }
@@ -378,12 +390,14 @@ namespace hsd
                     basic_string _buf(_size + _rhs_len);
                     _str_utils::copy(_buf._data, _data, _size);
                     _str_utils::add(_buf._data, rhs, _size);
+                    _buf._data[_buf.size()] = static_cast<CharT>(0);
                     operator=(hsd::move(_buf));
                     return *this;
                 }
                 else
                 {
                     _str_utils::add(_data, rhs, _size);
+                    _data[_size] = static_cast<CharT>(0);
                     return *this;
                 }
             }

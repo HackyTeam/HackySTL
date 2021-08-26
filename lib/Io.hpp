@@ -127,6 +127,11 @@ namespace hsd
             return (_file_buf != nullptr);
         }
 
+        inline bool is_eof() const
+        {
+            return feof(_file_buf) != 0;
+        }
+
         inline void close()
         {
             if (!_is_console_file && _file_buf != nullptr)

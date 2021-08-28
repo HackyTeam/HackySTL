@@ -76,9 +76,8 @@ namespace hsd
         inline function() = default;
         inline function(NullType) {}
 
-        template <typename Func>
-        requires (func_detail::IsFunction<Func, ResultType, Args...>)
-        inline function(Func);
+        inline function(auto func)
+        requires (func_detail::IsFunction<decltype(func), ResultType, Args...>);
 
         inline function(const function&);
 
@@ -204,11 +203,10 @@ namespace hsd
     }
 
     template < typename Res, typename... Args >
-    template < typename Func >
-    requires (func_detail::IsFunction<Func, Res, Args...>)
-    inline function<Res(Args...)>::function(Func func)
+    inline function<Res(Args...)>::function(auto func)
+    requires (func_detail::IsFunction<decltype(func), Res, Args...>)
     {
-        _func_impl = make_safe_shared<callable<Func>>(func);
+        _func_impl = make_safe_shared<callable<decltype(func)>>(func);
     }
 
     template < typename Func, typename T, typename... Args >

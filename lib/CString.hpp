@@ -19,6 +19,7 @@ namespace hsd
         		if (*str != *substr)
         			return false;
         	}
+
         	return (*substr == '\0');
         }
 
@@ -26,7 +27,9 @@ namespace hsd
 		static constexpr T _modulus(T num)
 		{
 			if (num < 0)
+			{
 				return -num;
+			}
 
 			return num;
 		}
@@ -809,14 +812,21 @@ namespace hsd
 					return 1;
 				}
 			}
-			
-			if (lhs[_index] < rhs[_index])
+
+			if (_index < len)
 			{
-				return -1;
-			}
-			else if (lhs[_index] > rhs[_index])
-			{
-				return 1;
+				if (lhs[_index] < rhs[_index])
+				{
+					return -1;
+				}
+				else if (lhs[_index] > rhs[_index])
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
 			}
 			else
 			{
@@ -830,9 +840,7 @@ namespace hsd
 				return nullptr;
 
 			for (; *src && len != 0; len--, dest++, src++)
-			{
 				*dest = *src;
-			}
 
 			if (len != 0)
 				*dest = *src;

@@ -38,7 +38,7 @@ namespace hsd
         return static_cast<T&&>(val);
     }
 
-    template <class T, class U = T>
+    template <typename T, typename U = T>
     static constexpr T exchange(T& target, U&& new_val) noexcept
     {
         T tmp = move(target);
@@ -46,7 +46,7 @@ namespace hsd
         return tmp;
     }
 
-    template < typename InIt, typename OutIt >
+    template <typename InIt, typename OutIt>
     static constexpr OutIt move(InIt first, InIt last, OutIt dest)
     {
         while (first != last) 
@@ -104,7 +104,7 @@ namespace hsd
         second = move(_tmp);
     }
     
-    template < typename InIt, typename OutIt >
+    template <typename InIt, typename OutIt>
     static constexpr OutIt copy(InIt first, InIt last, OutIt dest)
     {
         while (first != last)
@@ -115,7 +115,7 @@ namespace hsd
         return dest;
     }
 
-    template < typename InIt, typename OutIt >
+    template <typename InIt, typename OutIt>
     static constexpr OutIt copy_n(InIt first, usize n, OutIt dest)
     {
         using value_type = remove_reference_t<decltype(*dest)>;
@@ -128,7 +128,7 @@ namespace hsd
         return dest;
     }
 
-    template < typename InIt, typename ValueType >
+    template <typename InIt, typename ValueType>
     static constexpr void set(InIt first, InIt last, ValueType value)
     {
         for (; first != last; *first++ = value)
@@ -150,26 +150,26 @@ namespace hsd
         return dest;
     }
 
-    template < typename Elem, usize Count >
+    template <typename Elem, usize Count>
     static constexpr Elem* begin(Elem (&arr)[Count])
     {
         return static_cast<Elem*>(arr);
     }
 
-    template < typename Elem, usize Count >
+    template <typename Elem, usize Count>
     static constexpr Elem* end(Elem (&arr)[Count])
     {
         return static_cast<Elem*>(arr) + Count;
     }
 
-    template < typename Elem, usize Count >
+    template <typename Elem, usize Count>
     static constexpr const Elem* begin(const Elem (&arr)[Count])
     {
         return static_cast<const Elem*>(arr);
     }
 
 
-    template < typename Elem, usize Count >
+    template <typename Elem, usize Count>
     static constexpr const Elem* end(const Elem (&arr)[Count])
     {
         return static_cast<const Elem*>(arr) + Count;

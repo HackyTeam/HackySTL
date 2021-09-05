@@ -870,32 +870,32 @@ namespace hsd
 		constexpr atomic_flag& operator=(const atomic_flag&) = delete;
 		constexpr atomic_flag& operator=(const atomic_flag&) volatile = delete;
 
-		constexpr void clear(memory_order order = memory_order_seq_cst)
+		inline void clear(memory_order order = memory_order_seq_cst)
 		{
 			__atomic_clear(&_flag, static_cast<i32>(order));
 		}
 
-		constexpr void clear(memory_order order = memory_order_seq_cst) volatile
+		inline void clear(memory_order order = memory_order_seq_cst) volatile
 		{
 			__atomic_clear(&_flag, static_cast<i32>(order));
 		}
 
-		constexpr bool test_and_set(memory_order order = memory_order_seq_cst)
+		inline bool test_and_set(memory_order order = memory_order_seq_cst)
 		{
 			return __atomic_test_and_set(&_flag, static_cast<i32>(order));
 		}
 
-		constexpr bool test_and_set(memory_order order = memory_order_seq_cst) volatile
+		inline bool test_and_set(memory_order order = memory_order_seq_cst) volatile
 		{
 			return __atomic_test_and_set(&_flag, static_cast<i32>(order));
 		}
 
-		constexpr bool test(memory_order order = memory_order_seq_cst) const
+		inline bool test(memory_order order = memory_order_seq_cst) const
 		{
 			return __atomic_load_n(&_flag, static_cast<i32>(order));
 		}
 
-		constexpr bool test(memory_order order = memory_order_seq_cst) const volatile
+		inline bool test(memory_order order = memory_order_seq_cst) const volatile
 		{
 			return __atomic_load_n(&_flag, static_cast<i32>(order));
 		}

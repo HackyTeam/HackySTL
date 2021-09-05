@@ -94,6 +94,11 @@ namespace hsd
             pthread_mutex_destroy(&mutex);
         }
 
+        static inline void lock(handle_type& mutex)
+        {
+            pthread_mutex_lock(&mutex);
+        }
+
         static inline bool try_lock(handle_type& mutex)
         {
             return pthread_mutex_trylock(&mutex) == 0;

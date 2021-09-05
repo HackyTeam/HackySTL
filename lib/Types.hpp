@@ -3,6 +3,7 @@
 #include "_Define.hpp"
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace hsd
 {

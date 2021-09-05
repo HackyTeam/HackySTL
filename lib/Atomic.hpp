@@ -1,13 +1,12 @@
 #pragma once
 
-#include "TypeTraits.hpp"
+#include "Concepts.hpp"
 
 #include <stddef.h>
 #include <stdint.h>
 
 namespace hsd
 {
-
 	enum class memory_order : i32
 	{
 		relaxed = __ATOMIC_RELAXED,
@@ -18,22 +17,22 @@ namespace hsd
 		seq_cst = __ATOMIC_SEQ_CST
 	};
 
-	inline constexpr memory_order memory_order_relaxed = memory_order::relaxed;
-	inline constexpr memory_order memory_order_consume = memory_order::consume;
-	inline constexpr memory_order memory_order_acquire = memory_order::acquire;
-	inline constexpr memory_order memory_order_release = memory_order::release;
-	inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
-	inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
+	static constexpr auto memory_order_relaxed = memory_order::relaxed;
+	static constexpr auto memory_order_consume = memory_order::consume;
+	static constexpr auto memory_order_acquire = memory_order::acquire;
+	static constexpr auto memory_order_release = memory_order::release;
+	static constexpr auto memory_order_acq_rel = memory_order::acq_rel;
+	static constexpr auto memory_order_seq_cst = memory_order::seq_cst;
 
 	namespace atomic_detail
 	{
 		template <typename T>
 		concept valid_atomic_type =
 			std::is_trivially_copyable_v<T> &&
-			std::is_copy_constructible_v<T> &&
-			std::is_move_constructible_v<T> &&
-			std::is_copy_assignable_v<T> 	&&
-			std::is_move_assignable_v<T>;
+			CopyConstructible<T> && 
+			MoveConstructible<T> &&
+			CopyAssignable<T> 	 && 
+			MoveAssignable<T>;
 
 		template <typename T, bool IsRef>
 		struct storage;
@@ -47,25 +46,26 @@ namespace hsd
 		template <typename T>
 		struct storage<T, true>
 		{
-			T *_ptr;
+			T* _ptr;
 		};
 
 		template <typename T>
 		struct difference_type_provider {};
 
 		template <typename T>
-		requires(is_number<T>::value || is_pointer<T>::value) struct difference_type_provider<T>
+		requires(is_number<T>::value || is_pointer<T>::value)
+		struct difference_type_provider<T>
 		{
 			using difference_type = conditional_t<
-				is_number<T>::value,
-				T, ptrdiff_t>;
+				is_number<T>::value,T, pdiff
+			>;
 		};
 
 		template <valid_atomic_type T, bool IsRef>
 		struct atomic_impl
 			: difference_type_provider<T>
 		{
-			static inline constexpr bool is_always_lock_free =
+			static constexpr bool is_always_lock_free =
 				__atomic_always_lock_free(sizeof(T), nullptr);
 
 			using value_type = T;
@@ -82,7 +82,7 @@ namespace hsd
 				: _stor{desired}
 			{}
 
-			explicit atomic_impl(T &desired) requires(IsRef)
+			explicit constexpr  atomic_impl(T &desired) requires(IsRef)
 				: _stor{&desired}
 			{}
 
@@ -91,78 +91,84 @@ namespace hsd
 			atomic_impl& operator=(const atomic_impl&) = delete;
 			atomic_impl& operator=(const atomic_impl&) volatile = delete;
 
-			T operator=(T desired)
+			constexpr T operator=(T desired)
 			{
 				store(desired);
 				return desired;
 			}
 
-			T operator=(T desired) volatile
+			constexpr T operator=(T desired) volatile
 			{
 				store(desired);
 				return desired;
 			}
 
-			bool is_lock_free() const
+			constexpr bool is_lock_free() const
 			{
 				return __atomic_is_lock_free(sizeof(T), _data_ptr());
 			}
 
-			bool is_lock_free() const volatile
+			constexpr bool is_lock_free() const volatile
 			{
 				return __atomic_is_lock_free(sizeof(T), _data_ptr());
 			}
 
-			void store(T desired, memory_order order = memory_order_seq_cst)
+			constexpr void store(
+				T desired, memory_order order = memory_order_seq_cst)
 			{
 				__atomic_store(_data_ptr(), &desired, static_cast<i32>(order));
 			}
 
-			void store(T desired, memory_order order = memory_order_seq_cst) volatile
+			constexpr void store(
+				T desired, memory_order order = memory_order_seq_cst) volatile
 			{
 				__atomic_store(_data_ptr(), &desired, static_cast<i32>(order));
 			}
 
-			T load(memory_order order = memory_order_seq_cst) const
+			constexpr T load(
+				memory_order order = memory_order_seq_cst) const
 			{
 				T _tmp;
 				__atomic_load(_data_ptr(), &_tmp, static_cast<i32>(order));
 				return _tmp;
 			}
 
-			T load(memory_order order = memory_order_seq_cst) const volatile
+			constexpr T load(
+				memory_order order = memory_order_seq_cst) const volatile
 			{
 				T _tmp;
 				__atomic_load(_data_ptr(), &_tmp, static_cast<i32>(order));
 				return _tmp;
 			}
 
-			operator T() const
+			constexpr operator T() const
 			{
 				return load();
 			}
 
-			operator T() const volatile
+			constexpr operator T() const volatile
 			{
 				return load();
 			}
 
-			T exchange(T desired, memory_order order = memory_order_seq_cst)
+			constexpr T exchange(T desired, memory_order order = memory_order_seq_cst)
 			{
 				T _ret;
 				__atomic_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
 				return _ret;
 			}
 
-			T exchange(T desired, memory_order order = memory_order_seq_cst) volatile
+			constexpr T exchange(T desired, memory_order order = memory_order_seq_cst) volatile
 			{
 				T _ret;
 				__atomic_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
 				return _ret;
 			}
 
-			bool compare_exchange_weak(T& expected, T desired,
-				memory_order success, memory_order failure)
+			constexpr bool compare_exchange_weak(
+				T& expected, T desired,
+				memory_order success, 
+				memory_order failure)
 			{
 				return __atomic_compare_exchange(
 					_data_ptr(), &expected, &desired, true,
@@ -170,14 +176,17 @@ namespace hsd
 				);
 			}
 
-			bool compare_exchange_weak(T& expected, T desired,
+			constexpr bool compare_exchange_weak(
+				T& expected, T desired,
 				memory_order order = memory_order_seq_cst)
 			{
 				return compare_exchange_weak(expected, desired, order, order);
 			}
 
-			bool compare_exchange_weak(T& expected, T desired,
-				memory_order success, memory_order failure) volatile
+			constexpr bool compare_exchange_weak(
+				T& expected, T desired,
+				memory_order success, 
+				memory_order failure) volatile
 			{
 				return __atomic_compare_exchange(
 					_data_ptr(), &expected, &desired, true,
@@ -185,14 +194,17 @@ namespace hsd
 				);
 			}
 
-			bool compare_exchange_weak(T& expected, T desired,
+			constexpr bool compare_exchange_weak(
+				T& expected, T desired,
 				memory_order order = memory_order_seq_cst) volatile
 			{
 				return compare_exchange_weak(expected, desired, order, order);
 			}
 
-			bool compare_exchange_strong(T& expected, T desired,
-				memory_order success, memory_order failure)
+			constexpr bool compare_exchange_strong(
+				T& expected, T desired,
+				memory_order success, 
+				memory_order failure)
 			{
 				return __atomic_compare_exchange(
 					_data_ptr(), &expected, &desired, false,
@@ -200,14 +212,17 @@ namespace hsd
 				);
 			}
 
-			bool compare_exchange_strong(T& expected, T desired,
+			constexpr bool compare_exchange_strong(
+				T& expected, T desired,
 				memory_order order = memory_order_seq_cst)
 			{
 				return compare_exchange_strong(expected, desired, order, order);
 			}
 
-			bool compare_exchange_strong(T& expected, T desired,
-				memory_order success, memory_order failure) volatile
+			constexpr bool compare_exchange_strong(
+				T& expected, T desired,
+				memory_order success, 
+				memory_order failure) volatile
 			{
 				return __atomic_compare_exchange(
 					_data_ptr(), &expected, &desired, false,
@@ -215,25 +230,29 @@ namespace hsd
 				);
 			}
 
-			bool compare_exchange_strong(T& expected, T desired,
+			constexpr bool compare_exchange_strong(
+				T& expected, T desired,
 				memory_order order = memory_order_seq_cst) volatile
 			{
 				return compare_exchange_strong(expected, desired, order, order);
 			}
 
-			T fetch_add(T arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_add(
+				T arg, memory_order order = memory_order_seq_cst)
 			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_add(T arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_add(
+				T arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_add(ptrdiff_t arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_add(
+				pdiff arg, memory_order order = memory_order_seq_cst)
 			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(),
@@ -242,7 +261,8 @@ namespace hsd
 				);
 			}
 
-			T fetch_add(ptrdiff_t arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_add(
+				pdiff arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_add(_data_ptr(),
@@ -251,19 +271,22 @@ namespace hsd
 				);
 			}
 
-			T fetch_sub(T arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_sub(
+				T arg, memory_order order = memory_order_seq_cst)
 			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_sub(T arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_sub(
+				T arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_number<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_sub(ptrdiff_t arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_sub(
+				pdiff arg, memory_order order = memory_order_seq_cst)
 			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(),
@@ -272,7 +295,8 @@ namespace hsd
 				);
 			}
 
-			T fetch_sub(ptrdiff_t arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_sub(
+				pdiff arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_pointer<T>::value)
 			{
 				return __atomic_fetch_sub(_data_ptr(),
@@ -281,176 +305,182 @@ namespace hsd
 				);
 			}
 
-			T fetch_and(T arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_and(
+				T arg, memory_order order = memory_order_seq_cst)
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_and(T arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_and(
+				T arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_or(T arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_or(
+				T arg, memory_order order = memory_order_seq_cst)
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_or(T arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_or(
+				T arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_xor(T arg, memory_order order = memory_order_seq_cst)
+			constexpr T fetch_xor(
+				T arg, memory_order order = memory_order_seq_cst)
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T fetch_xor(T arg, memory_order order = memory_order_seq_cst) volatile
+			constexpr T fetch_xor(
+				T arg, memory_order order = memory_order_seq_cst) volatile
 			requires (is_integral<T>::value)
 			{
 				return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
 			}
 
-			T operator++()
+			constexpr T operator++()
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1) + 1;
 			}
 
-			T operator++(int)
+			constexpr T operator++(i32)
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1);
 			}
 
-			T operator++() volatile
+			constexpr T operator++() volatile
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1) + 1;
 			}
 
-			T operator++(int) volatile
+			constexpr T operator++(i32) volatile
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_add(1);
 			}
 
-			T operator--()
+			constexpr T operator--()
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1) - 1;
 			}
 
-			T operator--(int)
+			constexpr T operator--(i32)
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1);
 			}
 
-			T operator--() volatile
+			constexpr T operator--() volatile
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1) - 1;
 			}
 
-			T operator--(int) volatile
+			constexpr T operator--(i32) volatile
 			requires (is_integral<T>::value || is_pointer<T>::value)
 			{
 				return fetch_sub(1);
 			}
 
-			T operator+=(T arg)
+			constexpr T operator+=(T arg)
 			requires (is_number<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
-			T operator+=(T arg) volatile
+			constexpr T operator+=(T arg) volatile
 			requires (is_number<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
-			T operator+=(ptrdiff_t arg)
+			constexpr T operator+=(pdiff arg)
 			requires (is_pointer<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
-			T operator+=(ptrdiff_t arg) volatile
+			constexpr T operator+=(pdiff arg) volatile
 			requires (is_pointer<T>::value)
 			{
 				return fetch_add(arg) + arg;
 			}
 
-			T operator-=(T arg)
+			constexpr T operator-=(T arg)
 			requires (is_number<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
-			T operator-=(T arg) volatile
+			constexpr T operator-=(T arg) volatile
 			requires (is_number<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
-			T operator-=(ptrdiff_t arg)
+			constexpr T operator-=(pdiff arg)
 			requires (is_pointer<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
-			T operator-=(ptrdiff_t arg) volatile
+			constexpr T operator-=(pdiff arg) volatile
 			requires (is_pointer<T>::value)
 			{
 				return fetch_sub(arg) - arg;
 			}
 
-			T operator&=(T arg)
+			constexpr T operator&=(T arg)
 			requires (is_integral<T>::value)
 			{
 				return fetch_and(arg) & arg;
 			}
 
-			T operator&=(T arg) volatile
+			constexpr T operator&=(T arg) volatile
 			requires (is_integral<T>::value)
 			{
 				return fetch_and(arg) & arg;
 			}
 
-			T operator|=(T arg)
+			constexpr T operator|=(T arg)
 			requires (is_integral<T>::value)
 			{
 				return fetch_or(arg) | arg;
 			}
 
-			T operator|=(T arg) volatile
+			constexpr T operator|=(T arg) volatile
 			requires (is_integral<T>::value)
 			{
 				return fetch_or(arg) | arg;
 			}
 
-			T operator^=(T arg)
+			constexpr T operator^=(T arg)
 			requires (is_integral<T>::value)
 			{
 				return fetch_xor(arg) ^ arg;
 			}
 
-			T operator^=(T arg) volatile
+			constexpr T operator^=(T arg) volatile
 			requires (is_integral<T>::value)
 			{
 				return fetch_xor(arg) ^ arg;
 			}
 
 		private:
-			T* _data_ptr()
+			constexpr T* _data_ptr()
 			{
 				if constexpr (IsRef)
 				{
@@ -462,7 +492,7 @@ namespace hsd
 				}
 			}
 
-			const T* _data_ptr() const
+			constexpr const T* _data_ptr() const
 			{
 				if constexpr (IsRef)
 				{
@@ -492,9 +522,9 @@ namespace hsd
 		}
 	}
 
-	// Qookie: This is what libstdc++ does
+	// qookie: This is what libstdc++ does
 	template <typename T>
-	inline T kill_dependency(T y)
+	static constexpr T kill_dependency(T y)
 	{
 		T _tmp{y};
 		return _tmp;
@@ -519,101 +549,108 @@ namespace hsd
 	using atomic_char16 = atomic<char16>;
 	using atomic_char32 = atomic<char32>;
 	using atomic_wchar = atomic<wchar>;
-	using atomic_intptr = atomic<intptr_t>;
-	using atomic_uintptr = atomic<uintptr_t>;
+	using atomic_iptr = atomic<iptr>;
+	using atomic_uptr = atomic<uptr>;
 	using atomic_isize = atomic<isize>;
 	using atomic_usize = atomic<usize>;
-	using atomic_ptrdiff_t = atomic<ptrdiff_t>;
-	using atomic_intmax_t = atomic<intmax_t>;
-	using atomic_uintmax_t = atomic<uintmax_t>;
+	using atomic_pdiff = atomic<pdiff>;
+	using atomic_imax = atomic<imax>;
+	using atomic_umax = atomic<umax>;
 
 	template <typename T>
 	using atomic_ref = atomic_detail::atomic_impl<T, true>;
 
 	template <typename T>
-	inline void atomic_store(atomic<T>* obj,
+	static inline void atomic_store(atomic<T>* obj,
 		typename atomic<T>::value_type dest)
 	{
 		obj->store(dest);
 	}
 
 	template <typename T>
-	inline void atomic_store(volatile atomic<T>* obj,
+	static inline void atomic_store(volatile atomic<T>* obj,
 		typename atomic<T>::value_type dest)
 	{
 		obj->store(dest);
 	}
 
 	template <typename T>
-	inline void atomic_store_explicit(atomic<T>* obj,
+	static inline void atomic_store_explicit(atomic<T>* obj,
 		typename atomic<T>::value_type dest, memory_order order)
 	{
 		obj->store(dest, order);
 	}
 
 	template <typename T>
-	inline void atomic_store_explicit(volatile atomic<T>* obj,
+	static inline void atomic_store_explicit(volatile atomic<T>* obj,
 		typename atomic<T>::value_type dest, memory_order order)
 	{
 		obj->store(dest, order);
 	}
 
 	template <typename T>
-	inline T atomic_load(atomic<T>* obj)
+	static inline T atomic_load(atomic<T>* obj)
 	{
 		return obj->load();
 	}
 
 	template <typename T>
-	inline T atomic_load(volatile atomic<T>* obj)
+	static inline T atomic_load(volatile atomic<T>* obj)
 	{
 		return obj->load();
 	}
 
 	template <typename T>
-	inline T atomic_load_explicit(
+	static inline T atomic_load_explicit(
 		atomic<T>* obj, memory_order order)
 	{
 		return obj->load(order);
 	}
 
 	template <typename T>
-	inline T atomic_load_explicit(
+	static inline T atomic_load_explicit(
 		volatile atomic<T>* obj, memory_order order)
 	{
 		return obj->load(order);
 	}
 
 	template <typename T>
-	inline T atomic_exchange(atomic<T>* obj, 
+	static inline T atomic_exchange(
+		atomic<T>* obj, 
 		typename atomic<T>::value_type dest)
 	{
 		return obj->exchange(dest);
 	}
 
 	template <typename T>
-	inline T atomic_exchange(volatile atomic<T> *obj, 
+	static inline T atomic_exchange(
+		volatile atomic<T> *obj, 
 		typename atomic<T>::value_type dest)
 	{
 		return obj->exchange(dest);
 	}
 
 	template <typename T>
-	inline T atomic_exchange_explicit(atomic<T>* obj,
-		typename atomic<T>::value_type dest, memory_order order)
+	static inline T atomic_exchange_explicit(
+		atomic<T>* obj,
+		typename atomic<T>::value_type dest, 
+		memory_order order)
 	{
 		return obj->exchange(dest, order);
 	}
 
 	template <typename T>
-	inline T atomic_exchange_explicit(volatile atomic<T>* obj,
-		typename atomic<T>::value_type dest, memory_order order)
+	static inline T atomic_exchange_explicit(
+		volatile atomic<T>* obj,
+		typename atomic<T>::value_type dest, 
+		memory_order order)
 	{
 		return obj->exchange(dest, order);
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_weak(atomic<T>* obj,
+	static inline bool atomic_compare_exchange_weak(
+		atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired)
 	{
@@ -621,7 +658,8 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_weak(volatile atomic<T>* obj,
+	static inline bool atomic_compare_exchange_weak(
+		volatile atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired)
 	{
@@ -629,7 +667,8 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_strong(atomic<T>* obj,
+	static inline bool atomic_compare_exchange_strong(
+		atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired)
 	{
@@ -637,7 +676,7 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_strong(
+	static inline bool atomic_compare_exchange_strong(
 		volatile atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired)
@@ -646,7 +685,8 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_weak_explicit(atomic<T>* obj,
+	static inline bool atomic_compare_exchange_weak_explicit(
+		atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired,
 		memory_order succ, memory_order fail)
@@ -655,7 +695,7 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_weak_explicit(
+	static inline bool atomic_compare_exchange_weak_explicit(
 		volatile atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired,
@@ -665,7 +705,8 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_strong_explicit(atomic<T>* obj,
+	static inline bool atomic_compare_exchange_strong_explicit(
+		atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired,
 		memory_order succ, memory_order fail)
@@ -674,7 +715,8 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline bool atomic_compare_exchange_strong_explicit(volatile atomic<T>* obj,
+	static inline bool atomic_compare_exchange_strong_explicit(
+		volatile atomic<T>* obj,
 		typename atomic<T>::value_type* expected,
 		typename atomic<T>::value_type desired,
 		memory_order succ, memory_order fail)
@@ -683,113 +725,137 @@ namespace hsd
 	}
 
 	template <typename T>
-	inline T atomic_fetch_add(atomic<T>* obj, 
+	static inline T atomic_fetch_add(
+		atomic<T>* obj, 
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_add(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_add(volatile atomic<T>* obj, 
+	static inline T atomic_fetch_add(
+		volatile atomic<T>* obj, 
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_add(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_add_explicit(atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_add_explicit(
+		atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_add(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_add_explicit(volatile atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_add_explicit(
+		volatile atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_add(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_and(atomic<T>* obj, 
+	static inline T atomic_fetch_and(
+		atomic<T>* obj, 
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_and(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_and(volatile atomic<T>* obj,
+	static inline T atomic_fetch_and(
+		volatile atomic<T>* obj,
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_and(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_and_explicit(atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_and_explicit(
+		atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_and(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_and_explicit(volatile atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_and_explicit(
+		volatile atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_and(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_or(atomic<T>* obj,
+	static inline T atomic_fetch_or(
+		atomic<T>* obj,
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_or(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_or(volatile atomic<T>* obj,
+	static inline T atomic_fetch_or(
+		volatile atomic<T>* obj,
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_or(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_or_explicit(atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_or_explicit(
+		atomic<T>* obj,
+		typename atomic<T>::difference_type arg,
+		 memory_order order)
 	{
 		return obj->fetch_or(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_or_explicit(volatile atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_or_explicit(
+		volatile atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_or(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_xor(atomic<T>* obj,
+	static inline T atomic_fetch_xor(
+		atomic<T>* obj,
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_xor(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_xor(volatile atomic<T>* obj,
+	static inline T atomic_fetch_xor(
+		volatile atomic<T>* obj,
 		typename atomic<T>::difference_type arg)
 	{
 		return obj->fetch_xor(arg);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_xor_explicit(atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_xor_explicit(
+		atomic<T>* obj,
+		typename atomic<T>::difference_type arg, 
+		memory_order order)
 	{
 		return obj->fetch_xor(arg, order);
 	}
 
 	template <typename T>
-	inline T atomic_fetch_xor_explicit(volatile atomic<T>* obj,
-		typename atomic<T>::difference_type arg, memory_order order)
+	static inline T atomic_fetch_xor_explicit(
+		volatile atomic<T>* obj,
+		typename atomic<T>::difference_type arg,
+		 memory_order order)
 	{
 		return obj->fetch_xor(arg, order);
 	}
@@ -800,36 +866,36 @@ namespace hsd
 			: _flag{}
 		{}
 
-		atomic_flag(const atomic_flag&) = delete;
-		atomic_flag& operator=(const atomic_flag&) = delete;
-		atomic_flag& operator=(const atomic_flag&) volatile = delete;
+		constexpr atomic_flag(const atomic_flag&) = delete;
+		constexpr atomic_flag& operator=(const atomic_flag&) = delete;
+		constexpr atomic_flag& operator=(const atomic_flag&) volatile = delete;
 
-		void clear(memory_order order = memory_order_seq_cst)
+		constexpr void clear(memory_order order = memory_order_seq_cst)
 		{
 			__atomic_clear(&_flag, static_cast<i32>(order));
 		}
 
-		void clear(memory_order order = memory_order_seq_cst) volatile
+		constexpr void clear(memory_order order = memory_order_seq_cst) volatile
 		{
 			__atomic_clear(&_flag, static_cast<i32>(order));
 		}
 
-		bool test_and_set(memory_order order = memory_order_seq_cst)
+		constexpr bool test_and_set(memory_order order = memory_order_seq_cst)
 		{
 			return __atomic_test_and_set(&_flag, static_cast<i32>(order));
 		}
 
-		bool test_and_set(memory_order order = memory_order_seq_cst) volatile
+		constexpr bool test_and_set(memory_order order = memory_order_seq_cst) volatile
 		{
 			return __atomic_test_and_set(&_flag, static_cast<i32>(order));
 		}
 
-		bool test(memory_order order = memory_order_seq_cst) const
+		constexpr bool test(memory_order order = memory_order_seq_cst) const
 		{
 			return __atomic_load_n(&_flag, static_cast<i32>(order));
 		}
 
-		bool test(memory_order order = memory_order_seq_cst) const volatile
+		constexpr bool test(memory_order order = memory_order_seq_cst) const volatile
 		{
 			return __atomic_load_n(&_flag, static_cast<i32>(order));
 		}
@@ -838,67 +904,67 @@ namespace hsd
 		uchar _flag;
 	};
 
-	inline bool atomic_flag_test_and_set(atomic_flag* flag)
+	static inline bool atomic_flag_test_and_set(atomic_flag* flag)
 	{
 		return flag->test_and_set();
 	}
 
-	inline bool atomic_flag_test_and_set(volatile atomic_flag* flag)
+	static inline bool atomic_flag_test_and_set(volatile atomic_flag* flag)
 	{
 		return flag->test_and_set();
 	}
 
-	inline bool atomic_flag_test_and_set_explicit(
+	static inline bool atomic_flag_test_and_set_explicit(
 		atomic_flag* flag, memory_order order)
 	{
 		return flag->test_and_set(order);
 	}
 
-	inline bool atomic_flag_test_and_set_explicit(
+	static inline bool atomic_flag_test_and_set_explicit(
 		volatile atomic_flag* flag, memory_order order)
 	{
 		return flag->test_and_set(order);
 	}
 
-	inline void atomic_flag_clear(atomic_flag* flag)
+	static inline void atomic_flag_clear(atomic_flag* flag)
 	{
 		flag->clear();
 	}
 
-	inline void atomic_flag_clear(volatile atomic_flag* flag)
+	static inline void atomic_flag_clear(volatile atomic_flag* flag)
 	{
 		flag->clear();
 	}
 
-	inline void atomic_flag_clear_explicit(
+	static inline void atomic_flag_clear_explicit(
 		atomic_flag* flag, memory_order order)
 	{
 		flag->clear(order);
 	}
 
-	inline void atomic_flag_clear_explicit(
+	static inline void atomic_flag_clear_explicit(
 		volatile atomic_flag* flag, memory_order order)
 	{
 		flag->clear(order);
 	}
 
-	inline bool atomic_flag_test(atomic_flag* flag)
+	static inline bool atomic_flag_test(atomic_flag* flag)
 	{
 		return flag->test();
 	}
 
-	inline bool atomic_flag_test(volatile atomic_flag* flag)
+	static inline bool atomic_flag_test(volatile atomic_flag* flag)
 	{
 		return flag->test();
 	}
 
-	inline bool atomic_flag_test_explicit(
+	static inline bool atomic_flag_test_explicit(
 		atomic_flag* flag, memory_order order)
 	{
 		return flag->test(order);
 	}
 
-	inline bool atomic_flag_test_explicit(
+	static inline bool atomic_flag_test_explicit(
 		volatile atomic_flag* flag, memory_order order)
 	{
 		return flag->test(order);

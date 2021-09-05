@@ -2,6 +2,8 @@
 
 #include "_Define.hpp"
 
+#include <stdint.h>
+
 namespace hsd
 {
     namespace type_detail
@@ -98,6 +100,12 @@ namespace hsd
     using i32 = int;
     using i16 = short;
     using i8 = char;
+
+    using uptr = uintptr_t;
+    using iptr = intptr_t;
+    using pdiff = ptrdiff_t;
+    using imax = intmax_t;
+    using umax = uintmax_t;
 
     using wchar = wchar_t;
     using schar = signed char;

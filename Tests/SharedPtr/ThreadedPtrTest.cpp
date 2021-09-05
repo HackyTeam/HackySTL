@@ -1,6 +1,7 @@
 #include <SharedPtr.hpp>
 #include <Io.hpp>
 #include <Thread.hpp>
+#include <Lock.hpp>
 
 struct S
 {
@@ -14,7 +15,7 @@ struct S
     {}
 };
 
-static inline hsd::atomic_flag lock{};
+static inline hsd::spin spin_lock{};
 static inline hsd::safe_shared_ptr<S> elm = 
     hsd::make_safe_shared<S>(12, 'c', 4.3f, "str");
 
@@ -33,11 +34,8 @@ void thread_func()
     for (hsd::i32 count = 0; count < 1; count++)
     {
         // spin until the lock is acquired
-        while (lock.test_and_set(hsd::memory_order_acquire))
-            ;
-
+        hsd::unique_lock lock{spin_lock};
         print(elm);
-        lock.clear(hsd::memory_order_release);
     }
 }
 

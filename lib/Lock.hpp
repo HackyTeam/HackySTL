@@ -28,6 +28,36 @@ namespace hsd
             WakeByAddressAll(value);
         }
     } // namespace futex_detail
+
+    namespace mutex_detail
+    {
+        using handle_type = HANDLE;
+
+        static inline handle_type create()
+        {
+            return CreateMutex(nullptr, false, nullptr);
+        }
+
+        static inline void destroy(handle_type& mutex)
+        {
+            CloseHandle(mutex);
+        }
+
+        static inline void lock(handle_type& mutex)
+        {
+            WaitForSingleObject(mutex, -1);
+        }
+
+        static inline bool try_lock(handle_type& mutex)
+        {
+            return WaitForSingleObject(mutex, -1) == WAIT_OBJECT_0;
+        }
+
+        static inline void unlock(handle_type& mutex)
+        {
+            ReleaseMutex(mutex);
+        }
+    } // namespace mutex_detail
     #elif defined(HSD_PLATFORM_POSIX)
     namespace futex_detail
     {
@@ -47,6 +77,33 @@ namespace hsd
             );
         }
     } // namespace futex_detail
+
+    namespace mutex_detail
+    {
+        using handle_type = pthread_mutex_t;
+
+        static inline handle_type create()
+        {
+            handle_type _mutex;
+            pthread_mutex_init(&_mutex, nullptr);
+            return _mutex;
+        }
+
+        static inline void destroy(handle_type& mutex)
+        {
+            pthread_mutex_destroy(&mutex);
+        }
+
+        static inline bool try_lock(handle_type& mutex)
+        {
+            return pthread_mutex_trylock(&mutex) == 0;
+        }
+
+        static inline void unlock(handle_type& mutex)
+        {
+            pthread_mutex_unlock(&mutex);
+        }
+    } // namespace mutex_detail
     #endif
 
     class spin_lock
@@ -198,8 +255,55 @@ namespace hsd
         }
     };
 
-    using mutex = Locker<spin_lock>;
+    using spin = Locker<spin_lock>;
     using futex = Locker<futex_lock>;
+
+    class mutex
+    {
+    private:
+        mutex_detail::handle_type _mutex;
+
+    public:
+        inline mutex()
+        {
+            _mutex = mutex_detail::create();
+        }
+
+        inline ~mutex()
+        {
+            mutex_detail::destroy(_mutex);
+        }
+
+        inline mutex(const mutex&) = delete;
+        inline mutex& operator=(const mutex&) = delete;
+
+        inline mutex(mutex&& other)
+            : _mutex{other._mutex}
+        {
+            other._mutex = mutex_detail::handle_type{};
+        }
+
+        inline mutex& operator=(mutex&& rhs)
+        {
+            swap(_mutex, rhs._mutex);
+            return *this;
+        }
+
+        inline void lock()
+        {
+            mutex_detail::lock(_mutex);
+        }
+
+        inline bool try_lock()
+        {
+            return mutex_detail::try_lock(_mutex);
+        }
+
+        inline void unlock()
+        {
+            mutex_detail::unlock(_mutex);
+        }
+    };
 
     struct dont_lock_t {};
     struct adopt_lock_t {};

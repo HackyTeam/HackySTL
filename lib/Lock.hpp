@@ -170,7 +170,7 @@ namespace hsd
                     if (expected & waitersBit)
                     {
                         if (!waiter.wait_on(reinterpret_cast<u32&>(_lock), expected))
-                            assert(!"sys_futex_wait() failed");
+                            assert(!"waiter.wait_on() failed");
 
                         expected = 0;
                     }

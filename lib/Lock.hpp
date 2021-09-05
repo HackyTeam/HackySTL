@@ -3,7 +3,7 @@
 #include "Atomic.hpp"
 #include "Concepts.hpp"
 #include "Limits.hpp"
-#include <assert.h>
+#include "Result.hpp"
 
 #if defined(HSD_PLATFORM_WINDOWS)
 #include <windows.h>
@@ -59,6 +59,7 @@ namespace hsd
         }
     } // namespace mutex_detail
     #elif defined(HSD_PLATFORM_POSIX)
+    #if defined(SYS_futex)
     namespace futex_detail
     {
         static inline bool wait(void* value, u32 expected)
@@ -77,6 +78,7 @@ namespace hsd
             );
         }
     } // namespace futex_detail
+    #endif
 
     namespace mutex_detail
     {
@@ -111,26 +113,40 @@ namespace hsd
     } // namespace mutex_detail
     #endif
 
-    class spin_lock
+    #if defined(HSD_PLATFORM_WINDOWS) || defined(SYS_futex)
+    struct futex_lock
+    {
+        inline bool wait_on(u32& addr, u32 cmp_addr)
+        {
+            return futex_detail::wait(&addr, cmp_addr);
+        }
+
+        inline void wake_up(u32& addr)
+        {
+            futex_detail::wake(&addr);
+        }
+    };
+    #else
+    class futex_lock
     {
     private:
         atomic_u32 _lock;
 
     public:
-        inline spin_lock()
+        inline futex_lock()
             : _lock{0}
         {}
 
-        inline spin_lock(const spin_lock&) = delete;
-        inline spin_lock &operator=(const spin_lock&) = delete;
+        inline futex_lock(const futex_lock&) = delete;
+        inline futex_lock &operator=(const futex_lock&) = delete;
 
-        inline spin_lock(spin_lock&& other)
+        inline futex_lock(futex_lock&& other)
             : _lock{other._lock.load()}
         {
             other._lock = 0;
         }
 
-        inline spin_lock& operator=(spin_lock&& rhs)
+        inline futex_lock& operator=(futex_lock&& rhs)
         {
             rhs._lock = _lock.exchange(
                 rhs._lock.load(), memory_order_acquire
@@ -165,43 +181,30 @@ namespace hsd
             }
         }
     };
+    #endif
 
-    struct futex_lock
-    {
-        inline bool wait_on(u32& addr, u32 cmp_addr)
-        {
-            return futex_detail::wait(&addr, cmp_addr);
-        }
-
-        inline void wake_up(u32& addr)
-        {
-            futex_detail::wake(&addr);
-        }
-    };
-
-    template <DefaultConstructible Waiter>
-    class Locker
+    class futex
     {
     private:
         atomic_i32 _lock;
-        static inline Waiter waiter{};
+        static inline futex_lock waiter{};
         static constexpr inline u32 waitersBit = (1 << 31);
 
     public:
-        inline Locker()
+        inline futex()
             : _lock{0}
         {}
 
-        inline Locker(const Locker&) = delete;
-        inline Locker& operator=(const Locker&) = delete;
+        inline futex(const futex&) = delete;
+        inline futex& operator=(const futex&) = delete;
 
-        inline Locker(Locker&& other)
+        inline futex(futex&& other)
             : _lock{other._lock.load()}
         {
             other._lock = 0;
         }
 
-        inline Locker& operator=(Locker&& rhs)
+        inline futex& operator=(futex&& rhs)
         {
             rhs._lock = _lock.exchange(
                 rhs._lock.load(), memory_order_acquire
@@ -233,7 +236,7 @@ namespace hsd
                     if (expected & waitersBit)
                     {
                         if (!waiter.wait_on(reinterpret_cast<u32&>(_lock), expected))
-                            assert(!"waiter.wait_on() failed");
+                            hsd_panic("waiter.wait_on() failed");
 
                         expected = 0;
                     }
@@ -259,9 +262,6 @@ namespace hsd
                 waiter.wake_up(reinterpret_cast<u32&>(_lock));
         }
     };
-
-    using spin = Locker<spin_lock>;
-    using futex = Locker<futex_lock>;
 
     class mutex
     {
@@ -310,6 +310,31 @@ namespace hsd
         }
     };
 
+    class spin
+    {
+    private:
+        atomic_flag _spin{};
+
+    public:
+        inline spin() = default;
+
+        inline void lock()
+        {
+            while (_spin.test_and_set(memory_order_acquire))
+                ;
+        }
+
+        inline bool try_lock()
+        {
+            return !_spin.test_and_set(memory_order_acquire);
+        }
+
+        inline void unlock()
+        {
+            _spin.clear(memory_order_release);
+        }
+    };
+
     struct dont_lock_t {};
     struct adopt_lock_t {};
 
@@ -342,7 +367,7 @@ namespace hsd
         inline unique_lock(Mutex& mutex)
             : _mutex{&mutex}, _is_locked{false}
         {
-            lock();
+            lock().unwrap();
         }
 
         inline unique_lock(const unique_lock&) = delete;
@@ -356,8 +381,8 @@ namespace hsd
 
         inline ~unique_lock()
         {
-            if (_is_locked)
-                unlock();
+            if (_is_locked == true)
+                unlock().unwrap();
         }
 
         inline unique_lock& operator=(unique_lock&& rhs)
@@ -366,18 +391,32 @@ namespace hsd
             return *this;
         }
 
-        inline void lock()
+        inline Result<void, runtime_error> lock()
         {
-            assert(!_is_locked);
+            if (_is_locked == true)
+            {
+                return runtime_error {
+                    "unique_lock::lock(): mutex already locked"
+                };
+            }
+
             _mutex->lock();
             _is_locked = true;
+            return {};
         }
 
-        inline void unlock()
+        inline Result<void, runtime_error> unlock()
         {
-            assert(_is_locked);
+            if (_is_locked == false)
+            {
+                return runtime_error {
+                    "unique_lock::unlock(): mutex not locked"
+                };
+            }
+            
             _mutex->unlock();
             _is_locked = false;
+            return {};
         }
 
         inline bool is_locked()
@@ -420,7 +459,7 @@ namespace hsd
         inline shared_lock(Mutex& mutex)
             : _mutex{&mutex}, _is_locked{false}
         {
-            lock();
+            lock().unwrap();
         }
 
         inline shared_lock(const shared_lock&) = delete;
@@ -434,8 +473,8 @@ namespace hsd
 
         inline ~shared_lock()
         {
-            if (_is_locked)
-                unlock();
+            if (_is_locked == true)
+                unlock().unwrap();
         }
 
         inline shared_lock& operator=(shared_lock&& rhs)
@@ -444,18 +483,32 @@ namespace hsd
             return *this;
         }
 
-        inline void lock()
+        inline Result<void, runtime_error> lock()
         {
-            assert(!_is_locked);
+            if (_is_locked == true)
+            {
+                return runtime_error {
+                    "shared_lock::lock(): mutex already locked"
+                };
+            }
+
             _mutex->lock_shared();
             _is_locked = true;
+            return {};
         }
 
-        inline void unlock()
+        inline Result<void, runtime_error> unlock()
         {
-            assert(_is_locked);
+            if (_is_locked == false)
+            {
+                return runtime_error {
+                    "shared_lock::unlock(): mutex not locked"
+                };
+            }
+
             _mutex->unlock_shared();
             _is_locked = false;
+            return {};
         }
 
         inline bool is_locked()

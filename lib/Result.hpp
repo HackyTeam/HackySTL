@@ -51,7 +51,7 @@ do\
     hsd_fprint_check(\
         stderr, "Got an error in file:"\
         "\n%s\nInvoked from: %s at line:"\
-        " %zu\nWith the Err result value:"\
+        " %d\nWith the Err result value:"\
         " %s\n", __FILE__, HSD_FUNCTION_NAME,\
         __LINE__, message\
     );\

@@ -85,16 +85,16 @@ namespace hsd
 		using native_handle_type = HANDLE;
 		#endif
 
-		thread() = default;
+		inline thread() = default;
 
-		~thread() 
+		inline ~thread() 
 		{
 			if (joinable())
 				abort();
 		}
 
 		template <typename F, typename... Args>
-		thread(F&& func, Args&&... args) 
+		inline thread(F&& func, Args&&... args) 
 		{
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_attr_t _attr;
@@ -174,42 +174,43 @@ namespace hsd
 			#endif
 		}
 
-		thread(const thread&) = delete;
-		thread& operator=(const thread&) = delete;
+		inline thread(const thread&) = delete;
+		inline thread& operator=(const thread&) = delete;
 
-		thread(thread&& other) 
+		inline thread(thread&& other) 
 		{
 			swap(other); 
 		}
 
-		thread& operator=(thread&& other) 
+		inline thread& operator=(thread&& other) 
 		{
-			swap(other); return *this;
+			swap(other);
+			return *this;
 		}
 
-		void swap(thread &other) 
+		inline void swap(thread &other)
 		{ 
 			// namespace needed
 			hsd::swap(_handle, other._handle);
 			hsd::swap(_id, other._id);
 		}
 
-		id get_id() const
+		inline id get_id() const
 		{
 			return id{_id};
 		}
 
-		bool joinable() 
+		inline bool joinable() 
 		{
 			return _id != id{};
 		}
 
-		native_handle_type native_handle() 
+		inline native_handle_type native_handle() 
 		{
 			return _handle;
 		}
 
-		static auto hardware_concurrency() 
+		static inline auto hardware_concurrency() 
 		{
 			#if defined(HSD_PLATFORM_WINDOWS)
 		    SYSTEM_INFO info;
@@ -220,7 +221,7 @@ namespace hsd
 			#endif
 		}
 
-		Result<void, runtime_error> detach() 
+		inline Result<void, runtime_error> detach() 
 		{
 			if (!joinable())
 				return runtime_error{"Current Thread cannot be detached"};
@@ -237,7 +238,7 @@ namespace hsd
 			return {};
 		}
 
-		Result<void, runtime_error> join() 
+		inline Result<void, runtime_error> join() 
 		{
 			if (!joinable())
 				return runtime_error{"Current Thread cannot be joined"};

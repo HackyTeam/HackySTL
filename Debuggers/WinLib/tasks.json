@@ -25,7 +25,8 @@
                 "-fno-exceptions",
                 "-o",
                 "${workspaceFolder}/Tests/ExecDumps/${fileBasenameNoExtension}.exe",
-                "-lws2_32"
+                "-lws2_32",
+                "-lsynchronization"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

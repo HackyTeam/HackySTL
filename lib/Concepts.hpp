@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TypeTraits.hpp"
+#include "Utility.hpp"
 
 namespace hsd
 {
@@ -46,6 +46,36 @@ namespace hsd
         requires(Func func, Args... args){ {func(args...)} -> IsSame<RetType>; } ||
         requires(Func func, Args... args){ {func(args...).unwrap()} -> IsSame<RetType>; }
     );
+
+    template <typename T>
+    concept DefaultConstructible = requires(T)
+    {
+        T{};
+    };
+
+    template <typename T>
+    concept CopyConstructible = requires(T a)
+    {
+        T{a};
+    };
+
+    template <typename T>
+    concept MoveConstructible = requires(T a)
+    {
+        T{move(a)};
+    };
+
+    template <typename T>
+    concept CopyAssignable = requires(T a, T b)
+    {
+        a = b;
+    };
+
+    template <typename T>
+    concept MoveAssignable = requires(T a, T b)
+    {
+        a = move(b);
+    };
 
     template <typename T>
     concept BasicIterable = (

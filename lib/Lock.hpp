@@ -31,31 +31,33 @@ namespace hsd
 
     namespace mutex_detail
     {
-        using handle_type = HANDLE;
+        using handle_type = CRITICAL_SECTION;
 
         static inline handle_type create()
         {
-            return CreateMutex(nullptr, false, nullptr);
+            handle_type _handle;
+            InitializeCriticalSection(&_handle);
+            return _handle;
         }
 
         static inline void destroy(handle_type& mutex)
         {
-            CloseHandle(mutex);
+            DeleteCriticalSection(&mutex);
         }
 
         static inline void lock(handle_type& mutex)
         {
-            WaitForSingleObject(mutex, -1);
+            EnterCriticalSection(&mutex);
         }
 
         static inline bool try_lock(handle_type& mutex)
         {
-            return WaitForSingleObject(mutex, -1) == WAIT_OBJECT_0;
+            return TryEnterCriticalSection(&mutex);
         }
 
         static inline void unlock(handle_type& mutex)
         {
-            ReleaseMutex(mutex);
+            LeaveCriticalSection(&mutex);
         }
     } // namespace mutex_detail
     #elif defined(HSD_PLATFORM_POSIX)
@@ -113,7 +115,7 @@ namespace hsd
     } // namespace mutex_detail
     #endif
 
-    #if defined(HSD_PLATFORM_WINDOWS) || defined(SYS_futex)
+    #if defined(HSD_PLATFORM_WINDOWS) || (defined(HSD_PLATFORM_POSIX) && defined(SYS_futex))
     struct futex_lock
     {
         inline bool wait_on(u32& addr, u32 cmp_addr)
@@ -261,6 +263,11 @@ namespace hsd
             if (_lock.exchange(0, memory_order_release) & waitersBit)
                 waiter.wake_up(reinterpret_cast<u32&>(_lock));
         }
+
+        inline auto* native_handle()
+        {
+            return &_lock;
+        }
     };
 
     class mutex
@@ -308,6 +315,11 @@ namespace hsd
         {
             mutex_detail::unlock(_mutex);
         }
+
+        inline auto* native_handle()
+        {
+            return &_mutex;
+        }
     };
 
     class spin
@@ -332,6 +344,11 @@ namespace hsd
         inline void unlock()
         {
             _spin.clear(memory_order_release);
+        }
+
+        inline auto* native_handle()
+        {
+            return &_spin;
         }
     };
 
@@ -417,6 +434,11 @@ namespace hsd
             _mutex->unlock();
             _is_locked = false;
             return {};
+        }
+        
+        inline Mutex* get_mutex() const
+        {
+            return _mutex;
         }
 
         inline bool is_locked()
@@ -509,6 +531,11 @@ namespace hsd
             _mutex->unlock_shared();
             _is_locked = false;
             return {};
+        }
+
+        inline Mutex* get_mutex() const
+        {
+            return &_mutex;
         }
 
         inline bool is_locked()

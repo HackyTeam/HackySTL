@@ -169,8 +169,9 @@ namespace hsd
 
         inline basic_string& operator=(const CharT* rhs)
         {
-            _size = _str_utils::length(rhs);
-            reserve(_size);
+            auto _new_size = _str_utils::length(rhs);
+            reserve(_new_size);
+            _size = _new_size;
             _str_utils::copy(_data, rhs, _size);
             _data[_size] = static_cast<CharT>(0);
             return *this;
@@ -178,8 +179,9 @@ namespace hsd
 
         inline basic_string& operator=(const basic_string_view<CharT>& rhs)
         {
-            _size = rhs.size();
-            reserve(_size);
+            auto _new_size = rhs.size();
+            reserve(_new_size);
+            _size = _new_size;
             copy_n(rhs.data(), _size, _data);
             _data[_size] = static_cast<CharT>(0);
             return *this;

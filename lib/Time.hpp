@@ -13,10 +13,14 @@
 
 int clock_gettime(hsd::i32, struct timespec *spec)      //C-file part
 {  
-    __int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
-    wintime      -= 116444736000000000i64;  //1jan1601 to 1jan1970
-    spec->tv_sec  = wintime / 10000000i64;           //seconds
-    spec->tv_nsec = wintime % 10000000i64 *100;      //nano-seconds
+    i64 wintime = 0; 
+    GetSystemTimeAsFileTime(
+        reinterpret_cast<FILETIME*>(&wintime)
+    );
+    
+    wintime      -= 116'444'736'000'000'000i64;        //1jan1601 to 1jan1970
+    spec->tv_sec  = wintime / 10'000'000i64;           //seconds
+    spec->tv_nsec = wintime % 10'000'000i64 * 100;      //nano-seconds
     return 0;
 }
 #endif
@@ -533,74 +537,88 @@ namespace hsd
         i64 _clk;
 
     public:
-        inline clock(clock_t clk = ::clock())
+        inline clock()
+            : _clk{::clock()}
+        {}
+
+        explicit constexpr clock(clock_t clk)
         {
             _clk = clk;
         }
 
-        inline clock(const clock& rhs)
+        constexpr clock(const clock& rhs)
             : _clk(rhs._clk)
         {}
 
-        inline clock& operator=(const clock& rhs)
+        constexpr clock& operator=(const clock& rhs)
         {
             _clk = rhs._clk;
             return *this;
         }
 
-        inline friend clock operator-(const clock& lhs, const clock& rhs)
+        constexpr friend clock operator-(const clock& lhs, const clock& rhs)
         {
             return clock{static_cast<clock_t>(lhs._clk - rhs._clk)};
         }
 
-        inline friend clock operator+(const clock& lhs, const clock& rhs)
+        constexpr friend clock operator+(const clock& lhs, const clock& rhs)
         {
             return clock{static_cast<clock_t>(lhs._clk + rhs._clk)};
         }
 
-        inline bool operator==(const clock& rhs) const
+        constexpr bool operator==(const clock& rhs) const
         {
             return _clk == rhs._clk;
         }
 
-        inline bool operator!=(const clock& rhs) const
+        constexpr bool operator!=(const clock& rhs) const
         {
             return _clk != rhs._clk;
         }
 
-        inline bool operator<(const clock& rhs) const
+        constexpr bool operator<(const clock& rhs) const
         {
             return _clk < rhs._clk;
         }
 
-        inline bool operator>(const clock& rhs) const
+        constexpr bool operator>(const clock& rhs) const
         {
             return _clk > rhs._clk;
         }
 
-        inline bool operator<=(const clock& rhs) const
+        constexpr bool operator<=(const clock& rhs) const
         {
             return _clk <= rhs._clk;
         }
 
-        inline bool operator>=(const clock& rhs) const
+        constexpr bool operator>=(const clock& rhs) const
         {
             return _clk >= rhs._clk;
         }
 
-        inline i64 to_microseconds() const
+        constexpr i64 to_microseconds() const
         {
-            return static_cast<i64>(to_seconds() * 1000000);
+            return static_cast<i64>(to_seconds() * 1'000'000);
         }
 
-        inline i32 to_miliseconds() const
+        constexpr i32 to_miliseconds() const
         {
-            return static_cast<i32>(to_seconds() * 1000);
+            return static_cast<i32>(to_seconds() * 1'000);
         }
 
-        inline f32 to_seconds() const
+        constexpr f32 to_seconds() const
         {
             return static_cast<f32>(_clk) / CLOCKS_PER_SEC;
+        }
+
+        constexpr auto to_native() const
+        {
+            return _clk;
+        }
+
+        static inline auto now()
+        {
+            return clock{};
         }
 
         inline clock restart()
@@ -612,7 +630,7 @@ namespace hsd
 
         inline clock elapsed_time() const
         {
-            clock _new_clk;
+            clock _new_clk{};
             return _new_clk - *this;
         }
     };
@@ -628,59 +646,67 @@ namespace hsd
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_clk);
         }
 
-        inline precise_clock(const timespec& clk)
+        explicit constexpr precise_clock(const timespec& clk)
             : _clk{clk}
         {}
 
-        inline precise_clock(const precise_clock& rhs)
+        constexpr precise_clock(const precise_clock& rhs)
             : _clk{rhs._clk}
         {}
 
-        inline precise_clock& operator=(const precise_clock& rhs)
+        constexpr precise_clock& operator=(const precise_clock& rhs)
         {
             _clk = rhs._clk;
             return *this;
         }
 
-        inline friend precise_clock operator-(
+        constexpr friend precise_clock operator-(
             const precise_clock& lhs, const precise_clock& rhs)
         {
             if (lhs._clk.tv_nsec - rhs._clk.tv_nsec < 0)
             {
-                return timespec {
+                timespec _spec{
                     lhs._clk.tv_sec - rhs._clk.tv_sec - 1,
                     lhs._clk.tv_nsec - rhs._clk.tv_nsec + 1'000'000'000  
                 };
+
+                return precise_clock{_spec};
             }
             else
             {
-                return timespec {
+                timespec _spec{
                     lhs._clk.tv_sec - rhs._clk.tv_sec,
                     lhs._clk.tv_nsec - rhs._clk.tv_nsec  
                 };
+
+                return precise_clock{_spec};
             }
         }
 
-        inline friend precise_clock operator+(
+        constexpr friend precise_clock operator+(
             const precise_clock& lhs, const precise_clock& rhs)
         {
             if (lhs._clk.tv_nsec + rhs._clk.tv_nsec >= 1'000'000'000)
             {
-                return timespec {
+                timespec _spec{
                     lhs._clk.tv_sec + rhs._clk.tv_sec + 1,
                     lhs._clk.tv_nsec + rhs._clk.tv_nsec - 1'000'000'000  
                 };
+
+                return precise_clock{_spec};
             }
             else
             {
-                return timespec {
+                timespec _spec{
                     lhs._clk.tv_sec + rhs._clk.tv_sec + 1,
                     lhs._clk.tv_nsec + rhs._clk.tv_nsec
                 };
+
+                return precise_clock{_spec};
             }
         }
 
-        inline bool operator==(const precise_clock& rhs) const
+        constexpr bool operator==(const precise_clock& rhs) const
         {
             return (
                 _clk.tv_sec == rhs._clk.tv_sec &&
@@ -688,7 +714,7 @@ namespace hsd
             );
         }
 
-        inline bool operator!=(const precise_clock& rhs) const
+        constexpr bool operator!=(const precise_clock& rhs) const
         {
             return (
                 _clk.tv_sec != rhs._clk.tv_sec ||
@@ -696,7 +722,7 @@ namespace hsd
             );
         }
 
-        inline bool operator<(const precise_clock& rhs) const
+        constexpr bool operator<(const precise_clock& rhs) const
         {
             if (_clk.tv_sec < rhs._clk.tv_sec)
             {
@@ -712,7 +738,7 @@ namespace hsd
             }
         }
 
-        inline bool operator>(const precise_clock& rhs) const
+        constexpr bool operator>(const precise_clock& rhs) const
         {
             if (_clk.tv_sec > rhs._clk.tv_sec)
             {
@@ -728,17 +754,17 @@ namespace hsd
             }
         }
 
-        inline bool operator<=(const precise_clock& rhs) const
+        constexpr bool operator<=(const precise_clock& rhs) const
         {
             return *this < rhs || *this == rhs;
         }
 
-        inline bool operator>=(const precise_clock& rhs) const
+        constexpr bool operator>=(const precise_clock& rhs) const
         {
             return *this > rhs || *this == rhs;
         }
 
-        inline u64 to_nanoseconds() const
+        constexpr u64 to_nanoseconds() const
         {
             if (_clk.tv_sec != 0)
             {
@@ -750,20 +776,30 @@ namespace hsd
             }
         }
 
-        inline i64 to_microseconds() const
+        constexpr i64 to_microseconds() const
         {
             return static_cast<i64>(to_seconds() * 1'000'000);
         }
 
-        inline i32 to_miliseconds() const
+        constexpr i32 to_miliseconds() const
         {
             return static_cast<i32>(to_seconds() * 1000);
         }
 
-        inline f64 to_seconds() const
+        constexpr f64 to_seconds() const
         {
             return _clk.tv_nsec / 1'000'000'000.0 + 
                 static_cast<f64>(_clk.tv_sec);
+        }
+
+        constexpr auto to_native() const
+        {
+            return _clk;
+        }
+
+        static inline auto now()
+        {
+            return precise_clock{};
         }
 
         inline precise_clock restart()
@@ -775,10 +811,114 @@ namespace hsd
 
         inline precise_clock elapsed_time() const
         {
-            precise_clock _new_clk;
+            precise_clock _new_clk{};
             return _new_clk - *this;
         }
     };
+
+    namespace clock_literals
+    {
+        static consteval clock operator""_ms(u64 miliseconds)
+        {
+            return clock{static_cast<clock_t>(miliseconds)};
+        }
+
+        static consteval clock operator""_s(u64 seconds)
+        {
+            return clock{static_cast<clock_t>(seconds)};
+        }
+    } // namespace clock_literals
+
+    namespace precise_clock_literals
+    {
+        static consteval precise_clock operator""_ns(u64 nanoseconds)
+        {
+            if (nanoseconds >= 1'000'000'000)
+            {
+                timespec _spec{
+                    .tv_sec = static_cast<time_t>(nanoseconds / 1'000'000'000),
+                    .tv_nsec = static_cast<long>(nanoseconds % 1'000'000'000)
+                };
+
+                return precise_clock{_spec};
+            }
+            else
+            {
+                timespec _spec{
+                    .tv_sec = 0,
+                    .tv_nsec = static_cast<long>(nanoseconds)
+                };
+
+                return precise_clock{_spec};
+            }
+        }
+
+        static consteval precise_clock operator""_us(u64 microseconds)
+        {
+            if (microseconds >= 1'000)
+            {
+                if (microseconds >= 1'000'000)
+                {
+                    timespec _spec{
+                        .tv_sec = static_cast<time_t>(microseconds / 1'000'000),
+                        .tv_nsec = static_cast<long>(microseconds % 1'000'000) * 1'000
+                    };
+
+                    return precise_clock{_spec};
+                }
+                else
+                {
+                    timespec _spec{
+                        .tv_sec = 0,
+                        .tv_nsec = static_cast<long>(microseconds % 1'000'000) * 1'000
+                    };
+
+                    return precise_clock{_spec};
+                }
+            }
+            else
+            {
+                timespec _spec{
+                    .tv_sec = 0,
+                    .tv_nsec = static_cast<long>(microseconds) * 1'000
+                };
+
+                return precise_clock{_spec};
+            }
+        }
+
+        static consteval precise_clock operator""_ms(u64 miliseconds)
+        {
+            if (miliseconds >= 1'000)
+            {
+                timespec _spec{
+                    .tv_sec = static_cast<time_t>(miliseconds / 1'000),
+                    .tv_nsec = static_cast<long>(miliseconds % 1'000) * 1'000'000
+                };
+
+                return precise_clock{_spec};
+            }
+            else
+            {
+                timespec _spec{
+                    .tv_sec = 0,
+                    .tv_nsec = static_cast<long>(miliseconds) * 1'000'000
+                };
+
+                return precise_clock{_spec};
+            }
+        }
+
+        static consteval precise_clock operator""_s(u64 seconds)
+        {
+            timespec _spec{
+                .tv_sec = static_cast<time_t>(seconds),
+                .tv_nsec = 0
+            };
+
+            return precise_clock{_spec};
+        }
+    } // namespace precise_clock_literals
 
     namespace time_literals
     {

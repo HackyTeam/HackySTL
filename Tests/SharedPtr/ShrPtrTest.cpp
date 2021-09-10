@@ -53,10 +53,10 @@ int main()
         hsd::uchar buf[128]{};
         hsd::buffered_allocator<int> alloc{buf, 128};
 
-        hsd::safe_shared_ptr elm = 
+        hsd::safe_shared_ptr<S, hsd::buffered_allocator> elm = 
             hsd::make_safe_shared<S>(alloc, 12, 'c', 4.3f, "str");
 
-        hsd::safe_shared_ptr elm2 = elm;
+        hsd::safe_shared_ptr<S, hsd::buffered_allocator> elm2 = elm;
         print(elm);
         print(elm2);
         elm2 = hsd::move(elm);
@@ -74,10 +74,10 @@ int main()
         hsd::uchar buf[128]{};
         hsd::buffered_allocator<int> alloc{buf, 128};
 
-        hsd::unsafe_shared_ptr elm = 
+        hsd::unsafe_shared_ptr<S, hsd::buffered_allocator> elm = 
             hsd::make_unsafe_shared<S>(alloc, 12, 'c', 4.3f, "str");
 
-        hsd::unsafe_shared_ptr elm2 = elm;
+        hsd::unsafe_shared_ptr<S, hsd::buffered_allocator> elm2 = elm;
         print(elm);
         print(elm2);
         elm2 = hsd::move(elm);

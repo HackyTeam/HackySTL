@@ -93,8 +93,9 @@ namespace hsd
 				abort();
 		}
 
-		template <typename F, typename... Args>
-		inline thread(F&& func, Args&&... args) 
+		template <typename Func, typename... Args>
+		requires (InvocableRet<void, Func, Args...>)
+		inline thread(Func&& func, Args&&... args) 
 		{
 			#if defined(HSD_PLATFORM_POSIX)
 			pthread_attr_t _attr;
@@ -106,71 +107,57 @@ namespace hsd
 				return forward<T>(t);
 			};
 
-			#if defined(HSD_PLATFORM_POSIX)
-			i32 _ready = 0;
-			#else
-			u64 _ready = 0;
+			using func_type = decay_t<Func>;
+			using args_type = tuple<decay_t<Args>...>;
+			
+			#if defined(HSD_PLATFORM_WINDOWS)
+			using return_type = DWORD;
+			#else	
+			using return_type = void*;
 			#endif
 
 			struct thread_data 
 			{
-				#if defined(HSD_PLATFORM_POSIX)
-				i32* ready;
-				#else
-				u64* ready;
-				#endif
+				func_type func;
+				args_type args;
 
-				decay_t<F> func;
-				tuple<decay_t<Args>...> args;
-
-				#if defined(HSD_PLATFORM_POSIX)
-				static void* enter_thread(void* arg)
-				#else
-				static DWORD enter_thread(void* arg)
-				#endif
+				static return_type enter_thread(void* arg)
 				{
-					auto td = move(*bit_cast<thread_data*>(arg));
+					auto* td = reinterpret_cast<thread_data*>(arg);
+					apply(td->func, td->args);
 
-					// Tell our parent we are ready and copied the data
-					#if defined(HSD_PLATFORM_POSIX)
-					__atomic_store_n(td.ready, 1, __ATOMIC_RELEASE);
-					#elif defined(HSD_PLATFORM_WINDOWS)
-					InterlockedIncrementRelease(td.ready);
-					#endif
-					
-					apply(td.func, td.args);
-
-					#if defined(HSD_PLATFORM_POSIX)
-					return nullptr;
-					#else
-					return 0ul;
-					#endif
+					delete td;
+					return static_cast<return_type>(0);
 				}
 			}; 
 			
-			auto _td = thread_data
+			auto* _td = new thread_data
 			{
-				.ready = &_ready,
-				.func = decay_copy(forward<F>(func)),
+				.func = decay_copy(forward<Func>(func)),
 				.args = make_tuple(decay_copy(forward<Args>(args))...)
 			};
 
-			#if defined(HSD_PLATFORM_POSIX)
-			i32 _res = pthread_create(&_handle, &_attr, thread_data::enter_thread, &_td);
-			
-			if (_res != 0) abort();
-
-			// Spinlock time
-			while (!__atomic_load_n(&_ready, __ATOMIC_ACQUIRE));
-			_id = id{static_cast<native_id_type>(_handle)};
-			#else
+			#if defined(HSD_PLATFORM_WINDOWS)
 			native_id_type _native_id;
-			_handle = CreateThread(nullptr, 0, thread_data::enter_thread, &_td, 0, &_native_id);
+			_handle = CreateThread(
+				nullptr, 0, thread_data::enter_thread, _td, 0, &_native_id
+			);
 			
-			if (!_handle) abort();
-
-			while (!InterlockedCompareExchangeAcquire(&_ready, 0, 1));
+			if (!_handle)
+			{
+				abort();
+			}
+			
 			_id = id{static_cast<native_id_type>(_native_id)};
+			#else
+			i32 _res = pthread_create(&_handle, &_attr, thread_data::enter_thread, _td);
+			
+			if (_res != 0)
+			{
+				abort();
+			}
+			
+			_id = id{static_cast<native_id_type>(_handle)};
 			#endif
 		}
 

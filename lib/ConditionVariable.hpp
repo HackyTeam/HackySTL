@@ -101,6 +101,12 @@ namespace hsd
             cv_detail::initialize(_cv);
         }
 
+        inline condition_variable(condition_variable&& other)
+        {
+            cv_detail::initialize(_cv);
+            swap(other._cv, _cv);
+        }
+
         inline ~condition_variable()
         {
             cv_detail::destroy(_cv);
@@ -108,6 +114,12 @@ namespace hsd
 
         inline condition_variable(const condition_variable&) = delete;
         inline condition_variable& operator=(const condition_variable&) = delete;
+
+        inline condition_variable& operator=(condition_variable&& rhs)
+        {
+            swap(rhs._cv, _cv);
+            return *this;
+        }
 
         inline void wait(unique_lock<mutex>& lock)
         {

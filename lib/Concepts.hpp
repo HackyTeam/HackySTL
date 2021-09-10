@@ -47,23 +47,20 @@ namespace hsd
         requires(Func func, Args... args){ {func(args...).unwrap()} -> IsSame<RetType>; }
     );
 
-    template <typename T>
-    concept DefaultConstructible = requires(T)
+    template < typename T, typename... Args >
+    concept Constructible = requires(T t, Args... args)
     {
-        T{};
+        { T(args...) };
     };
 
     template <typename T>
-    concept CopyConstructible = requires(T a)
-    {
-        T{a};
-    };
+    concept DefaultConstructible = Constructible<T>;
 
     template <typename T>
-    concept MoveConstructible = requires(T a)
-    {
-        T{move(a)};
-    };
+    concept CopyConstructible = Constructible<T, const T&> || Constructible<T, T&>;
+
+    template <typename T>
+    concept MoveConstructible = Constructible<T, T&&>;
 
     template <typename T>
     concept CopyAssignable = requires(T a, T b)

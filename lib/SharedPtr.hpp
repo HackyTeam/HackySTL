@@ -11,8 +11,11 @@ namespace hsd
     {
         namespace shared_detail
         {
-            template <typename T, typename U>
-            concept ConvertibleDerived = std::is_convertible_v<U, T> || std::is_base_of_v<T, U>;
+            template <typename Base, typename Derived>
+            concept ConvertibleDerived = (
+                std::is_convertible_v<Derived, Base> || 
+                std::is_base_of_v<Base, Derived>
+            );
 
             template < typename T, template <typename> typename Allocator >
             class storage
@@ -506,8 +509,11 @@ namespace hsd
     {
         namespace shared_detail
         {
-            template <typename T, typename U>
-            concept ConvertibleDerived = std::is_convertible_v<U, T> || std::is_base_of_v<T, U>;
+            template <typename Base, typename Derived>
+            concept ConvertibleDerived = (
+                std::is_convertible_v<Derived, Base> || 
+                std::is_base_of_v<Base, Derived>
+            );
 
             template < typename T, template <typename> typename Allocator >
             class storage

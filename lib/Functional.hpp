@@ -119,6 +119,11 @@ namespace hsd
             return *this;
         }
 
+        inline explicit operator bool() const
+        {
+            return _func_impl.get() != nullptr;
+        }
+
         inline auto operator()(Args... args) 
             -> Result<
                 func_detail::store_ref_t<ResultType>, 
@@ -166,7 +171,7 @@ namespace hsd
         }
     };
 
-    namespace helper
+    namespace functional_helper
     {
         template <typename>
         struct as_function {};
@@ -194,7 +199,7 @@ namespace hsd
         { 
             using type = Res(Args...);
         };
-    }
+    } // namespace functional_helper
 
     template < typename Res, typename... Args >
     inline function<Res(Args...)>::function(const function& other)
@@ -386,9 +391,11 @@ namespace hsd
         };
     }
 
-    template < typename Rez, typename... Args > 
-    function(Rez(*)(Args...)) -> function<Rez(Args...)>;
+    template < typename Res, typename... Args > 
+    function(Res(*)(Args...)) -> function<Res(Args...)>;
     
     template < typename Func, typename Op = decltype(&Func::operator()) > 
-    function(Func) -> function<typename helper::as_function<Op>::type>;
+    function(Func) -> function<
+        typename functional_helper::as_function<Op>::type
+    >;
 } // namespace hsd

@@ -143,7 +143,7 @@ namespace hsd
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
 
-        Result(const Result& other)
+        inline Result(const Result& other)
             : _initialized{other._initialized}
         {
             if (_initialized)
@@ -156,7 +156,7 @@ namespace hsd
             }
         }
 
-        Result(Result&& other)
+        inline Result(Result&& other)
             : _initialized{other._initialized}
         {
             if(_initialized)
@@ -189,6 +189,16 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
+        }
+
+        inline friend void swap(Result& lhs, Result& rhs)
+        {
+            auto lhs_value = move(lhs);
+            auto rhs_value = move(rhs);
+            lhs.~Result();
+            rhs.~Result();
+            new (&lhs) Result{move(rhs_value)};
+            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr decltype(auto) unwrap(
@@ -431,8 +441,6 @@ namespace hsd
         bool _initialized = false;
 
     public:
-        constexpr Result(const Result&) = delete;
-        constexpr Result(Result&&) = delete;
         constexpr Result& operator=(const Result&) = delete;
         constexpr Result& operator=(Result&&) = delete;
         constexpr void unwrap_or_default() = delete;
@@ -442,10 +450,34 @@ namespace hsd
             : _initialized{true}
         {}
 
+        inline Result(const Result& other)
+            : _initialized{other._initialized}
+        {
+            if (!_initialized)
+            {
+                _err_data = other._err_data;
+            }
+        }
+
+        inline Result(Result&& other)
+            : _initialized{other._initialized}
+        {
+            if (!_initialized)
+            {
+                _err_data = move(other._err_data);
+            }
+        }
+
         template <typename T>
-        requires (std::is_constructible_v<Err, T&&>)
+        requires (Constructible<Err, T&&>)
         constexpr Result(T&& value)
             : _err_data{forward<Err>(value)}, _initialized{false}
+        {}
+
+        template <typename T>
+        requires (Constructible<Err, const T&>)
+        constexpr Result(const T& value)
+            : _err_data{value}, _initialized{false}
         {}
 
         constexpr ~Result()
@@ -464,6 +496,16 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
+        }
+
+        inline friend void swap(Result& lhs, Result& rhs)
+        {
+            auto lhs_value = move(lhs);
+            auto rhs_value = move(rhs);
+            lhs.~Result();
+            rhs.~Result();
+            new (&lhs) Result{move(rhs_value)};
+            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr void unwrap(
@@ -627,7 +669,7 @@ namespace hsd
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
-        Result(const Result& other)
+        inline Result(const Result& other)
             : _initialized{other._initialized}
         {
             if(_initialized)
@@ -636,7 +678,7 @@ namespace hsd
             }
         }
 
-        Result(Result&& other)
+        inline Result(Result&& other)
             : _initialized{other._initialized}
         {
             if(_initialized)
@@ -661,6 +703,16 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
+        }
+
+        inline friend void swap(Result& lhs, Result& rhs)
+        {
+            auto lhs_value = move(lhs);
+            auto rhs_value = move(rhs);
+            lhs.~Result();
+            rhs.~Result();
+            new (&lhs) Result{move(rhs_value)};
+            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr decltype(auto) unwrap(
@@ -786,6 +838,125 @@ namespace hsd
                 }
             }
             else
+            {
+                return func();
+            }
+        }
+
+        constexpr void unwrap_err(
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(),
+            usize line = __builtin_LINE())
+        {
+            if (_initialized)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:\n"
+                    "%s\nInvoked from: %s at line: %zu"
+                    "\nExpected Err, got Ok instead\n",
+                    file_name, func, line
+                );
+                abort();
+            }
+        }
+
+        constexpr void expect_err(
+            const char* message = "Object was initialized",
+            const char* func = __builtin_FUNCTION(), 
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if (_initialized)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
+                abort();
+            }
+        }
+    };
+
+    template <>
+    class [[nodiscard("Result type should not be discarded")]] Result<void, void>
+    {
+    private:
+        bool _initialized = false;
+        
+    public:
+        constexpr Result& operator=(const Result&) = delete;
+        constexpr Result& operator=(Result&&) = delete;
+
+        constexpr Result()
+            : _initialized{true}
+        {}
+
+        constexpr Result(err_value)
+            : _initialized{false}
+        {}
+
+        inline Result(const Result& other)
+            : _initialized{other._initialized}
+        {}
+
+        inline Result(Result&& other)
+            : _initialized{other._initialized}
+        {}
+
+        constexpr bool is_ok() const
+        {
+            return _initialized;
+        }
+
+        explicit constexpr operator bool() const
+        {
+            return _initialized;
+        }
+
+        inline friend void swap(Result&, Result&) {}
+
+        constexpr void unwrap(
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if (_initialized == false)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\n", file_name, func, line
+                );
+
+                abort();
+            }
+        }
+
+        constexpr void expect(
+            const char* message = "Object was not initialized",
+            const char* func = __builtin_FUNCTION(),
+            const char* file_name = __builtin_FILE(), 
+            usize line = __builtin_LINE())
+        {
+            if (_initialized == false)
+            {
+                hsd_fprint_check(
+                    stderr, "Got an error in file:"
+                    "\n%s\nInvoked from: %s at line:"
+                    " %zu\nWith the message: %s\n",
+                    file_name, func, line, message
+                );
+                abort();
+            }
+        }
+
+        template <typename Func>
+        requires (InvocableRet<void, Func>)
+        constexpr void unwrap_or_else(Func&& func)
+        {
+            if (_initialized == false)
             {
                 return func();
             }

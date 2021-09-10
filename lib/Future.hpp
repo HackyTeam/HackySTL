@@ -213,6 +213,7 @@ namespace hsd
         
         inline void _set(Result<T, Err>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();
@@ -290,6 +291,7 @@ namespace hsd
         
         inline void _set(Result<reference<T>, Err>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();
@@ -361,6 +363,7 @@ namespace hsd
         
         inline void _set(Result<void, Err>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();
@@ -435,6 +438,7 @@ namespace hsd
         
         inline void _set(optional<T>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();
@@ -498,6 +502,7 @@ namespace hsd
         
         inline void _set(optional<reference<T>>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();
@@ -556,6 +561,7 @@ namespace hsd
         
         inline void _set(optional<void>&& result)
         {
+            hsd::unique_lock<hsd::mutex> _lock{_promise_ptr->_mutex};
             swap(_promise_ptr->_result, result);
             _promise_ptr->_is_set = true;
             _promise_ptr->_cond_var.notify_all();

@@ -395,11 +395,11 @@ namespace hsd
         }
     };
 
-    template< typename Key, typename T, usize N >
+    template < typename Key, typename T, usize N >
     unordered_map(pair<Key, T> (&&other)[N]) 
         -> unordered_map<Key, T, hash<usize, Key>>;
 
-    template< typename Key, typename T >
+    template < typename Key, typename T >
     using buffered_umap = unordered_map<
         Key, T, hash<usize, Key>, buffered_allocator
     >;

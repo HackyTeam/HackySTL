@@ -7,7 +7,7 @@
             "args": [
                 "-g",
                 "-std=c++20",
-                "-fsanitize=address",
+                "-fsanitize=thread",
                 "-Wall",
                 "-Wextra",
                 "-Wempty-body",

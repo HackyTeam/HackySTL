@@ -139,7 +139,7 @@ namespace hsd
         promise_data_ptr_t _promise_ptr{};
         
         bool _is_valid = false;
-        friend class promise<T, Err>;
+        friend class promise<T&, Err>;
 
         inline future(promise_data_ptr_t& promise_ptr)
             : _promise_ptr{promise_ptr}, _is_valid{true}
@@ -667,7 +667,8 @@ namespace hsd
     class packaged_task<Result<Res, Err>(Args...)>
     {
     private:
-        function<Result<Res, Err>(Args...)> _func;
+        using ResType = Result<Res, Err>;
+        function<ResType(Args...)> _func;
         promise<Res, Err> _promise;
 
     public:
@@ -701,7 +702,7 @@ namespace hsd
 
         inline void operator()(Args... args)
         {
-            Result<Res, Err> _result = _func(forward<Args>(args)...).unwrap();
+            ResType _result = _func(forward<Args>(args)...).unwrap();
             
             if (_result.is_ok())
             {
@@ -739,7 +740,8 @@ namespace hsd
     class packaged_task<Result<reference<Res>, Err>(Args...)>
     {
     private:
-        function<Res(Args...)> _func;
+        using ResType = Result<reference<Res>, Err>;
+        function<ResType(Args...)> _func;
         promise<Res&, Err> _promise;
 
     public:
@@ -767,14 +769,14 @@ namespace hsd
             swap(lhs._promise, rhs._promise);
         }
 
-        inline future<reference<Res>, Err> get_future()
+        inline future<Res&, Err> get_future()
         {
             return _promise.get_future();
         }
 
         inline void operator()(Args... args)
         {
-            Result<reference<Res>, Err> _result = _func(forward<Args>(args)...).unwrap();
+            ResType _result = _func(forward<Args>(args)...).unwrap();
             
             if (_result.is_ok())
             {
@@ -782,7 +784,15 @@ namespace hsd
             }
             else
             {
-                _promise.set_error();
+                if constexpr (IsSame<Err, void>)
+                {
+                    _result.unwrap_err();
+                    _promise.set_error();
+                }
+                else
+                {
+                    _promise.set_error(_result.unwrap_err());
+                }
             }
         }
 

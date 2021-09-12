@@ -26,6 +26,36 @@ hsd::Result<hsd::i32, hsd::runtime_error> future_test(hsd::i32 i)
     return i;
 }
 
+auto future_test(hsd::f32 f)
+{
+    struct future_test_result;
+
+    using RefType = hsd::reference<future_test_result>;
+    using RetType = hsd::Result<RefType, hsd::runtime_error>;
+
+    struct future_test_result
+    {
+        hsd::i32 i;
+        hsd::f32 f;
+    };
+    
+    static auto res = future_test_result {
+        .i = static_cast<hsd::i32>(f),
+        .f = f - static_cast<hsd::i32>(f)
+    };
+
+    if (f < 0.f)
+    {
+        return RetType {
+            hsd::runtime_error {
+                "Error from future_test(hsd::f32 f)"
+            }
+        };
+    }
+
+    return RetType{RefType{res}};
+}
+
 int main()
 {
     {
@@ -94,6 +124,31 @@ int main()
             "Results are: '{}' '{}'", 
             f1.get().is_ok() ? f1.get().unwrap() : -1,
             f2.get().is_ok() ? f2.get().unwrap() : -1
+        );
+
+        t.join().unwrap();
+        t2.join().unwrap();
+    }
+
+    {
+        auto (*f)(hsd::f32) = future_test;
+        // future that will not error
+        hsd::packaged_task task(f);
+        hsd::future f1 = task.get_future();
+        hsd::thread t(hsd::move(task), 1.223f);
+
+        // future that will error
+        hsd::packaged_task task2(f);
+        hsd::future f2 = task2.get_future();
+        hsd::thread t2(hsd::move(task2), -3.57f);
+
+        hsd_println("Waiting erroring retruning calls");
+        f1.wait();
+        f2.wait();
+        hsd_println(
+            "Results are: '{}' '{}'", 
+            f1.get().is_ok() ? f1.get().unwrap().f : -1.f,
+            f2.get().is_ok() ? f2.get().unwrap().f : -1.f
         );
 
         t.join().unwrap();

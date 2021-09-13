@@ -98,14 +98,14 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     if (type == hsd::JsonValueType::Array)
     {
         auto& vec = v.as<hsd::JsonArray>().values();
-        hsd::usize idx = 0;
 
-        for (auto it = vec.begin(), end = vec.end(); it != end; ++it, ++idx)
+        for (hsd::usize idx = 0; auto& it : vec)
         {
             auto s = hsd::to_wstring(idx);
             path.push_back(static_cast<hsd::wstring_view>(s));
-            print_value(path, *(*it));
+            print_value(path, *it);
             path.pop_back();
+            idx++;
         }
     }
     else if (type == hsd::JsonValueType::Object)

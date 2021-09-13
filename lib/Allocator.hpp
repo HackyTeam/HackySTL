@@ -157,10 +157,24 @@ namespace hsd
         // thanks qookie
         struct block 
         {
-            usize in_use : 1;
-            usize size : 8 * sizeof(usize) - 1;
+            u64 in_use : 1;
+            u64 size : 8 * sizeof(usize) - 1;
         };
 
+        auto* _get_next(block* ptr, usize sz)
+        {
+            return reinterpret_cast<block*>(
+                reinterpret_cast<uchar*>(ptr) + sz + sizeof(block)
+            );
+        }
+
+        auto* _get_data(block* ptr)
+        {
+            return reinterpret_cast<T*>(
+                reinterpret_cast<uchar*>(ptr) + sizeof(block)
+            );
+        }
+        
     public:
         using pointer_type = T*;
         using value_type = T;
@@ -178,7 +192,7 @@ namespace hsd
             }
             else
             {
-                block* _block = bit_cast<block*>(_buf);
+                block* _block = reinterpret_cast<block*>(_buf);
 
                 if (_block->in_use == 0 && _block->size == 0)
                 {
@@ -217,7 +231,7 @@ namespace hsd
         {
             size *= sizeof(T);
             usize _free_size = 0;
-            auto* _block_ptr = bit_cast<block*>(_buf);
+            auto* _block_ptr = reinterpret_cast<block*>(_buf);
             block* _prev_block = nullptr;
 
             if (size > _size)
@@ -229,36 +243,31 @@ namespace hsd
                 };
             }
 
-            while (bit_cast<uchar*>(_block_ptr) < _buf + _size)
+            while (reinterpret_cast<uchar*>(_block_ptr) < _buf + _size)
             {
                 if (_block_ptr->in_use == 0)
                 {
-                    if (_block_ptr->size >= size)
+                    if (_block_ptr->size >= size + sizeof(block))
                     {
                         _block_ptr->in_use = 1;
 
                         if (_block_ptr->size > size)
                         {
-                            auto* _next_block = bit_cast<block*>(
-                                bit_cast<uchar*>(_block_ptr) + 
-                                size + sizeof(block)
-                            );
-
+                            auto* _next_block = _get_next(_block_ptr, size);
                             _next_block->in_use = 0;
 
                             _next_block->size = {
-                                _block_ptr->size - 
-                                size - sizeof(block)
+                                _block_ptr->size - size - sizeof(block)
                             };
 
                             _block_ptr->size = size;
                         }
 
-                        return {
-                            bit_cast<T*>(
-                                bit_cast<uchar*>(_block_ptr) + sizeof(block)
-                            ), ok_value{}
-                        };
+                        return {_get_data(_block_ptr), ok_value{}};
+                    }
+                    else if (_block_ptr->size >= size)
+                    {
+                        _block_ptr->in_use = 1;
                     }
                     else
                     {
@@ -273,9 +282,8 @@ namespace hsd
                             _free_size += sizeof(block);
                         }
 
-                        _block_ptr = bit_cast<block*>(
-                            bit_cast<uchar*>(_block_ptr) +
-                            _block_ptr->size + sizeof(block)
+                        _block_ptr = _get_next(
+                            _block_ptr, _block_ptr->size
                         );
                     }
                 }
@@ -286,12 +294,9 @@ namespace hsd
                         _prev_block->in_use = 1;
                         _prev_block->size = size;
 
-                        if (_free_size > size)
+                        if (_free_size > size + sizeof(block))
                         {
-                            auto* _next_block = bit_cast<block*>(
-                                bit_cast<uchar*>(_prev_block) +
-                                size + sizeof(block)
-                            );
+                            auto* _next_block = _get_next(_prev_block, size);
 
                             _next_block->in_use = 0;
                             _next_block->size = {
@@ -299,28 +304,22 @@ namespace hsd
                             };
                         }
 
-                        return {
-                            bit_cast<T*>(
-                                bit_cast<uchar*>(_prev_block) + sizeof(block)
-                            ), ok_value{}
-                        };
+                        return {_get_data(_prev_block), ok_value{}};
                     }
                     else
                     {
                         _free_size = 0;
                         _prev_block = nullptr;
 
-                        _block_ptr = bit_cast<block*>(
-                            bit_cast<uchar*>(_block_ptr) +
-                            _block_ptr->size + sizeof(block)
+                        _block_ptr = _get_next(
+                            _block_ptr, _block_ptr->size
                         );
                     }
                 }
                 else
                 {
-                    _block_ptr = bit_cast<block*>(
-                        bit_cast<uchar*>(_block_ptr) +
-                        _block_ptr->size + sizeof(block)
+                    _block_ptr = _get_next(
+                        _block_ptr, _block_ptr->size
                     );
                 }
             }
@@ -337,10 +336,12 @@ namespace hsd
         {
             if (ptr != nullptr)
             {
-                if (bit_cast<uchar*>(ptr) >= _buf && bit_cast<uchar*>(ptr) < _buf + _size)
+                if (
+                    reinterpret_cast<uchar*>(ptr) >= _buf && 
+                    reinterpret_cast<uchar*>(ptr) < _buf + _size)
                 {
-                    auto* _block_ptr = bit_cast<block*>(
-                        bit_cast<uchar*>(ptr) - sizeof(block)
+                    auto* _block_ptr = reinterpret_cast<block*>(
+                        reinterpret_cast<uchar*>(ptr) - sizeof(block)
                     );
                     
                     _block_ptr->in_use = 0;

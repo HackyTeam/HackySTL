@@ -78,7 +78,7 @@ namespace hsd
             if (str.size() != 0)
                 return str.c_str();
 
-            return (str = _err + to_string(position)).c_str();
+            return (str = _err + (" " + to_string(position))).c_str();
         }
     };
 
@@ -166,7 +166,7 @@ namespace hsd
                             {
                                 current_token = JsonToken::Number;
                                 if (ch != static_cast<CharT>('+') and ch != static_cast<CharT>('-'))
-                                    token_str.push_back('+'); // Explicit sign for parse_i
+                                    token_str.push_back('+'); // Explicit sign for parse<i32>
                                 token_str.push_back(ch);
                                 ++token_position;
                             }

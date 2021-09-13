@@ -157,9 +157,8 @@ namespace hsd
         // thanks qookie
         struct block 
         {
-            bool in_use{};
-            u32 size{};
-            uchar data[];
+            usize in_use : 1;
+            usize size : 4 * sizeof(usize) - 1;
         };
 
     public:
@@ -168,7 +167,25 @@ namespace hsd
 
         inline buffered_allocator(uchar* buf, usize size)
             : _buf{buf}, _size{size}
-        {}
+        {
+            if (_buf == nullptr)
+            {
+                hsd_panic("Buffer is nullptr");
+            }
+            else if (_size <= sizeof(block))
+            {
+                hsd_panic("Buffer is too small to contain data");
+            }
+            else
+            {
+                block* _block = bit_cast<block*>(_buf);
+
+                if (_block->in_use == 0 && _block->size == 0)
+                {
+                    _block->size = _size - sizeof(block);
+                }
+            }
+        }
 
         template <typename U>
         inline buffered_allocator(const buffered_allocator<U>& other)
@@ -198,62 +215,121 @@ namespace hsd
         [[nodiscard]] inline auto allocate(usize size)
             -> Result< T*, allocator_detail::allocator_error >
         {
+            size *= sizeof(T);
+            usize _free_size = 0;
             auto* _block_ptr = bit_cast<block*>(_buf);
-            auto* _block_end = bit_cast<block*>(
-                _buf + _size - 
-                _block_ptr->size - 
-                sizeof(block)
-            );
+            block* _prev_block = nullptr;
 
-            auto* _block_back = bit_cast<block*>(_buf);
-            usize _free_size = 0u;
-            
-            while (_block_ptr < _block_end) 
+            if (size > _size)
             {
-                if (!_block_ptr->in_use)
+                return {
+                    allocator_detail::allocator_error{
+                        "No space left in buffer"
+                    }, err_value{}
+                };
+            }
+
+            while (bit_cast<uchar*>(_block_ptr) < _buf + _size)
+            {
+                if (_block_ptr->in_use == 0)
                 {
-                    if (_block_ptr->size == 0) 
+                    if (_block_ptr->size >= size)
                     {
-                        _block_ptr->size = size * sizeof(T);
-                        _block_ptr->in_use = true;
-                        return bit_cast<T*>(_block_ptr->data);
-                    }
-                    else if (_block_ptr->size >= size * sizeof(T))
-                    {
-                        _block_ptr->in_use = true;
-                        return bit_cast<T*>(_block_ptr->data);
+                        _block_ptr->in_use = 1;
+
+                        if (_block_ptr->size > size)
+                        {
+                            auto* _next_block = bit_cast<block*>(
+                                bit_cast<uchar*>(_block_ptr) + 
+                                size + sizeof(block)
+                            );
+
+                            _next_block->in_use = 0;
+
+                            _next_block->size = {
+                                _block_ptr->size - 
+                                size - sizeof(block)
+                            };
+
+                            _block_ptr->size = size;
+                        }
+
+                        return {
+                            bit_cast<T*>(
+                                bit_cast<uchar*>(_block_ptr) + sizeof(block)
+                            ), ok_value{}
+                        };
                     }
                     else
                     {
-                        if (_block_back->in_use == true)
-                            _block_back = _block_ptr;
-
-                        _free_size = static_cast<usize>(_block_ptr - _block_back) + _block_ptr->size;
-
-                        if (_free_size >= size * sizeof(T))
+                        if (_prev_block == nullptr)
                         {
-                            _block_back->size = _free_size;
-                            _block_back->in_use = true;
-                            return bit_cast<T*>(_block_back->data);
+                            _prev_block = _block_ptr;
+                            _free_size += _block_ptr->size;
                         }
+                        else
+                        {
+                            _free_size += _block_ptr->size;
+                            _free_size += sizeof(block);
+                        }
+
+                        _block_ptr = bit_cast<block*>(
+                            bit_cast<uchar*>(_block_ptr) +
+                            _block_ptr->size + sizeof(block)
+                        );
+                    }
+                }
+                else if (_prev_block != nullptr)
+                {
+                    if (_free_size >= size)
+                    {
+                        _prev_block->in_use = 1;
+                        _prev_block->size = size;
+
+                        if (_free_size > size)
+                        {
+                            auto* _next_block = bit_cast<block*>(
+                                bit_cast<uchar*>(_prev_block) +
+                                size + sizeof(block)
+                            );
+
+                            _next_block->in_use = 0;
+                            _next_block->size = {
+                                _free_size - size - sizeof(block)
+                            };
+                        }
+
+                        return {
+                            bit_cast<T*>(
+                                bit_cast<uchar*>(_prev_block) + sizeof(block)
+                            ), ok_value{}
+                        };
+                    }
+                    else
+                    {
+                        _free_size = 0;
+                        _prev_block = nullptr;
+
+                        _block_ptr = bit_cast<block*>(
+                            bit_cast<uchar*>(_block_ptr) +
+                            _block_ptr->size + sizeof(block)
+                        );
                     }
                 }
                 else
                 {
-                    _free_size = 0u;
-                    _block_back = bit_cast<block*>(
-                        bit_cast<uchar*>(_block_ptr) + 
+                    _block_ptr = bit_cast<block*>(
+                        bit_cast<uchar*>(_block_ptr) +
                         _block_ptr->size + sizeof(block)
                     );
                 }
-                
-                _block_ptr = bit_cast<block*>(
-                    bit_cast<uchar*>(_block_ptr) + 
-                    _block_ptr->size + sizeof(block)
-                );
             }
 
-            return allocator_detail::allocator_error{"Insufficient memory"};
+            return {
+                allocator_detail::allocator_error{
+                    "Insufficient memory"
+                }, err_value{}
+            };
         }
 
         inline auto deallocate(T* ptr, usize)
@@ -266,8 +342,8 @@ namespace hsd
                     auto* _block_ptr = bit_cast<block*>(
                         bit_cast<uchar*>(ptr) - sizeof(block)
                     );
-
-                    _block_ptr->in_use = false;
+                    
+                    _block_ptr->in_use = 0;
                 }
                 else
                 {

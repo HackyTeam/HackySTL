@@ -60,14 +60,16 @@ int main()
 {
     {
         // future from a packaged_task
-        hsd::packaged_task task([]{ return 7; }); // wrap the function
+        hsd::packaged_task task = {[]{ return 7; }}; // wrap the function
         hsd::future f1 = task.get_future();  // get a future
-        hsd::thread t(hsd::move(task)); // launch on a thread
+        hsd::thread t = {hsd::move(task)}; // launch on a thread
 
         // future from a promise
         hsd::promise<hsd::i32, void> p;
         hsd::future f2 = p.get_future();
-        hsd::thread( [&p]{ p.set_value(9); }).detach().unwrap();
+        hsd::thread{
+            [&p]{ p.set_value(9); }
+        }.detach().unwrap();
 
         hsd_println("Waiting non-erroring void calls");
         f1.wait();
@@ -83,14 +85,14 @@ int main()
     {
         auto (*f)(bool) = future_test;
         // future that will not error
-        hsd::packaged_task task(f);
+        hsd::packaged_task task = {f};
         hsd::future f1 = task.get_future();
-        hsd::thread t(hsd::move(task), false);
+        hsd::thread t = {hsd::move(task), false};
 
         // future that will error
-        hsd::packaged_task task2(f);
+        hsd::packaged_task task2 = {f};
         hsd::future f2 = task2.get_future();
-        hsd::thread t2(hsd::move(task2), true);
+        hsd::thread t2 = {hsd::move(task2), true};
 
         hsd_println("Waiting erroring void calls");
         f1.wait();
@@ -108,14 +110,14 @@ int main()
     {
         auto (*f)(hsd::i32) = future_test;
         // future that will not error
-        hsd::packaged_task task(f);
+        hsd::packaged_task task = {f};
         hsd::future f1 = task.get_future();
-        hsd::thread t(hsd::move(task), 1223);
+        hsd::thread t = {hsd::move(task), 1223};
 
         // future that will error
-        hsd::packaged_task task2(f);
+        hsd::packaged_task task2 = {f};
         hsd::future f2 = task2.get_future();
-        hsd::thread t2(hsd::move(task2), -357);
+        hsd::thread t2 = {hsd::move(task2), -357};
 
         hsd_println("Waiting erroring retruning calls");
         f1.wait();
@@ -133,14 +135,14 @@ int main()
     {
         auto (*f)(hsd::f32) = future_test;
         // future that will not error
-        hsd::packaged_task task(f);
+        hsd::packaged_task task = {f};
         hsd::future f1 = task.get_future();
-        hsd::thread t(hsd::move(task), 1.223f);
+        hsd::thread t = {hsd::move(task), 1.223f};
 
         // future that will error
-        hsd::packaged_task task2(f);
+        hsd::packaged_task task2 = {f};
         hsd::future f2 = task2.get_future();
-        hsd::thread t2(hsd::move(task2), -3.57f);
+        hsd::thread t2 = {hsd::move(task2), -3.57f};
 
         hsd_println("Waiting erroring retruning calls");
         f1.wait();

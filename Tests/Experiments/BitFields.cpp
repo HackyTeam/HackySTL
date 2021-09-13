@@ -3,7 +3,7 @@
 struct block 
 {
     hsd::u64 in_use : 1;
-    hsd::usize size : 4 * sizeof(hsd::usize) - 1;
+    hsd::usize size : 8 * sizeof(hsd::usize) - 1;
 };
 
 int main()

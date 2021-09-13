@@ -158,7 +158,7 @@ namespace hsd
         struct block 
         {
             usize in_use : 1;
-            usize size : 4 * sizeof(usize) - 1;
+            usize size : 8 * sizeof(usize) - 1;
         };
 
     public:

@@ -9,13 +9,28 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#if defined(HSD_PLATFORM_WINDOWS)
+#define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR_STR "\\"
+#define ROOT_PATH "C:\\"
+#define ROOT_PATH_LEN 3u
+#define PATH_SEPARATOR_STR_LEN 1u
+#else
+#define PATH_SEPARATOR '/'
+#define PATH_SEPARATOR_STR "/"
+#define ROOT_PATH "/"
+#define ROOT_PATH_LEN 1u
+#define PATH_SEPARATOR_STR_LEN 1u
+#endif
+
+#define CONCAT_PATH(path, file)\
+    path PATH_SEPARATOR_STR file
 namespace hsd
 {
     namespace filesystem
     {
         namespace fs_detail
         {
-            #if defined(HSD_PLATFORM_POSIX)
             inline auto copy_file(const char* from, const char* to)
                 -> Result<void, runtime_error>
             {
@@ -43,46 +58,13 @@ namespace hsd
                 fclose(_from_file);
                 return {};
             }
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline auto copy_file(const wchar* from, const wchar* to)
-                -> Result<void, runtime_error>
-            {
-                i32 _value;
-                using file_type = FILE*;
-                file_type _from_file = _wfopen(from, L"r");
-                file_type _to_file = _wfopen(to, L"w");
-                
-                if (_from_file == nullptr || _to_file == nullptr)
-                {
-                    return runtime_error{"File not found"};
-                }
-
-                for (_value = fgetc(_from_file); _value != EOF; _value = fgetc(_from_file)) 
-                {
-                    if (fputc(_value, _to_file) == EOF)
-                    {
-                        fclose(_to_file);
-                        fclose(_from_file);
-                        return runtime_error{"Couldn't write into the file"};
-                    }
-                }
-
-                fclose(_to_file);
-                fclose(_from_file);
-                return {};
-            }
-            #endif
         } // namespace fs_detail
         
 
         class path
         {
         private:
-            #if defined(HSD_PLATFORM_POSIX)
             DIR* _directory = nullptr;
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            _WDIR* _directory = nullptr;
-            #endif
             fs_detail::Location _location;
 
             static constexpr auto _default_perms = 
@@ -92,87 +74,46 @@ namespace hsd
             {
                 if (_directory != nullptr)
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     closedir(_directory);
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    _wclosedir(_directory);
-                    #endif
                 }
             }
 
             void _reconstruct()
             {
                 _destroy();
-                
-                #if defined(HSD_PLATFORM_POSIX)
                 _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
             }
 
         public:
             inline path()
-                #if defined(HSD_PLATFORM_POSIX)
                 : path{string(".", 1)}
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                : path{wstring(L".", 1)}
-                #endif
             {
                 // Opens the directory at the
                 // location of the executable
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path(const char* raw_path)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path(const wchar* raw_path)
-            #endif
                 : _location{raw_path}
             {
-                #if defined(HSD_PLATFORM_POSIX)
                 _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path(const string& raw_path)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path(const wstring& raw_path)
-            #endif
                 : _location{raw_path}
             {
-                #if defined(HSD_PLATFORM_POSIX)
                 _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path(string&& raw_path)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path(wstring&& raw_path)
-            #endif
                 : _location{move(raw_path)}
             {
-                #if defined(HSD_PLATFORM_POSIX)
                 _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
             }
 
             inline path(const path& other)
                 : _location{other._location}
             {
-                #if defined(HSD_PLATFORM_POSIX)
                 _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
             }
 
             inline path(path&& other)
@@ -189,14 +130,7 @@ namespace hsd
             path& operator=(const path& rhs)
             {
                 _location = rhs._location;
-                _destroy();
-                
-                #if defined(HSD_PLATFORM_POSIX)
-                _directory = opendir(absolute_name().c_str());
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _directory = _wopendir(absolute_name().c_str());
-                #endif
-                
+                _reconstruct();
                 return *this;
             }
 
@@ -239,11 +173,9 @@ namespace hsd
 
             static inline path root()
             {
-                #if defined(HSD_PLATFORM_POSIX)
-                return path{string("/", 1)};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                return path{wstring(L"C:\\", 3)};
-                #endif
+                return path{string(
+                    ROOT_PATH, ROOT_PATH_LEN
+                )};
             }
 
             inline path parent()
@@ -251,11 +183,9 @@ namespace hsd
                 if (*this == root())
                     return root();
 
-                #if defined(HSD_PLATFORM_POSIX)
-                return path{(relative_name() + "/..")};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                return path{(relative_name() + L"\\..")};
-                #endif
+                return path{(
+                    relative_name() + CONCAT_PATH("", "..")
+                )};
             }
 
             inline auto list()
@@ -264,45 +194,23 @@ namespace hsd
                 if (_directory != nullptr)
                 {
                     hsd::vector<path> _paths;
-                    
-                    #if defined(HSD_PLATFORM_POSIX)
                     dirent* _dir_entry = nullptr;
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    _wdirent* _dir_entry = nullptr;
-                    #endif
 
-                    #if defined(HSD_PLATFORM_POSIX)
                     while ((_dir_entry = readdir(_directory)))
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    while ((_dir_entry = _wreaddir(_directory)))
-                    #endif
                     {
-                        #if defined(HSD_PLATFORM_POSIX)
                         if (cstring::compare(_dir_entry->d_name, ".") != 0 && 
                             cstring::compare(_dir_entry->d_name, "..") != 0)
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        if (wcstring::compare(_dir_entry->d_name, L".") != 0 && 
-                            wcstring::compare(_dir_entry->d_name, L"..") != 0)
-                        #endif
                         {
-                            #if defined(HSD_PLATFORM_POSIX)
-                            if (*(relative_name().end() - 1) == '/')
-                            #elif defined(HSD_PLATFORM_WINDOWS)
-                            if (*(relative_name().end() - 1) == L'\\')
-                            #endif
+                            if (*(relative_name().end() - 1) == PATH_SEPARATOR)
                             {
                                 _paths.emplace_back(relative_name() + 
                                     _dir_entry->d_name);
                             }
                             else
                             {
-                                #if defined(HSD_PLATFORM_POSIX)
-                                _paths.emplace_back(relative_name() + 
-                                    "/" + _dir_entry->d_name);
-                                #elif defined(HSD_PLATFORM_WINDOWS)
-                                _paths.emplace_back(relative_name() + 
-                                    L"\\" + _dir_entry->d_name);
-                                #endif
+                                _paths.emplace_back(
+                                    relative_name() + PATH_SEPARATOR_STR + _dir_entry->d_name
+                                );
                             }
                         }
                     }
@@ -314,20 +222,12 @@ namespace hsd
                 return runtime_error{"No such directory"};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline const string& relative_name() const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline const wstring& relative_name() const
-            #endif
             {
                 return _location._relative;
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline const string& absolute_name() const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline const wstring& absolute_name() const
-            #endif
             {
                 return _location._absolute;
             }
@@ -341,11 +241,7 @@ namespace hsd
                 }
                 else
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
-                    int _res = chmod(absolute_name().c_str(), static_cast<u32>(mask));
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    int _res = _wchmod(absolute_name().c_str(), static_cast<u32>(mask));
-                    #endif
+                    i32 _res = chmod(absolute_name().c_str(), static_cast<u32>(mask));
 
                     if (_res == -1)
                     {
@@ -358,11 +254,7 @@ namespace hsd
                 return {};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline auto rename(const string& new_name)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline auto rename(const wstring& new_name)
-            #endif
                 -> Result<void, runtime_error> 
             {
                 if (!status().exists())
@@ -371,34 +263,21 @@ namespace hsd
                 }
                 else
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
-                    usize _slash_pos = relative_name().rfind('/');
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    usize _slash_pos = relative_name().rfind(L'\\');
-                    #endif
+                    usize _slash_pos = relative_name().rfind(
+                        PATH_SEPARATOR_STR
+                    );
 
                     int _res = 0;
 
-                    #if defined(HSD_PLATFORM_POSIX)
                     if (_slash_pos == string::npos)
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    if (_slash_pos == wstring::npos)
-                    #endif
                     {
                         path _new_path;
                         _new_path /= new_name;
 
-                        #if defined(HSD_PLATFORM_POSIX)
                         _res = ::rename(
                             absolute_name().c_str(), 
                             _new_path.absolute_name().c_str()
                         );
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        _res = ::_wrename(
-                            absolute_name().c_str(), 
-                            _new_path.absolute_name().c_str()
-                        );
-                        #endif
 
                         if (_res == -1)
                             return runtime_error{strerror(errno)};
@@ -408,40 +287,23 @@ namespace hsd
                     }
                     else
                     {
-                        #if defined(HSD_PLATFORM_POSIX)
                         path _new_path{string(relative_name().c_str(), _slash_pos)};
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        path _new_path{wstring(relative_name().c_str(), _slash_pos)};
-                        #endif
                         
                         _new_path /= new_name;
 
-                        #if defined(HSD_PLATFORM_POSIX)
                         _res = ::rename(
                             absolute_name().c_str(), 
                             _new_path.absolute_name().c_str()
                         );
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        _res = ::_wrename(
-                            absolute_name().c_str(), 
-                            _new_path.absolute_name().c_str()
-                        );
-                        #endif
 
                         if (_res == -1)
                             return runtime_error{strerror(errno)};
 
                         _new_path._destroy();
                         
-                        #if defined(HSD_PLATFORM_POSIX)
                         _new_path._directory = opendir(
                             relative_name().c_str()
                         );
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        _new_path._directory = _wopendir(
-                            relative_name().c_str()
-                        );
-                        #endif
 
                         swap(*this, _new_path);
                     }
@@ -454,13 +316,8 @@ namespace hsd
             {
                 if (status().is_regular_file().unwrap())
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     usize _point_pos = relative_name().rfind('.');
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    usize _point_pos = relative_name().rfind(L'.');
-                    #endif
 
-                    #if defined(HSD_PLATFORM_POSIX)
                     if (_point_pos != string::npos)
                     {
                         const char* _str_data = relative_name().c_str();
@@ -472,27 +329,10 @@ namespace hsd
                     }
 
                     return string{};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    if (_point_pos != wstring::npos)
-                    {
-                        const wchar* _str_data = relative_name().c_str();
-                        usize _str_size = relative_name().size();
-                        return wstring (
-                            _str_data + _point_pos, 
-                            _str_size - _point_pos
-                        );
-                    }
-
-                    return wstring{};
-                    #endif
                 }
                 
                 // will return an empty string instead
-                #if defined(HSD_PLATFORM_POSIX)
                 return string{};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                return wstring{};
-                #endif
             }
 
             inline auto copy(const path& to)
@@ -503,40 +343,29 @@ namespace hsd
                 {
                     for (auto& _item : list().unwrap())
                     {
-                        #if defined(HSD_PLATFORM_POSIX)
                         const char* _item_name =
                             _item.absolute_name().c_str() +
                             _item.absolute_name().rfind('/');
-                        #elif defined(HSD_PLATFORM_WINDOWS)
-                        const wchar* _item_name =
-                            _item.absolute_name().c_str() +
-                            _item.absolute_name().rfind(L'\\');
-                        #endif
 
                         path _new_to = to + _item_name;
 
                         if(_item.status().is_directory().unwrap())
                         {
-                            #if defined(HSD_PLATFORM_POSIX)
+                            #if defined(HSD_PLATFORM_WINDOWS)
+                            mkdir(
+                                _new_to.absolute_name().c_str()
+                            );
+                            #else
                             mkdir(
                                 _new_to.absolute_name().c_str(), 
                                 static_cast<u32>(_default_perms)
-                            );
-                            #elif defined(HSD_PLATFORM_WINDOWS)
-                            _wmkdir(
-                                _new_to.absolute_name().c_str()
                             );
                             #endif
                         }
                         else
                         {
-                            #if defined(HSD_PLATFORM_POSIX)
                             auto* _dummy_file = 
                                 fopen(_new_to.absolute_name().c_str(), "w+");
-                            #elif defined(HSD_PLATFORM_WINDOWS)
-                            auto* _dummy_file = 
-                                _wfopen(_new_to.absolute_name().c_str(), L"w+");
-                            #endif
 
                             fclose(_dummy_file);
                         }
@@ -555,15 +384,9 @@ namespace hsd
                 else if (status().is_regular_file().unwrap() &&
                     to.status().is_directory().unwrap())
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     const char* _item_name =
                         absolute_name().c_str() +
-                        absolute_name().rfind('/');
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    const wchar* _item_name =
-                        absolute_name().c_str() +
-                        absolute_name().rfind(L'\\');
-                    #endif
+                        absolute_name().rfind(PATH_SEPARATOR);
 
                     path _new_to = to + _item_name;
                     return fs_detail::copy_file(
@@ -586,48 +409,36 @@ namespace hsd
                 return {};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline auto create_directory(const string& name) const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline auto create_directory(const wstring& name) const
-            #endif
                 -> Result<void, runtime_error>
             {
-                if (name.rfind('/') < name.size() - 1)
+                if (name.rfind(PATH_SEPARATOR) < name.size() - 1)
                 {
                     return runtime_error{
                         "Cannot create multiple directories"
                     };
                 }
 
-                #if defined(HSD_PLATFORM_POSIX)
+                #if defined(HSD_PLATFORM_WINDOWS)
                 mkdir(
-                    (absolute_name() + "/" + name).c_str(), 
-                    static_cast<u32>(_default_perms)
+                    (absolute_name() + PATH_SEPARATOR_STR + name).c_str()
                 );
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _wmkdir(
-                    (absolute_name() + L"\\" + name).c_str()
+                #else
+                mkdir(
+                    (absolute_name() + PATH_SEPARATOR_STR + name).c_str(), 
+                    static_cast<u32>(_default_perms)
                 );
                 #endif
 
                 return {};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path operator+(const char* rhs) const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path operator+(const wchar* rhs) const
-            #endif
             {
                 return path{relative_name() + rhs};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path operator+(const string& rhs) const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path operator+(const wstring& rhs) const
-            #endif
             {
                 return path{relative_name() + rhs};
             }
@@ -637,21 +448,13 @@ namespace hsd
                 return path{relative_name() + rhs.relative_name()};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path& operator+=(const char* rhs)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path& operator+=(const wchar* rhs)
-            #endif
             {
                 *this = move(*this + rhs);
                 return *this;
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path& operator+=(const string& rhs)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path& operator+=(const wstring& rhs)
-            #endif
             {
                 *this = move(*this + rhs);
                 return *this;
@@ -663,68 +466,37 @@ namespace hsd
                 return *this;
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path operator/(const char* rhs) const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path operator/(const wchar* rhs) const
-            #endif
             {
-                #if defined(HSD_PLATFORM_POSIX)
-                if (rhs[0] != '/')
-                    return path{relative_name() + "/" + rhs};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                if (rhs[0] != L'\\')
-                    return path{relative_name() + L"\\" + rhs};
-                #endif
+                if (rhs[0] != PATH_SEPARATOR)
+                    return path{relative_name() + PATH_SEPARATOR_STR + rhs};
 
                 return path{relative_name() + rhs};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path operator/(const string& rhs) const
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path operator/(const wstring& rhs) const
-            #endif
             {
-                #if defined(HSD_PLATFORM_POSIX)
-                if (rhs[0] != '/')
-                    return path{relative_name() + "/" + rhs};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                if (rhs[0] != L'\\')
-                    return path{relative_name() + L"\\" + rhs};
-                #endif
+                if (rhs[0] != PATH_SEPARATOR)
+                    return path{relative_name() + PATH_SEPARATOR_STR + rhs};
 
                 return path{relative_name() + rhs};
             }
 
             inline path operator/(const path& rhs) const
             {
-                #if defined(HSD_PLATFORM_POSIX)
-                if (rhs.relative_name()[0] != '/')
-                    return path{relative_name() + "/" + rhs.relative_name()};
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                if (rhs.relative_name()[0] != L'\\')
-                    return path{relative_name() + L"\\" + rhs.relative_name()};
-                #endif
+                if (rhs.relative_name()[0] != PATH_SEPARATOR)
+                    return path{relative_name() + PATH_SEPARATOR_STR + rhs.relative_name()};
 
                 return path{relative_name() + rhs.relative_name()};
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path& operator/=(const char* rhs)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path& operator/=(const wchar* rhs)
-            #endif
             {
                 *this = move(*this / rhs);
                 return *this;
             }
 
-            #if defined(HSD_PLATFORM_POSIX)
             inline path& operator/=(const string& rhs)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline path& operator/=(const wstring& rhs)
-            #endif
             {
                 *this = move(*this / rhs);
                 return *this;
@@ -745,21 +517,11 @@ namespace hsd
             {
                 usize _index, _pos;
 
-                #if defined(HSD_PLATFORM_POSIX)
                 vector<string> _parents;
-                _parents.emplace_back("/", 1u);
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                vector<wstring> _parents;
-                _parents.emplace_back(L"C:\\", 3u);
-                #endif
+                _parents.emplace_back(ROOT_PATH, ROOT_PATH_LEN);
 
-                #if defined(HSD_PLATFORM_POSIX)
-                for (_index = absolute_name().find('/', 1), _pos = 1; 
-                    _index != string::npos; _index = absolute_name().find('/', _pos))
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                for (_index = absolute_name().find(L'\\', 1), _pos = 1; 
-                    _index != string::npos; _index = absolute_name().find(L'\\', _pos))
-                #endif
+                for (_index = absolute_name().find(PATH_SEPARATOR, 1), _pos = 1; 
+                    _index != string::npos; _index = absolute_name().find(PATH_SEPARATOR, _pos))
                 {
                     _parents.emplace_back(
                         absolute_name().c_str() 

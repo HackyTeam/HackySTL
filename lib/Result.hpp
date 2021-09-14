@@ -128,9 +128,6 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        constexpr Result& operator=(const Result&) = delete;
-        constexpr Result& operator=(Result&&) = delete;
-
         template <typename T>
         requires (std::is_constructible_v<Ok, T&&>)
         constexpr Result(T&& value, ok_value = {})
@@ -169,6 +166,34 @@ namespace hsd
             }
         }
 
+        inline Result& operator=(Result&& rhs)
+        {
+            Result _tmp = move(rhs);
+            swap(_initialized, rhs._initialized);
+
+            if (rhs._initialized)
+            {
+                new (&rhs._ok_data) Ok{move(_ok_data)};
+            }
+            else
+            {
+                new (&rhs._err_data) Err{move(_err_data)};
+            }
+
+            swap(_initialized, _tmp._initialized);
+
+            if (_initialized)
+            {
+                new (&_ok_data) Ok{move(_tmp._ok_data)};
+            }
+            else
+            {
+                new (&_err_data) Err{move(_tmp._err_data)};
+            }
+
+            return *this;
+        }
+
         constexpr ~Result()
         {
             if (_initialized)
@@ -189,16 +214,6 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
-        }
-
-        inline friend void swap(Result& lhs, Result& rhs)
-        {
-            auto lhs_value = move(lhs);
-            auto rhs_value = move(rhs);
-            lhs.~Result();
-            rhs.~Result();
-            new (&lhs) Result{move(rhs_value)};
-            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr decltype(auto) unwrap(
@@ -441,11 +456,6 @@ namespace hsd
         bool _initialized = false;
 
     public:
-        constexpr Result& operator=(const Result&) = delete;
-        constexpr Result& operator=(Result&&) = delete;
-        constexpr void unwrap_or_default() = delete;
-        constexpr void unwrap_or() = delete;
-
         constexpr Result()
             : _initialized{true}
         {}
@@ -480,6 +490,26 @@ namespace hsd
             : _err_data{value}, _initialized{false}
         {}
 
+        inline Result& operator=(Result&& rhs)
+        {
+            Result _tmp = move(rhs);
+            swap(_initialized, rhs._initialized);
+
+            if (!rhs._initialized)
+            {
+                new (&rhs._err_data) Err{move(_err_data)};
+            }
+
+            swap(_initialized, _tmp._initialized);
+
+            if (!_initialized)
+            {
+                new (&_err_data) Err{move(_tmp._err_data)};
+            }
+
+            return *this;
+        }
+
         constexpr ~Result()
         {
             if(!_initialized)
@@ -496,16 +526,6 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
-        }
-
-        inline friend void swap(Result& lhs, Result& rhs)
-        {
-            auto lhs_value = move(lhs);
-            auto rhs_value = move(rhs);
-            lhs.~Result();
-            rhs.~Result();
-            new (&lhs) Result{move(rhs_value)};
-            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr void unwrap(
@@ -656,9 +676,6 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        constexpr Result& operator=(const Result&) = delete;
-        constexpr Result& operator=(Result&&) = delete;
-
         constexpr Result()
             : _initialized{false}
         {}
@@ -687,6 +704,26 @@ namespace hsd
             }
         }
 
+        inline Result& operator=(Result&& rhs)
+        {
+            Result _tmp = move(rhs);
+            swap(_initialized, rhs._initialized);
+
+            if (rhs._initialized)
+            {
+                new (&rhs._ok_data) Ok{move(_ok_data)};
+            }
+
+            swap(_initialized, _tmp._initialized);
+
+            if (_initialized)
+            {
+                new (&_ok_data) Ok{move(_tmp._ok_data)};
+            }
+
+            return *this;
+        }
+
         constexpr ~Result()
         {
             if(_initialized)
@@ -703,16 +740,6 @@ namespace hsd
         explicit constexpr operator bool() const
         {
             return _initialized;
-        }
-
-        inline friend void swap(Result& lhs, Result& rhs)
-        {
-            auto lhs_value = move(lhs);
-            auto rhs_value = move(rhs);
-            lhs.~Result();
-            rhs.~Result();
-            new (&lhs) Result{move(rhs_value)};
-            new (&rhs) Result{move(lhs_value)};
         }
 
         constexpr decltype(auto) unwrap(
@@ -886,9 +913,6 @@ namespace hsd
         bool _initialized = false;
         
     public:
-        constexpr Result& operator=(const Result&) = delete;
-        constexpr Result& operator=(Result&&) = delete;
-
         constexpr Result()
             : _initialized{true}
         {}
@@ -904,6 +928,12 @@ namespace hsd
         inline Result(Result&& other)
             : _initialized{other._initialized}
         {}
+
+        inline Result& operator=(Result&& rhs)
+        {
+            swap(_initialized, rhs._initialized);
+            return *this;
+        }
 
         constexpr bool is_ok() const
         {

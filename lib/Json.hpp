@@ -45,10 +45,17 @@ namespace hsd
             else if constexpr (is_same<CharT, wchar>::value)
                 return read_file_impl<CharT, &fgetwc>(stream);
             else
-                static_assert(is_same<CharT, char>::value or is_same<CharT, wchar>::value, "File IO only implemented for char & wchar");
+                static_assert(
+                    is_same<CharT, char>::value or 
+                    is_same<CharT, wchar>::value, 
+                    "File IO only implemented for char & wchar"
+                );
             #else
             else
-                static_assert(is_same<CharT, char>::value, "File IO only implemented for char on windows");
+                static_assert(
+                    is_same<CharT, char>::value, 
+                    "File IO only implemented for char on windows"
+                );
             #endif
         }
     } // namespace json_detail

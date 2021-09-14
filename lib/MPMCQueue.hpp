@@ -8,7 +8,6 @@
 
 namespace hsd
 {
-    
     using counter = atomic_usize;
 
     namespace priv

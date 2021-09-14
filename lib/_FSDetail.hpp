@@ -15,93 +15,52 @@ namespace hsd
         {
             struct Location
             {
-                #if defined(HSD_PLATFORM_POSIX)
                 string _relative;
                 string _absolute;
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                wstring _relative;
-                wstring _absolute;
-                #endif
 
                 inline Location() = default;
                 inline ~Location() = default;
 
-                #if defined(HSD_PLATFORM_POSIX)
                 inline Location(const char* relative_loc)
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                inline Location(const wchar* relative_loc)
-                #endif
                     : _relative{relative_loc}
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     char _buffer[2048]{};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    wchar _buffer[2048]{};
-                    #endif
                     
-                    #if defined(HSD_PLATFORM_POSIX)
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    GetFullPathNameA(_relative.c_str(), 2048, _buffer, nullptr);
+                    #else
                     realpath(_relative.c_str(), _buffer);
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    GetFullPathNameW(_relative.c_str(), 2048, _buffer, nullptr);
                     #endif
                     
-                    #if defined(HSD_PLATFORM_POSIX)
                     _absolute = string{_buffer};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    _absolute = wstring{_buffer};
-                    #endif
                 }
 
-                #if defined(HSD_PLATFORM_POSIX)
                 inline Location(const string& relative_loc)
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                inline Location(const wstring& relative_loc)
-                #endif
                     : _relative{relative_loc}
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     char _buffer[2048]{};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    wchar _buffer[2048]{};
-                    #endif
                     
-                    #if defined(HSD_PLATFORM_POSIX)
+                     #if defined(HSD_PLATFORM_WINDOWS)
+                    GetFullPathNameA(_relative.c_str(), 2048, _buffer, nullptr);
+                    #else
                     realpath(_relative.c_str(), _buffer);
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    GetFullPathNameW(_relative.c_str(), 2048, _buffer, nullptr);
                     #endif
 
-                    #if defined(HSD_PLATFORM_POSIX)
                     _absolute = string{_buffer};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    _absolute = wstring{_buffer};
-                    #endif
                 }
 
-                #if defined(HSD_PLATFORM_POSIX)
                 inline Location(string&& relative_loc)
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                inline Location(wstring&& relative_loc)
-                #endif
                     : _relative{move(relative_loc)}
                 {
-                    #if defined(HSD_PLATFORM_POSIX)
                     char _buffer[2048]{};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    wchar _buffer[2048]{};
-                    #endif
                     
-                    #if defined(HSD_PLATFORM_POSIX)
+                     #if defined(HSD_PLATFORM_WINDOWS)
+                    GetFullPathNameA(_relative.c_str(), 2048, _buffer, nullptr);
+                    #else
                     realpath(_relative.c_str(), _buffer);
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    GetFullPathNameW(_relative.c_str(), 2048, _buffer, nullptr);
                     #endif
 
-                    #if defined(HSD_PLATFORM_POSIX)
                     _absolute = string{_buffer};
-                    #elif defined(HSD_PLATFORM_WINDOWS)
-                    _absolute = wstring{_buffer};
-                    #endif
                 }
 
                 inline Location(const Location& other)

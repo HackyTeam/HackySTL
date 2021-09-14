@@ -63,16 +63,12 @@ namespace hsd
             bool _exists = false;
 
         public:
-            #if defined(HSD_PLATFORM_POSIX)
             inline fs_status(const char* pathname)
-            #elif defined(HSD_PLATFORM_WINDOWS)
-            inline fs_status(const wchar* pathname)
-            #endif
             {
-                #if defined(HSD_PLATFORM_POSIX)
+                #if defined(HSD_PLATFORM_WINDOWS)
+                _exists = stat(pathname, &_status) != -1;
+                #else
                 _exists = lstat(pathname, &_status) != -1;
-                #elif defined(HSD_PLATFORM_WINDOWS)
-                _exists = wstat(pathname, &_status) != -1;
                 #endif
             }
 

@@ -4,6 +4,7 @@
 
 namespace hsd
 {
+    // Could be replaced by static_basic_string
     template <typename CharT, usize N>
     struct basic_string_literal
     {

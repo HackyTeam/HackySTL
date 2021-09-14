@@ -158,7 +158,7 @@ namespace hsd
         struct block 
         {
             u64 in_use : 1;
-            u64 size : 8 * sizeof(usize) - 1;
+            u64 size : 8 * sizeof(u64) - 1;
         };
 
         auto* _get_next(block* ptr, usize sz)

@@ -559,7 +559,7 @@ namespace hsd
         {
             if constexpr (IsIntegral<Number>)
             {
-                auto _val = _res.unwrap().value().get<i64>();
+                auto _val = _res.unwrap().value().template get<i64>();
 
                 if (!_val)
                 {
@@ -576,7 +576,7 @@ namespace hsd
             }
             else
             {
-                auto _val = _res.unwrap().value().get<f128>();
+                auto _val = _res.unwrap().value().template get<f128>();
 
                 if (!_val)
                 {

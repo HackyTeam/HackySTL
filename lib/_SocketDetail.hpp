@@ -326,7 +326,7 @@ namespace hsd::network_detail
                     return false;
                 }
 
-                memcpy(&_addr, info->ai_addr, sizeof(sockaddr_storage));
+                memcpy(&_addr, info->ai_addr, info->ai_addrlen);
                 _addr_len = info->ai_addrlen;
 
                 #if defined(HSD_PLATFORM_WINDOWS)
@@ -383,7 +383,7 @@ namespace hsd::network_detail
                     return false;
                 }
 
-                memcpy(&_addr, info->ai_addr, sizeof(sockaddr_storage));
+                memcpy(&_addr, info->ai_addr, info->ai_addrlen);
                 _addr_len = info->ai_addrlen;
                 return true;
             }

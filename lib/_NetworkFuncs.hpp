@@ -165,7 +165,7 @@ namespace hsd::network_detail
 
         if (_port != nullptr)
         {
-            _domain_addr += string_view{
+            _domain_addr = string_view{
                 ip_addr, static_cast<usize>(_port - ip_addr)
             };
             

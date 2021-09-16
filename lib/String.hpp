@@ -45,7 +45,6 @@ namespace hsd
         requires (std::is_default_constructible_v<alloc_type>)
         {
             _data = _alloc.allocate(size + 1).unwrap();
-            _size = size;
             _capacity = _size;
         }
 
@@ -55,7 +54,6 @@ namespace hsd
             : _alloc{alloc}
         {
             _data = _alloc.allocate(size + 1).unwrap();
-            _size = size;
             _capacity = _size;
         }
 

@@ -21,7 +21,8 @@
                 "-I${workspaceFolder}/lib",
                 "-fno-exceptions",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-lpthread"
             ],
             "options": {
                 "cwd": "${fileDirname}"

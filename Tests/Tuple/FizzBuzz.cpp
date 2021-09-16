@@ -1,5 +1,5 @@
-#include "../../cpp/Io.hpp"
-#include "../../cpp/Tuple.hpp"
+#include <Io.hpp>
+#include <Tuple.hpp>
 
 template <hsd::usize N>
 struct FizzBase
@@ -9,7 +9,7 @@ struct FizzBase
     bool fizz(hsd::u32 x) const
     {
         if (x % N == 0)
-            return (hsd::io::print<"{}">(msg)), true;
+            return (hsd_print("{}", msg)), true;
         return false;
     }
 };
@@ -20,7 +20,7 @@ struct FizzGame
     hsd::tuple<Ts...> bases;
     hsd::u32 x = 0;
 
-    FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}
+    FizzGame(Ts&&... b) : bases(hsd::move(b)...) {}    
 
     void operator*()
     {
@@ -31,9 +31,9 @@ struct FizzGame
         }(hsd::index_sequence_for<Ts...>());
         
         if (!acc)
-            hsd::io::print<"{}">(x);
+            hsd_print("{}", x);
         
-        hsd::io::print<"\n">();
+        hsd_println("");
     }
 
     FizzGame& operator++() {

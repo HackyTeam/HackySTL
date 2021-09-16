@@ -1,4 +1,4 @@
-#include "../../cpp/Extra/Constexpr/Gorbitsa.hpp"
+#include <Extra/Constexpr/Gorbitsa.hpp>
 
 template <typename Str>
 consteval auto run() 
@@ -20,7 +20,7 @@ int main()
     auto output = run< typename hsd::str_to_arr<source>::type>();
 
 	for (auto c : output)
-		std::putchar(c);
+		putchar(c);
 
-	std::putchar('\n');
+	putchar('\n');
 }

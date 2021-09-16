@@ -1,6 +1,6 @@
-#include "../../cpp/Vector.hpp"
 #include <cstdio>
 #include <iterator>
+#include <Vector.hpp>
 
 struct S
 {
@@ -13,7 +13,8 @@ struct S
     {}
 };
 
-struct verbose {
+struct verbose 
+{
     verbose() {
         std::puts("default constructor");
     }
@@ -48,9 +49,10 @@ hsd::vector<T> gen_range(const hsd::vector<T>& orig, size_t start, size_t end)
 }
 
 template <typename T>
-void test(hsd::vector<T>&&)
+void test(hsd::vector<T>&& vec)
 {
-
+    auto v = vec;
+    auto v2 = hsd::move(v);
 }
 
 constexpr auto make_constexpr_vec()
@@ -76,24 +78,43 @@ int main()
         // for function type deduction
         test(hsd::vector{{1, 2, 3, 4, 5, 6}});
         // alternatively you can do
-        test<int>({{1, 2, 3, 4, 5, 6}});
+        test<hsd::i32>({{1, 2, 3, 4, 5, 6}});
         // it does the same thing
         test(hsd::make_vector(1, 2, 3, 4, 5, 6));
         // let's test constexpr vector (it works)
         constexpr auto v = make_constexpr_vec();
 
-        for(auto& val : v)
+        for (auto& val : v)
             printf("%d\n", val);
 
-        printf("==========\n");
+        puts("==========");
+    }
+
+    {
+        hsd::vector e = {{1, 2, 3, 4, 5, 6}};
+
+        for (auto iter = e.begin(); iter != e.end();)
+        {
+            if (*iter == 6)
+            {
+                iter = e.erase(iter).unwrap();
+            }
+            else
+            {
+                printf("%d\n", *iter);
+                iter++;
+            }
+        }
+
+        puts("==========");
     }
 
     {
         // let's test the buffred vector
         hsd::uchar buf[1000]{};
         hsd::buffered_allocator<hsd::uchar> alloc = {buf, 200};
-        hsd::buffered_vector<int> vec{alloc};
-        hsd::buffered_vector<int> vec2{alloc};
+        hsd::buffered_vector<hsd::i32> vec{alloc};
+        hsd::buffered_vector<hsd::i32> vec2{alloc};
         vec.push_back(1);
         vec.push_back(2);
         vec.push_back(3);
@@ -106,15 +127,15 @@ int main()
         vec2.push_back(2);
         vec2.push_back(1);
 
-        for(auto& val : vec)
+        for (auto& val : vec)
             printf("%d\n", val);
 
-        printf("==========\n");
+        puts("==========");
         
-        for(auto& val : vec2)
+        for (auto& val : vec2)
             printf("%d\n", val);
 
-        printf("==========\n");
+        puts("==========");
     }
 
     {

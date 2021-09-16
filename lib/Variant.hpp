@@ -459,8 +459,17 @@ namespace hsd
         template <typename _Ty>
         struct _type_for
         {
-            using type = decltype(variant_detail::_select_overload_for<_Tfirst, _Trest...>::get(declval<_Ty>()));
+            using type = decltype(variant_detail::_select_overload_for<
+                _Tfirst, _Trest...>::get(declval<_Ty>()));
         };
+
+        template <typename _Tother>
+        static consteval usize _get_Idx()
+        {
+            return variant_detail::_variant_index<
+                typename variant<_Tfirst, _Trest...>::template _type_for<_Tother>::type, _Tfirst, _Trest...
+            >::value;
+        }
 
     public:
         constexpr variant() : _Base(in_place_index<0>) {}
@@ -468,11 +477,11 @@ namespace hsd
         constexpr variant(variant const& other) = default;
         constexpr variant(variant&& other) = default;
 
-        template <typename _Tother, typename = enable_if_t<!is_same< variant, decay_t<_Tother> >::value >,
-                  usize _Idx = variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value>
-        constexpr variant(_Tother&& val)
-            : _Base(in_place_index<_Idx>, forward<_Tother>(val)) 
-        {}
+        constexpr variant(auto&& val)
+        requires (!is_same<variant, decay_t<decltype(val)>>::value)
+            : _Base(in_place_index<_get_Idx<remove_reference_t<decltype(val)>>()>, 
+                forward<remove_reference_t<decltype(val)>>(val)) 
+        {};
 
         ~variant()
         {
@@ -482,12 +491,13 @@ namespace hsd
         constexpr variant& operator=(variant const& rhs) = default;
         constexpr variant& operator=(variant&& rhs) = default;
 
-        template < typename _Tother, typename = enable_if_t< !is_same< variant, decay_t<_Tother> >::value > >
-        constexpr variant& operator=(_Tother&& rhs)
+        constexpr variant& operator=(auto&& rhs)
+        requires (!is_same<variant, decay_t<decltype(rhs)>>::value)
         {
+            using _RhsType = remove_reference_t<decltype(rhs)>;
             _Base::_StorageTraits::template assign_fwd<
-                variant_detail::_variant_index<typename _type_for<_Tother>::type, _Tfirst, _Trest...>::value
-            >(this->_storage(), _Base::_StoredIndex, forward<_Tother>(rhs));
+                _get_Idx<remove_reference_t<decltype(rhs)>>()
+            >(this->_storage(), _Base::_StoredIndex, forward<_RhsType>(rhs));
             return *this;
         }
 

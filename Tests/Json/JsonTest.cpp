@@ -1,6 +1,6 @@
 // This file is UTF-8
 
-#include <Json.hpp>
+#include <Extra/Json.hpp>
 #include <Io.hpp>
 
 using namespace hsd::string_view_literals;
@@ -39,7 +39,7 @@ int main()
     lexer.lex(s_test_string).unwrap();
     lexer.push_eot().unwrap();
 
-    hsd::JsonParser parser(lexer);
+    hsd::JsonParser parser = lexer;
     // Parse the string
     auto value = parser.parse_next().unwrap();
 
@@ -80,7 +80,7 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
             hsd_print(L"false");
             break;
         case hsd::JsonValueType::Number:
-            hsd_print(L"{}", v.as_num().unwrap());
+            hsd_print(L"{}", v.as_num<hsd::i32>().unwrap());
             break;
         case hsd::JsonValueType::String:
             // TODO: Escape?

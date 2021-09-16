@@ -18,7 +18,7 @@ namespace hsd
         template <>
         struct remove_unsigned<unsigned char>
         {
-            using type = char;
+            using type = signed char;
         };
 
         template <>
@@ -100,7 +100,7 @@ namespace hsd
     using i64 = long long;
     using i32 = int;
     using i16 = short;
-    using i8 = char;
+    using i8 = signed char;
 
     using uptr = uintptr_t;
     using iptr = intptr_t;
@@ -129,9 +129,14 @@ namespace hsd
 
     namespace trivial_literals
     {
-        usize operator""_sz(u64 value)
+        consteval usize operator""_usz(u64 value)
         {
             return static_cast<usize>(value);
+        }
+
+        consteval usize operator""_isz(u64 value)
+        {
+            return static_cast<isize>(value);
         }
     } // namespace trivial_type_literals
 } // namespace hsd

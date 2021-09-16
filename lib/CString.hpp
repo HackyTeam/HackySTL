@@ -739,19 +739,19 @@ namespace hsd
 
 			for (; *str != '\0' && !_is_number(*str); str++)
 			{
-				_negative = (*str == '-');
+				_negative = (*str == static_cast<CharT>('-'));
 			}
 			if (*str == '\0')
 			{
 				return static_cast<T>(0);
 			}
 
-		    for (; *str != '\0' && *str != '.' && _is_number(*str); str++)
+		    for (; *str != '\0' && *str != static_cast<CharT>('.') && _is_number(*str); str++)
 		    {
 		        _round_num *= 10;
-		        _round_num += *str - '0';
+		        _round_num += *str - static_cast<CharT>('0');
 		    }
-			if (*str == '\0' || !_is_number(*str))
+			if (*str == '\0' || (*str != static_cast<CharT>('.') && !_is_number(*str)))
 			{
 				return _negative ? -_round_num : _round_num;
 			}

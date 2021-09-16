@@ -29,15 +29,15 @@ namespace hsd
 
         public:
             inline storage()
-            requires (std::is_default_constructible_v<alloc_type>) = default;
+            requires (DefaultConstructible<alloc_type>) = default;
 
             inline storage(pointer_type ptr, usize size)
-            requires (std::is_default_constructible_v<alloc_type>)
+            requires (DefaultConstructible<alloc_type>)
                 : _data{ptr}, _size{size}
             {}
 
             inline storage(const alloc_type& alloc, usize size)
-            requires (std::is_copy_constructible_v<value_type>)
+            requires (CopyConstructible<alloc_type> && DefaultConstructible<value_type>)
                 : _alloc{alloc}, _size{size}
             {
                 _data = _alloc.allocate(size).unwrap();
@@ -50,7 +50,7 @@ namespace hsd
             }
 
             inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
-            requires (std::is_copy_constructible_v<value_type>)
+            requires (CopyConstructible<alloc_type>)
                 : _alloc{alloc}, _data{ptr}, _size{size}
             {}
 
@@ -58,7 +58,7 @@ namespace hsd
 
             template <typename U = T>
             inline storage(storage<U, Allocator>&& other)
-            requires (std::is_move_constructible_v<alloc_type>)
+            requires (MoveConstructible<alloc_type>)
                 : _alloc(move(other._alloc))
             {
                 _data = exchange(other._data, nullptr);
@@ -67,7 +67,7 @@ namespace hsd
 
             template <typename U = T>
             inline storage(storage<U, Allocator>&& other)
-            requires (!std::is_move_constructible_v<alloc_type>)
+            requires (!MoveConstructible<alloc_type>)
             {
                 _data = exchange(other._data, nullptr);
                 swap(_size, other._size);
@@ -149,12 +149,10 @@ namespace hsd
         unique_ptr(const unique_ptr&) = delete;
 
         inline unique_ptr(pointer_type ptr) 
-        requires (std::is_default_constructible_v<alloc_type>)
             : _value{ptr, 1u}
         {}
 
         inline unique_ptr(pointer_type ptr, usize size) 
-        requires (std::is_default_constructible_v<alloc_type>)
             : _value{ptr, size}
         {}
 
@@ -251,8 +249,8 @@ namespace hsd
     };
     
     template <typename T, template <typename> typename Allocator = allocator, typename... Args>
-    requires (std::is_default_constructible_v<Allocator<uchar>> && 
-        is_same<typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
+    requires (DefaultConstructible<Allocator<uchar>> && is_same<
+        typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
     static inline typename MakeUniq<T, Allocator>::single_object make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
@@ -262,8 +260,8 @@ namespace hsd
     }
 
     template <typename T, template <typename> typename Allocator = allocator, typename... Args>
-    requires (std::is_default_constructible_v<Allocator<uchar>> && 
-        !is_same<typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
+    requires (DefaultConstructible<Allocator<uchar>> && !is_same<
+        typename Allocator<remove_array_t<T>>::pointer_type, remove_array_t<T>*>::value)
     static inline typename MakeUniq<T, Allocator>::single_object make_unique(Args&&... args)
     {
         Allocator<remove_array_t<T>> _alloc;
@@ -274,7 +272,7 @@ namespace hsd
 
     template <typename T, template <typename> typename Allocator = allocator, typename U, typename... Args>
     static inline typename MakeUniq<T, Allocator>::single_object make_unique(Allocator<U>& alloc, Args&&... args)
-    requires (!std::is_default_constructible_v<Allocator<uchar>>)
+    requires (!DefaultConstructible<Allocator<uchar>>)
     {
         auto* _ptr = static_cast<Allocator<remove_array_t<T>>>(alloc).allocate(1).unwrap();
         alloc.construct_at(_ptr, forward<Args>(args)...);
@@ -283,7 +281,7 @@ namespace hsd
 
     template <typename T, template <typename> typename Allocator = allocator>
     static inline typename MakeUniq<T, Allocator>::array make_unique(usize size)
-    requires (std::is_default_constructible_v<Allocator<uchar>>)
+    requires (DefaultConstructible<Allocator<uchar>>)
     {
         Allocator<remove_array_t<T>> _alloc;
         auto* _ptr = _alloc.allocate(size).unwrap();

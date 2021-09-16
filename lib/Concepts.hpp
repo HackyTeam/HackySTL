@@ -34,6 +34,39 @@ namespace hsd
     concept IsFunction = is_function<T>::value;
     template <typename T, typename U>
     concept IsSame = is_same<T, U>::value;
+    template <typename T>
+    concept IsPointer = is_pointer<T>::value;
+    
+    template <typename T>
+    concept NumericType = IsNumber<T>;
+    template <typename T>
+    concept IntegralType = IsIntegral<T>;
+    template <typename T>
+    concept FloatingPointType = IsFloat<T>;
+    template <typename T>
+    concept SignedType = IsSigned<T>;
+    template <typename T>
+    concept UnsignedType = IsUnsigned<T>;
+    template <typename T>
+    concept NaturalType = IsNatural<T>;
+    template <typename T>
+    concept ObjectType = IsObject<T>;
+    template <typename T>
+    concept VoidType = IsVoid<T>;
+    template <typename T>
+    concept ReferenceType = IsReference<T>;
+    template <typename T>
+    concept RvalueReferenceType = IsRvalueRef<T>;
+    template <typename T>
+    concept LvalueReferenceType = IsLvalueRef<T>;
+    template <typename T>
+    concept ConstType = IsConst<T>;
+    template <typename T>
+    concept ArrayType = IsArray<T>;
+    template <typename T>
+    concept FunctionType = IsFunction<T>;
+    template <typename T>
+    concept PointerType = IsPointer<T>;
 
     template < typename Func, typename... Args >
     concept Invocable = requires(Func func, Args... args) 

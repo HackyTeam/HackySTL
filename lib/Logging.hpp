@@ -170,8 +170,8 @@ namespace hsd
         }
     };
 
-    thread_local inline stack_trace exec_stack;
-    thread_local inline profiler profiler_stack;
+    static inline stack_trace exec_stack;
+    static inline profiler profiler_stack;
     using source_location = logger_detail::source_location;
 
     #define invoke_profiler_func(func, ...) \

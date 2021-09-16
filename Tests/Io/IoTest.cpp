@@ -69,7 +69,9 @@ int main()
     hsd::io::cin().read_line().unwrap().set_data(x, y, z).unwrap();
     hsd_println(L"{}, {}, {}", x, y, z);
     
-    auto file = hsd::io::load_file("test.txt", hsd::io::options::text::read_write).unwrap();
+    auto file = hsd::io::load_file(
+        "Tests/Io/test.txt", hsd::io::options::text::read_write
+    ).unwrap();
     
     [[maybe_unused]] auto c = file.read_line().unwrap().parse<hsd::i32>();
     file.print<"{} {} {}">("Hello", 12, -3.4).unwrap();

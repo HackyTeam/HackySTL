@@ -34,8 +34,8 @@ namespace hsd
     private:
         UType _mt_states[state_size]{};
         UType _index = state_size + 1;
-        static constexpr UType _lower_mask = 1 << mask_bits - 1;
-        static constexpr UType _upper_mask = ~(1 << mask_bits - 1);
+        static constexpr UType _lower_mask = (1u << mask_bits) - 1u;
+        static constexpr UType _upper_mask = ~((1u << mask_bits) - 1u);
 
         void _twist()
         {

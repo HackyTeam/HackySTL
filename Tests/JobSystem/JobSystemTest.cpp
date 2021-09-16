@@ -1,5 +1,4 @@
 #include <JobSystem.hpp>
-
 #include <Io.hpp>
 
 void print()
@@ -24,6 +23,7 @@ void foo(int a, float b)
 
 int main()
 {
+    // To Pyro: This might trigger a race condition
     // Generic example with no parameters
     hsd::job_fn j = [] {
         print();

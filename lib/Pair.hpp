@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "Concepts.hpp"
 
 namespace hsd
 {
@@ -13,20 +14,9 @@ namespace hsd
         constexpr ~pair() = default;
         constexpr pair() = default;
 
-        constexpr pair(const T1& first_val, const T2& second_val)
-            : first{first_val}, second{second_val}
-        {}
-
-        constexpr pair(const T1& first_val, T2&& second_val)
-            : first{first_val}, second{forward<T2>(second_val)}
-        {}
-
-        constexpr pair(T1&& first_val, const T2& second_val)
-            : first{forward<T1>(first_val)}, second{second_val}
-        {}
-
-        constexpr pair(T1&& first_val, T2&& second_val)
-            : first{forward<T1>(first_val)}, second{forward<T2>(second_val)}
+        template <typename _T1, typename _T2>
+        constexpr pair(_T1&& first_val, _T2&& second_val)
+            : first{forward<_T1>(first_val)}, second{forward<_T2>(second_val)}
         {}
 
         constexpr pair(const pair& other)
@@ -34,7 +24,7 @@ namespace hsd
         {}
         
         constexpr pair(pair&& other)
-            : first{forward<T1>(other.first)}, second{forward<T2>(other.second)}
+            : first{move(other.first)}, second{move(other.second)}
         {}
 
         constexpr pair& operator=(const pair& rhs)
@@ -46,8 +36,8 @@ namespace hsd
         
         constexpr pair& operator=(pair&& rhs)
         {
-            first = move(rhs.first);
-            second = move(rhs.second);
+            swap(first, rhs.first);
+            swap(second, rhs.second);
             return *this;
         }
 

@@ -3,7 +3,8 @@
 
 int main(int argc, const char** argv)
 {
-    hsd::argument_parser arg_parser = "This is a test";
+    using namespace hsd::string_view_literals;
+    hsd::argument_parser arg_parser = "This is a test"_sv;
 
     arg_parser.add("-clear", 0, 
         [](hsd::parser_stream&){printf("\e[1;1H\e[2J");}, 

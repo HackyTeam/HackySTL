@@ -7,20 +7,23 @@
 #include <time.h>
 #include <wchar.h>
 
-#if defined(HSD_COMPILER_MSVC)
+#if defined(HSD_PLATFORM_WINDOWS)
 #include <Windows.h>
+
+#ifndef CLOCK_PROCESS_CPUTIME_ID
 #define CLOCK_PROCESS_CPUTIME_ID 1
+#endif
 
 int clock_gettime(hsd::i32, struct timespec *spec)      //C-file part
 {  
-    i64 wintime = 0; 
+    hsd::i64 wintime = 0; 
     GetSystemTimeAsFileTime(
         reinterpret_cast<FILETIME*>(&wintime)
     );
     
-    wintime      -= 116'444'736'000'000'000i64;        //1jan1601 to 1jan1970
-    spec->tv_sec  = wintime / 10'000'000i64;           //seconds
-    spec->tv_nsec = wintime % 10'000'000i64 * 100;      //nano-seconds
+    wintime      -= 116'444'736'000'000'000ll;        //1jan1601 to 1jan1970
+    spec->tv_sec  = wintime / 10'000'000ll;           //seconds
+    spec->tv_nsec = wintime % 10'000'000ll * 100;      //nano-seconds
     return 0;
 }
 #endif
@@ -502,25 +505,13 @@ namespace hsd
         inline date()
             : _epoch_date{::time(nullptr)}
         {
-            #if defined(HSD_PLATFORM_WINDOWS)
-            time_ptr _date_val = nullptr;
-            localtime_s(_date_val, &_epoch_date);
-            #else
             auto* _date_val = localtime(&_epoch_date);
-            #endif
-            
             set_time_value(_date_val);
         }
 
         inline date& update()
         {
-            #if defined(HSD_PLATFORM_WINDOWS)
-            time_ptr _date_val = nullptr;
-            localtime_s(_date_val, &_epoch_date);
-            #else
             auto* _date_val = localtime(&_epoch_date);
-            #endif
-
             set_time_value(_date_val);
             return *this;
         }

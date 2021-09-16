@@ -19,7 +19,7 @@ namespace hsd
         
     } // namespace harray_detail
 
-    template < typename T, usize N >
+    template <typename T, usize N>
     class heap_array
     {
     private:
@@ -120,12 +120,7 @@ namespace hsd
             return {_array[index]};
         }
 
-        consteval usize size()
-        {
-            return N;
-        }
-
-        consteval usize size() const
+        constexpr usize size() const
         {
             return N;
         }

@@ -15,7 +15,7 @@ static auto fail_func(hsd::i32 val)
     if (val < 10)
         return S{};
     else
-        return {"Test string"};
+        return hsd::string{"Test string"};
 }
 
 template <typename T>

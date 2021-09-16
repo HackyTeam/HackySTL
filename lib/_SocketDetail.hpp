@@ -204,17 +204,17 @@ namespace hsd::network_detail
             return _data.revents & POLLOUT;
         }
 
-        static consteval auto ip_protocol()
+        static constexpr auto ip_protocol()
         {
             return static_cast<i32>(Protocol);
         }
 
-        static consteval auto sock_type()
+        static constexpr auto sock_type()
         {
             return static_cast<i32>(socket_type::stream);
         }
 
-        static consteval auto net_protocol()
+        static constexpr auto net_protocol()
         {
             return static_cast<i32>(socket_protocol::tcp);
         }
@@ -482,17 +482,17 @@ namespace hsd::network_detail
             return _data != static_cast<native_socket_type>(-1);
         }
 
-        static consteval auto ip_protocol()
+        static constexpr auto ip_protocol()
         {
             return static_cast<i32>(Protocol);
         }
 
-        static consteval auto sock_type()
+        static constexpr auto sock_type()
         {
             return static_cast<i32>(socket_type::dgram);
         }
 
-        static consteval auto net_protocol()
+        static constexpr auto net_protocol()
         {
             return static_cast<i32>(socket_protocol::udp);
         }

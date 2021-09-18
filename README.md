@@ -19,7 +19,7 @@ Maintain and improve this project which was started over a year ago
   6. Argument Parser
   7. Stack Array
   8. Heap Array
-  9. Atomics
+  9. Atomics (qookie)
   10. Condition Variables
   11. Default Arguments (DeKrain)
   12. Filesystem
@@ -49,10 +49,11 @@ Maintain and improve this project which was started over a year ago
   36. Unique Pointers
   37. Compressed Pair (DeKrain)
   38. Variant (DeKrain) 
+  39. Threads (qookie)
   
 # Contributors:
-- DeKrain
-- qookie (Mostly debugging)
+- DeKrain (Implementations)
+- qookie (Mostly debugging and some implementations)
 
 # Platforms
   [Discord](https://discord.gg/dEghMASRKb)

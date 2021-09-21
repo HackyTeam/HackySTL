@@ -160,12 +160,12 @@ namespace hsd::network_detail
             .ai_next = nullptr
         };
 
-        static string _domain_addr = "";
+        static string _domain_addr{};
         auto* _port = cstring::find_rev(ip_addr, ':');
 
         if (_port != nullptr)
         {
-            _domain_addr = string_view{
+            _domain_addr = string_view {
                 ip_addr, static_cast<usize>(_port - ip_addr)
             };
             

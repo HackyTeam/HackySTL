@@ -65,7 +65,7 @@ namespace hsd
         inline io& operator=(io&& rhs)
         {
             _file_buf = exchange(rhs._file_buf, nullptr);
-            _file_mode =exchange(rhs._file_mode, nullptr);
+            _file_mode = exchange(rhs._file_mode, nullptr);
             _is_console_file = exchange(rhs._is_console_file, true);
 
             return *this;
@@ -141,7 +141,7 @@ namespace hsd
             }
         }
 
-        inline Result< void, runtime_error > flush()
+        inline Result<void, runtime_error> flush()
         {
             if (only_read())
             {
@@ -149,7 +149,9 @@ namespace hsd
             }
             else
             {
-                return runtime_error{"Cannot flush in write or read-write mode"};
+                return runtime_error {
+                    "Cannot flush in write or read-write mode"
+                };
             }
 
             return {};
@@ -161,7 +163,9 @@ namespace hsd
             
             if (only_write())
             {
-                return runtime_error{"Cannot read file. It is in write mode"};
+                return runtime_error {
+                    "Cannot read file. It is in write mode"
+                };
             }
             if (fgets(_io_buf.data(), 4096, _file_buf) == nullptr)
             { 
@@ -177,7 +181,9 @@ namespace hsd
             
             if (only_write())
             {
-                return runtime_error{"Cannot read file. It is in write mode"};
+                return runtime_error {
+                    "Cannot read file. It is in write mode"
+                };
             }
             if (fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
             { 
@@ -193,7 +199,9 @@ namespace hsd
 
             if (only_write())
             {
-                return runtime_error{"Cannot read file. It is in write mode"};
+                return runtime_error {
+                    "Cannot read file. It is in write mode"
+                };
             }
             if (fscanf(_file_buf, "%s", _io_buf.data()) == EOF)
             {
@@ -209,7 +217,9 @@ namespace hsd
 
             if (only_write())
             {
-                return runtime_error{"Cannot read file. It is in write mode"};
+                return runtime_error {
+                    "Cannot read file. It is in write mode"
+                };
             }
             if (fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
             {
@@ -220,7 +230,7 @@ namespace hsd
         }
 
         template < basic_string_literal fmt, typename... Args >
-        inline Result< void, runtime_error > print(Args&&... args)
+        inline Result<void, runtime_error> print(Args&&... args)
         {
             if(only_read() == true)
             {
@@ -231,30 +241,37 @@ namespace hsd
 
             using io_detail::_print;
             using char_type = typename decltype(fmt)::char_type;
-            constexpr auto _fmt_buf = sstream_detail::split_literal<
+            constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 
             static_assert(
                 _fmt_buf.size() == sizeof...(Args) + 1, 
-                "The number of arguments doesn\'t match"
+                "The number of arguments doesn't match"
             );
 
-            constexpr auto _len = _fmt_buf[sizeof...(Args)].second;
-            constexpr basic_string_literal<char_type, _len + 1> _last{
-                _fmt_buf[sizeof...(Args)].first, _len
-            };
-
+            constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
                 (
-                    _print<basic_string_literal< 
-                        char_type, _fmt_buf[Ints].second + 1 >{
-                        _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                    }>(args, _file_buf), ...
-                );
+                    _print<
+                        format_literal<char_type, _fmt_buf[Ints].length + 1> {
+                            .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
+                            .tag = _fmt_buf[Ints].tag,
+                            .foreground = _fmt_buf[Ints].foreground,
+                            .background = _fmt_buf[Ints].background
+                        }
+                    >(args, _file_buf), 
+                ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
-            _print<_last>(_file_buf);
+            _print<
+                format_literal<char_type, _last.length + 1> {
+                    .format = {_last.format, _last.length},
+                    .tag = _last.tag,
+                    .foreground = _last.foreground,
+                    .background = _last.background
+                }
+            >(_file_buf);
             return {};
         }
     };

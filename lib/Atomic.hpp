@@ -537,8 +537,8 @@ namespace hsd
 	using atomic_char = atomic<char>;
 	using atomic_uchar = atomic<uchar>;
 	using atomic_schar = atomic<schar>;
-	using atomic_short = atomic<short>;
-	using atomic_ushort = atomic<ushort>;
+	using atomic_short = atomic<i16>;
+	using atomic_ushort = atomic<u16>;
 	using atomic_i32 = atomic<i32>;
 	using atomic_u32 = atomic<u32>;
 	using atomic_long = atomic<long>;

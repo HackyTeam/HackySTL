@@ -88,34 +88,46 @@ namespace hsd
         template < basic_string_literal fmt, typename... Args >
 		inline void write_data(Args&&... args)
 		{
-            using char_type = typename decltype(fmt)::char_type;
             using sstream_detail::_write;
             _size = _capacity;
             
-            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
-            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
+            using char_type = typename decltype(fmt)::char_type;
+            constexpr auto _fmt_buf = sstream_detail::
+                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            static_assert(
+                _fmt_buf.size() == sizeof...(Args) + 1, 
+                "Arguments don\'t match"
+            );
 
-            constexpr auto _fmt_last_len = _fmt_buf[sizeof...(Args)].second;
-            constexpr basic_string_literal<char_type, _fmt_last_len + 1> _last{
-                _fmt_buf[sizeof...(Args)].first, _fmt_last_len
-            };
-
+            constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
-                    (sstream_detail::_sub_from(
-                        _size, _write<
-                            basic_string_literal< 
-                                char_type, _fmt_buf[Ints].second + 1 
-                            >{
-                                _fmt_buf[Ints].first, _fmt_buf[Ints].second
-                            }
-                        >(args, {_data + (_capacity - _size), _size})
-                    ).unwrap(), ...)
+                    (
+                        sstream_detail::_sub_from(
+                            _size, _write<
+                                format_literal<char_type, _fmt_buf[Ints].length + 1> {
+                                    .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
+                                    .tag = _fmt_buf[Ints].tag,
+                                    .foreground = _fmt_buf[Ints].foreground,
+                                    .background = _fmt_buf[Ints].background
+                                }
+                            >(
+                                args, {_data + (_capacity - _size), _size}
+                            )
+                        ).unwrap(), ...
+                    )
                 );
             }(make_index_sequence<sizeof...(Args)>{});
 
             usize _last_len = static_cast<usize>(
-                _write<_last>(
+                _write<
+                    format_literal<char_type, _last.length + 1> {
+                        .format = {_last.format, _last.length},
+                        .tag = _last.tag,
+                        .foreground = _last.foreground,
+                        .background = _last.background
+                    }
+                >(
                     {_data + (_capacity - _size), _size}
                 )
             );
@@ -219,7 +231,8 @@ namespace hsd
             using sstream_detail::_write;
             _size = capacity();
             
-            constexpr auto _fmt_buf = sstream_detail::split_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            constexpr auto _fmt_buf = sstream_detail::
+                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
             static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
 
             constexpr auto _fmt_last_len = _fmt_buf[sizeof...(Args)].second;

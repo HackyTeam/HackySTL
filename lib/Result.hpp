@@ -60,18 +60,7 @@ do\
 } while (0) 
 
 #define hsd_unimplemented()\
-do\
-{\
-    hsd_fprint_check(\
-        stderr, "Got an error in file:"\
-        "\n%s\nInvoked from: %s at line:"\
-        " %zu\nWith the Err result value:"\
-        " This funcion is unimplemented\n", \
-        __FILE__,  HSD_FUNCTION_NAME, __LINE__\
-    );\
-    \
-    abort();\
-} while (0) 
+    hsd_panic("This funcion is unimplemented")
 
 namespace hsd
 {

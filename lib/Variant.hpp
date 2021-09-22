@@ -481,7 +481,7 @@ namespace hsd
         requires (!is_same<variant, decay_t<decltype(val)>>::value)
             : _Base(in_place_index<_get_Idx<remove_reference_t<decltype(val)>>()>, 
                 forward<remove_reference_t<decltype(val)>>(val)) 
-        {};
+        {}
 
         ~variant()
         {

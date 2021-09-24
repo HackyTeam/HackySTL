@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Result.hpp"
 #include "CString.hpp"
-#include "Allocator.hpp"
 #include "_IoOverload.hpp"
 #include "StringView.hpp"
 
@@ -45,7 +43,7 @@ namespace hsd
         requires (std::is_default_constructible_v<alloc_type>)
         {
             _data = _alloc.allocate(size + 1).unwrap();
-            _capacity = _size;
+            _capacity = size;
         }
 
         template <typename Alloc = alloc_type>
@@ -54,7 +52,7 @@ namespace hsd
             : _alloc{alloc}
         {
             _data = _alloc.allocate(size + 1).unwrap();
-            _capacity = _size;
+            _capacity = size;
         }
 
         inline basic_string(const CharT* cstr)
@@ -246,6 +244,7 @@ namespace hsd
             else
             {
                 basic_string _buf(_size + rhs._size);
+                _buf._size = _size + rhs._size;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
                 _buf._data[_buf.size()] = static_cast<CharT>(0);
@@ -263,6 +262,7 @@ namespace hsd
             else
             {
                 basic_string _buf(_size + rhs.size());
+                _buf._size = _size + rhs.size();
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs.data(), _size);
                 _buf._data[_buf.size()] = static_cast<CharT>(0);
@@ -281,6 +281,7 @@ namespace hsd
             {
                 usize _rhs_len = _str_utils::length(rhs);
                 basic_string _buf(_size + _rhs_len);
+                _buf._size = _size + _rhs_len;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs, _size);
                 _buf._data[_buf.size()] = static_cast<CharT>(0);
@@ -334,6 +335,7 @@ namespace hsd
             else if (_capacity <= _size + rhs._size)
             {
                 basic_string _buf(_size + rhs._size);
+                _buf._size = _size + rhs._size;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
                 _buf._data[_buf.size()] = static_cast<CharT>(0);
@@ -359,6 +361,7 @@ namespace hsd
             else if (_capacity <= _size + rhs.size())
             {
                 basic_string _buf(_size + rhs.size());
+                _buf._size = _size + rhs.size();
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs.data(), _size);
                 _buf._data[_buf.size()] = static_cast<CharT>(0);
@@ -388,6 +391,7 @@ namespace hsd
                 if (_capacity <= _size + _rhs_len)
                 {
                     basic_string _buf(_size + _rhs_len);
+                    _buf._size = _size + _rhs_len;
                     _str_utils::copy(_buf._data, _data, _size);
                     _str_utils::add(_buf._data, rhs, _size);
                     _buf._data[_buf.size()] = static_cast<CharT>(0);

@@ -2,7 +2,6 @@
 
 #include "TypeTraits.hpp"
 #include "IntegerSequence.hpp"
-#include <new>
 
 namespace hsd
 {

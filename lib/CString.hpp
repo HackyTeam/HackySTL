@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Unicode.hpp"
-#include "Utility.hpp"
-#include "Limits.hpp"
 #include "StackArray.hpp"
 #include "Allocator.hpp"
 

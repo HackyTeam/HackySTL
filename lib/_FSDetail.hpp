@@ -1,7 +1,6 @@
 #pragma once
 
 #include "String.hpp"
-#include <stdlib.h>
 
 #if defined(HSD_PLATFORM_WINDOWS)
 #include <windows.h>

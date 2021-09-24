@@ -1,10 +1,7 @@
 #pragma once
 
-#include <stdio.h>
-#include <wchar.h>
 #include <locale.h>
 
-#include "_IoOverload.hpp"
 #include "SStream.hpp"
 
 namespace hsd
@@ -157,6 +154,22 @@ namespace hsd
         template <format_literal fmt>
         requires (IsSame<char, typename decltype(fmt)::char_type>)
         inline void _print(const char8* val, FILE* file_buf = stdout)
+        {
+            static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
+            HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val);
+        }
+
+        template <format_literal fmt>
+        requires (IsSame<char, typename decltype(fmt)::char_type>)
+        inline void _print(char* val, FILE* file_buf = stdout)
+        {
+            static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
+            HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val);
+        }
+
+        template <format_literal fmt>
+        requires (IsSame<char, typename decltype(fmt)::char_type>)
+        inline void _print(char8* val, FILE* file_buf = stdout)
         {
             static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
             HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val);
@@ -317,6 +330,30 @@ namespace hsd
         template <format_literal fmt>
         requires (IsSame<wchar, typename decltype(fmt)::char_type>)
         inline void _print(const wchar* val, FILE* file_buf = stdout)
+        {
+            static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
+            HSD_PRINT_USE_FMT_UNTAGGED(fmt, L"%ls", file_buf, val);
+        }
+
+        template <format_literal fmt>
+        requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+        inline void _print(char* val, FILE* file_buf = stdout)
+        {
+            static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
+            HSD_PRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val);
+        }
+
+        template <format_literal fmt>
+        requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+        inline void _print(char8* val, FILE* file_buf = stdout)
+        {
+            static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
+            HSD_PRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val);
+        }
+
+        template <format_literal fmt>
+        requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+        inline void _print(wchar* val, FILE* file_buf = stdout)
         {
             static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
             HSD_PRINT_USE_FMT_UNTAGGED(fmt, L"%ls", file_buf, val);

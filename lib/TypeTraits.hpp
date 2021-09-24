@@ -76,12 +76,12 @@ namespace hsd
     {};
 
     template <typename T>
-    struct is_array<T[]> 
+    struct is_array<T[]>
         : public true_type 
     {};
 
     template <typename, typename>
-    struct is_same 
+    struct is_same
         : public false_type
     {};
     
@@ -91,14 +91,26 @@ namespace hsd
     {};
 
     template <typename> 
-    struct is_const                
+    struct is_const  
         : public false_type
     {};
 
     template <typename T> 
-    struct is_const<const T>       
+    struct is_const<const T>
         : public true_type
     {};
+
+    template <typename T> 
+    struct add_const
+    {
+        using type = const T;
+    };
+
+    template <typename T> 
+    struct add_const<const T>
+    {
+        using type = const T;
+    };
 
     template <typename>
     struct is_lvalue_reference
@@ -110,6 +122,18 @@ namespace hsd
         : public true_type
     {};
 
+    template <typename T>
+    struct add_lvalue_reference
+    {
+        using type = T&;
+    };
+
+    template <typename T>
+    struct add_lvalue_reference<T&>
+    {
+        using type = T&;
+    };
+
     template <typename>
     struct is_rvalue_reference
         : public false_type
@@ -119,6 +143,18 @@ namespace hsd
     struct is_rvalue_reference<T&&>
         : public true_type 
     {};
+
+    template <typename T>
+    struct add_rvalue_reference
+    {
+        using type = T&&;
+    };
+
+    template <typename T>
+    struct add_rvalue_reference<T&&>
+    {
+        using type = T&&;
+    };
 
     template <typename T>
     struct is_reference
@@ -330,49 +366,85 @@ namespace hsd
     template <typename T> 
     struct remove_cv                   
     {
-        typedef T type;
+        using type = T;
     };
 
     template <typename T> 
     struct remove_cv<const T>          
     {
-        typedef T type; 
+        using type = T;
     };
 
     template <typename T> 
     struct remove_cv<volatile T>       
     {
-        typedef T type; 
+        using type = T; 
     };
 
     template <typename T> 
     struct remove_cv<const volatile T> 
     {
-        typedef T type; 
+        using type = T; 
+    };
+
+    template <typename T> 
+    struct add_cv                   
+    {
+        using type = const volatile T;
+    };
+
+    template <typename T> 
+    struct add_cv<const T>          
+    {
+        using type = const volatile T;
+    };
+
+    template <typename T> 
+    struct add_cv<volatile T>       
+    {
+        using type = const volatile T; 
+    };
+
+    template <typename T> 
+    struct add_cv<const volatile T> 
+    {
+        using type = const volatile T; 
     };
     
     template <typename T> 
     struct remove_const                
     {
-        typedef T type; 
+        using type = T; 
     };
 
     template <typename T> 
     struct remove_const<const T>       
     {
-        typedef T type; 
+        using type = T;
     };
 
     template <typename T> 
     struct remove_volatile             
     {
-        typedef T type; 
+        using type = T;
     };
 
     template <typename T> 
     struct remove_volatile<volatile T> 
     {
-        typedef T type;
+        using type = T;
+    };
+
+    template <typename T> 
+    struct add_volatile             
+    {
+        using type = volatile T;
+    };
+
+    template <typename T> 
+    struct add_volatile<volatile T> 
+    {
+        using type = volatile T;
     };
 
     namespace va_args
@@ -856,6 +928,18 @@ namespace hsd
 
     template <typename T>
     using add_pointer_t = typename add_pointer<T>::type;
+
+    template <typename T>
+    using add_const_t = typename add_const<T>::type;
+
+    template <typename T>
+    using add_cv_t = typename add_cv<T>::type;
+
+    template <typename T>
+    using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
+
+    template <typename T>
+    using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
 
     template <typename T>
     using decay_t = typename decay<T>::type;

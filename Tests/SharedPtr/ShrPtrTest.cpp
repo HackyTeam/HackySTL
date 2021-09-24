@@ -70,7 +70,7 @@ int main()
     }
 
     {
-        puts("\nUnsafe version:");
+        puts("Unsafe version:");
         hsd::uchar buf[128]{};
         hsd::buffered_allocator<int> alloc{buf, 128};
 

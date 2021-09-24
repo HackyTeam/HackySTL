@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TypeTraits.hpp"
-#include "Types.hpp"
 
 namespace hsd
 {

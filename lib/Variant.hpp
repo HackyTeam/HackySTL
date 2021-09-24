@@ -1,7 +1,5 @@
 #pragma once
 
-#include "_XUtility.hpp"
-#include "Utility.hpp"
 #include "Result.hpp"
 
 namespace hsd
@@ -168,28 +166,57 @@ namespace hsd
             constexpr static void construct_copy(Storage& l, Storage const& r, usize& li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
-                    _construct_inplace(val.val, get_impl<decltype(val)::index>(r));
+                    using _ValType = remove_cvref_t<decltype(val.val)>;
+
+                    if constexpr (MoveConstructible<_ValType>)
+                    {
+                        _ValType _tmp{get_impl<decltype(val)::index>(r)};
+                        swap(val.val, _tmp);
+                    }
+                    else
+                    {
+                        new (&val.val) _ValType{get_impl<decltype(val)::index>(r)};
+                    }
                 });
             }
 
             constexpr static void construct_move(Storage& l, Storage&& r, usize& li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
-                    _construct_inplace(val.val, move(get_mut_impl<decltype(val)::index>(r)));
+                    using _ValType = remove_cvref_t<decltype(val.val)>;
+
+                    if constexpr (MoveConstructible<_ValType>)
+                    {
+                        _ValType _tmp{move(get_mut_impl<decltype(val)::index>(r))};
+                        swap(val.val, _tmp);
+                    }
+                    else
+                    {
+                        new (&val.val) _ValType{get_impl<decltype(val)::index>(r)};
+                    }
                 });
             }
 
             template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage& l, _Ty&& value)
             {
-                _construct_inplace(l, index_constant<_Idx>(), forward<_Ty>(value));
+                if constexpr (MoveConstructible<Storage>)
+                {
+                    Storage _tmp{index_constant<_Idx>(), forward<_Ty>(value)};
+                    swap(l, _tmp);
+                }
+                else
+                {
+                    new (&l) Storage{index_constant<_Idx>(), forward<_Ty>(value)};
+                }
             }
 
             // Destructor
             static void destroy(Storage& s, usize id)
             {
                 visit(s, id, [](auto val) {
-                    _destroy_inplace(val.val);
+                    using _ValType = remove_cvref_t<decltype(val.val)>;
+                    val.val.~_ValType();
                 });
             }
 

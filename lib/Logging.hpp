@@ -91,7 +91,7 @@ namespace hsd
         using stack_type = hsd::vector<logger_detail::source_location>;
         using stack_iterator = typename stack_type::iterator;
 
-        stack_type _stack;
+        static inline stack_type _stack;
 
     public:
 
@@ -103,16 +103,16 @@ namespace hsd
             _stack.pop_back();
         }
 
-        inline stack_trace& add(
+        static inline stack_trace add(
             const char* func, 
             const char* file_name = __builtin_FILE(),
             i32 line = __builtin_LINE(), i32 column = 0)
         {
             _stack.emplace_back(file_name, func, line, column);
-            return *this;
+            return {};
         }
 
-        inline void print_stack()
+        static inline void print_stack()
         {
             for (auto it = _stack.rbegin(); it != _stack.rend(); it--)
             {
@@ -136,12 +136,12 @@ namespace hsd
         using profiler_type = hsd::vector<logger_detail::profiler_value>;
         using profiler_iterator = typename profiler_type::iterator;
 
-        profiler_type _stack;
+        static inline profiler_type _stack;
 
     public:
 
         inline profiler() = default;
-        inline profiler(const profiler&) = default;
+        inline profiler(const profiler&) =default;
 
         inline ~profiler()
         {
@@ -156,36 +156,33 @@ namespace hsd
             _stack.pop_back();
         }
 
-        inline profiler& add(
+        static inline profiler add(
             const char* func, i32 line = __builtin_LINE(),
             const char* file_name = __builtin_FILE())
         {
             _stack.emplace_back(file_name, func, line);
-            return *this;
+            return {};
         }
         
-        inline const logger_detail::profiler_value& get() const
+        static inline const logger_detail::profiler_value& get()
         {
             return _stack.back();
         }
     };
 
-    static inline stack_trace exec_stack;
-    static inline profiler profiler_stack;
     using source_location = logger_detail::source_location;
 
     #define invoke_profiler_func(func, ...) \
-        func(hsd::profiler_stack.add(HSD_FUNCTION_NAME) __VA_OPT__(,) __VA_ARGS__)
+        func(hsd::profiler::add(HSD_FUNCTION_NAME) __VA_OPT__(,) __VA_ARGS__)
     #define invoke_stacktrace_func(func, ...) \
-        func(hsd::exec_stack.add(HSD_FUNCTION_NAME) __VA_OPT__(,) __VA_ARGS__)
+        func(hsd::stack_trace::add(HSD_FUNCTION_NAME) __VA_OPT__(,) __VA_ARGS__)
 
     struct stack_trace_error
     {
         inline const char* operator()() const
         {   
-            exec_stack.print_stack();
-            fputc('\n', stderr);
-            return "The stack was unwind up there";
+            stack_trace::print_stack();
+            return "\nThe stack was unwind up there";
         }
     };
 } // namespace hsd

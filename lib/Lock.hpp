@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Atomic.hpp"
-#include "Concepts.hpp"
-#include "Limits.hpp"
 #include "Result.hpp"
 
 #if defined(HSD_PLATFORM_WINDOWS)
@@ -76,7 +74,7 @@ namespace hsd
         {
             syscall(
                 SYS_futex, reinterpret_cast<u32*>(value), 
-                1, limits<i32>::max, nullptr, nullptr, 0
+                1, INT_MAX, nullptr, nullptr, 0
             );
         }
     } // namespace futex_detail

@@ -153,7 +153,7 @@ namespace hsd
         static constexpr f128 nan = __builtin_nanf("");
         #endif
         static constexpr f128 epsilon = 1.08420217248550443401e-19l;
-        #if defined(HSD_PLATFORM_WINDOWS)
+        #if defined(HSD_COMPILER_MSVC)
         static constexpr f128 min = 4.9406564584124654E-324l;
         static constexpr f128 max = 1.7976931348623157e+308l;
         #else

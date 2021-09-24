@@ -1,14 +1,11 @@
 #pragma once
 
-#include "TypeTraits.hpp"
-#include "_Define.hpp"
 #include "String.hpp"
 
 #include <time.h>
-#include <wchar.h>
 
 #if defined(HSD_PLATFORM_WINDOWS)
-#include <Windows.h>
+#include <windows.h>
 
 #ifndef CLOCK_PROCESS_CPUTIME_ID
 #define CLOCK_PROCESS_CPUTIME_ID 1

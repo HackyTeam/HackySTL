@@ -1,4 +1,5 @@
-#include <cstdio>
+#include <cassert>
+#include <stdio.h>
 #include <iterator>
 #include <Vector.hpp>
 

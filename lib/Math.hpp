@@ -1,9 +1,7 @@
 #pragma once
 
-#include "IntegerSequence.hpp"
 #include "Limits.hpp"
 #include "Concepts.hpp"
-#include "Utility.hpp"
 #include <cmath>
 
 /// The implementations are NOT original, they are, in fact

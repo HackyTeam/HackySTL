@@ -1,3 +1,4 @@
+#include <cassert>
 #include <Extra/Json.hpp>
 #include <Io.hpp>
 

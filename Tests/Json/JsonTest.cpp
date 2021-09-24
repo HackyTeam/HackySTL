@@ -1,5 +1,6 @@
 // This file is UTF-8
 
+#include <cassert>
 #include <Extra/Json.hpp>
 #include <Io.hpp>
 

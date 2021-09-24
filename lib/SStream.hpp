@@ -1,7 +1,6 @@
 #pragma once
 
 #include "_SStreamDetail.hpp"
-#include "Allocator.hpp"
 
 namespace hsd
 {
@@ -233,21 +232,23 @@ namespace hsd
             
             constexpr auto _fmt_buf = sstream_detail::
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
-            static_assert(_fmt_buf.size() == sizeof...(Args) + 1, "Arguments don\'t match");
+            
+            static_assert(
+                _fmt_buf.size() == sizeof...(Args) + 1, 
+                "The number of arguments doesn't match"
+            );
 
-            constexpr auto _fmt_last_len = _fmt_buf[sizeof...(Args)].second;
-            constexpr basic_string_literal<char_type, _fmt_last_len + 1> _last{
-                _fmt_buf[sizeof...(Args)].first, _fmt_last_len
-            };
-
+            constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>) {
                 (
                     (sstream_detail::_sub_from(
                         _size, _write<
-                            basic_string_literal< 
-                                char_type, _fmt_buf[Ints].second + 1 
-                            >{
-                                _fmt_buf[Ints].first, _fmt_buf[Ints].second
+                            format_literal<char_type, _fmt_buf[Ints].length + 1>
+                            {
+                                .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
+                                .tag = _fmt_buf[Ints].tag,
+                                .foreground = _fmt_buf[Ints].foreground,
+                                .background = _fmt_buf[Ints].background
                             }
                         >(args, {_data + (capacity() - _size), _size})
                     ).unwrap(), ...)
@@ -255,7 +256,15 @@ namespace hsd
             }(make_index_sequence<sizeof...(Args)>{});
 
             usize _last_len = static_cast<usize>(
-                _write<_last>(
+                _write<
+                    format_literal<char_type, _last.length + 1>
+                    {
+                        .format = {_last.format, _last.length},
+                        .tag = _last.tag,
+                        .foreground = _last.foreground,
+                        .background = _last.background
+                    }
+                >(
                     {_data + (capacity() - _size), _size}
                 )
             );

@@ -38,6 +38,7 @@ int main()
         ready = true;
         hsd_println("main() signals data ready for processing");
     }
+    
     cond_var.notify_one();
  
     // wait for the worker
@@ -45,7 +46,7 @@ int main()
         hsd::unique_lock<hsd::mutex> lock{mutex};
         cond_var.wait(lock, []{ return processed; });
     }
+    
     hsd_println("Back in main(), data = {}", data);
- 
     worker.join().unwrap();
 }

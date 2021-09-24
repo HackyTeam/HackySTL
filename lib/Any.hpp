@@ -1,14 +1,5 @@
 #pragma once
 
-// define HSD_ANY_ENABLE_TYPEINFO to enable type_info
-
-#ifdef HSD_ANY_ENABLE_TYPEINFO
-#   include <typeinfo>
-#endif
-
-#include "Result.hpp"
-#include "Types.hpp"
-#include "Utility.hpp"
 #include "UniquePtr.hpp"
 
 namespace hsd
@@ -34,10 +25,6 @@ namespace hsd
     public:
         virtual ~_any_base() = default;
         virtual hsd::unique_ptr<_any_base> clone() const = 0;
-
-        #ifdef HSD_ANY_ENABLE_TYPEINFO
-        virtual const std::type_info& get_typeinfo() const noexcept = 0;
-        #endif
     };
 
     template <any_detail::Copyable T>
@@ -55,13 +42,6 @@ namespace hsd
         {
             return hsd::make_unique<_any_derived>(_value);
         }
-
-        #ifdef HSD_ANY_ENABLE_TYPEINFO
-        const std::type_info& get_typeinfo() const noexcept override 
-        {
-            return typeid(T);
-        }
-        #endif
     };
 
     class any
@@ -126,13 +106,6 @@ namespace hsd
         {
             return dynamic_cast<_any_derived<T>*>(_data.get());
         }
-
-        #ifdef HSD_ANY_ENABLE_TYPEINFO
-        inline const std::type_info& type() const noexcept
-        {
-            return _data != nullptr ? _data->get_typeinfo() : typeid(void);
-        }
-        #endif
 
         inline void swap(any& other) noexcept
         {

@@ -1,10 +1,6 @@
 #pragma once
 
-#include "Utility.hpp"
-#include "Types.hpp"
 #include "Allocator.hpp"
-
-#include <new>
 
 namespace hsd
 {

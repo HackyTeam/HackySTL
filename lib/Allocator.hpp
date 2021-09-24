@@ -3,10 +3,8 @@
 #include "Result.hpp"
 #include "Math.hpp"
 #include "StackArray.hpp"
-#include "IntegerSequence.hpp"
 
 #include <malloc.h>
-#include <string.h>
 #include <new>
 
 namespace hsd

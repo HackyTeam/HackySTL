@@ -254,18 +254,20 @@ namespace hsd
             {
                 (
                     _print<
-                        format_literal<char_type, _fmt_buf[Ints].length + 1> {
+                        format_literal<char_type, _fmt_buf[Ints].length + 1>
+                        {
                             .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
                             .tag = _fmt_buf[Ints].tag,
                             .foreground = _fmt_buf[Ints].foreground,
                             .background = _fmt_buf[Ints].background
                         }
-                    >(args, _file_buf), 
-                ...);
+                    >(args, _file_buf), ...
+                );
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<
-                format_literal<char_type, _last.length + 1> {
+                format_literal<char_type, _last.length + 1>
+                {
                     .format = {_last.format, _last.length},
                     .tag = _last.tag,
                     .foreground = _last.foreground,

@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Utility.hpp"
 #include "Tuple.hpp"
 #include "Result.hpp"
 
-#if defined(HSD_PLATFORM_POSIX)
-#include <unistd.h>
-#include <pthread.h>
-#include <cstdlib>
+#include <stdlib.h>
 #include <time.h>
-#include <errno.h>
-#include <string.h>
-#elif defined(HSD_PLATFORM_WINDOWS)
+#include <unistd.h>
+
+#if defined(HSD_PLATFORM_WINDOWS)
 #include <windows.h>
+#else
+#include <string.h>
+#include <pthread.h>
+#include <errno.h>
 #endif
 
 namespace hsd 

@@ -1,6 +1,4 @@
 #include <Logging.hpp>
-#include <stdio.h>
-#include <limits>
 
 template <hsd::usize N>
 auto test_trace(hsd::stack_trace, const char* msg)
@@ -20,14 +18,15 @@ auto test_trace<0>(hsd::stack_trace, const char*)
 template <hsd::usize N>
 static void test_profiler(hsd::profiler)
 {
-    invoke_profiler_func(test_profiler<N - 1>);
+    if constexpr (N > 0)
+    {
+        invoke_profiler_func(test_profiler<N - 1>);
+    }
 }
-
-template <>
-void test_profiler<0>(hsd::profiler) {}
 
 int main()
 {
     //invoke_stacktrace_func(test_trace<120>, "hello").unwrap();   
     invoke_profiler_func(test_profiler<32>);
+    return 0;
 }

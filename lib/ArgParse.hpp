@@ -4,7 +4,6 @@
 #include "Functional.hpp"
 #include "_SStreamDetail.hpp"
 #include "StringView.hpp"
-#include "Result.hpp"
 
 namespace hsd
 {

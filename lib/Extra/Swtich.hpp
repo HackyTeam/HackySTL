@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Result.hpp"
-#include "Concepts.hpp"
 
 namespace hsd
 {

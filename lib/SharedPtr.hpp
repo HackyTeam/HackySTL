@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utility.hpp"
-#include "_XUtility.hpp"
 #include "Allocator.hpp"
 #include "Atomic.hpp"
 
@@ -20,11 +18,12 @@ namespace hsd
             template < typename T, template <typename> typename Allocator >
             class storage
             {
-            private:
+            public:
                 using alloc_type = Allocator<remove_array_t<T>>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+            private:
                 alloc_type _alloc;
                 pointer_type _data = nullptr;
                 usize _size = 0;
@@ -174,11 +173,12 @@ namespace hsd
             template < template <typename> typename Allocator >
             class counter
             {
-            private:
+            public:
                 using alloc_type = Allocator<usize>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+            private:
                 alloc_type _alloc;
                 usize* _data = nullptr;
 
@@ -282,6 +282,8 @@ namespace hsd
 
             inline void _delete()
             {
+                using value_type = typename shared_detail::storage<T, Allocator>::value_type;
+
                 if (_count.get_pointer() != nullptr)
                 {
                     (*_count)--;
@@ -293,11 +295,11 @@ namespace hsd
                             if constexpr (is_array<T>::value)
                             {
                                 for (usize i = 0, size = _value.get_size(); i < size; ++i)
-                                    _destroy_inplace(get()[size-i]);
+                                    get()[size-i].~value_type();
                             }
                             else
                             {
-                                _destroy_inplace(*get());
+                                get()->~value_type();
                             }
                         }
                         _value.deallocate().unwrap();
@@ -518,11 +520,12 @@ namespace hsd
             template < typename T, template <typename> typename Allocator >
             class storage
             {
-            private:
+            public:
                 using alloc_type = Allocator<remove_array_t<T>>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+            private:
                 alloc_type _alloc;
                 pointer_type _data = nullptr;
                 usize _size = 0;
@@ -672,11 +675,12 @@ namespace hsd
             template < template <typename> typename Allocator >
             class counter
             {
-            private:
+            public:
                 using alloc_type = Allocator<atomic_usize>;
                 using pointer_type = typename alloc_type::pointer_type;
                 using value_type = typename alloc_type::value_type;
 
+            private:
                 alloc_type _alloc;
                 atomic_usize* _data = nullptr;
 
@@ -780,6 +784,8 @@ namespace hsd
 
             inline void _delete()
             {
+                using value_type = typename shared_detail::storage<T, Allocator>::value_type;
+
                 if (_count.get_pointer() != nullptr)
                 {
                     (*_count)--;
@@ -791,11 +797,11 @@ namespace hsd
                             if constexpr (is_array<T>::value)
                             {
                                 for (usize i = 0, size = _value.get_size(); i < size; ++i)
-                                    _destroy_inplace(get()[size-i]);
+                                    get()[size-i].~value_type();
                             }
                             else
                             {
-                                _destroy_inplace(*get());
+                                get()->~value_type();
                             }
                         }
                         _value.deallocate().unwrap();

@@ -4,22 +4,21 @@
 #include "_Define.hpp"
 #include "String.hpp"
 #include <stdio.h>
+#include <unistd.h>
 
-#if defined(HSD_PLATFORM_POSIX)
+#if defined(HSD_PLATFORM_WINDOWS)
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#else
 #include <poll.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <memory.h>
 #include <errno.h>
-#else
-#include <unistd.h>
-#include <ws2tcpip.h>
-#include <winsock2.h>
 #endif
 
 namespace hsd

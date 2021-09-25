@@ -2,9 +2,6 @@
 
 /// @brief JSON stream parser
 
-#include <stdio.h>
-#include <wchar.h>
-
 #include "../List.hpp"
 #include "../String.hpp"
 #include "../UniquePtr.hpp"

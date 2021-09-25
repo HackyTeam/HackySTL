@@ -80,6 +80,12 @@ namespace hsd
         requires(Func func, Args... args){ {func(args...).unwrap()} -> IsSame<RetType>; }
     );
 
+    template < typename Func, typename... Args >
+    concept UnwrapInvocable = requires(Func func, Args... args)
+    {
+        func(args...).unwrap();
+    };
+
     template < typename T, typename... Args >
     concept Constructible = requires(T t, Args... args)
     {

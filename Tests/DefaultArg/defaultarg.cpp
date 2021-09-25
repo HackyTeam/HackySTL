@@ -1,8 +1,6 @@
 #include <Extra/DefaultArg.hpp>
 #include <Io.hpp>
 
-// Pls -O3
-
 int add(hsd::i32 a, hsd::i32 b) 
 {
     return a + b;

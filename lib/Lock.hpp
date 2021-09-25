@@ -74,7 +74,7 @@ namespace hsd
         {
             syscall(
                 SYS_futex, reinterpret_cast<u32*>(value), 
-                1, INT_MAX, nullptr, nullptr, 0
+                1, 2147483647, nullptr, nullptr, 0
             );
         }
     } // namespace futex_detail

@@ -55,5 +55,10 @@ Maintain and improve this project which was started over a year ago
 - DeKrain (Implementations)
 - qookie (Mostly debugging and some implementations)
 
+# Dependency graph
+<p align = 'left'>
+  <img src='https://raw.githubusercontent.com/HackyTeam/HackySTL/dev/HSD_Depencency_graph.png'>
+</p>
+
 # Platforms
   [Discord](https://discord.gg/dEghMASRKb)

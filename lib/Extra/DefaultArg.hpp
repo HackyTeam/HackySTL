@@ -29,7 +29,6 @@ namespace hsd
             : default_args(forward<Args>(args)...), func(forward<F>(func)) 
         {}
 
-        public:
         template <typename... U>
         constexpr Result operator()(U&&... args) const 
         {

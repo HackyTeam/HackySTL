@@ -178,4 +178,4 @@ namespace hsd
     {
         return static_cast<const Elem*>(arr) + Count;
     }
-}
+} // namespace hsd

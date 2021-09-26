@@ -7,6 +7,9 @@
 #include "../UniquePtr.hpp"
 #include "../UnorderedMap.hpp"
 #include "../Variant.hpp"
+#include "Reference.hpp"
+#include "Result.hpp"
+#include "Types.hpp"
 
 namespace hsd
 {
@@ -91,7 +94,7 @@ namespace hsd
         using str = basic_string<CharT>;
         using num = variant<i64, f128>;
 
-        list<JsonToken> _tokens;
+        list<pair<JsonToken, usize>> _tokens;
         list<str> _qtok_string;
         list<num> _qtok_number;
         JsonToken _current_token = JsonToken::Empty;
@@ -100,6 +103,7 @@ namespace hsd
         str _token_str;
 
         usize _pos = 0;
+        usize _begin_pos = 0;
 
     public:
         auto& get_tokens() { return _tokens; }
@@ -137,7 +141,7 @@ namespace hsd
                         #define CASE_CH(ch, tok)    \
                         case static_cast<CharT>(ch):\
                         {                           \
-                            _tokens.push_back(tok);  \
+                            _tokens.emplace_back(tok, _pos - 1);  \
                             break;                  \
                         }
 
@@ -154,6 +158,7 @@ namespace hsd
                             _current_token = JsonToken::Null;
                             _token_kw = s_keywords[0];
                             ++_token_position;
+                            _begin_pos = _pos - 1;
                             break;
                         }
                         case static_cast<CharT>('t'):
@@ -161,6 +166,7 @@ namespace hsd
                             _current_token = JsonToken::True;
                             _token_kw = s_keywords[1];
                             ++_token_position;
+                            _begin_pos = _pos - 1;
                             break;
                         }
                         case static_cast<CharT>('f'):
@@ -168,11 +174,13 @@ namespace hsd
                             _current_token = JsonToken::False;
                             _token_kw = s_keywords[2];
                             ++_token_position;
+                            _begin_pos = _pos - 1;
                             break;
                         }
                         case static_cast<CharT>('"'):
                         {
                             _current_token = JsonToken::String;
+                            _begin_pos = _pos - 1;
                             break;
                         }
                         default:
@@ -182,6 +190,7 @@ namespace hsd
                                 (_ch >= static_cast<CharT>('0') and _ch <= static_cast<CharT>('9')))
                             {
                                 _current_token = JsonToken::Number;
+                                _begin_pos = _pos - 1;
                                 
                                 if (_ch != static_cast<CharT>('+') and _ch != static_cast<CharT>('-'))
                                     _token_str.push_back('+'); // Explicit sign for parse<i32>
@@ -191,7 +200,7 @@ namespace hsd
                             }
                             else
                             {
-                                _tokens.push_back(JsonToken::Error);
+                                _tokens.emplace_back(JsonToken::Error, _pos);
                                 return JsonError{"Syntax error: unexpected character", _pos};
                             }
                         }
@@ -204,7 +213,7 @@ namespace hsd
                         if (_ch != static_cast<CharT>(_token_kw[_token_position]))
                         {
                             // Error and recover
-                            _tokens.push_back(JsonToken::Error);
+                            _tokens.emplace_back(JsonToken::Error, _pos);
                             _current_token = JsonToken::Empty;
                             _token_position = 0;
                             _token_kw = nullptr;
@@ -215,7 +224,7 @@ namespace hsd
                         
                         if (_token_kw[_token_position] == 0)
                         {
-                            _tokens.push_back(_current_token);
+                            _tokens.emplace_back(_current_token, _begin_pos);
                             _current_token = JsonToken::Empty;
                             _token_position = 0;
                             _token_kw = nullptr;
@@ -226,7 +235,7 @@ namespace hsd
                         // handle escape sequences
                         if (_ch == static_cast<CharT>('"'))
                         {
-                            _tokens.push_back(_current_token);
+                            _tokens.emplace_back(_current_token, _begin_pos);
                             _qtok_string.push_back(move(_token_str));
                             _current_token = JsonToken::Empty;
                             _token_position = 0;
@@ -258,11 +267,11 @@ namespace hsd
                         }
                         else if (_ch == static_cast<CharT>('e') or _ch == static_cast<CharT>('E'))
                         {
-                            return JsonError{"Work in progress: exponential motation", _pos};
+                            return JsonError{"Unimplemented: exponential notation", _pos};
                         }
                         else
                         {
-                            _tokens.push_back(_current_token);
+                            _tokens.emplace_back(_current_token, _begin_pos);
                             
                             if (_floating == true)
                             {
@@ -332,7 +341,7 @@ namespace hsd
             
             if (_current_token == JsonToken::Number)
             {
-                _tokens.push_back(_current_token);
+                _tokens.emplace_back(_current_token, _begin_pos);
                 
                 if (_token_str.find(static_cast<CharT>('.')) != str::npos)
                 {
@@ -353,11 +362,11 @@ namespace hsd
             }
             if (_current_token != JsonToken::Empty)
             {
-                _tokens.push_back(JsonToken::Error);
+                _tokens.emplace_back(JsonToken::Error, _begin_pos);
                 return JsonError{"Syntax error: unexpected end of transmission", _pos};
             }
             
-            _tokens.push_back(JsonToken::Eof);
+            _tokens.emplace_back(JsonToken::Eof, _pos);
             return {};
         }
     };
@@ -365,8 +374,12 @@ namespace hsd
     enum class JsonValueType
     {
         Null, True, False, Number,
-        String, Object, Array
+        String, Array, Object,
+        StreamingArray, StreamingObject,
     };
+
+    template <typename CharT>
+    class JsonParser;
 
     class JsonValue
     {
@@ -409,12 +422,20 @@ namespace hsd
         template <typename CharT>
         JsonValue& operator[](const basic_string_view<CharT>& key);
         JsonValue& operator[](usize index);
+
+        // Recursively finish the partial value
+        template <typename CharT>
+        static Result<void, runtime_error> finish(unique_ptr<JsonValue>& value);
     };
 
     // Streaming pending value, todo
     class JsonPendingValue : public JsonValue
     {
-        bool is_complete() const noexcept override { return false; }
+        protected:
+        bool _complete = false;
+
+        public:
+        bool is_complete() const noexcept override final { return _complete; }
     };
 
     class JsonPrimitive : public JsonValue
@@ -448,7 +469,7 @@ namespace hsd
             return JsonValueType::Number;
         }
 
-        auto& value() const { return _value; }
+        const auto& value() const { return _value; }
     };
 
     template <typename CharT>
@@ -492,7 +513,7 @@ namespace hsd
         }
     };
 
-    template <typename CharT> // XXX?
+    template <typename CharT>
     class JsonObject : public JsonValue
     {
         unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> _values;
@@ -510,6 +531,103 @@ namespace hsd
         auto& values()
         {
             return _values;
+        }
+    };
+
+    // Streaming values
+    class JsonStreamingArray : public JsonPendingValue
+    {
+        vector<unique_ptr<JsonValue>> _values;
+
+    public:
+        JsonStreamingArray() = default;
+
+        JsonValueType type() const noexcept override
+        {
+            return JsonValueType::StreamingArray;
+        }
+
+        usize current_size() const
+        {
+            return _values.size();
+        }
+
+        Result<reference<unique_ptr<JsonValue>>, runtime_error> access(usize idx)
+        {
+            if (idx >= current_size())
+                return runtime_error{"Streaming array access out of bounds"};
+            return _values[idx];
+        }
+
+        // Turns this instance into a complete JsonArray, if finished parsing
+        // This object may not be used after successful completion
+        Result<unique_ptr<JsonArray>, runtime_error> complete()
+        {
+            if (!_complete)
+                return runtime_error{"Array couldn't be completed: end not reached"};
+            return make_unique<JsonArray>(move(_values));
+        }
+
+    private:
+        template <typename CharT>
+        friend class JsonParser;
+
+        void insert_element(unique_ptr<JsonValue>&& el)
+        {
+            _values.push_back(move(el));
+        }
+
+        void parse_done()
+        {
+            _complete = true;
+        }
+    };
+
+    template <typename CharT>
+    class JsonStreamingObject : public JsonPendingValue
+    {
+        unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> _values;
+
+    public:
+        JsonStreamingObject() = default;
+
+        JsonValueType type() const noexcept override
+        {
+            return JsonValueType::StreamingObject;
+        }
+
+        // Checks if a given key is currently in the object
+        auto lookup(const basic_string<CharT>& key) const
+        {
+            return _values.find(key);
+        }
+
+        usize current_size() const
+        {
+            return _values.size();
+        }
+
+        // Turns this instance into a complete JsonObject, if finished parsing
+        // This object may not be used after successful completion
+        Result<unique_ptr<JsonObject<CharT>>, runtime_error>
+        complete()
+        {
+            if (!_complete)
+                return runtime_error{"Object couldn't be completed: end not reached"};
+            return make_unique<JsonObject<CharT>>(move(_values));
+        }
+
+    private:
+        friend class JsonParser<CharT>;
+
+        bool insert_element(basic_string<CharT>&& key, unique_ptr<JsonValue>&& val)
+        {
+            return _values.emplace(move(key), move(val)).second;
+        }
+
+        void parse_done()
+        {
+            _complete = true;
         }
     };
 
@@ -540,7 +658,6 @@ namespace hsd
             return false;
         }
 
-        // throw
         return runtime_error{"Cast to wrong type"};
     }
 
@@ -642,6 +759,40 @@ namespace hsd
     }
 
     template <typename CharT>
+    inline Result<void, runtime_error> JsonValue::finish(unique_ptr<JsonValue>& value)
+    {
+        switch (value->type())
+        {
+            case JsonValueType::StreamingArray:
+            {
+                auto res = value->as<JsonStreamingArray>().complete();
+                if (!res)
+                    return res.unwrap_err();
+                value = res.unwrap();
+                for (auto& el : value->as_array())
+                    if (auto res = finish<CharT>(el); !res)
+                        return res.unwrap_err();
+                break;
+            }
+            case JsonValueType::StreamingObject:
+            {
+                auto res = value->as<JsonStreamingObject<CharT>>().complete();
+                if (!res)
+                    return res.unwrap_err();
+                value = res.unwrap();
+                for (auto& el : value->as_object<CharT>())
+                    if (auto res = finish<CharT>(el.second); !res)
+                        return res.unwrap_err();
+                break;
+            }
+            default:
+                // Do nothing
+                ;
+        }
+        return {};
+    }
+
+    template <typename CharT>
     class JsonTokenIterator
     {
         JsonStream<CharT>& _stream;
@@ -650,16 +801,20 @@ namespace hsd
         JsonTokenIterator(JsonStream<CharT>& stream)
             : _stream(stream) {}
 
-        JsonToken next()
+        JsonToken next(usize* pos = nullptr)
         {
-            JsonToken tk = _stream.get_tokens().front();
+            if (pos)
+                *pos = _stream.get_tokens().front().second;
+            JsonToken tk = _stream.get_tokens().front().first;
             _stream.get_tokens().pop_front();
             return tk;
         }
 
-        JsonToken peek()
+        JsonToken peek(usize* pos = nullptr)
         {
-            return _stream.get_tokens().front();
+            if (pos)
+                *pos = _stream.get_tokens().front().second;
+            return _stream.get_tokens().front().first;
         }
 
         void skip()
@@ -683,131 +838,292 @@ namespace hsd
         }
     };
 
+    // Idk what I'm doing anymore ¯\_(ツ)_/¯
+    struct JsonParsingToken
+    {
+        enum
+        {
+            TopValue, // Placeholder for root value (null target)
+            //Value, // Placeholder for parsing a value
+            Token, // Expecting a token `token` on next step
+            ArrElem, // Array element or ']'
+            ObjElem, // Object element or '}'
+        } tag;
+        union
+        {
+            JsonToken token;
+            int state = 0;
+        };
+        JsonValue* target = nullptr;
+    };
+
     template <typename CharT>
     class JsonParser
     {
         JsonTokenIterator<CharT> _stream;
+        vector<JsonParsingToken> _stack;
+        unique_ptr<JsonValue> _top;
+        unique_ptr<JsonValue> _last_result;
+        usize _pos = 0;
+        basic_string<CharT> _cur_key;
 
     public:
         JsonParser(JsonStream<CharT>& s) : _stream(s) {}
 
-        Result<unique_ptr<JsonValue>, JsonError> parse_next()
+        // Begins a partial parse. This means that parsing incomplete values (arrays and objects) will be possible,
+        // and allows updates to be retrieved between parses
+        unique_ptr<JsonValue>& parse_begin()
+        {
+            _stack.push_back(JsonParsingToken{JsonParsingToken::TopValue});
+            return _top;
+        }
+
+        // Parses the whole document, without uncomplete nodes
+        // The parser cannot be used after this operation
+        // If `parse_begin` was called upon calling this function, all previous streaming references will be invalidated
+        Result<unique_ptr<JsonValue>, JsonError> parse_all()
+        {
+            if (!_top)
+                if (auto res = parse_resume(); !res)
+                    return res.unwrap_err();
+
+            if (auto res = JsonValue::finish<CharT>(_top); !res)
+                return JsonError{res.unwrap_err()(), _pos};
+            return move(_top);
+        }
+
+        // On success, returns whether the parsing is complete
+        Result<bool, JsonError> parse_resume()
         {
             if (_stream.empty())
-                //return JsonPendingValue::make();
-                return JsonError{"Work in progress: pending values not supported", 0};
+                return JsonError{"No tokens to parse", _pos};
 
-            JsonToken _tok = _stream.next();
-            switch (_tok)
+            do
             {
-                case JsonToken::Eof:
-                    return JsonError{"Unexpected EOF", 0};
-                case JsonToken::Null:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_null());
-                case JsonToken::True:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_true());
-                case JsonToken::False:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_false());
-                case JsonToken::Number:
-                    return make_unique<JsonNumber>(_stream.next_number());
-                case JsonToken::String:
-                    return make_unique<JsonString<CharT>>(_stream.next_string());
-                case JsonToken::BArray:
+                JsonToken _tok = _stream.next(&_pos);
+                JsonParsingToken* ptok = nullptr;
+                if (_stack.filled())
                 {
-                    vector<unique_ptr<JsonValue>> _array;
-                    
-                    if (_stream.empty())
+                    ptok = &_stack.back();
+                    switch (ptok->tag)
                     {
-                        _partial_arr:
-                        return JsonError{"Work in progress: partial arrays", 0};
-                    }
-
-                    if (_stream.peek() != JsonToken::EArray)
-                    {
-                        while (true)
-                        {
-                            auto _res = parse_next();
-                            
-                            if (!_res)
+                        case JsonParsingToken::TopValue:
+                            if (ptok->state == 1)
+                                if (_tok != JsonToken::Eof)
+                                    return JsonError{"Expected EOF", _pos};
+                            [[fallthrough]];
+                        case JsonParsingToken::Token:
+                            if (_tok != ptok->token)
+                                return JsonError{"Expected a different token", _pos};
+                            _stack.pop_back();
+                            continue;
+                        case JsonParsingToken::ArrElem:
+                            // WHYY
+                            if (_tok == JsonToken::EArray and ptok->state != 2)
                             {
-                                return _res;
+                                ptok->target->as<JsonStreamingArray>().parse_done();
+                                _stack.pop_back();
                             }
-                            
-                            _array.push_back(_res.expect());
+                            else if (ptok->state == 1 and _tok != JsonToken::Comma)
+                                return JsonError{"Expected a comma", _pos};
+                            else
+                                goto _parse_token;
+                            ptok->state = 2;
+                            continue;
+                        case JsonParsingToken::ObjElem:
+                            // WWHHYYYYYYYY
+                            if (ptok->state == 0 or ptok->state == 3)
+                            {
+                                if (_tok == JsonToken::EObject)
+                                {
+                                    ptok->target->as<JsonStreamingObject<CharT>>().parse_done();
+                                    _stack.pop_back();
+                                }
+                                else if (_tok != JsonToken::String)
+                                    return JsonError{"Syntax error: expected string key", _pos};
+                                _cur_key = _stream.next_string();
+                                ptok->state = 1;
+                            }
+                            else if (ptok->state == 1)
+                            {
+                                if (_tok != JsonToken::Colon)
+                                    return JsonError{"Expected a colon", _pos};
+                                ptok->state = 2;
+                                continue;
+                            }
+                            else if (ptok->state == 2)
+                                goto _parse_token;
+                            break;
+                    }
+                }
+                else if (_tok == JsonToken::Eof)
+                {
+                    if (_top)
+                        return true;
+                    else
+                        return JsonError{"Unexpected EOF", _pos};
+                }
+                else if (_top)
+                {
+                    return JsonError{"Expected EOF", _pos};
+                }
+                _parse_token:
+                switch (_tok)
+                {
+                    case JsonToken::Eof:
+                        break;
+                    case JsonToken::Null:
+                        _last_result = make_unique<JsonPrimitive>(JsonPrimitive::mk_null());
+                        break;
+                    case JsonToken::True:
+                        _last_result = make_unique<JsonPrimitive>(JsonPrimitive::mk_true());
+                        break;
+                    case JsonToken::False:
+                        _last_result = make_unique<JsonPrimitive>(JsonPrimitive::mk_false());
+                        break;
+                    case JsonToken::Number:
+                        _last_result = make_unique<JsonNumber>(_stream.next_number());
+                        break;
+                    case JsonToken::String:
+                        _last_result = make_unique<JsonString<CharT>>(_stream.next_string());
+                        break;
+                    case JsonToken::BArray:
+                    {
+                        if (_stack.empty())
+                        {
+                            vector<unique_ptr<JsonValue>> _array;
                             
                             if (_stream.empty())
+                                goto _exhaust;
+
+                            if (_stream.peek() != JsonToken::EArray)
                             {
-                                goto _partial_arr;
+                                while (true)
+                                {
+                                    if (auto _res = parse_resume(); !_res)
+                                        return _res.unwrap_err();
+                                    
+                                    _array.push_back(move(_last_result));
+                                    
+                                    if (_stream.empty())
+                                        goto _exhaust;
+                                    if (_stream.peek() == JsonToken::EArray)
+                                    {
+                                        _stream.skip();
+                                        break;
+                                    }
+                                    if (_stream.next(&_pos) != JsonToken::Comma)
+                                        return JsonError{"Syntax error: expected a comma while parsing array", _pos};
+                                }
                             }
-                            if (_stream.peek() == JsonToken::EArray)
-                            {
-                                _stream.skip();
-                                break;
-                            }
-                            if (_stream.next() != JsonToken::Comma)
-                                return JsonError{"Syntax error: expected a comma while parsing array", 0};
+                            return make_unique<JsonArray>(move(_array));
+                        }
+                        else
+                        {
+                            _last_result = make_unique<JsonStreamingArray>();
+                            JsonParsingToken ptok{JsonParsingToken::ArrElem};
+                            ptok.target = _last_result.get();
+                            _stack.push_back(ptok);
+                            break;
                         }
                     }
-                    return make_unique<JsonArray>(move(_array));
-                }
-                case JsonToken::BObject:
-                {
-                    unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> _map;
-                    
-                    if (_stream.empty())
+                    case JsonToken::BObject:
                     {
-                        _partial_obj:
-                        return JsonError{"Work in progress: partial objects", 0};
-                    }
-                    if (_stream.peek() != JsonToken::EObject)
-                    {
-                        while (true)
+                        if (_stack.empty())
                         {
-                            if (_stream.next() != JsonToken::String)
-                            {
-                                return JsonError{"Syntax error: expected string name", 0};
-                            }
-                           
-                            auto _name = _stream.next_string();
+                            unordered_map<basic_string<CharT>, unique_ptr<JsonValue>> _map;
                             
                             if (_stream.empty())
+                                goto _exhaust;
+                            if (_stream.peek() != JsonToken::EObject)
                             {
-                                goto _partial_obj;
-                            }
-                            if (_stream.next() != JsonToken::Colon)
-                            {
-                                return JsonError{"Syntax error: expected a colon", 0};
-                            }
-                            
-                            auto _res = parse_next();
+                                while (true)
+                                {
+                                    if (_stream.next(&_pos) != JsonToken::String)
+                                    {
+                                        return JsonError{"Syntax error: expected string key", _pos};
+                                    }
+                                
+                                    auto _name = _stream.next_string();
+                                    
+                                    if (_stream.empty())
+                                        goto _exhaust;
+                                    if (_stream.next(&_pos) != JsonToken::Colon)
+                                        return JsonError{"Syntax error: expected a colon", _pos};
+                                    
+                                    if (auto _res = parse_resume(); !_res)
+                                        return _res.unwrap_err();
 
-                            if (!_res)
-                            {
-                                return _res;
-                            }
+                                    if (_map.emplace(move(_name), move(_last_result)).second)
+                                        return JsonError{"Syntax error: duplicate keys", _pos};
 
-                            _map.emplace(move(_name), _res.expect());
-                            
-                            if (_stream.peek() == JsonToken::EObject)
-                            {
-                                _stream.skip();
-                                break;
+                                    if (_stream.peek() == JsonToken::EObject)
+                                    {
+                                        _stream.skip();
+                                        break;
+                                    }
+                                    if (_stream.next(&_pos) != JsonToken::Comma)
+                                        return JsonError{"Syntax error: expected a comma while parsing object", _pos};
+
+                                    if (_stream.empty())
+                                        goto _exhaust;
+                                }
                             }
-                            if (_stream.next() != JsonToken::Comma)
-                            {
-                                return JsonError{"Syntax error: expected a comma while parsing object", 0};
-                            }
-                            if (_stream.empty())
-                            {
-                                goto _partial_obj;
-                            }
+                            return make_unique<JsonObject<CharT>>(move(_map));
+                        }
+                        else
+                        {
+                            _last_result = make_unique<JsonStreamingObject<CharT>>();
+                            JsonParsingToken ptok{JsonParsingToken::ObjElem};
+                            ptok.target = _last_result.get();
+                            _stack.push_back(ptok);
+                            break;
                         }
                     }
-                    return make_unique<JsonObject<CharT>>(move(_map));
+                    default:
+                        return JsonError("Syntax error: unexpected token", static_cast<usize>(_tok));
                 }
-                default:
-                    return JsonError("Syntax error: unexpected token", static_cast<usize>(_tok));
+                if (ptok)
+                {
+                    switch (ptok->tag) {
+                        case JsonParsingToken::TopValue:
+                            _top = move(_last_result);
+                            ptok->state = 1;
+                            break;
+                        case JsonParsingToken::ArrElem:
+                            ptok->target->as<JsonStreamingArray>().insert_element(move(_last_result));
+                            ptok->state = 1;
+                            break;
+                        case JsonParsingToken::ObjElem:
+                            ptok->target->as<JsonStreamingObject<CharT>>().insert_element(move(_cur_key), move(_last_result));
+                            ptok->state = 1;
+                            break;
+                        case JsonParsingToken::Token:
+                            break;
+                    }
                 }
+            } while (!_stream.empty());
+            return false;
+
+            _exhaust:
+            return JsonError{"Token stream exhausted while parsing", _pos};
+        }
+    };
+
+    class JsonArrayStreamIterator
+    {
+        JsonStreamingArray& arr;
+        usize offs = 0;
+    public:
+        JsonArrayStreamIterator(JsonStreamingArray& arr)
+            : arr(arr)
+        {}
+
+        unique_ptr<JsonValue>* next()
+        {
+            if (arr.current_size() > offs)
+                return &arr.access(offs++).unwrap();
+            return nullptr;
         }
     };
 }

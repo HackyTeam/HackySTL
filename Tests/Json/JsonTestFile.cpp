@@ -14,9 +14,9 @@ int main()
     lexer.lex_file(test_filename).unwrap();
     lexer.push_eot().unwrap();
 
-    hsd::JsonParser parser = lexer;
+    hsd::JsonParser parser(lexer);
     // Parse the string
-    auto value = parser.parse_next().unwrap();
+    auto value = parser.parse_all().unwrap();
 
     // Assert that the whole object is complete
     assert(value->is_complete());

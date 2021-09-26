@@ -501,6 +501,16 @@ namespace hsd
             return _capacity;
         }
 
+        inline bool empty() const
+        {
+            return _size == 0;
+        }
+
+        inline bool filled() const
+        {
+            return _size != 0;
+        }
+
         inline iterator data()
         {
             return _data;

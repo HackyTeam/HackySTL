@@ -1,8 +1,10 @@
 // This file is UTF-8
+// The program uses WCHAR Unicode representation (either UTF-32 or UTF-16 on Windows)
 
 #include <Extra/Json.hpp>
 #include <Io.hpp>
 #include <cassert>
+#include <cstdlib>
 
 using namespace hsd::string_view_literals;
 
@@ -40,9 +42,9 @@ int main()
     lexer.lex(s_test_string).unwrap();
     lexer.push_eot().unwrap();
 
-    hsd::JsonParser parser = lexer;
+    hsd::JsonParser parser(lexer);
     // Parse the string
-    auto value = parser.parse_next().unwrap();
+    auto value = parser.parse_all().unwrap();
 
     // Assert that the whole object is complete
     assert(value->is_complete());
@@ -93,12 +95,17 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
         case hsd::JsonValueType::Object:
             hsd_print(L"object");
             break;
+        case hsd::JsonValueType::StreamingArray:
+        case hsd::JsonValueType::StreamingObject:
+            // Uh, oh
+            hsd_println_err("Unexcpected streaming object");
+            abort();
         }
     hsd_println(L"");
 
     if (type == hsd::JsonValueType::Array)
     {
-        auto& vec = v.as<hsd::JsonArray>().values();
+        auto& vec = v.as_array();
 
         for (hsd::usize idx = 0; auto& it : vec)
         {
@@ -111,7 +118,7 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     }
     else if (type == hsd::JsonValueType::Object)
     {
-        auto& map = v.as<hsd::JsonObject<hsd::wchar>>().values();
+        auto& map = v.as_object<hsd::wchar>();
         
         for (auto& kv : map)
         {

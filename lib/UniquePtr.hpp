@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Allocator.hpp"
+#include "TypeTraits.hpp"
+#include "Types.hpp"
 
 namespace hsd
 {
@@ -205,9 +207,44 @@ namespace hsd
             return _value.get_pointer();
         }
 
-        inline bool operator!=(NullType) const
+        inline bool operator==(NullType) const
         {
-            return _value.get_pointer() != nullptr;
+            return get() != nullptr;
+        }
+
+        inline bool operator==(const unique_ptr& o) const
+        {
+            return get() == o.get();
+        }
+
+        inline bool operator==(T* o) const
+        {
+            return get() == o;
+        }
+
+        template <typename To>
+        requires (!is_same<To, unique_ptr>::value)
+        friend inline bool operator==(const To& o, const unique_ptr& p)
+        {
+            return p == o;
+        }
+
+        template <typename To>
+        friend inline bool operator!=(const unique_ptr& p, const To& o)
+        {
+            return !(p == o);
+        }
+
+        template <typename To>
+        requires (!is_same<To, unique_ptr>::value)
+        friend inline bool operator!=(const To& o, const unique_ptr& p)
+        {
+            return !(p == o);
+        }
+
+        explicit inline operator bool() const
+        {
+            return get() != nullptr;
         }
 
         inline auto* operator->()

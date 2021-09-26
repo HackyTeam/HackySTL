@@ -175,7 +175,7 @@ namespace hsd
 			return *this;
 		}
 
-		inline void swap(thread &other)
+		inline void swap(thread& other)
 		{ 
 			// namespace needed
 			hsd::swap(_handle, other._handle);

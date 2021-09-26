@@ -9,9 +9,9 @@ namespace hsd
     namespace umap_detail
     {
         template < template <typename> typename Allocator >
-        concept DefaultAlloc = std::is_default_constructible_v<Allocator<uchar>>;
+        concept DefaultAlloc = DefaultConstructible<Allocator<uchar>>;
         template < template <typename> typename Allocator >
-        concept CopyAlloc = std::is_copy_constructible_v<Allocator<uchar>>;
+        concept CopyAlloc = CopyConstructible<Allocator<uchar>>;
 
         struct bad_key
         {

@@ -4,13 +4,6 @@
 
 namespace hsd
 {
-    namespace any_detail
-    {
-        template <typename T>
-        concept Copyable = std::is_copy_constructible_v<T>;
-    } // namespace any_detail
-    
-
     struct bad_any_cast
     {
         const char* operator()() 
@@ -27,7 +20,7 @@ namespace hsd
         virtual hsd::unique_ptr<_any_base> clone() const = 0;
     };
 
-    template <any_detail::Copyable T>
+    template <CopyConstructible T>
     class _any_derived : public _any_base 
     {
         T _value;
@@ -52,7 +45,7 @@ namespace hsd
     public:
         inline any() noexcept = default;
 
-        template <any_detail::Copyable T>
+        template <CopyConstructible T>
         inline any(T other)
         {
             _data = hsd::make_unique<_any_derived<T>>(move(other));
@@ -80,7 +73,7 @@ namespace hsd
         inline auto cast_to() const
             -> Result<reference<T>, bad_any_cast>
         {
-            using type = typename std::remove_pointer<T>::type;
+            using type = typename remove_pointer<T>::type;
 
             if (auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {

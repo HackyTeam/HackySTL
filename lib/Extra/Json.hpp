@@ -560,8 +560,7 @@ namespace hsd
                     return runtime_error{"Wrong numeric type selected"};
                 }
                 
-                if (_val.unwrap() < std::numeric_limits<Number>::min() or
-                    _val.unwrap() > std::numeric_limits<Number>::max())
+                if (_val.unwrap() < limits<Number>::min or _val.unwrap() > limits<Number>::max)
                 {
                     return runtime_error{"Number out of range"};
                 }
@@ -577,8 +576,7 @@ namespace hsd
                     return runtime_error{"Wrong numeric type selected"};
                 }
                 
-                if (_val.unwrap() < std::numeric_limits<Number>::min() or
-                    _val.unwrap() > std::numeric_limits<Number>::max())
+                if (_val.unwrap() < limits<Number>::min or _val.unwrap() > limits<Number>::max)
                 {
                     return runtime_error{"Number out of range"};
                 }
@@ -748,6 +746,7 @@ namespace hsd
                                 return JsonError{"Syntax error: expected a comma while parsing array", 0};
                         }
                     }
+                    
                     return make_unique<JsonArray>(move(_array));
                 }
                 case JsonToken::BObject:

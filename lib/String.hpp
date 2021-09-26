@@ -31,16 +31,16 @@ namespace hsd
         static constexpr usize npos = static_cast<usize>(-1);
 
         inline basic_string()
-        requires (std::is_default_constructible_v<alloc_type>) = default;
+        requires (DefaultConstructible<alloc_type>) = default;
 
         template <typename Alloc = alloc_type>
         inline basic_string(const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, const Alloc&>)
+        requires (Constructible<alloc_type, const Alloc&>)
             : _alloc{alloc}
         {}
 
         inline basic_string(usize size)
-        requires (std::is_default_constructible_v<alloc_type>)
+        requires (DefaultConstructible<alloc_type>)
         {
             _data = _alloc.allocate(size + 1).unwrap();
             _capacity = size;
@@ -48,7 +48,7 @@ namespace hsd
 
         template <typename Alloc = alloc_type>
         inline basic_string(usize size, const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {
             _data = _alloc.allocate(size + 1).unwrap();
@@ -56,7 +56,7 @@ namespace hsd
         }
 
         inline basic_string(const CharT* cstr)
-        requires (std::is_default_constructible_v<alloc_type>)
+        requires (DefaultConstructible<alloc_type>)
             : _alloc{}
         {
             _size = _str_utils::length(cstr);
@@ -68,7 +68,7 @@ namespace hsd
 
         template <typename Alloc = alloc_type>
         inline basic_string(const CharT* cstr, const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {
             _size = _str_utils::length(cstr);
@@ -79,7 +79,7 @@ namespace hsd
         }
 
         inline basic_string(const CharT* cstr, usize size)
-        requires (std::is_default_constructible_v<alloc_type>)
+        requires (DefaultConstructible<alloc_type>)
             : _alloc{}
         {
             _size = size;
@@ -91,7 +91,7 @@ namespace hsd
 
         template <typename Alloc = alloc_type>
         inline basic_string(const CharT* cstr, usize size, const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {
             _size = size;
@@ -102,13 +102,13 @@ namespace hsd
         }
 
         inline basic_string(basic_string_view<CharT> view)
-        requires (std::is_default_constructible_v<alloc_type>)
+        requires (DefaultConstructible<alloc_type>)
             : basic_string(view.data(), view.size())
         {}
 
         template <typename Alloc = alloc_type>
         inline basic_string(basic_string_view<CharT> view, const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : basic_string(view.data(), view.size(), alloc)
         {}
 

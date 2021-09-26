@@ -7,7 +7,7 @@ namespace hsd
     namespace unique_detail
     {
         template <typename T, typename U>
-        concept ConvertibleDerived = std::is_convertible_v<U, T> || std::is_base_of_v<T, U>;
+        concept ConvertibleDerived = Convertible<U, T> || std::is_base_of_v<T, U>;
 
         template < typename T, template <typename> typename Allocator >
         class storage
@@ -57,27 +57,24 @@ namespace hsd
             template <typename U = T>
             inline storage(storage<U, Allocator>&& other)
             requires (MoveConstructible<alloc_type>)
-                : _alloc(move(other._alloc))
-            {
-                _data = exchange(other._data, nullptr);
-                swap(_size, other._size);
-            }
+                : _alloc{move(other._alloc)}, 
+                _data{exchange(other._data, nullptr)},
+                _size{exchange(other._size, 0)}
+            {}
 
             template <typename U = T>
             inline storage(storage<U, Allocator>&& other)
             requires (!MoveConstructible<alloc_type>)
-            {
-                _data = exchange(other._data, nullptr);
-                swap(_size, other._size);
-            }
+                : _data{exchange(other._data, nullptr)},
+                _size{exchange(other._size, 0)}
+            {}
 
             template <typename U = T>
             inline storage& operator=(storage<U, Allocator>&& rhs)
             {
-                _alloc.deallocate(_data, _size).unwrap();
-                _alloc = rhs._alloc;
+                _alloc = move(rhs._alloc);
                 _data = exchange(rhs._data, nullptr);
-                swap(_size, rhs._size);
+                _size = exchange(rhs._size, 0);
                 return *this;
             }
 
@@ -191,6 +188,7 @@ namespace hsd
         requires(unique_detail::ConvertibleDerived<T, U>)
         inline unique_ptr& operator=(unique_ptr<U, Allocator>&& rhs)
         {
+            _delete();
             _value = move(rhs._value);
             return *this;
         }

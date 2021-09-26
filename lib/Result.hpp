@@ -118,13 +118,13 @@ namespace hsd
         
     public:
         template <typename T>
-        requires (std::is_constructible_v<Ok, T&&>)
+        requires (Constructible<Ok, T&&>)
         constexpr Result(T&& value, ok_value = {})
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
         template <typename T>
-        requires (std::is_constructible_v<Err, T&&>)
+        requires (Constructible<Err, T&&>)
         constexpr Result(T&& value, err_value = {})
             : _err_data{forward<T>(value)}, _initialized{false}
         {}
@@ -329,7 +329,7 @@ namespace hsd
         } 
         
         constexpr decltype(auto) unwrap_or_default()
-        requires (std::is_default_constructible_v<Ok>)
+        requires (DefaultConstructible<Ok>)
         {
             if (_initialized)
             {
@@ -670,7 +670,7 @@ namespace hsd
         {}
 
         template <typename T>
-        requires (std::is_constructible_v<Ok, T&&>)
+        requires (Constructible<Ok, T&&>)
         constexpr Result(T&& value, ok_value = {})
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
@@ -826,7 +826,7 @@ namespace hsd
         } 
         
         constexpr decltype(auto) unwrap_or_default()
-        requires (std::is_default_constructible_v<Ok>)
+        requires (DefaultConstructible<Ok>)
         {
             if (_initialized)
             {

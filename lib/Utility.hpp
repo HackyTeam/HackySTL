@@ -57,8 +57,13 @@ namespace hsd
     template <typename To>
     [[nodiscard]] static constexpr auto bit_cast(auto from)
     {
-        //return static_cast<To>(from);
         return __builtin_bit_cast(To, from);
+    }
+
+    template <typename T, typename... Args>
+    static consteval void literal_construct(T& dest, Args&&... args)
+    {
+        dest = T{forward<Args>(args)...};
     }
 
     template <typename Type>

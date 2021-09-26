@@ -167,11 +167,11 @@ namespace hsd
             {
                 visit(l, li = ri, [&](auto val) {
                     using _ValType = remove_cvref_t<decltype(val.val)>;
+                    using _ArgType = remove_cvref_t<decltype(get_impl<decltype(val)::index>(r))>;
 
-                    if constexpr (MoveConstructible<_ValType>)
+                    if constexpr (LiteralConstructible<_ValType, _ArgType>)
                     {
-                        _ValType _tmp{get_impl<decltype(val)::index>(r)};
-                        swap(val.val, _tmp);
+                        val.val = _ValType{get_impl<decltype(val)::index>(r)};
                     }
                     else
                     {
@@ -184,8 +184,9 @@ namespace hsd
             {
                 visit(l, li = ri, [&](auto val) {
                     using _ValType = remove_cvref_t<decltype(val.val)>;
+                    using _ArgType = remove_cvref_t<decltype(get_mut_impl<decltype(val)::index>(r))>;
 
-                    if constexpr (MoveConstructible<_ValType>)
+                    if constexpr (LiteralConstructible<_ValType, _ArgType>)
                     {
                         _ValType _tmp{move(get_mut_impl<decltype(val)::index>(r))};
                         swap(val.val, _tmp);
@@ -200,7 +201,7 @@ namespace hsd
             template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage& l, _Ty&& value)
             {
-                if constexpr (MoveConstructible<Storage>)
+                if constexpr (LiteralConstructible<Storage, index_constant<_Idx>, _Ty>)
                 {
                     Storage _tmp{index_constant<_Idx>(), forward<_Ty>(value)};
                     swap(l, _tmp);

@@ -119,6 +119,12 @@ namespace hsd
         static_cast<To>(from);
     };
 
+    template <typename T, typename... Args>
+    concept LiteralConstructible = requires(T t, Args... args)
+    {
+        {literal_construct(t, forward<Args>(args)...)};
+    };
+
     template <typename T>
     concept BasicIterable = (
         requires(T value) { *value; }  &&

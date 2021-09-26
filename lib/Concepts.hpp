@@ -122,7 +122,7 @@ namespace hsd
     template <typename T, typename... Args>
     concept LiteralConstructible = requires(T t, Args... args)
     {
-        {literal_construct(t, forward<Args>(args)...)};
+        literal_construct(t, forward<Args>(args)...);
     };
 
     template <typename T>

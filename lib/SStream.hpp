@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_SStreamDetail.hpp"
+#include "Tuple.hpp"
 
 namespace hsd
 {
@@ -87,10 +88,12 @@ namespace hsd
         template < basic_string_literal fmt, typename... Args >
 		inline void write_data(Args&&... args)
 		{
-            using sstream_detail::_write;
             _size = _capacity;
             
+            using sstream_detail::_write;
+            using sstream_detail::add_const_data_t;
             using char_type = typename decltype(fmt)::char_type;
+            const tuple _args_tup = {forward<add_const_data_t<decay_t<Args>>>(args)...};
             constexpr auto _fmt_buf = sstream_detail::
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
             static_assert(
@@ -98,24 +101,28 @@ namespace hsd
                 "Arguments don\'t match"
             );
 
+            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
+            {
+                using arg_type = decltype(_args_tup.template get<I>());
+                const auto& _arg = _args_tup.template get<I>();
+
+                sstream_detail::_sub_from(
+                    _size, _write<
+                        format_literal<char_type, _fmt_buf[I].length + 1> {
+                            .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                            .tag = _fmt_buf[I].tag,
+                            .foreground = _fmt_buf[I].foreground,
+                            .background = _fmt_buf[I].background
+                        }
+                    >(forward<arg_type>(_arg), {_data + (_capacity - _size), _size})
+                ).unwrap();
+            };
+
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            [&]<usize... Ints>(index_sequence<Ints...>) {
-                (
-                    (
-                        sstream_detail::_sub_from(
-                            _size, _write<
-                                format_literal<char_type, _fmt_buf[Ints].length + 1> {
-                                    .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
-                                    .tag = _fmt_buf[Ints].tag,
-                                    .foreground = _fmt_buf[Ints].foreground,
-                                    .background = _fmt_buf[Ints].background
-                                }
-                            >(
-                                args, {_data + (_capacity - _size), _size}
-                            )
-                        ).unwrap(), ...
-                    )
-                );
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                // This crashes clang on windows
+                ((_forward_print.template operator()<Ints>()), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             usize _last_len = static_cast<usize>(

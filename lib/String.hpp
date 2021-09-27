@@ -1766,66 +1766,82 @@ namespace hsd
     }
 
     template <format_literal fmt>
-    requires (IsSame<char, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<char, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_SSTREAM_USE_FMT_UNTAGGED(fmt, "%s", dest, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<wchar, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%s", dest, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<wchar, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%ls", dest, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<char, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<char, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<char, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<char, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<wchar, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<wchar, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.c_str());
     }
 
     template <format_literal fmt>
-    requires (IsSame<wchar, typename decltype(fmt)::char_type>)
+    requires (
+        IsSame<wchar, typename decltype(fmt)::char_type> &&
+        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
+    )
     inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
     {
-        static_assert(!(fmt.tag & fmt.hex || fmt.tag & fmt.exp));
         HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%ls", file_buf, val.c_str());
     }
 

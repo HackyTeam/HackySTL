@@ -121,7 +121,7 @@ namespace hsd
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                // This crashes clang on windows
+                // This crashes clang on any os
                 ((_forward_print.template operator()<Ints>()), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
@@ -266,7 +266,7 @@ namespace hsd
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                // This crashes clang on windows
+                // This crashes clang on any os
                 ((_forward_print.template operator()<Ints>()), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 

@@ -11,10 +11,10 @@ namespace hsd
     private:
         CharT* _data = nullptr;
         usize _capacity = 0;
-		usize _size = 0;
+        usize _size = 0;
 
     public:
-		using iterator = CharT*;
+        using iterator = CharT*;
         using const_iterator = const CharT*;
         basic_sstream(const basic_sstream&) = delete;
         basic_sstream& operator=(const basic_sstream&) = delete;
@@ -51,9 +51,9 @@ namespace hsd
             return {};
         }
 
-		template <typename... Args>
-		inline Result<void, runtime_error> set_data(Args&... args)
-		{
+        template <typename... Args>
+        inline Result<void, runtime_error> set_data(Args&... args)
+        {
             using sstream_detail::_parse;
             auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
 
@@ -70,7 +70,7 @@ namespace hsd
             }
 
             return {};
-		}
+        }
 
         template <typename T>
         inline T parse()
@@ -86,8 +86,8 @@ namespace hsd
         }
 
         template < basic_string_literal fmt, typename... Args >
-		inline void write_data(Args&&... args)
-		{
+        inline void write_data(Args&&... args)
+        {
             _size = _capacity;
             
             using sstream_detail::_write;
@@ -138,9 +138,9 @@ namespace hsd
                 )
             );
             _size = _capacity - _size + _last_len;
-		}
+        }
 
-		inline void pop_back()
+        inline void pop_back()
         {
             _data[--_size] = '\0';
         }
@@ -177,10 +177,10 @@ namespace hsd
     {
     private:
         CharT _data[Size] = {};
-		usize _size = 0;
+        usize _size = 0;
 
     public:
-		using iterator = CharT*;
+        using iterator = CharT*;
         using const_iterator = const CharT*;
         static_basic_sstream(const static_basic_sstream&) = delete;
         static_basic_sstream& operator=(const static_basic_sstream&) = delete;
@@ -201,9 +201,9 @@ namespace hsd
             _size = basic_cstring<CharT>::length(_data);
         }
 
-		template <typename... Args>
-		inline Result<void, runtime_error> set_data(Args&... args)
-		{
+        template <typename... Args>
+        inline Result<void, runtime_error> set_data(Args&... args)
+        {
             using sstream_detail::_parse;
             auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
 
@@ -220,7 +220,7 @@ namespace hsd
             }
 
             return {};
-		}
+        }
 
         template <typename T>
         inline T parse()
@@ -231,41 +231,48 @@ namespace hsd
         }
 
         template < basic_string_literal fmt, typename... Args >
-		inline void write_data(Args&&... args)
-		{
-            using char_type = typename decltype(fmt)::char_type;
-            using sstream_detail::_write;
+        inline void write_data(Args&&... args)
+        {
             _size = capacity();
-            
+
+            using sstream_detail::_write;
+            using sstream_detail::add_const_data_t;
+            using char_type = typename decltype(fmt)::char_type;
+            const tuple _args_tup = {forward<add_const_data_t<decay_t<Args>>>(args)...};
             constexpr auto _fmt_buf = sstream_detail::
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
-            
             static_assert(
                 _fmt_buf.size() == sizeof...(Args) + 1, 
-                "The number of arguments doesn't match"
+                "Arguments don\'t match"
             );
 
+            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
+            {
+                using arg_type = decltype(_args_tup.template get<I>());
+                const auto& _arg = _args_tup.template get<I>();
+
+                sstream_detail::_sub_from(
+                    _size, _write<
+                        format_literal<char_type, _fmt_buf[I].length + 1> {
+                            .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                            .tag = _fmt_buf[I].tag,
+                            .foreground = _fmt_buf[I].foreground,
+                            .background = _fmt_buf[I].background
+                        }
+                    >(forward<arg_type>(_arg), {_data + (capacity() - _size), _size})
+                ).unwrap();
+            };
+
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            [&]<usize... Ints>(index_sequence<Ints...>) {
-                (
-                    (sstream_detail::_sub_from(
-                        _size, _write<
-                            format_literal<char_type, _fmt_buf[Ints].length + 1>
-                            {
-                                .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
-                                .tag = _fmt_buf[Ints].tag,
-                                .foreground = _fmt_buf[Ints].foreground,
-                                .background = _fmt_buf[Ints].background
-                            }
-                        >(args, {_data + (capacity() - _size), _size})
-                    ).unwrap(), ...)
-                );
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                // This crashes clang on windows
+                ((_forward_print.template operator()<Ints>()), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             usize _last_len = static_cast<usize>(
                 _write<
-                    format_literal<char_type, _last.length + 1>
-                    {
+                    format_literal<char_type, _last.length + 1> {
                         .format = {_last.format, _last.length},
                         .tag = _last.tag,
                         .foreground = _last.foreground,
@@ -277,9 +284,9 @@ namespace hsd
             );
 
             _size = capacity() - _size + _last_len;
-		}
+        }
 
-		constexpr void pop_back()
+        constexpr void pop_back()
         {
             _data[--_size] = '\0';
         }
@@ -312,7 +319,7 @@ namespace hsd
     };
     
     using sstream = basic_sstream<char>;
-	using wsstream = basic_sstream<wchar>;
+    using wsstream = basic_sstream<wchar>;
     using u8sstream = basic_sstream<char8>;
     using u16sstream = basic_sstream<char16>;
     using u32sstream = basic_sstream<char32>;
@@ -320,7 +327,7 @@ namespace hsd
     template <usize Size>
     using static_sstream = static_basic_sstream<char, Size>;
     template <usize Size>
-	using static_wsstream = static_basic_sstream<wchar, Size>;
+    using static_wsstream = static_basic_sstream<wchar, Size>;
     template <usize Size>
     using static_u8sstream = static_basic_sstream<char8, Size>;
     template <usize Size>

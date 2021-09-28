@@ -870,16 +870,16 @@ namespace hsd
     using UnResolvedType = typename disable_if< Condition::value, Value >::type;
 
     template < typename From, typename To, typename Result >
-	using EnableIfConvertible = ResolvedType< std::is_convertible<From, To>, Result >;
+    using EnableIfConvertible = ResolvedType< std::is_convertible<From, To>, Result >;
 
     template < typename From, typename To, typename Result >
-	using DisableIfConvertible = UnResolvedType< std::is_convertible<From, To>, Result >;
+    using DisableIfConvertible = UnResolvedType< std::is_convertible<From, To>, Result >;
 
     template < typename First, typename Second, typename Result >
-	using EnableIfSame = ResolvedType< is_same<First, Second>, Result >;
+    using EnableIfSame = ResolvedType< is_same<First, Second>, Result >;
 
     template < typename First, typename Second, typename Result >
-	using DisableIfSame = ResolvedType< is_same<First, Second>, Result >;
+    using DisableIfSame = ResolvedType< is_same<First, Second>, Result >;
 
     template <typename T>
     using is_integral = helper::is_integral< typename remove_cv<T>::type >;

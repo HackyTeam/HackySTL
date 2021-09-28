@@ -12,19 +12,19 @@ namespace hsd::network_detail
         if (_is_init == false)
         {
             WSAData _data;
-	        WORD _ver = MAKEWORD(2, 2);
-	        i32 _ws_result = WSAStartup(_ver, &_data);
+            WORD _ver = MAKEWORD(2, 2);
+            i32 _ws_result = WSAStartup(_ver, &_data);
 
             if (_ws_result != 0)
-	        {
-	        	printf(
+            {
+                printf(
                     "Can't start Winsock, here's"
                     " a irrelevant number #%d\n",
                     _ws_result
                 );
                 
                 return;
-	        }
+            }
 
             _is_init = true;
         }

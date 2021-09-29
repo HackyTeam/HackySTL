@@ -477,33 +477,6 @@ namespace hsd
 
     namespace sstream_detail
     {
-        template <typename T> 
-        struct add_const_data
-        {
-            using type = const T;
-        };
-
-        template <typename T> 
-        struct add_const_data<const T>
-        {
-            using type = const T;
-        };
-
-        template <typename T>
-        struct add_const_data<T*>
-        {
-            using type = const T*;
-        };
-
-        template <typename T>
-        struct add_const_data<const T*>
-        {
-            using type = const T*;
-        };
-
-        template <typename T>
-        using add_const_data_t = typename add_const_data<T>::type;
-
         template <typename CharT>
         inline void _parse(pair<const CharT*, usize>&, auto&) = delete;
 
@@ -518,33 +491,6 @@ namespace hsd
 
     namespace io_detail
     {
-        template <typename T> 
-        struct add_const_data
-        {
-            using type = const T;
-        };
-    
-        template <typename T> 
-        struct add_const_data<const T>
-        {
-            using type = const T;
-        };
-    
-        template <typename T>
-        struct add_const_data<T*>
-        {
-            using type = const T*;
-        };
-    
-        template <typename T>
-        struct add_const_data<const T*>
-        {
-            using type = const T*;
-        };
-
-        template <typename T>
-        using add_const_data_t = typename add_const_data<T>::type;
-
         template <format_literal fmt>
         requires (IsSame<char, typename decltype(fmt)::char_type>)
         inline void _print(auto, FILE*) = delete;

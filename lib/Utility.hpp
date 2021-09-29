@@ -66,6 +66,33 @@ namespace hsd
         dest = T{forward<Args>(args)...};
     }
 
+    template <typename T>
+    static constexpr void as_const(T&&) = delete;
+    
+    template <typename T>
+    static constexpr const T& as_const(T& val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T* as_const(T* val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T& as_const(const T& val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T* as_const(const T* val)
+    {
+        return val;
+    }
+
     template <typename Type>
     static constexpr const Type* addressof(const Type& value)
     {

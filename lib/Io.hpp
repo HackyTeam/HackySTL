@@ -240,9 +240,8 @@ namespace hsd
             }
 
             using io_detail::_print;
-            using io_detail::add_const_data_t;
             using char_type = typename decltype(fmt)::char_type;
-            const tuple _args_tup = {forward<add_const_data_t<decay_t<Args>>>(args)...};
+            const tuple<decay_t<Args>...> _args_tup = {args...};
             constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 
@@ -253,8 +252,8 @@ namespace hsd
 
             auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
             {
-                using arg_type = decltype(_args_tup.template get<I>());
-                const auto& _arg = _args_tup.template get<I>();
+                using arg_type = decltype(as_const(_args_tup.template get<I>()));
+                arg_type _arg = as_const(_args_tup.template get<I>());
 
                 _print<
                     format_literal<char_type, _fmt_buf[I].length + 1>

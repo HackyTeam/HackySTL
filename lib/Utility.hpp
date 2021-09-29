@@ -96,35 +96,13 @@ namespace hsd
     template <typename Type>
     static constexpr const Type* addressof(const Type& value)
     {
-        if constexpr (requires{value.operator&();})
-        {
-            return bit_cast<Type*>(
-                &reinterpret_cast<char&>(
-                    const_cast<Type&>(value)
-                )
-            );
-        }
-        else
-        {
-            return &value;
-        }
+        return __builtin_addressof(value);
     }
 
     template <typename Type>
     static constexpr Type* addressof(Type& value)
     {
-        if constexpr (requires {value.operator&();})
-        {
-            return bit_cast<Type*>(
-                &reinterpret_cast<char&>(
-                    const_cast<Type&>(value)
-                )
-            );
-        }
-        else
-        {
-            return &value;
-        }
+        return __builtin_addressof(value);
     }
 
     template <typename T1>

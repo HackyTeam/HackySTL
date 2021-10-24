@@ -8,6 +8,7 @@
 #include <utime.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 
 #if defined(HSD_PLATFORM_WINDOWS)
 #define PATH_SEPARATOR '\\'

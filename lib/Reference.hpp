@@ -13,13 +13,12 @@ namespace hsd
     public:
         using value_type = T;
 
-        constexpr reference(T& value) noexcept
-        {
-            _ptr = addressof(value);
-        }
+        constexpr reference(T& value)
+            : _ptr(addressof(value))
+        {}
         
-        reference(const reference&) noexcept = default;
-        reference& operator=(const reference&) noexcept = default;
+        constexpr reference(const reference&) = default;
+        constexpr reference& operator=(const reference&) = default;
 
         constexpr operator T&() const 
         { 

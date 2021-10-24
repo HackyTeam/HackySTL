@@ -17,23 +17,23 @@ struct S
 struct verbose 
 {
     verbose() {
-        std::puts("default constructor");
+        puts("default constructor");
     }
     ~verbose() {
-        std::puts("destructor");
+        puts("destructor");
     }
     verbose(verbose const&) {
-        std::puts("copy constructor");
+        puts("copy constructor");
     }
     verbose(verbose&&) {
-        std::puts("move constructor");
+        puts("move constructor");
     }
     auto& operator=(verbose const&) {
-        std::puts("copy assignment");
+        puts("copy assignment");
         return *this;
     }
     auto& operator=(verbose&&) {
-        std::puts("move assignment");
+        puts("move assignment");
         return *this;
     }
 };
@@ -148,55 +148,55 @@ int main()
             printf("%d\n", val);
         }
 
-        std::puts("==========");
+        puts("==========");
         auto e2 = gen_range(e, 2, 5);
 
         for (auto val : e2)
         {
-            std::printf("%d\n", val);
+            printf("%d\n", val);
         }
 
-        std::puts("==========");
+        puts("==========");
         e2 = {{12, 21, 123}};
 
         for (auto val : e2)
         {
-            std::printf("%d\n", val);
+            printf("%d\n", val);
         }
     }
 
-    std::puts("==========");
+    puts("==========");
     {
         hsd::vector<S> ls;
         ls.emplace_back(12, 3.3f, 'a');
     }
 
-    std::puts("==========");
+    puts("==========");
     {
         auto ls = hsd::make_vector(1, 2, 3.5f, 4.04, 1.0, -0.0, true);
 
         for (auto val : ls)
         {
-            std::printf("%d\n", val);
+            printf("%d\n", val);
         }
     }
 
-    std::puts("==========");
+    puts("==========");
     {
-        std::puts("--- init 4");
+        puts("--- init 4");
         hsd::vector<verbose> verb(4); // value initialize 4 elements
         // add 2 elements
-        std::puts("--- add element");
+        puts("--- add element");
         verb.emplace_back();
-        std::puts("--- add element");
+        puts("--- add element");
         verb.emplace_back();
 
         {
-            std::puts("--- copy");
+            puts("--- copy");
             auto verb2 = verb; // copy
         }
         {
-            std::puts("--- move");
+            puts("--- move");
             auto verb3 = hsd::move(verb); // move
         }
     }

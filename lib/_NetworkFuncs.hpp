@@ -7,26 +7,19 @@ namespace hsd::network_detail
     #if defined(HSD_PLATFORM_WINDOWS)
     static inline void init_winsock()
     {
-        static bool _is_init = false;
-        
-        if (_is_init == false)
+        static WSAData _data;
+        static WORD _ver = MAKEWORD(2, 2);
+        static i32 _ws_result = WSAStartup(_ver, &_data);
+
+        if (_ws_result != 0)
         {
-            WSAData _data;
-	        WORD _ver = MAKEWORD(2, 2);
-	        i32 _ws_result = WSAStartup(_ver, &_data);
-
-            if (_ws_result != 0)
-	        {
-	        	printf(
-                    "Can't start Winsock, here's"
-                    " a irrelevant number #%d\n",
-                    _ws_result
-                );
-                
-                return;
-	        }
-
-            _is_init = true;
+            printf(
+                "Can't start Winsock, here's"
+                " a irrelevant number #%d\n",
+                _ws_result
+            );
+            
+            return;
         }
     }
     #endif
@@ -66,7 +59,7 @@ namespace hsd::network_detail
     static inline const char* error_message()
     {
         #if defined(HSD_PLATFORM_WINDOWS)
-        static char _msg_buf[256];
+        static char _msg_buf[256]{};
         FormatMessageA(
             FORMAT_MESSAGE_FROM_SYSTEM | 
             FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -105,6 +98,7 @@ namespace hsd::network_detail
         {
             auto* _addr = reinterpret_cast<const sockaddr_in*>(addr);
             static_string<18> _ip_str;
+            
             _ip_str.push_back(_addr->sin_addr.s_addr & 0xff);
             _ip_str.push_back((_addr->sin_addr.s_addr >> 8) & 0xff);
             _ip_str.push_back((_addr->sin_addr.s_addr >> 16) & 0xff);
@@ -124,6 +118,7 @@ namespace hsd::network_detail
 
             _ip_str.push_back(_addr->sin6_port & 0xff);
             _ip_str.push_back((_addr->sin6_port >> 8) & 0xff);
+            
             return _ip_str;
         }
         else

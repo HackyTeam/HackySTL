@@ -137,10 +137,10 @@ namespace hsd
                 : value_first(forward<_Ts>(val)...) 
             {}
 
-            variant_storage(variant_storage const&) = default;
-            variant_storage(variant_storage&&) = default;
-            variant_storage& operator=(variant_storage const&) = default;
-            variant_storage& operator=(variant_storage&&) = default;
+            constexpr variant_storage(variant_storage const&) = default;
+            constexpr variant_storage(variant_storage&&) = default;
+            constexpr variant_storage& operator=(variant_storage const&) = default;
+            constexpr variant_storage& operator=(variant_storage&&) = default;
         };
 
         template <typename... _Ts>
@@ -167,11 +167,11 @@ namespace hsd
             {
                 visit(l, li = ri, [&](auto val) {
                     using _ValType = remove_cvref_t<decltype(val.val)>;
+                    using _ArgType = remove_cvref_t<decltype(get_impl<decltype(val)::index>(r))>;
 
-                    if constexpr (MoveConstructible<_ValType>)
+                    if constexpr (LiteralConstructible<_ValType, _ArgType> && MoveConstructible<_ValType>)
                     {
-                        _ValType _tmp{get_impl<decltype(val)::index>(r)};
-                        swap(val.val, _tmp);
+                        val.val = _ValType{get_impl<decltype(val)::index>(r)};
                     }
                     else
                     {
@@ -184,11 +184,11 @@ namespace hsd
             {
                 visit(l, li = ri, [&](auto val) {
                     using _ValType = remove_cvref_t<decltype(val.val)>;
+                    using _ArgType = remove_cvref_t<decltype(get_mut_impl<decltype(val)::index>(r))>;
 
-                    if constexpr (MoveConstructible<_ValType>)
+                    if constexpr (LiteralConstructible<_ValType, _ArgType> && MoveConstructible<_ValType>)
                     {
-                        _ValType _tmp{move(get_mut_impl<decltype(val)::index>(r))};
-                        swap(val.val, _tmp);
+                        val.val = _ValType{move(get_mut_impl<decltype(val)::index>(r))};
                     }
                     else
                     {
@@ -200,10 +200,9 @@ namespace hsd
             template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage& l, _Ty&& value)
             {
-                if constexpr (MoveConstructible<Storage>)
+                if constexpr (LiteralConstructible<Storage, index_constant<_Idx>, _Ty> && MoveConstructible<Storage>)
                 {
-                    Storage _tmp{index_constant<_Idx>(), forward<_Ty>(value)};
-                    swap(l, _tmp);
+                    l = Storage{index_constant<_Idx>(), forward<_Ty>(value)};
                 }
                 else
                 {
@@ -539,7 +538,7 @@ namespace hsd
             if (index() != _Idx)
                 return bad_variant_access{};
 
-            return {_StorageTraits::template get_mut_impl<_Idx>(this->_storage())};
+            return {_StorageTraits::template get_mut_impl<_Idx>(this->_storage()), ok_value{}};
         }
 
         template <usize _Idx>

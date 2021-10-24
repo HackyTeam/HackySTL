@@ -37,10 +37,10 @@ namespace hsd
         }
 
         inline vector() 
-        requires (std::is_default_constructible_v<alloc_type>) = default;
+        requires (DefaultConstructible<alloc_type>) = default;
 
         inline vector(usize size)
-        requires (std::is_default_constructible_v<alloc_type>)
+        requires (DefaultConstructible<alloc_type>)
             : _alloc{}
         {
             resize(size);
@@ -48,20 +48,20 @@ namespace hsd
 
         template <typename Alloc = alloc_type>
         inline vector(const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {}
 
         template <typename Alloc = alloc_type>
         inline vector(usize size, const Alloc& alloc)
-        requires (std::is_constructible_v<alloc_type, Alloc>)
+        requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {
             resize(size);
         }
 
         inline vector(const vector& other)
-        requires (std::is_copy_constructible_v<alloc_type>)
+        requires (CopyConstructible<alloc_type>)
             : _alloc{other._alloc}, _size{other._size}, _capacity{other._capacity}
         {
             _data = _alloc.allocate(other._capacity).unwrap();
@@ -71,7 +71,7 @@ namespace hsd
         }
 
         inline vector(const vector& other)
-        requires (!std::is_copy_constructible_v<alloc_type>)
+        requires (!CopyConstructible<alloc_type>)
             : _size{other._size}, _capacity{other._capacity}
         {
             _data = _alloc.allocate(other._capacity).unwrap();
@@ -81,21 +81,19 @@ namespace hsd
         }
 
         inline vector(vector&& other)
-        requires (std::is_move_constructible_v<alloc_type>)
-            : _alloc{move(other._alloc)}
-        {
-            swap(_data, other._data);
-            swap(_size, other._size);
-            swap(_capacity, other._capacity);
-        }
+        requires (MoveConstructible<alloc_type>)
+            : _alloc{move(other._alloc)},
+            _data{exchange(other._data, nullptr)},
+            _size{exchange(other._size, 0)},
+            _capacity{exchange(other._capacity, 0)}
+        {}
 
         inline vector(vector&& other)
-        requires (!std::is_move_constructible_v<alloc_type>)
-        {
-            swap(_data, other._data);
-            swap(_size, other._size);
-            swap(_capacity, other._capacity);
-        }
+        requires (!MoveConstructible<alloc_type>)
+            : _data{exchange(other._data, nullptr)},
+            _size{exchange(other._size, 0)},
+            _capacity{exchange(other._capacity, 0)}
+        {}
 
         template <usize N>
         inline vector(const T (&arr)[N])
@@ -410,9 +408,7 @@ namespace hsd
                 }
                 for (; _index < new_size; ++_index)
                 {
-                    if constexpr(
-                        std::is_constructible_v<T, alloc_type> && 
-                        !std::is_default_constructible_v<T>)
+                    if constexpr(Constructible<T, alloc_type> && !DefaultConstructible<T>)
                     {
                         _alloc.construct_at(&_new_buf[_index], _alloc);
                     }
@@ -431,9 +427,7 @@ namespace hsd
             {
                 for (usize _index = _size; _index < new_size; ++_index)
                 {
-                    if constexpr(
-                        std::is_copy_constructible_v<alloc_type> &&
-                        !std::is_default_constructible_v<T>)
+                    if constexpr(CopyConstructible<alloc_type> && !DefaultConstructible<T>)
                     {
                         _alloc.construct_at(&_data[_index], _alloc);
                     }
@@ -965,8 +959,7 @@ namespace hsd
     template < typename T, usize N > vector(T (&&)[N]) -> vector<T>;
     template < typename T > using buffered_vector = vector< T, buffered_allocator >;
 
-    template< typename L, typename... U >
-    requires (std::is_constructible_v<L, U> && ...)
+    template < typename L, Convertible<L>... U >
     constexpr vector<L> make_vector(L&& first, U&&... rest)
     {
         constexpr usize size = 1 + sizeof...(U);

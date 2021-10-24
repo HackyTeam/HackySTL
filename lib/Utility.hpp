@@ -57,42 +57,52 @@ namespace hsd
     template <typename To>
     [[nodiscard]] static constexpr auto bit_cast(auto from)
     {
-        //return static_cast<To>(from);
         return __builtin_bit_cast(To, from);
+    }
+
+    template <typename T, typename... Args>
+    static consteval void literal_construct(T& dest, Args&&... args)
+    {
+        dest = T{forward<Args>(args)...};
+    }
+
+    template <typename T>
+    static constexpr void as_const(T&&) = delete;
+    
+    template <typename T>
+    static constexpr const T& as_const(T& val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T* as_const(T* val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T& as_const(const T& val)
+    {
+        return val;
+    }
+    
+    template <typename T>
+    static constexpr const T* as_const(const T* val)
+    {
+        return val;
     }
 
     template <typename Type>
     static constexpr const Type* addressof(const Type& value)
     {
-        if constexpr (requires{value.operator&();})
-        {
-            return bit_cast<Type*>(
-                &reinterpret_cast<char&>(
-                    const_cast<Type&>(value)
-                )
-            );
-        }
-        else
-        {
-            return &value;
-        }
+        return __builtin_addressof(value);
     }
 
     template <typename Type>
     static constexpr Type* addressof(Type& value)
     {
-        if constexpr (requires {value.operator&();})
-        {
-            return bit_cast<Type*>(
-                &reinterpret_cast<char&>(
-                    const_cast<Type&>(value)
-                )
-            );
-        }
-        else
-        {
-            return &value;
-        }
+        return __builtin_addressof(value);
     }
 
     template <typename T1>
@@ -173,4 +183,4 @@ namespace hsd
     {
         return static_cast<const Elem*>(arr) + Count;
     }
-}
+} // namespace hsd

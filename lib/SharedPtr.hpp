@@ -11,7 +11,7 @@ namespace hsd
         {
             template <typename Base, typename Derived>
             concept ConvertibleDerived = (
-                std::is_convertible_v<Derived, Base> || 
+                Convertible<Derived, Base> || 
                 std::is_base_of_v<Base, Derived>
             );
 
@@ -33,15 +33,15 @@ namespace hsd
 
             public:
                 inline storage()
-                requires (std::is_default_constructible_v<alloc_type>) = default;
+                requires (DefaultConstructible<alloc_type>) = default;
 
                 inline storage(pointer_type ptr, usize size)
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                     : _data{ptr}, _size{size}
                 {}
 
                 inline storage(const alloc_type& alloc, usize size)
-                requires (std::is_copy_constructible_v<value_type>)
+                requires (CopyConstructible<value_type>)
                     : _alloc{alloc}, _size{size}
                 {
                     _data = _alloc.allocate(size).unwrap();
@@ -52,22 +52,22 @@ namespace hsd
                 }
 
                 inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
-                requires (std::is_copy_constructible_v<value_type>)
+                requires (CopyConstructible<value_type>)
                     : _alloc{alloc}, _data{ptr}, _size{size}
                 {}
 
                 inline storage(const storage& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}, _size{other._size}
                 {}
 
                 inline storage(const storage& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}, _size{other._size}
                 {}
 
                 inline storage(storage&& other)
-                requires (std::is_move_constructible_v<alloc_type>)
+                requires (MoveConstructible<alloc_type>)
                     : _alloc{move(other._alloc)}
                 {
                     _data = exchange(other._data, nullptr);
@@ -75,7 +75,7 @@ namespace hsd
                 }
 
                 inline storage(storage&& other)
-                requires (!std::is_move_constructible_v<alloc_type>)
+                requires (!MoveConstructible<alloc_type>)
                 {
                     _data = exchange(other._data, nullptr);
                     swap(_size, other._size);
@@ -83,19 +83,19 @@ namespace hsd
 
                 template <typename U = T>
                 inline storage(const storage<U, Allocator>& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}, _size{other._size}
                 {}
 
                 template <typename U = T>
                 inline storage(const storage<U, Allocator>& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}, _size{other._size}
                 {}
 
                 template <typename U = T>
                 inline storage(storage<U, Allocator>&& other)
-                requires (std::is_move_constructible_v<alloc_type>)
+                requires (MoveConstructible<alloc_type>)
                     : _alloc{move(other._alloc)}
                 {
                     _data = exchange(other._data, nullptr);
@@ -104,7 +104,7 @@ namespace hsd
 
                 template <typename U = T>
                 inline storage(storage<U, Allocator>&& other)
-                requires (!std::is_move_constructible_v<alloc_type>)
+                requires (!MoveConstructible<alloc_type>)
                 {
                     _data = exchange(other._data, nullptr);
                     swap(_size, other._size);
@@ -187,14 +187,14 @@ namespace hsd
 
             public:
                 inline counter()
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                 {
                     _data = _alloc.allocate(1).unwrap();
                     *_data = 1;
                 }
 
                 inline counter(const alloc_type& alloc)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{alloc}
                 {
                     _data = _alloc.allocate(1).unwrap();
@@ -202,28 +202,28 @@ namespace hsd
                 }
 
                 inline counter(usize* ptr)
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                     : _data{ptr}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const alloc_type& alloc, usize* ptr)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{alloc}, _data{ptr}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const counter& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const counter& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}
                 {
                     (*_data)++;
@@ -321,12 +321,12 @@ namespace hsd
             inline shared_ptr(NullType) {}
 
             inline shared_ptr(pointer_type ptr) 
-            requires (std::is_default_constructible_v<alloc_type>)
+            requires (DefaultConstructible<alloc_type>)
                 : _value{ptr, 1u}
             {}
 
             inline shared_ptr(pointer_type ptr, usize size) 
-            requires (std::is_default_constructible_v<alloc_type>)
+            requires (DefaultConstructible<alloc_type>)
                 : _value{ptr, size}
             {}
 
@@ -466,7 +466,7 @@ namespace hsd
         };
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-        requires (std::is_default_constructible_v<Allocator<uchar>>)
+        requires (DefaultConstructible<Allocator<uchar>>)
         static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Args&&... args)
         {
@@ -486,7 +486,7 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator >
-        requires (std::is_default_constructible_v<Allocator<uchar>>)
+        requires (DefaultConstructible<Allocator<uchar>>)
         static inline typename MakeShr<T, Allocator>::array
         make_shared(usize size)
         {
@@ -513,7 +513,7 @@ namespace hsd
         {
             template <typename Base, typename Derived>
             concept ConvertibleDerived = (
-                std::is_convertible_v<Derived, Base> || 
+                Convertible<Derived, Base> || 
                 std::is_base_of_v<Base, Derived>
             );
 
@@ -535,15 +535,15 @@ namespace hsd
 
             public:
                 inline storage()
-                requires (std::is_default_constructible_v<alloc_type>) = default;
+                requires (DefaultConstructible<alloc_type>) = default;
 
                 inline storage(pointer_type ptr, usize size)
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                     : _data{ptr}, _size{size}
                 {}
 
                 inline storage(const alloc_type& alloc, usize size)
-                requires (std::is_copy_constructible_v<value_type>)
+                requires (CopyConstructible<value_type>)
                     : _alloc{alloc}, _size{size}
                 {
                     _data = _alloc.allocate(size).unwrap();
@@ -554,22 +554,22 @@ namespace hsd
                 }
 
                 inline storage(pointer_type ptr, const alloc_type& alloc, usize size)
-                requires (std::is_copy_constructible_v<value_type>)
+                requires (CopyConstructible<value_type>)
                     : _alloc{alloc}, _data{ptr}, _size{size}
                 {}
 
                 inline storage(const storage& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}, _size{other._size}
                 {}
 
                 inline storage(const storage& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}, _size{other._size}
                 {}
 
                 inline storage(storage&& other)
-                requires (std::is_move_constructible_v<alloc_type>)
+                requires (MoveConstructible<alloc_type>)
                     : _alloc{move(other._alloc)}
                 {
                     _data = exchange(other._data, nullptr);
@@ -577,7 +577,7 @@ namespace hsd
                 }
 
                 inline storage(storage&& other)
-                requires (!std::is_move_constructible_v<alloc_type>)
+                requires (!MoveConstructible<alloc_type>)
                 {
                     _data = exchange(other._data, nullptr);
                     swap(_size, other._size);
@@ -585,19 +585,19 @@ namespace hsd
 
                 template <typename U = T>
                 inline storage(const storage<U, Allocator>& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}, _size{other._size}
                 {}
 
                 template <typename U = T>
                 inline storage(const storage<U, Allocator>& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}, _size{other._size}
                 {}
 
                 template <typename U = T>
                 inline storage(storage<U, Allocator>&& other)
-                requires (std::is_move_constructible_v<alloc_type>)
+                requires (MoveConstructible<alloc_type>)
                     : _alloc{move(other._alloc)}
                 {
                     _data = exchange(other._data, nullptr);
@@ -606,7 +606,7 @@ namespace hsd
 
                 template <typename U = T>
                 inline storage(storage<U, Allocator>&& other)
-                requires (!std::is_move_constructible_v<alloc_type>)
+                requires (!MoveConstructible<alloc_type>)
                 {
                     _data = exchange(other._data, nullptr);
                     swap(_size, other._size);
@@ -689,14 +689,14 @@ namespace hsd
 
             public:
                 inline counter()
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                 {
                     _data = _alloc.allocate(1).unwrap();
                     *_data = 1;
                 }
 
                 inline counter(const alloc_type& alloc)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{alloc}
                 {
                     _data = _alloc.allocate(1).unwrap();
@@ -704,28 +704,28 @@ namespace hsd
                 }
 
                 inline counter(atomic_usize* ptr)
-                requires (std::is_default_constructible_v<alloc_type>)
+                requires (DefaultConstructible<alloc_type>)
                     : _data{ptr}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const alloc_type& alloc, atomic_usize* ptr)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{alloc}, _data{ptr}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const counter& other)
-                requires (std::is_copy_constructible_v<alloc_type>)
+                requires (CopyConstructible<alloc_type>)
                     : _alloc{other._alloc}, _data{other._data}
                 {
                     (*_data)++;
                 }
 
                 inline counter(const counter& other)
-                requires (!std::is_copy_constructible_v<alloc_type>)
+                requires (!CopyConstructible<alloc_type>)
                     : _data{other._data}
                 {
                     (*_data)++;
@@ -823,12 +823,12 @@ namespace hsd
             inline shared_ptr(NullType) {}
 
             inline shared_ptr(pointer_type ptr) 
-            requires (std::is_default_constructible_v<alloc_type>)
+            requires (DefaultConstructible<alloc_type>)
                 : _value{ptr, 1u}
             {}
 
             inline shared_ptr(pointer_type ptr, usize size) 
-            requires (std::is_default_constructible_v<alloc_type>)
+            requires (DefaultConstructible<alloc_type>)
                 : _value{ptr, size}
             {}
 
@@ -968,7 +968,7 @@ namespace hsd
         };
 
         template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-        requires (std::is_default_constructible_v<Allocator<uchar>>)
+        requires (DefaultConstructible<Allocator<uchar>>)
         static inline typename MakeShr<T, Allocator>::single_object 
         make_shared(Args&&... args)
         {
@@ -988,7 +988,7 @@ namespace hsd
         }
 
         template < typename T, template <typename> typename Allocator = allocator >
-        requires (std::is_default_constructible_v<Allocator<uchar>>)
+        requires (DefaultConstructible<Allocator<uchar>>)
         static inline typename MakeShr<T, Allocator>::array
         make_shared(usize size)
         {
@@ -1015,14 +1015,12 @@ namespace hsd
     using safe_shared_ptr = atomic_types::shared_ptr<T, Allocator>;
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-    requires (std::is_default_constructible_v<Allocator<uchar>>)
     static inline auto make_unsafe_shared(Args&&... args)
     {
         return non_atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
     }
 
     template < typename T, template <typename> typename Allocator = allocator, typename... Args >
-    requires (std::is_default_constructible_v<Allocator<uchar>>)
     static inline auto make_safe_shared(Args&&... args)
     {
         return atomic_types::make_shared<T, Allocator, Args...>(forward<Args>(args)...);
@@ -1041,14 +1039,12 @@ namespace hsd
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
-    requires (std::is_default_constructible_v<Allocator<uchar>>)
     static inline auto make_unsafe_shared(usize size)
     {
         return non_atomic_types::make_shared<T, Allocator>(size);
     }
 
     template < typename T, template <typename> typename Allocator = allocator >
-    requires (std::is_default_constructible_v<Allocator<uchar>>)
     static inline auto make_safe_shared(usize size)
     {
         return atomic_types::make_shared<T, Allocator>(size);

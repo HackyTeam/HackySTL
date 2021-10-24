@@ -71,25 +71,25 @@ namespace hsd
     template < typename Func, typename... Args >
     concept Invocable = requires(Func func, Args... args) 
     {
-        func(args...);
+        func(forward<Args>(args)...);
     };
 
     template < typename RetType, typename Func, typename... Args >
     concept InvocableRet = ( 
-        requires(Func func, Args... args){ {func(args...)} -> IsSame<RetType>; } ||
-        requires(Func func, Args... args){ {func(args...).unwrap()} -> IsSame<RetType>; }
+        requires(Func func, Args... args){ {func(forward<Args>(args)...)} -> IsSame<RetType>; } ||
+        requires(Func func, Args... args){ {func(forward<Args>(args)...).unwrap()} -> IsSame<RetType>; }
     );
 
     template < typename Func, typename... Args >
     concept UnwrapInvocable = requires(Func func, Args... args)
     {
-        func(args...).unwrap();
+        func(forward<Args>(args)...).unwrap();
     };
 
     template < typename T, typename... Args >
-    concept Constructible = requires(T t, Args... args)
+    concept Constructible = requires(Args... args)
     {
-        { T(args...) };
+        { T{forward<Args>(args)...} };
     };
 
     template <typename T>
@@ -111,6 +111,18 @@ namespace hsd
     concept MoveAssignable = requires(T a, T b)
     {
         a = move(b);
+    };
+
+    template <typename From, typename To>
+    concept Convertible = requires(From from)
+    {
+        static_cast<To>(from);
+    };
+
+    template <typename T, typename... Args>
+    concept LiteralConstructible = requires(T t, Args... args)
+    {
+        literal_construct(t, forward<Args>(args)...);
     };
 
     template <typename T>

@@ -241,6 +241,7 @@ namespace hsd
 
             using io_detail::_print;
             using char_type = typename decltype(fmt)::char_type;
+            const tuple<decltype(as_const(args))...> _args_tup = {as_const(args)...};
             constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 
@@ -249,20 +250,27 @@ namespace hsd
                 "The number of arguments doesn't match"
             );
 
+            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
+            {
+                using arg_type = decltype(_args_tup.template get<I>());
+                arg_type _arg = _args_tup.template get<I>();
+
+                _print<
+                    format_literal<char_type, _fmt_buf[I].length + 1>
+                    {
+                        .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                        .tag = _fmt_buf[I].tag,
+                        .foreground = _fmt_buf[I].foreground,
+                        .background = _fmt_buf[I].background
+                    }
+                >(forward<arg_type>(_arg), _file_buf);
+            };
+
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
             [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                (
-                    _print<
-                        format_literal<char_type, _fmt_buf[Ints].length + 1>
-                        {
-                            .format = {_fmt_buf[Ints].format, _fmt_buf[Ints].length},
-                            .tag = _fmt_buf[Ints].tag,
-                            .foreground = _fmt_buf[Ints].foreground,
-                            .background = _fmt_buf[Ints].background
-                        }
-                    >(args, _file_buf), ...
-                );
+                // This crashes clang on any os
+                ((_forward_print.template operator()<Ints>()), ...);
             }(make_index_sequence<sizeof...(Args)>{});
 
             _print<

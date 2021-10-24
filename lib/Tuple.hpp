@@ -29,12 +29,9 @@ namespace hsd
     public:
         constexpr tuple() = default;
 
-        constexpr tuple(const T& first) 
-            : _first{first}
-        {}
-
-        constexpr tuple(T&& first) 
-            : _first{move(first)}
+        template <typename U>
+        constexpr tuple(U&& first) 
+            : _first{forward<U>(first)}
         {}
 
         constexpr tuple(const tuple& other)
@@ -111,16 +108,10 @@ namespace hsd
     public:
         constexpr tuple() = default;
 
-        template <typename... Args> 
+        template <typename U, typename... Args> 
         requires (Constructible<tuple<Rest...>, Args...>)
-        constexpr tuple(const T& first, Args&&... rest) 
-            : _first{first}, _rest{forward<Args>(rest)...}
-        {}
-
-        template <typename... Args> 
-        requires (Constructible<tuple<Rest...>, Args...>)
-        constexpr tuple(T&& first, Args&&... rest) 
-            : _first{move(first)}, _rest{forward<Args>(rest)...}
+        constexpr tuple(U&& first, Args&&... rest) 
+            : _first{forward<U>(first)}, _rest{forward<Args>(rest)...}
         {}
 
         constexpr tuple(const tuple& other)

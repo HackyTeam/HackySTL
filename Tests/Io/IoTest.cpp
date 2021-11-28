@@ -2,7 +2,7 @@
 
 int main()
 {
-    hsd::wsstream str{256};
+    hsd::wsstream<256> str;
     hsd::i32 x, z;
     hsd::f32 y;
     hsd_println(L"hello, {} and other words", 123.2);
@@ -15,6 +15,7 @@ int main()
         "Tests/Io/test.txt", hsd::io::options::text::read_write
     ).unwrap();
     
-    [[maybe_unused]] auto c = file.read_line().unwrap().parse<hsd::i32>();
+    [[maybe_unused]] auto c = 0;
+    file.read_line().unwrap().set_data(c).unwrap();
     file.print<"{} {} {}">("Hello", 12, -3.4).unwrap();
 }

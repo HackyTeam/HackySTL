@@ -10,7 +10,7 @@ namespace hsd
     class parser_stream
     {
     private:
-        vector<pair<const char*, usize>> _args_buf;
+        vector<const char*> _args_buf;
 
     public:
         // It's a non-movable and copyable type
@@ -24,27 +24,24 @@ namespace hsd
         template <typename... Args>
         Result<void, runtime_error> set_data(Args&... args)
         {
-            using sstream_detail::_parse;
-            constexpr usize num_args = sizeof...(Args);
-
-            if (num_args > _args_buf.size())
+            if (sizeof...(Args) > _args_buf.size())
             {
                 return runtime_error{"Input too small to parse"};
             }
             else
             {
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_parse(_args_buf[Ints], args), ...);
-                }(make_index_sequence<num_args>{});
+                sstream_detail::stream_parser<char> _parser = 
+                    pair{_args_buf.data(), _args_buf.size()};
+                
+                ((_parse_impl(_parser, args).unwrap()), ...);
             }
 
             return {};
         }
 
-        void emplace(const string_view& arg)
+        void emplace(const char* arg)
         {
-            _args_buf.emplace_back(arg.data(), arg.size());
+            _args_buf.emplace_back(arg);
         }
 
         void clear()

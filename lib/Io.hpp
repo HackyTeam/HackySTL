@@ -157,7 +157,7 @@ namespace hsd
             return {};
         }
 
-        inline Result< reference<sstream>, runtime_error > read_line()
+        inline Result< reference<sstream<4096>>, runtime_error > read_line()
         {
             _io_buf.clear();
             
@@ -167,7 +167,7 @@ namespace hsd
                     "Cannot read file. It is in write mode"
                 };
             }
-            if (fgets(_io_buf.data(), 4096, _file_buf) == nullptr)
+            if (fgets(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
             { 
                 _io_buf.clear();
             }
@@ -175,7 +175,7 @@ namespace hsd
             return {_io_buf};
         }
 
-        inline Result< reference<wsstream>, runtime_error > wread_line()
+        inline Result< reference<wsstream<4096>>, runtime_error > wread_line()
         {
             _wio_buf.clear();
             
@@ -185,7 +185,7 @@ namespace hsd
                     "Cannot read file. It is in write mode"
                 };
             }
-            if (fgetws(_wio_buf.data(), 4096, _file_buf) == nullptr)
+            if (fgetws(_wio_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
             { 
                 _wio_buf.clear();
             }
@@ -193,7 +193,7 @@ namespace hsd
             return {_wio_buf};
         }
 
-        inline Result< reference<sstream>, runtime_error > read()
+        inline Result< reference<sstream<4096>>, runtime_error > read()
         {
             _io_buf.clear();
 
@@ -203,15 +203,17 @@ namespace hsd
                     "Cannot read file. It is in write mode"
                 };
             }
-            if (fscanf(_file_buf, "%s", _io_buf.data()) == EOF)
+            
+            for (char c = fgetc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetc(_file_buf))
             {
-                _io_buf.clear();
+                _io_buf.push_back(c);
             }
             
             return {_io_buf};
         }
 
-        inline Result< reference<wsstream>, runtime_error > wread()
+        template <usize N>
+        inline Result< reference<wsstream<N>>, runtime_error > wread()
         {
             _wio_buf.clear();
 
@@ -221,9 +223,10 @@ namespace hsd
                     "Cannot read file. It is in write mode"
                 };
             }
-            if (fwscanf(_file_buf, L"%ls", _wio_buf.data()) == EOF)
+            
+            for (wchar c = fgetwc(_file_buf); c != EOF && wcstring::iswhitespace(c); c = fgetwc(_file_buf))
             {
-                _wio_buf.clear();
+                _io_buf.push_back(c);
             }
 
             return {_wio_buf};
@@ -239,9 +242,8 @@ namespace hsd
                 };
             }
 
-            using io_detail::_print;
             using char_type = typename decltype(fmt)::char_type;
-            const tuple<decltype(as_const(args))...> _args_tup = {as_const(args)...};
+            tuple<Args&...> _args_tup = {args...};
             constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 
@@ -250,38 +252,45 @@ namespace hsd
                 "The number of arguments doesn't match"
             );
 
-            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
+            if constexpr (sizeof...(Args) != 0)
             {
-                using arg_type = decltype(_args_tup.template get<I>());
-                arg_type _arg = _args_tup.template get<I>();
+                auto _forward_print = [&]<usize I>()
+                {
+                    using arg_type = decltype(_args_tup.template get<I>());
+                    arg_type _arg = _args_tup.template get<I>();
 
-                _print<
-                    format_literal<char_type, _fmt_buf[I].length + 1>
-                    {
-                        .format = {_fmt_buf[I].format, _fmt_buf[I].length},
-                        .tag = _fmt_buf[I].tag,
-                        .foreground = _fmt_buf[I].foreground,
-                        .background = _fmt_buf[I].background
-                    }
-                >(forward<arg_type>(_arg), _file_buf);
-            };
+                    constexpr auto _curr_fmt = 
+                        format_literal<char_type, _fmt_buf[I].length + 1>
+                        {
+                            .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                            .tag = _fmt_buf[I].tag,
+                            .foreground = _fmt_buf[I].foreground,
+                            .background = _fmt_buf[I].background
+                        };
+
+                    io_detail::printer<_curr_fmt> _printer = {_file_buf};
+                    _print_impl(_printer, forward<arg_type>(_arg));
+                };
+
+                [&]<usize... Ints>(index_sequence<Ints...>)
+                {
+                    ((_forward_print.template operator()<Ints>()), ...);
+                }(make_index_sequence<sizeof...(Args)>{});
+            }
 
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                // This crashes clang on any os
-                ((_forward_print.template operator()<Ints>()), ...);
-            }(make_index_sequence<sizeof...(Args)>{});
-
-            _print<
+            constexpr auto _curr_fmt = 
                 format_literal<char_type, _last.length + 1>
                 {
                     .format = {_last.format, _last.length},
                     .tag = _last.tag,
                     .foreground = _last.foreground,
                     .background = _last.background
-                }
-            >(_file_buf);
+                };
+
+            io_detail::printer<_curr_fmt> _printer = {_file_buf};
+            
+            _print_impl(_printer);
             return {};
         }
     };

@@ -454,13 +454,13 @@ namespace hsd
         using char_type = CharT;
         basic_string_literal<CharT, N> format;
 
-        static constexpr const CharT fg_fmt[] = {
+        static constexpr const CharT fg_fmt[13] = {
             '\x1b', '[', '3', '8', ';', '5', ';', '%', 'h', 'h', 'u', 'm', '\0'
         };
-        static constexpr const CharT bg_fmt[] = {
+        static constexpr const CharT bg_fmt[13] = {
             '\x1b', '[', '4', '8', ';', '5', ';', '%', 'h', 'h', 'u', 'm', '\0'
         };
-        static constexpr const CharT reset_fmt[] = {
+        static constexpr const CharT reset_fmt[5] = {
             '\x1b', '[', '0', 'm', '\0'
         };
 
@@ -474,29 +474,4 @@ namespace hsd
         uchar foreground;
         uchar background;
     };
-
-    namespace sstream_detail
-    {
-        template <typename CharT>
-        inline void _parse(pair<const CharT*, usize>&, auto&) = delete;
-
-        template <format_literal fmt>
-        requires (IsSame<char, typename decltype(fmt)::char_type>)
-        inline i32 _write(auto, pair<char*, usize>) = delete;
-
-        template <format_literal fmt>
-        requires (IsSame<wchar, typename decltype(fmt)::char_type>)
-        inline i32 _write(auto, pair<wchar*, usize>) = delete;
-    } // namespace sstream_detail
-
-    namespace io_detail
-    {
-        template <format_literal fmt>
-        requires (IsSame<char, typename decltype(fmt)::char_type>)
-        inline void _print(auto, FILE*) = delete;
-
-        template <format_literal fmt>
-        requires (IsSame<wchar, typename decltype(fmt)::char_type>)
-        inline void _print(auto, FILE*) = delete;
-    } // namespace io_detail
 } // namespace hsd

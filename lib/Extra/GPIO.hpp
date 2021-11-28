@@ -87,7 +87,7 @@ namespace hsd
 
             inline void set_direction(direction dir)
             {
-                static static_sstream<255> _stream;
+                static sstream<255> _stream;
                 _stream.write_data<"/sys/class/gpio/gpio{}/direction">(_pin);
                 auto _direction_file = io::load_file(
                     _stream.c_str(), io::options::text::write
@@ -104,7 +104,7 @@ namespace hsd
             {
                 if (_direction == direction::output)
                 {
-                    static static_sstream<255> _stream;
+                    static sstream<255> _stream;
                     _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
                     
                     auto _value_file = io::load_file(
@@ -127,14 +127,15 @@ namespace hsd
             {
                 if (_direction == direction::input)
                 {
-                    static static_sstream<255> _stream;
+                    static sstream<255> _stream;
                     _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
                     
                     auto _value_file = io::load_file(
                         _stream.c_str(), io::options::text::read
                     ).unwrap();
                     
-                    auto _res = _value_file.read().unwrap().parse<char>();
+                    char _res;
+                    _value_file.read().unwrap().set_data(_res).unwrap();
                     
                     _value_file.close();
                     return _res == '1' ? value::high : value::low;

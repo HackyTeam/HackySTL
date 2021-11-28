@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CString.hpp"
-#include "_IoOverload.hpp"
+#include "_IoDetail.hpp"
 #include "StringView.hpp"
 
 namespace hsd
@@ -895,6 +895,33 @@ namespace hsd
         {
             return basic_string_view<CharT>(_data, _size);
         }
+
+        template <format_literal fmt>
+        friend void _print_impl(io_detail::printer<fmt>& p, const basic_string& str)
+        {
+            _print_impl(p, str.c_str());
+        }
+    
+        template <typename CharU>
+        friend auto _parse_impl(sstream_detail::stream_parser<CharU>& p, basic_string& str)
+            -> Result<void, runtime_error>
+        {
+            if (p.index() >= p.data().second)
+            {
+                return runtime_error {
+                    "Invalid format: unexpected end of format string"
+                };
+            }
+
+            str = basic_string<CharU>{p.data().first[p.index()++]};
+            return {};
+        }
+
+        template <format_literal fmt>
+        friend auto _write_impl(sstream_detail::stream_writer<fmt>& p, const basic_string& str)
+        {
+            return _write_impl(p, str.c_str());
+        }
     };
 
     template <typename CharT, usize N>
@@ -1752,98 +1779,6 @@ namespace hsd
             return basic_string<wchar>{str, size};
         }
     } // namespace string_literals
-
-    template <typename T = char>
-    inline void _parse(pair<const char*, usize>& str, basic_string<char>& val)
-    {
-        val = move(basic_string<char>(str.first, str.second));
-    }
-
-    template <typename T = wchar>
-    inline void _parse(pair<const wchar*, usize>& str, basic_string<wchar>& val)
-    {
-        val = move(basic_string<wchar>(str.first, str.second));
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string<char>& val, pair<char*, usize> dest)
-    {
-        HSD_SSTREAM_USE_FMT_UNTAGGED(fmt, "%s", dest, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string<char>& val, pair<wchar*, usize> dest)
-    {
-        HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%s", dest, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string<wchar>& val, pair<wchar*, usize> dest)
-    {
-        HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%ls", dest, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
-    {
-        HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
-    {
-        HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string<char>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string<char8>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.c_str());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string<wchar>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%ls", file_buf, val.c_str());
-    }
 
     template <typename HashType, typename CharT>
     struct hash<HashType, basic_string<CharT>>

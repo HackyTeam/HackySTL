@@ -5,174 +5,8 @@
 
 namespace hsd
 {
-    template <typename CharT>
-    class basic_sstream
-    {
-    private:
-        CharT* _data = nullptr;
-        usize _capacity = 0;
-        usize _size = 0;
-
-    public:
-        using iterator = CharT*;
-        using const_iterator = const CharT*;
-        basic_sstream(const basic_sstream&) = delete;
-        basic_sstream& operator=(const basic_sstream&) = delete;
-
-        inline basic_sstream(usize size)
-        {
-            _data = mallocator::allocate_multiple<
-                CharT>(size + 1).unwrap();
-
-            _data[size] = '\0';
-            _capacity = size;
-        }
-
-        inline ~basic_sstream()
-        {
-            mallocator::deallocate(_data);
-        }
-
-        inline void add_raw_data(const CharT* raw_data)
-        {
-            _size += static_cast<usize>(
-                sstream_detail::_write<"">(raw_data, {_data + _size, _capacity - _size})
-            );
-            _data[_size++] = static_cast<CharT>(' ');
-            _data[_size] = static_cast<CharT>('\0');
-        }
-
-        inline Result<void, runtime_error> update_size()
-        {
-            if (_data == nullptr)
-                return runtime_error{"Invalid data"};
-
-            _size = basic_cstring<CharT>::length(_data);
-            return {};
-        }
-
-        template <typename... Args>
-        inline Result<void, runtime_error> set_data(Args&... args)
-        {
-            using sstream_detail::_parse;
-            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
-
-            if (sizeof...(Args) > _data_set.size())
-            {
-                return runtime_error{"Input too small to parse"};
-            }
-            else
-            {
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_parse(_data_set[Ints], args), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
-            }
-
-            return {};
-        }
-
-        template <typename T>
-        inline T parse()
-        {
-            T _value{};
-            pair _parse_data = {
-                c_str(), basic_cstring<CharT>::length(_data)
-            };
-
-            using sstream_detail::_parse;
-            _parse(_parse_data, _value);
-            return _value;
-        }
-
-        template < basic_string_literal fmt, typename... Args >
-        inline void write_data(Args&&... args)
-        {
-            _size = _capacity;
-            
-            using sstream_detail::_write;
-            using char_type = typename decltype(fmt)::char_type;
-            const tuple<decay_t<Args>...> _args_tup = {args...};
-            constexpr auto _fmt_buf = sstream_detail::
-                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
-            static_assert(
-                _fmt_buf.size() == sizeof...(Args) + 1, 
-                "Arguments don\'t match"
-            );
-
-            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
-            {
-                using arg_type = decltype(as_const(_args_tup.template get<I>()));
-                arg_type _arg = as_const(_args_tup.template get<I>());
-
-                sstream_detail::_sub_from(
-                    _size, _write<
-                        format_literal<char_type, _fmt_buf[I].length + 1> {
-                            .format = {_fmt_buf[I].format, _fmt_buf[I].length},
-                            .tag = _fmt_buf[I].tag,
-                            .foreground = _fmt_buf[I].foreground,
-                            .background = _fmt_buf[I].background
-                        }
-                    >(forward<arg_type>(_arg), {_data + (_capacity - _size), _size})
-                ).unwrap();
-            };
-
-            constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                // This crashes clang on any os
-                ((_forward_print.template operator()<Ints>()), ...);
-            }(make_index_sequence<sizeof...(Args)>{});
-
-            usize _last_len = static_cast<usize>(
-                _write<
-                    format_literal<char_type, _last.length + 1> {
-                        .format = {_last.format, _last.length},
-                        .tag = _last.tag,
-                        .foreground = _last.foreground,
-                        .background = _last.background
-                    }
-                >(
-                    {_data + (_capacity - _size), _size}
-                )
-            );
-            _size = _capacity - _size + _last_len;
-        }
-
-        inline void pop_back()
-        {
-            _data[--_size] = '\0';
-        }
-
-        inline void clear()
-        {
-            _data[0] = '\0';
-            _size = 0;
-        }
-
-        inline usize capacity() const
-        {
-            return _capacity;
-        }
-
-        inline usize size() const
-        {
-            return _size;
-        }
-
-        inline iterator data()
-        {
-            return _data;
-        }
-
-        inline const_iterator c_str() const
-        {
-            return _data;
-        }
-    };
-
     template <typename CharT, usize Size>
-    class static_basic_sstream
+    class basic_sstream
     {
     private:
         CharT _data[Size] = {};
@@ -181,29 +15,27 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
-        static_basic_sstream(const static_basic_sstream&) = delete;
-        static_basic_sstream& operator=(const static_basic_sstream&) = delete;
+        
+        constexpr basic_sstream() = default;
+        constexpr basic_sstream(const basic_sstream&) = delete;
+        constexpr basic_sstream& operator=(const basic_sstream&) = delete;
 
-        constexpr static_basic_sstream() = default;
-
-        constexpr void add_raw_data(const CharT* raw_data)
+        constexpr void write_raw_data(const CharT* raw_data)
         {
-            basic_cstring<CharT>::add(_data, raw_data, _size);
-            _size += basic_cstring<CharT>::length(raw_data);
+            for (auto* it = raw_data; *it != '\0'; ++it)
+            {
+                _data[_size++] = *it;
 
-            _data[_size++] = static_cast<CharT>(' ');
-            _data[_size] = static_cast<CharT>('\0');
-        }
-
-        constexpr void update_size()
-        {
-            _size = basic_cstring<CharT>::length(_data);
+                if (_size == Size)
+                {
+                    hsd_panic("static_basic_sstream: buffer overflow");
+                }
+            }
         }
 
         template <typename... Args>
         inline Result<void, runtime_error> set_data(Args&... args)
         {
-            using sstream_detail::_parse;
             auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
 
             if (sizeof...(Args) > _data_set.size())
@@ -212,81 +44,84 @@ namespace hsd
             }
             else
             {
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    (_parse(_data_set[Ints], args), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
+                sstream_detail::stream_parser<CharT> _parser = 
+                    pair{_data_set.data(), _data_set.size()};
+                
+                ((_parse_impl(_parser, args).unwrap()), ...);
             }
 
             return {};
         }
 
-        template <typename T>
-        inline T parse()
-        {
-            T _value{};
-            set_data(_value).unwrap();
-            return _value;
-        }
-
         template < basic_string_literal fmt, typename... Args >
         inline void write_data(Args&&... args)
         {
-            _size = capacity();
-
-            using sstream_detail::_write;
             using char_type = typename decltype(fmt)::char_type;
-            const tuple<decltype(as_const(args))...> _args_tup = {as_const(args)...};
+            const tuple<Args&...> _args_tup = {args...};
             constexpr auto _fmt_buf = sstream_detail::
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
+            
             static_assert(
                 _fmt_buf.size() == sizeof...(Args) + 1, 
                 "Arguments don\'t match"
             );
 
-            auto _forward_print = [&_args_tup, &_fmt_buf, this]<usize I>()
+            if constexpr (sizeof...(Args) != 0)
             {
-                using arg_type = decltype(_args_tup.template get<I>());
-                arg_type _arg = _args_tup.template get<I>();
+                auto _forward_write = [&]<usize I>()
+                {
+                    using arg_type = decltype(_args_tup.template get<I>());
+                    arg_type _arg = _args_tup.template get<I>();
 
-                sstream_detail::_sub_from(
-                    _size, _write<
-                        format_literal<char_type, _fmt_buf[I].length + 1> {
+                    constexpr auto _curr_fmt = 
+                        format_literal<char_type, _fmt_buf[I].length + 1>
+                        {
                             .format = {_fmt_buf[I].format, _fmt_buf[I].length},
                             .tag = _fmt_buf[I].tag,
                             .foreground = _fmt_buf[I].foreground,
                             .background = _fmt_buf[I].background
-                        }
-                    >(forward<arg_type>(_arg), {_data + (capacity() - _size), _size})
-                ).unwrap();
-            };
+                        };
+
+                    sstream_detail::stream_writer<_curr_fmt> _writer = {
+                        _data, Size - _size, _size
+                    };
+
+                    _write_impl(_writer, forward<arg_type>(_arg));
+                    _size += _writer.index();
+                };
+
+                [&]<usize... Ints>(index_sequence<Ints...>)
+                {
+                    ((_forward_write.template operator()<Ints>()), ...);
+                }(make_index_sequence<sizeof...(Args)>{});
+            }
 
             constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            [&]<usize... Ints>(index_sequence<Ints...>)
-            {
-                // This crashes clang on any os
-                ((_forward_print.template operator()<Ints>()), ...);
-            }(make_index_sequence<sizeof...(Args)>{});
+            constexpr auto _curr_fmt = 
+                format_literal<char_type, _last.length + 1>
+                {
+                    .format = {_last.format, _last.length},
+                    .tag = _last.tag,
+                    .foreground = _last.foreground,
+                    .background = _last.background
+                };
 
-            usize _last_len = static_cast<usize>(
-                _write<
-                    format_literal<char_type, _last.length + 1> {
-                        .format = {_last.format, _last.length},
-                        .tag = _last.tag,
-                        .foreground = _last.foreground,
-                        .background = _last.background
-                    }
-                >(
-                    {_data + (capacity() - _size), _size}
-                )
-            );
+            sstream_detail::stream_writer<_curr_fmt> _writer = {
+                _data, Size - _size, _size
+            };
 
-            _size = capacity() - _size + _last_len;
+            _write_impl(_writer).unwrap();
+            _size += _writer.index();
         }
 
         constexpr void pop_back()
         {
             _data[--_size] = '\0';
+        }
+
+        constexpr void push_back(CharT c)
+        {
+            _data[_size++] = c;
         }
 
         constexpr void clear()
@@ -316,20 +151,14 @@ namespace hsd
         }
     };
     
-    using sstream = basic_sstream<char>;
-    using wsstream = basic_sstream<wchar>;
-    using u8sstream = basic_sstream<char8>;
-    using u16sstream = basic_sstream<char16>;
-    using u32sstream = basic_sstream<char32>;
-
     template <usize Size>
-    using static_sstream = static_basic_sstream<char, Size>;
+    using sstream = basic_sstream<char, Size>;
     template <usize Size>
-    using static_wsstream = static_basic_sstream<wchar, Size>;
+    using wsstream = basic_sstream<wchar, Size>;
     template <usize Size>
-    using static_u8sstream = static_basic_sstream<char8, Size>;
+    using u8sstream = basic_sstream<char8, Size>;
     template <usize Size>
-    using static_u16sstream = static_basic_sstream<char16, Size>;
+    using u16sstream = basic_sstream<char16, Size>;
     template <usize Size>
-    using static_u32sstream = static_basic_sstream<char32, Size>;
+    using u32sstream = basic_sstream<char32, Size>;
 } // namespace hsd

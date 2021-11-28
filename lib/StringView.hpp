@@ -2,7 +2,7 @@
 
 #include "CString.hpp"
 #include "Hash.hpp"
-#include "_IoOverload.hpp"
+#include "_IoDetail.hpp"
 
 namespace hsd
 {
@@ -270,14 +270,26 @@ namespace hsd
             return _data - 1;
         }
 
-        constexpr Result<basic_string_view, out_of_range>
-        sub_string(usize start, usize len) const
+        constexpr auto sub_string(usize start, usize len) const
+            -> Result<basic_string_view, out_of_range>
         {
             if (start >= _size)
                 return out_of_range{};
 
             const usize max_length = _size - start;
             return basic_string_view(_data + start, len < max_length ? len : max_length);
+        }
+
+        template <format_literal fmt>
+        friend void _print_impl(io_detail::printer<fmt>& p, const basic_string_view& str)
+        {
+            _print_impl(p, str.data());
+        }
+
+        template <format_literal fmt>
+        friend auto _write_impl(sstream_detail::stream_writer<fmt>& p, const basic_string_view& str)
+        {
+            return _write_impl(p, str.c_str());
         }
     };
 
@@ -308,86 +320,6 @@ namespace hsd
             return basic_string_view<wchar>{str, size};
         }
     } // namespace string_view_literals
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string_view<char>& val, pair<char*, usize> dest)
-    {
-        HSD_SSTREAM_USE_FMT_UNTAGGED(fmt, "%s", dest, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string_view<char>& val, pair<wchar*, usize> dest)
-    {
-        HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%s", dest, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline i32 _write(const basic_string_view<wchar>& val, pair<wchar*, usize> dest)
-    {
-        HSD_WSSTREAM_USE_FMT_UNTAGGED(fmt, L"%ls", dest, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
-    {
-        HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<char, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string_view<char8>& val, FILE* file_buf = stdout)
-    {
-        HSD_PRINT_USE_FMT_UNTAGGED(fmt, "%s", file_buf, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string_view<char>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string_view<char8>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%s", file_buf, val.data());
-    }
-
-    template <format_literal fmt>
-    requires (
-        IsSame<wchar, typename decltype(fmt)::char_type> &&
-        !((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp))
-    )
-    inline void _print(const basic_string_view<wchar>& val, FILE* file_buf = stdout)
-    {
-        HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%ls", file_buf, val.data());
-    }
 
     template <typename HashType, typename CharT>
     struct hash<HashType, basic_string_view<CharT>>

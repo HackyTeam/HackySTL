@@ -57,7 +57,8 @@ namespace hsd
         inline void write_data(Args&&... args)
         {
             using char_type = typename decltype(fmt)::char_type;
-            const tuple<Args&...> _args_tup = {args...};
+            tuple _args_tup = {forward<Args&>(args)...};
+
             constexpr auto _fmt_buf = sstream_detail::
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
             
@@ -86,7 +87,7 @@ namespace hsd
                         _data, Size - _size, _size
                     };
 
-                    _write_impl(_writer, forward<arg_type>(_arg));
+                    _write_impl(_writer, forward<arg_type>(_arg)).unwrap();
                     _size += _writer.index();
                 };
 

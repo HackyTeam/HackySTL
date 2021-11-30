@@ -4,7 +4,7 @@
 
 hsd::Result<void, hsd::runtime_error> future_test(bool err)
 {
-    if (err)
+    if (err == true)
     {
         return hsd::runtime_error{
             "Error from future_test(bool err = true)"

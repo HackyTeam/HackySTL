@@ -24,8 +24,8 @@ public:
     static void test()
     {
         hsd_println("FutexTest::test():");
-        hsd::thread t1(save_page, "http://foo");
-        hsd::thread t2(save_page, "http://bar");
+        hsd::thread t1{save_page, "http://foo"};
+        hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
         t2.join().unwrap();
 
@@ -57,8 +57,8 @@ public:
     static void test()
     {
         hsd_println("MutexTest::test():");
-        hsd::thread t1(save_page, "http://foo");
-        hsd::thread t2(save_page, "http://bar");
+        hsd::thread t1{save_page, "http://foo"};
+        hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
         t2.join().unwrap();
 
@@ -90,8 +90,8 @@ public:
     static void test()
     {
         hsd_println("SpinTest::test():");
-        hsd::thread t1(save_page, "http://foo");
-        hsd::thread t2(save_page, "http://bar");
+        hsd::thread t1{save_page, "http://foo"};
+        hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
         t2.join().unwrap();
 

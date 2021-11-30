@@ -269,7 +269,7 @@ namespace hsd
             friend void _print_impl(printer& p, const wchar* val)
             requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
             {
-                fHSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%ls", p._file, val);
+                HSD_WPRINT_USE_FMT_UNTAGGED(fmt, L"%ls", p._file, val);
             }
         };
     } // namespace io_detail

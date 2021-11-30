@@ -15,7 +15,9 @@ namespace hsd
         }
     };
 
-    template <typename... Args> static constexpr auto make_tuple(Args&&... args);
+    template <typename... Args>
+    static constexpr auto make_tuple(Args&&... args)
+        -> tuple<decay_t<Args>...>;
 
     template < typename Tuple1, typename Tuple2 >
     using is_same_tuple = is_same<Tuple1, Tuple2>;
@@ -32,6 +34,11 @@ namespace hsd
         template <typename U>
         constexpr tuple(U&& first) 
             : _first{forward<U>(first)}
+        {}
+
+        constexpr tuple(T& first)
+        requires (IsReference<T>)
+            : _first{first}
         {}
 
         constexpr tuple(const tuple& other)
@@ -112,6 +119,12 @@ namespace hsd
         requires (Constructible<tuple<Rest...>, Args...>)
         constexpr tuple(U&& first, Args&&... rest) 
             : _first{forward<U>(first)}, _rest{forward<Args>(rest)...}
+        {}
+
+        template <typename... Args>
+        requires (IsReference<T> && Constructible<tuple<Rest...>, Args...>)
+        constexpr tuple(T& first, Args&&... rest) 
+            : _first{first}, _rest{forward<Args>(rest)...}
         {}
 
         constexpr tuple(const tuple& other)
@@ -207,14 +220,16 @@ namespace hsd
 
     template <typename... Args>
     static constexpr auto make_tuple(Args&&... args)
+        -> tuple<decay_t<Args>...>
     {
-        return tuple<decay_t<Args>...>(forward<Args>(args)...);
+        return {forward<decay_t<Args>>(args)...};
     }
 
     template <typename... Args>
     static constexpr auto tie(Args&... args)
+        -> tuple<decay_t<Args>&...>
     {
-        return tuple<decay_t<Args>&...>(args...);
+        return {forward<decay_t<Args>&>(args)...};
     }
 
     template < typename Func, typename T, typename... Args, usize... Is >

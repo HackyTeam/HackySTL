@@ -243,7 +243,8 @@ namespace hsd
             }
 
             using char_type = typename decltype(fmt)::char_type;
-            tuple<Args&...> _args_tup = {args...};
+            tuple _args_tup = {forward<Args&>(args)...};
+
             constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 

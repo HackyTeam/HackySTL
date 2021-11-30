@@ -80,7 +80,7 @@ namespace hsd
             const char* open_option = options::text::read)
             -> Result<io, runtime_error>
         {
-            io _file;
+            io _file{};
             
             _file._is_console_file = false;
             _file._file_buf = fopen(file_path, open_option);

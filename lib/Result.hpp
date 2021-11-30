@@ -123,10 +123,30 @@ namespace hsd
             : _ok_data{forward<T>(value)}, _initialized{true}
         {}
 
+        constexpr Result(const Ok& value, ok_value = {})
+        requires (CopyConstructible<Ok>)
+            : _ok_data{value}, _initialized{true}
+        {}
+
+        constexpr Result(Ok&& value, ok_value = {})
+        requires (MoveConstructible<Ok>)
+            : _ok_data{move(value)}, _initialized{true}
+        {}
+
         template <typename T>
         requires (Constructible<Err, T&&>)
         constexpr Result(T&& value, err_value = {})
             : _err_data{forward<T>(value)}, _initialized{false}
+        {}
+
+        constexpr Result(const Err& value, err_value = {})
+        requires (CopyConstructible<Err>)
+            : _err_data{value}, _initialized{false}
+        {}
+
+        constexpr Result(Err&& value, err_value = {})
+        requires (MoveConstructible<Err>)
+            : _err_data{move(value)}, _initialized{false}
         {}
 
         inline Result(const Result& other)

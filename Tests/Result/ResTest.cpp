@@ -19,7 +19,7 @@ static auto fail_func(hsd::i32 val)
 }
 
 template <typename T>
-static constexpr auto fail_func2(const T& val) 
+static auto fail_func2(const T& val) 
     -> hsd::Result<hsd::string, S>
 {
     if (!static_cast<bool>(val))

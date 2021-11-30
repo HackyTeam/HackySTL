@@ -2,7 +2,6 @@
 
 #include "../Path.hpp"
 #include "../Io.hpp"
-#include "../UnorderedMap.hpp"
 
 namespace hsd
 {
@@ -39,10 +38,9 @@ namespace hsd
             bool _is_initialized = false;
 
         public:
+            inline pin() = default;
             inline pin(const pin&) = delete;
             inline pin& operator=(const pin&) = delete;
-
-            inline pin() = default;
 
             inline pin(pins pin)
                 : _pin{static_cast<i32>(pin)}
@@ -64,6 +62,15 @@ namespace hsd
                 other._is_initialized = false;
             }
 
+            inline pin& operator=(pin&& rhs)
+            {
+                swap(_pin, rhs._pin);
+                swap(_direction, rhs._direction);
+                swap(_is_initialized, rhs._is_initialized);
+
+                return *this;
+            }
+
             inline ~pin()
             {                
                 if (_is_initialized == true)
@@ -76,18 +83,27 @@ namespace hsd
                 }
             }
 
-            inline pin& operator=(pin&& rhs)
+            inline bool is_initialized() const
             {
-                swap(_pin, rhs._pin);
-                swap(_direction, rhs._direction);
-                swap(_is_initialized, rhs._is_initialized);
+                return _is_initialized;
+            }
 
-                return *this;
+            static inline pin& get(pins pin_value)
+            {
+                static stack_array<pin, 28> _pins;
+                u32 _index = static_cast<u32>(pin_value);
+
+                if (_pins[_index].is_initialized() == false)
+                {
+                    _pins[_index] = pin{pin_value};
+                }
+
+                return _pins[_index];
             }
 
             inline void set_direction(direction dir)
             {
-                static sstream<255> _stream;
+                sstream<255> _stream;
                 _stream.write_data<"/sys/class/gpio/gpio{}/direction">(_pin);
                 auto _direction_file = io::load_file(
                     _stream.c_str(), io::options::text::write
@@ -104,7 +120,7 @@ namespace hsd
             {
                 if (_direction == direction::output)
                 {
-                    static sstream<255> _stream;
+                    sstream<255> _stream;
                     _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
                     
                     auto _value_file = io::load_file(
@@ -127,7 +143,7 @@ namespace hsd
             {
                 if (_direction == direction::input)
                 {
-                    static sstream<255> _stream;
+                    sstream<255> _stream;
                     _stream.write_data<"/sys/class/gpio/gpio{}/value">(_pin);
                     
                     auto _value_file = io::load_file(
@@ -146,34 +162,5 @@ namespace hsd
                 }
             }
         };
-
-        class pin_ref
-        {
-        private:
-            using pin_map = unordered_map<i32, pin>;
-            pins _pin = pins::pin_0;
-            reference<pin_map> _map;
-
-        public:
-            inline pin_ref(pins pin, pin_map& map)
-                : _pin{pin}, _map{map}
-            {}
-
-            inline pin& get()
-            {
-                return _map.get()[static_cast<i32>(_pin)];
-            }
-        };
-
-        static inline pin_ref get_pin(pins pin_value)
-        {
-            static auto _pin_map = unordered_map<i32, pin>{};
-            
-            _pin_map.emplace(
-                static_cast<i32>(pin_value), pin_value
-            );
-
-            return {pin_value, _pin_map};
-        }
     } // namespace gpio
 } // namespace hsd

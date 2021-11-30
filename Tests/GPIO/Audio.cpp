@@ -1,21 +1,21 @@
 #include <Extra/GPIO.hpp>
 #include <Thread.hpp>
 
-void play_tone(hsd::gpio::pin_ref& pin, hsd::f32 tone, hsd::i32 duration)
+void play_tone(hsd::gpio::pin& pin, hsd::f32 tone, hsd::i32 duration)
 {
     auto step = static_cast<hsd::i32>(tone * 1000000.f); 
 
     for (hsd::i32 i = 0; i < duration * 1000; i += step * 2)
     {
-        pin.get().set_value(hsd::gpio::value::high).unwrap();
+        pin.set_value(hsd::gpio::value::high).unwrap();
         hsd::this_thread::sleep_for(tone).unwrap();
 
-        pin.get().set_value(hsd::gpio::value::low).unwrap();
+        pin.set_value(hsd::gpio::value::low).unwrap();
         hsd::this_thread::sleep_for(tone).unwrap();
     }
 }
 
-void play_note(hsd::gpio::pin_ref& pin, char note, hsd::i32 duration)
+void play_note(hsd::gpio::pin& pin, char note, hsd::i32 duration)
 {
     constexpr char names[] = {
         'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -44,8 +44,8 @@ void play_note(hsd::gpio::pin_ref& pin, char note, hsd::i32 duration)
 
 int main()
 {
-    auto audio_out = hsd::gpio::get_pin(hsd::gpio::pins::pin_4);
-    audio_out.get().set_direction(hsd::gpio::direction::output);
+    auto& audio_out = hsd::gpio::pin::get(hsd::gpio::pins::pin_4);
+    audio_out.set_direction(hsd::gpio::direction::output);
 
     constexpr char notes[] = "GGAGcB GGAGdc GGxecBA yyecdc";
 

@@ -212,8 +212,7 @@ namespace hsd
             return {_io_buf};
         }
 
-        template <usize N>
-        inline Result< reference<wsstream<N>>, runtime_error > wread()
+        inline Result< reference<wsstream<4096>>, runtime_error > wread()
         {
             _wio_buf.clear();
 

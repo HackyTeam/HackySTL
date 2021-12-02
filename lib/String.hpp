@@ -923,6 +923,7 @@ namespace hsd
             }
 
             str.emplace_back('\0');
+            p.index()++;
             return {};
         }
 

@@ -922,7 +922,7 @@ namespace hsd
                 str.emplace_back(p.data().first[p.index()][_index]);
             }
 
-            str.emplace_back('\0');
+            str[str.size()] = '\0';
             p.index()++;
             return {};
         }

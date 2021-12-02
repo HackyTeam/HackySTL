@@ -915,9 +915,9 @@ namespace hsd
 
             str.clear();
 
-            for (usize _index = 0; p.data().first[_index] != '\0'; ++_index)
+            for (usize _index = 0; p.data().first[p.index()][_index] != '\0'; ++_index)
             {
-                str.emplace_back(p.data().first[_index]);
+                str.emplace_back(p.data().first[p.index()][_index]);
             }
 
             return {};

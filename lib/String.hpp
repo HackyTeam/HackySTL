@@ -915,11 +915,14 @@ namespace hsd
 
             str.clear();
 
-            for (usize _index = 0; p.data().first[p.index()][_index] != '\0'; ++_index)
+            for (
+                usize _index = 0; p.data().first[p.index()][_index] != '\0' && 
+                !basic_cstring<CharT>::iswhitespace(p.data().first[p.index()][_index]); ++_index)
             {
                 str.emplace_back(p.data().first[p.index()][_index]);
             }
 
+            str.emplace_back('\0');
             return {};
         }
 

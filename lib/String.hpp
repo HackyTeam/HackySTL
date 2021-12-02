@@ -913,7 +913,13 @@ namespace hsd
                 };
             }
 
-            str = basic_string<CharU>{p.data().first[p.index()++]};
+            str.clear();
+
+            for (usize _index = 0; p.data().first[_index] != '\0'; ++_index)
+            {
+                str.emplace_back(p.data().first[_index]);
+            }
+
             return {};
         }
 

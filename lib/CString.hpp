@@ -698,10 +698,12 @@ namespace hsd
             T _num = 0;
             bool _negative = false;
 
-            for(; *str != '\0' && !_is_number(*str); str++)
-                ;
+            for (; *str != '\0' && !_is_number(*str); str++)
+            {
+                _negative = (*str == static_cast<CharT>('-'));
+            }
 
-            for(; *str != '\0' && _is_number(*str); str++)
+            for (; *str != '\0' && _is_number(*str); str++)
             {
                 _num *= 10;
                 _num += *str - '0';
@@ -714,11 +716,8 @@ namespace hsd
         static constexpr T parse(const CharT* str)
         {
             T _num = 0;
-            
             for (; *str != '\0' && !_is_number(*str); str++)
-            {
-                _negative = (*str == static_cast<CharT>('-'));
-            }
+                ;
 
             for (; *str != '\0' && _is_number(*str); str++)
             {

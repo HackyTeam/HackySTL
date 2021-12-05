@@ -13,6 +13,10 @@ namespace hsd
         {
             static_vector<const CharT*, N> _buf;
             const CharT* _iter_f = str;
+
+            for (; *_iter_f == ' '; _iter_f++)
+                ;
+
             const CharT* _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
 
             while (*_iter_s != '\0')

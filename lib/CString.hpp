@@ -701,7 +701,6 @@ namespace hsd
             for(; *str != '\0' && !_is_number(*str); str++)
                 ;
 
-            _negative = *(str - 1) == '-';
             for(; *str != '\0' && _is_number(*str); str++)
             {
                 _num *= 10;
@@ -715,8 +714,11 @@ namespace hsd
         static constexpr T parse(const CharT* str)
         {
             T _num = 0;
+            
             for (; *str != '\0' && !_is_number(*str); str++)
-                ;
+            {
+                _negative = (*str == static_cast<CharT>('-'));
+            }
 
             for (; *str != '\0' && _is_number(*str); str++)
             {

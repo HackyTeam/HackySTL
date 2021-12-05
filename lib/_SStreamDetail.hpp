@@ -17,8 +17,11 @@ namespace hsd
 
             while (*_iter_s != '\0')
             {
+                for (; *_iter_s == ' '; _iter_s++)
+                    ;
+
                 _buf.emplace_back(_iter_f);
-                _iter_f = _iter_s + 1;
+                _iter_f = _iter_s;
                 _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
             }
             

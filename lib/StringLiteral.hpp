@@ -72,4 +72,19 @@ namespace hsd
     using u16string_literal = basic_string_literal<char16, N>;
     template <usize N>
     using u32string_literal = basic_string_literal<char32, N>;
+
+    template <usize N>
+    basic_string_literal(const char (&)[N]) -> basic_string_literal<char, N>;
+
+    template <usize N>
+    basic_string_literal(const wchar (&)[N]) -> basic_string_literal<wchar, N>;
+
+    template <usize N>
+    basic_string_literal(const char8 (&)[N]) -> basic_string_literal<char8, N>;
+
+    template <usize N>
+    basic_string_literal(const char16 (&)[N]) -> basic_string_literal<char16, N>;
+
+    template <usize N>
+    basic_string_literal(const char32 (&)[N]) -> basic_string_literal<char32, N>;
 } // namespace hsd

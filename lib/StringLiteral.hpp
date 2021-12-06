@@ -59,6 +59,9 @@ namespace hsd
         }
     };
 
+    template <typename CharT, usize N>
+    basic_string_literal(const CharT (&)[N]) -> basic_string_literal<CharT, N>;
+
     template <usize N>
     using string_literal = basic_string_literal<char, N>;
     template <usize N>

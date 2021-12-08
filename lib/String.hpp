@@ -817,13 +817,20 @@ namespace hsd
             if (_capacity != 0)
             {
                 _data[0] = '\0';
-                _size = 0;
+                _size = 1;
             }
         }
 
         inline void pop_back()
         {
-            _data[--_size] = '\0';
+            if (_size != 1)
+            {
+                _data[--_size] = '\0';
+            }
+            else if (_data[0] != '\0')
+            {
+                _data[0] = '\0';
+            }
         }
 
         inline CharT& front()
@@ -839,6 +846,11 @@ namespace hsd
         inline usize size() const
         {
             return _size;
+        }
+
+        inline usize length() const
+        {
+            return _size - 1;
         }
 
         inline usize capacity() const
@@ -1617,8 +1629,14 @@ namespace hsd
 
         constexpr void pop_back()
         {
-            if (_size != 0)
+            if (_size != 1)
+            {
                 _data[--_size] = '\0';
+            }
+            else if (_data[0] != '\0')
+            {
+                _data[0] = '\0';
+            }
         }
 
         constexpr CharT& front()
@@ -1634,6 +1652,11 @@ namespace hsd
         constexpr usize size() const
         {
             return _size;
+        }
+
+        constexpr usize length() const
+        {
+            return _size - 1;
         }
 
         constexpr usize capacity() const

@@ -187,7 +187,7 @@ namespace hsd
         {
             _reset();
             _alloc = rhs._alloc;
-            _size = rhs.size();
+            _size = rhs._size;
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
             copy_n(rhs.c_str(), _size, _data);
@@ -247,7 +247,7 @@ namespace hsd
                 _buf._size = _size + rhs._size;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -265,7 +265,7 @@ namespace hsd
                 _buf._size = _size + rhs.size();
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs.data(), _size);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -284,7 +284,7 @@ namespace hsd
                 _buf._size = _size + _rhs_len;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs, _size);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -299,10 +299,10 @@ namespace hsd
             }
             else
             {
-                basic_string _buf(rhs._size + lhs.size());
-                _str_utils::copy(_buf._data, lhs.data(), lhs.size());
-                _str_utils::add(_buf._data, rhs._data, lhs.size());
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                basic_string _buf(rhs._size + lhs._size);
+                _str_utils::copy(_buf._data, lhs.data(), lhs._size);
+                _str_utils::add(_buf._data, rhs._data, lhs._size);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -320,7 +320,7 @@ namespace hsd
                 basic_string _buf(rhs._size + _lhs_len);
                 _str_utils::copy(_buf._data, lhs, _lhs_len);
                 _str_utils::add(_buf._data, rhs._data, _lhs_len);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 return _buf;
             }
         }
@@ -338,7 +338,7 @@ namespace hsd
                 _buf._size = _size + rhs._size;
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs._data, _size);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 operator=(hsd::move(_buf));
                 return *this;
             }
@@ -364,7 +364,7 @@ namespace hsd
                 _buf._size = _size + rhs.size();
                 _str_utils::copy(_buf._data, _data, _size);
                 _str_utils::add(_buf._data, rhs.data(), _size);
-                _buf._data[_buf.size()] = static_cast<CharT>(0);
+                _buf._data[_buf._size] = static_cast<CharT>(0);
                 operator=(hsd::move(_buf));
                 return *this;
             }
@@ -394,7 +394,7 @@ namespace hsd
                     _buf._size = _size + _rhs_len;
                     _str_utils::copy(_buf._data, _data, _size);
                     _str_utils::add(_buf._data, rhs, _size);
-                    _buf._data[_buf.size()] = static_cast<CharT>(0);
+                    _buf._data[_buf._size] = static_cast<CharT>(0);
                     operator=(hsd::move(_buf));
                     return *this;
                 }
@@ -703,7 +703,7 @@ namespace hsd
         inline bool ends_with(CharT letter) const
         {
             if (_data != nullptr)
-                return _data[size() - 1] == letter;
+                return _data[_size - 1] == letter;
 
             return false;
         }
@@ -713,7 +713,7 @@ namespace hsd
             usize _len = cstring::length(str);
 
             if (_data != nullptr)
-                return rfind(str) == (size() - _len);
+                return rfind(str) == (_size - _len);
 
             return false;
         }
@@ -721,7 +721,7 @@ namespace hsd
         inline bool ends_with(const basic_string& str) const
         {
             if (_data != nullptr)
-                return rfind(str) == (size() - str.size());
+                return rfind(str) == (_size - str._size);
 
             return false;
         }
@@ -729,7 +729,7 @@ namespace hsd
         inline auto sub_string(usize from, usize count)
             -> Result<basic_string, bad_access>
         {
-            if (from > size() || (from + count) > size())
+            if (from > _size || (from + count) > _size)
                 return bad_access{};
 
             return basic_string{_data + from, count};
@@ -738,7 +738,7 @@ namespace hsd
         inline auto sub_string(usize from)
             -> Result<basic_string, bad_access>
         {
-            return sub_string(from, size() - from);
+            return sub_string(from, _size - from);
         }
 
         inline auto erase(const_iterator pos)
@@ -845,12 +845,12 @@ namespace hsd
 
         inline usize size() const
         {
-            return _size;
+            return _size + 1;
         }
 
         inline usize length() const
         {
-            return _size - 1;
+            return _size;
         }
 
         inline usize capacity() const
@@ -934,7 +934,7 @@ namespace hsd
                 str.emplace_back(p.data().first[p.index()][_index]);
             }
 
-            str[str.size()] = '\0';
+            str[str._size] = '\0';
             p.index()++;
             return {};
         }
@@ -1154,15 +1154,17 @@ namespace hsd
         }
 
         template <usize N2> requires (N2 <= N)
-        constexpr static_basic_string& operator=(const static_basic_string<CharT, N2>& rhs)
+        constexpr static_basic_string& operator=(
+            const static_basic_string<CharT, N2>& rhs)
         {
-            _size = rhs.size();
+            _size = rhs._size;
             copy_n(rhs.c_str(), _size, _data);
             return *this;
         }
 
         template <typename CharT2, usize N2>
-        constexpr static_basic_string& operator=(const static_basic_string<CharT2, N2>& rhs)
+        constexpr static_basic_string& operator=(
+            const static_basic_string<CharT2, N2>& rhs)
         {
             auto _len = unicode::length(rhs);
 
@@ -1522,7 +1524,7 @@ namespace hsd
         constexpr bool ends_with(CharT letter) const
         {
             if (_size != 0)
-                return _data[size() - 1] == letter;
+                return _data[_size - 1] == letter;
 
             return false;
         }
@@ -1532,7 +1534,7 @@ namespace hsd
             usize _len = cstring::length(str);
 
             if (_size != 0)
-                return rfind(str) == (size() - _len);
+                return rfind(str) == (_size - _len);
 
             return false;
         }
@@ -1542,7 +1544,7 @@ namespace hsd
             const static_basic_string<CharT, N2>& str) const
         {
             if (_size != 0)
-                return rfind(str) == (size() - str.size());
+                return rfind(str) == (_size - str._size);
 
             return false;
         }
@@ -1651,12 +1653,12 @@ namespace hsd
 
         constexpr usize size() const
         {
-            return _size;
+            return _size + 1;
         }
 
         constexpr usize length() const
         {
-            return _size - 1;
+            return _size;
         }
 
         constexpr usize capacity() const

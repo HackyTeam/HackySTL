@@ -28,6 +28,7 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
+        using value_type = CharT;
         static constexpr usize npos = static_cast<usize>(-1);
 
         inline basic_string()
@@ -958,6 +959,7 @@ namespace hsd
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
+        using value_type = CharT;
         static constexpr usize npos = static_cast<usize>(-1);
 
         constexpr static_basic_string() = default;

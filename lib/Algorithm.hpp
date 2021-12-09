@@ -23,9 +23,12 @@ namespace hsd
         Vec _output = {};
         usize _index, _count[10] = {};
     
-        if constexpr (requires {_output.resize(arr.size());})
+        if constexpr (requires {_output.push_back(arr[0]);})
         {
-            _output.resize(arr.size());
+            typename Vec::value_type val = {};
+            
+            for (_index = 0; _index < arr.size(); _index++)
+                _output.push_back(val);
         }
 
         for (_index = 0; _index < arr.size(); _index++)
@@ -59,9 +62,12 @@ namespace hsd
         Vec _output = {};
         usize _index, _count[10] = {};
     
-        if constexpr (requires {_output.resize(arr.size());})
+        if constexpr (requires {_output.push_back(arr[0]);})
         {
-            _output.resize(arr.size());
+            typename Vec::value_type val = {};
+            
+            for (_index = 0; _index < arr.size(); _index++)
+                _output.push_back(val);
         }
 
         for (_index = 0; _index < arr.size(); _index++)

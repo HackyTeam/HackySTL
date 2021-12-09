@@ -258,5 +258,13 @@ int main()
         hsd_println("{}", str.sub_string(4, 8).unwrap_err()());
     }
 
+    // String View bonus
+    {
+        hsd_print("\nString View bonus:\n");
+        hsd::string str = "Test String";
+
+        hsd_println("{fg=214,bg=73}", hsd::string_view{str.c_str(), 4});
+    }
+
     return 0;
 }

@@ -766,6 +766,81 @@ namespace hsd
             return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
         }
 
+        template <typename T>
+        static constexpr T parse(const CharT* str, const CharT* end)
+        requires (is_integral<T>::value && !is_unsigned<T>::value)
+        {
+            T _num = 0;
+            bool _negative = false;
+
+            for (; str != end && !_is_number(*str); str++)
+            {
+                _negative = (*str == static_cast<CharT>('-'));
+            }
+
+            for (; str != end && _is_number(*str); str++)
+            {
+                _num *= 10;
+                _num += *str - '0';
+            }
+            
+            return _negative ? -_num : _num;
+        }
+
+        template <typename T> requires (is_unsigned<T>::value)
+        static constexpr T parse(const CharT* str, const CharT* end)
+        {
+            T _num = 0;
+            for (; str != end && !_is_number(*str); str++)
+                ;
+
+            for (; str != end && _is_number(*str); str++)
+            {
+                _num *= 10;
+                _num += *str - '0';
+            }
+
+            return _num;
+        }
+
+        template <typename T> requires (is_floating_point<T>::value)
+        static constexpr T parse(const CharT* str, const CharT* end)
+        {
+            T _round_num = 0;
+            T _point_num = 0;
+            bool _negative = false;
+            usize _num_len = 0;
+
+            for (; str != end && !_is_number(*str); str++)
+            {
+                _negative = (*str == static_cast<CharT>('-'));
+            }
+            if (str == end)
+            {
+                return static_cast<T>(0);
+            }
+
+            for (; str != end && *str != static_cast<CharT>('.') && _is_number(*str); str++)
+            {
+                _round_num *= 10;
+                _round_num += *str - static_cast<CharT>('0');
+            }
+            if (str == end || (*str != static_cast<CharT>('.') && !_is_number(*str)))
+            {
+                return _negative ? -_round_num : _round_num;
+            }
+
+            for (str += 1; str != end && _is_number(*str); str++, _num_len++)
+            {
+                _point_num *= 10;
+                _point_num += *str - '0';
+            }
+            for (; _num_len != 0; _num_len--, _point_num *= static_cast<T>(0.1))
+                ;
+            
+            return _negative ? -(_round_num + _point_num) : _round_num + _point_num;
+        }
+
         static constexpr i32 compare(const CharT* lhs, const CharT* rhs)
         {
             usize _index = 0;

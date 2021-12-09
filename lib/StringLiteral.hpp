@@ -57,6 +57,16 @@ namespace hsd
         {
             return N;
         }
+
+        consteval const auto* begin() const
+        {
+            return data;
+        }
+        
+        consteval const auto* end() const
+        {
+            return data + N;
+        }
     };
 
     template <typename CharT, usize N>

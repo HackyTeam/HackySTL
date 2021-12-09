@@ -30,6 +30,11 @@ namespace hsd
                 : _file{file}
             {}
 
+            auto* file()
+            {
+                return _file;
+            }
+
             friend void _print_impl(printer& p)
             requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
             {

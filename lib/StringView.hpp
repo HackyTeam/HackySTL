@@ -283,13 +283,41 @@ namespace hsd
         template <format_literal fmt>
         friend void _print_impl(io_detail::printer<fmt>& p, const basic_string_view& str)
         {
-            _print_impl(p, str.data());
+            using fmt_char_type = typename decltype(fmt)::char_type;
+            constexpr auto _fmt = format_literal<fmt_char_type, 1> {
+                .format = "",
+                .tag = fmt.tag,
+                .foreground = fmt.foreground,
+                .background = fmt.background
+            };
+
+            io_detail::printer<_fmt> _p = {p.file()};
+            _print_impl(p);
+
+            for (auto _ch : str)
+            {
+                _print_impl(_p, _ch);
+            }
         }
 
         template <format_literal fmt>
         friend auto _write_impl(sstream_detail::stream_writer<fmt>& p, const basic_string_view& str)
         {
-            return _write_impl(p, str.c_str());
+            using fmt_char_type = typename decltype(fmt)::char_type;
+            constexpr auto _fmt = format_literal<fmt_char_type, 1> {
+                .format = "",
+                .tag = fmt.tag,
+                .foreground = fmt.foreground,
+                .background = fmt.background
+            };
+
+            sstream_detail::stream_writer<_fmt> _p = {p.data(), p.size(), p.index()};
+            _write_impl(p);
+
+            for (auto _ch : str)
+            {
+                _write_impl(_p, _ch);
+            }
         }
     };
 

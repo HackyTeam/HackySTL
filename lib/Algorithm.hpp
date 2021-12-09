@@ -38,11 +38,14 @@ namespace hsd
             _count[_index] += _count[_index - 1];
         }
 
-        for (_index = arr.size() - 1; _index >= 0; _index--)
+        for (_index = arr.size() - 1; _index > 0; _index--)
         {
             _output[_count[(arr[_index] / exp) % 10] - 1] = arr[_index];
             _count[(arr[_index] / exp) % 10]--;
         }
+
+        _output[_count[(arr[0] / exp) % 10] - 1] = arr[0];
+        _count[(arr[0] / exp) % 10]--;
     
         for (_index = 0; _index < arr.size(); _index++)
         {

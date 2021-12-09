@@ -94,7 +94,7 @@ namespace hsd
             return *_mx;
         }();
     
-        for (usize exp = 1; *_max_val / exp > 0; exp *= 10)
+        for (usize exp = 1; _max_val / exp > 0; exp *= 10)
         {
             count_sort(arr, exp);
         }
@@ -119,7 +119,7 @@ namespace hsd
             return *_mx;
         }();
     
-        for (usize exp = 1; get_digit(*_max_val) / exp > 0; exp *= 10)
+        for (usize exp = 1; get_digit(_max_val) / exp > 0; exp *= 10)
         {
             count_sort(arr, exp, get_digit);
         }

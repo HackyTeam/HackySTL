@@ -7,7 +7,7 @@ namespace hsd
     template <typename T>
     concept DigitVector = requires(T a) {
         {a.size()} -> IsSame<usize>;
-        {a[0]} -> IsNumber;
+        {static_cast<remove_reference_t<decltype(a[0])>>(a[0])} -> IsNumber;
     };
 
     template <typename T, typename Getter>

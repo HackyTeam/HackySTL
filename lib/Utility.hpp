@@ -183,4 +183,20 @@ namespace hsd
     {
         return static_cast<const Elem*>(arr) + Count;
     }
+
+    static constexpr void for_each(const auto& arr, auto&& func)
+    {
+        for (const auto& _iter : arr)
+        {
+            func(_iter);
+        }
+    }
+
+    static constexpr void for_each(auto& arr, auto&& func)
+    {
+        for (const auto& _iter : arr)
+        {
+            func(_iter);
+        }
+    }
 } // namespace hsd

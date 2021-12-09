@@ -3,6 +3,7 @@
 #include "CString.hpp"
 #include "_IoDetail.hpp"
 #include "StringView.hpp"
+#include "Algorithm.hpp"
 
 namespace hsd
 {
@@ -1824,6 +1825,80 @@ namespace hsd
 
         static constexpr ResultType get_hash(const basic_string<CharT>& str) {
             return hash<HashType, const CharT*>::get_hash(str.begin(), str.end());
+        }
+    };
+
+    template <typename CharT>
+    struct count_sorter<basic_string<CharT>>
+    {
+        static constexpr void sort(
+            basic_string<CharT>& arr, usize exp)
+        {
+            basic_string<CharT> _output = {};
+            usize _index, _count[10] = {};
+            constexpr CharT val = {};
+
+            for (_index = 0; _index < arr.length(); _index++)
+                _output.push_back(val);
+
+            for (_index = 0; _index < arr.length(); _index++)
+            {
+                _count[(arr[_index] / exp) % 10]++;
+            }
+
+            for (_index = 1; _index < 10; _index++)
+            {
+                _count[_index] += _count[_index - 1];
+            }
+
+            for (_index = arr.length() - 1; _index > 0; _index--)
+            {
+                _output[_count[(arr[_index] / exp) % 10] - 1] = arr[_index];
+                _count[(arr[_index] / exp) % 10]--;
+            }
+
+            _output[_count[(arr[0] / exp) % 10] - 1] = arr[0];
+            _count[(arr[0] / exp) % 10]--;
+
+            for (_index = 0; _index < arr.length(); _index++)
+            {
+                swap(arr[_index], _output[_index]);
+            }
+        }
+
+        static constexpr void sort(
+            basic_string<CharT>& arr, usize exp, auto&& get_digit)
+        {
+            basic_string<CharT> _output = {};
+            usize _index, _count[10] = {};
+            constexpr CharT val = {};
+
+            for (_index = 0; _index < arr.length(); _index++)
+                _output.push_back(val);
+
+            for (_index = 0; _index < arr.length(); _index++)
+            {
+                _count[(get_digit(arr[_index]) / exp) % 10]++;
+            }
+
+            for (_index = 1; _index < 10; _index++)
+            {
+                _count[_index] += _count[_index - 1];
+            }
+
+            for (_index = arr.length() - 1; _index > 0; _index--)
+            {
+                _output[_count[(get_digit(arr[_index]) / exp) % 10] - 1] = get_digit(arr[_index]);
+                _count[(get_digit(arr[_index]) / exp) % 10]--;
+            }
+
+            _output[_count[(get_digit(arr[0]) / exp) % 10] - 1] = get_digit(arr[0]);
+            _count[(get_digit(arr[0]) / exp) % 10]--;
+
+            for (_index = 0; _index < arr.length(); _index++)
+            {
+                swap(arr[_index], _output[_index]);
+            }
         }
     };
 

@@ -262,6 +262,7 @@ int main()
     {
         hsd_print("\nString View bonus:\n");
         hsd::string str = "Test String";
+        hsd::radix_sort(str, [](char v1, char v2) { return v1 > v2; });
 
         hsd_println("{fg=214,bg=73}", hsd::string_view{str.c_str(), 4});
     }

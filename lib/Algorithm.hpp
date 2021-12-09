@@ -20,7 +20,7 @@ namespace hsd
     template <typename Vec>
     static constexpr void count_sort(Vec& arr, usize exp)
     {
-        static Vec _output = {};
+        Vec _output = {};
         usize _index, _count[10] = {};
     
         if constexpr (requires {_output.resize(arr.size());})
@@ -53,7 +53,7 @@ namespace hsd
     template <typename Vec>
     static constexpr void count_sort(Vec& arr, usize exp, auto&& get_digit)
     {
-        static Vec _output = {};
+        Vec _output = {};
         usize _index, _count[10] = {};
     
         if constexpr (requires {_output.resize(arr.size());})
@@ -71,11 +71,14 @@ namespace hsd
             _count[_index] += _count[_index - 1];
         }
     
-        for (_index = arr.size() - 1; _index >= 0; _index--)
+        for (_index = arr.size() - 1; _index > 0; _index--)
         {
             _output[_count[(get_digit(arr[_index]) / exp) % 10] - 1] = get_digit(arr[_index]);
             _count[(get_digit(arr[_index]) / exp) % 10]--;
         }
+
+        _output[_count[(get_digit(arr[0]) / exp) % 10] - 1] = get_digit(arr[0]);
+        _count[(get_digit(arr[0]) / exp) % 10]--;
     
         for (_index = 0; _index < arr.size(); _index++)
         {

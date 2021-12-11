@@ -55,6 +55,8 @@ Maintain and improve this project which was started over a year ago
   37. Compressed Pair (DeKrain)
   38. Variant (DeKrain) 
   39. Threads (qookie)
+  40. Algorithm (Very incomplete)
+  41. String Parser
   
 # Contributors:
 - DeKrain (Implementations)

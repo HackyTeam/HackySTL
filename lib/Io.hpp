@@ -5,13 +5,39 @@
 
 namespace hsd
 {
-    class io : private io_detail::bufferable
+    struct io_options
     {
-    private:
+        struct text
+        {
+            static inline constexpr char read[] = "r";
+            static inline constexpr char write[] = "w";
+            static inline constexpr char append[] = "a";
+            static inline constexpr char read_write[] = "r+";
+            static inline constexpr char rw_create[] = "w+";
+            static inline constexpr char rw_append[] = "a+";
+        };
+
+        struct binary
+        {
+            static inline constexpr char read[] = "rb";
+            static inline constexpr char write[] = "wb";
+            static inline constexpr char append[] = "ab";
+            static inline constexpr char read_write[] = "r+b";
+            static inline constexpr char rw_create[] = "w+b";
+            static inline constexpr char rw_append[] = "a+b";
+        };
+    };
+
+    template <typename CharT>
+    class io
+    {
+    protected:
         FILE* _file_buf = nullptr;
         const char* _file_mode = "";
         bool _is_console_file = false;
+        basic_sstream<CharT> _io_buf;
 
+    private:
         inline bool only_write()
         {
             return (
@@ -29,28 +55,6 @@ namespace hsd
         }
 
     public:
-        struct options
-        {
-            struct text
-            {
-                static inline constexpr char read[] = "r";
-                static inline constexpr char write[] = "w";
-                static inline constexpr char append[] = "a";
-                static inline constexpr char read_write[] = "r+";
-                static inline constexpr char rw_create[] = "w+";
-                static inline constexpr char rw_append[] = "a+";
-            };
-
-            struct binary
-            {
-                static inline constexpr char read[] = "rb";
-                static inline constexpr char write[] = "wb";
-                static inline constexpr char append[] = "ab";
-                static inline constexpr char read_write[] = "r+b";
-                static inline constexpr char rw_create[] = "w+b";
-                static inline constexpr char rw_append[] = "a+b";
-            };
-        };
 
         inline io() = default;
         inline io(const io&) = delete;
@@ -76,50 +80,14 @@ namespace hsd
             close();
         }
 
-        static inline auto load_file(const char* file_path, 
-            const char* open_option = options::text::read)
-            -> Result<io, runtime_error>
+        inline void set_buffer_capacity(usize capacity)
         {
-            io _file{};
-            
-            _file._is_console_file = false;
-            _file._file_buf = fopen(file_path, open_option);
-            _file._file_mode = open_option;
-            
-            if (_file._file_buf == nullptr)
-                return runtime_error{"File not found"};
-
-            return _file;
+            _io_buf.reserve(capacity);
         }
 
-        static inline io& cout()
+        inline usize buffer_capacity() const
         {
-            static io _instance;
-            _instance._is_console_file = true;
-            _instance._file_mode = options::text::write;
-            _instance._file_buf = stdout;
-
-            return _instance;
-        }
-
-        static inline io& cerr()
-        {
-            static io _instance;
-            _instance._is_console_file = true;
-            _instance._file_mode = options::text::write;
-            _instance._file_buf = stderr;
-
-            return _instance;
-        }
-
-        static inline io& cin()
-        {
-            static io _instance;
-            _instance._is_console_file = true;
-            _instance._file_mode = options::text::read;
-            _instance._file_buf = stdin;
-
-            return _instance;
+            return _io_buf.capacity();
         }
 
         inline bool is_open() const
@@ -157,7 +125,7 @@ namespace hsd
             return {};
         }
 
-        inline Result< reference<sstream<4096>>, runtime_error > read_line()
+        inline Result< reference<basic_sstream<CharT>>, runtime_error > read_line()
         {
             _io_buf.clear();
             
@@ -167,33 +135,32 @@ namespace hsd
                     "Cannot read file. It is in write mode"
                 };
             }
-            if (fgets(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
-            { 
-                _io_buf.clear();
+
+            if constexpr(is_same<CharT, char>::value)
+            {
+                if (fgets(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
+                { 
+                    _io_buf.clear();
+                }
+            }
+            else if constexpr(is_same<CharT, wchar>::value)
+            {
+                if (fgetws(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
+                {
+                    _io_buf.clear();
+                }
+            }
+            else
+            {
+                return runtime_error {
+                    "Unsupported character type"
+                };
             }
             
             return {_io_buf};
         }
 
-        inline Result< reference<wsstream<4096>>, runtime_error > wread_line()
-        {
-            _wio_buf.clear();
-            
-            if (only_write())
-            {
-                return runtime_error {
-                    "Cannot read file. It is in write mode"
-                };
-            }
-            if (fgetws(_wio_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
-            { 
-                _wio_buf.clear();
-            }
-            
-            return {_wio_buf};
-        }
-
-        inline Result< reference<sstream<4096>>, runtime_error > read()
+        inline Result< reference<basic_sstream<CharT>>, runtime_error > read()
         {
             _io_buf.clear();
 
@@ -204,31 +171,28 @@ namespace hsd
                 };
             }
             
-            for (char c = fgetc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetc(_file_buf))
+            if constexpr(is_same<CharT, char>::value)
             {
-                _io_buf.push_back(c);
+                for (CharT c = fgetc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetc(_file_buf))
+                {
+                    _io_buf.push_back(c);
+                }
             }
-            
-            return {_io_buf};
-        }
-
-        inline Result< reference<wsstream<4096>>, runtime_error > wread()
-        {
-            _wio_buf.clear();
-
-            if (only_write())
+            else if constexpr(is_same<CharT, wchar>::value)
+            {
+                for (CharT c = fgetwc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetwc(_file_buf))
+                {
+                    _io_buf.push_back(c);
+                }
+            }
+            else
             {
                 return runtime_error {
-                    "Cannot read file. It is in write mode"
+                    "Unsupported character type"
                 };
             }
             
-            for (wchar c = fgetwc(_file_buf); c != EOF && wcstring::iswhitespace(c); c = fgetwc(_file_buf))
-            {
-                _io_buf.push_back(c);
-            }
-
-            return {_wio_buf};
+            return {_io_buf};
         }
 
         template < basic_string_literal fmt, typename... Args >
@@ -242,8 +206,12 @@ namespace hsd
             }
 
             using char_type = typename decltype(fmt)::char_type;
+            static_assert(
+                is_same<char_type, CharT>::value, 
+                "Unsupported character type"
+            );
+            
             tuple _args_tup = {forward<Args&>(args)...};
-
             constexpr auto _fmt_buf = sstream_detail::parse_literal<
                 fmt, sizeof...(Args) + 1>().unwrap();
 
@@ -294,16 +262,116 @@ namespace hsd
             return {};
         }
     };
+
+    namespace io_detail
+    {
+        template <typename CharT>
+        struct warpper : public io<CharT>
+        {
+            inline warpper() = default;
+
+            inline warpper(usize capacity)
+            {
+                this->set_buffer_capacity(capacity);
+            }
+
+            inline void set_file_buf(FILE* file_buf)
+            {
+                this->_file_buf = file_buf;
+            }
+            
+            inline void set_is_console_file(bool is_console_file)
+            {
+                this->_is_console_file = is_console_file;
+            }
+
+            inline void set_file_mode(const char* file_mode)
+            {
+                this->_file_mode = file_mode;
+            }
+
+            inline io<CharT>& to_base()
+            {
+                return *this;
+            }
+        };
+    } // namespace io_detail
+    
+
+    template <typename CharT>
+    static inline auto& cout()
+    {
+        static io_detail::warpper<CharT> _instance{};
+        _instance.set_is_console_file(true);
+        _instance.set_file_mode(io_options::text::write);
+        _instance.set_file_buf(stdout);
+
+        return _instance.to_base();
+    }
+
+    template <typename CharT>
+    static inline io<CharT>& cerr()
+    {
+        static io_detail::warpper<CharT> _instance{};
+        _instance.set_is_console_file(true);
+        _instance.set_file_mode(io_options::text::write);
+        _instance.set_file_buf(stderr);
+
+        return _instance.to_base();
+    }
+
+    template <typename CharT>
+    static inline io<CharT>& cin()
+    {
+        static io_detail::warpper<CharT> _instance{1024};
+        _instance.set_is_console_file(true);
+        _instance.set_file_mode(io_options::text::read);
+        _instance.set_file_buf(stdin);
+
+        return _instance;
+    }
+
+    template <typename CharT>
+    static inline auto load_file(const char* file_path, 
+        const char* open_option = io_options::text::read)
+        -> Result<io<CharT>, runtime_error>
+    {
+        static io_detail::warpper<CharT> _instance{};
+        _instance.set_is_console_file(false);
+        _instance.set_file_mode(open_option);
+        
+        auto* _file_buf = fopen(file_path, open_option);
+        
+        if (_file_buf == nullptr)
+        {
+            return runtime_error{"File not found"};
+        }
+
+        _instance.set_file_buf(_file_buf);
+        return move(_instance.to_base());
+    }
 } // namespace hsd
 
 #define hsd_print(fmt, ...)\
-    hsd::io::cout().template print<fmt>(__VA_ARGS__).unwrap()
+    hsd::cout<char>().template print<fmt>(__VA_ARGS__).unwrap()
 
 #define hsd_print_err(fmt, ...)\
-    hsd::io::cerr().template print<fmt>(__VA_ARGS__).unwrap()
+    hsd::cerr<char>().template print<fmt>(__VA_ARGS__).unwrap()
 
 #define hsd_println(fmt, ...)\
-    hsd::io::cout().template print<fmt "\n">(__VA_ARGS__).unwrap()
+    hsd::cout<char>().template print<fmt "\n">(__VA_ARGS__).unwrap()
 
 #define hsd_println_err(fmt, ...)\
-    hsd::io::cerr().template print<fmt "\n">(__VA_ARGS__).unwrap()
+    hsd::cerr<char>().template print<fmt "\n">(__VA_ARGS__).unwrap()
+
+#define hsd_wprint(fmt, ...)\
+    hsd::cout<hsd::wchar>().template print<fmt>(__VA_ARGS__).unwrap()
+
+#define hsd_wprint_err(fmt, ...)\
+    hsd::cerr<hsd::wchar>().template print<fmt>(__VA_ARGS__).unwrap()
+
+#define hsd_wprintln(fmt, ...)\
+    hsd::cout<hsd::wchar>().template print<fmt L"\n">(__VA_ARGS__).unwrap()
+
+#define hsd_wprintln_err(fmt, ...)\
+    hsd::cerr<hsd::wchar>().template print<fmt L"\n">(__VA_ARGS__).unwrap()

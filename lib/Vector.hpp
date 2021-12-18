@@ -12,8 +12,10 @@ namespace hsd
         using alloc_type = Allocator<T>;
         alloc_type _alloc;
         T* _data = nullptr;
-        usize _size = 0;
         usize _capacity = 0;
+
+    protected:
+        usize _size = 0;
 
         struct bad_access
         {
@@ -84,20 +86,20 @@ namespace hsd
         requires (MoveConstructible<alloc_type>)
             : _alloc{move(other._alloc)},
             _data{exchange(other._data, nullptr)},
-            _size{exchange(other._size, 0)},
-            _capacity{exchange(other._capacity, 0)}
+            _capacity{exchange(other._capacity, 0)},
+            _size{exchange(other._size, 0)}
         {}
 
         inline vector(vector&& other)
         requires (!MoveConstructible<alloc_type>)
             : _data{exchange(other._data, nullptr)},
-            _size{exchange(other._size, 0)},
-            _capacity{exchange(other._capacity, 0)}
+            _capacity{exchange(other._capacity, 0)},
+            _size{exchange(other._size, 0)}
         {}
 
         template <usize N>
         inline vector(const T (&arr)[N])
-            : _size{N}, _capacity{N}
+            : _capacity{N}, _size{N}
         {
             _data = _alloc.allocate(N).unwrap();
 
@@ -107,7 +109,7 @@ namespace hsd
 
         template <usize N>
         inline vector(T (&&arr)[N])
-            : _size{N}, _capacity{N}
+            : _capacity{N}, _size{N}
         {
             _data = _alloc.allocate(N).unwrap();
 
@@ -262,7 +264,7 @@ namespace hsd
             return *begin();
         }
 
-        inline auto& back() noexcept
+        inline auto& back()
         {
             return *(begin() + size() - 1);
         }
@@ -335,7 +337,7 @@ namespace hsd
             return _data[index];
         }
 
-        inline void clear() noexcept
+        inline void clear()
         {
             for (usize _index = _size; _index > 0; --_index)
                 at_unchecked(_index - 1).~T();

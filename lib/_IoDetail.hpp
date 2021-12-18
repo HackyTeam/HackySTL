@@ -8,13 +8,6 @@ namespace hsd
 {
     namespace io_detail
     {
-        class bufferable
-        {
-        protected:
-            static inline sstream<4096> _io_buf{};
-            static inline wsstream<4096> _wio_buf{};
-        };
-
         template <auto>
         class printer;
 
@@ -191,6 +184,12 @@ namespace hsd
             requires (!(fmt.tag & fmt.exp))
             {
                 HSD_WPRINT_USE_FMT(fmt, fmt.hex, L"0x%hhx", L"%c", p._file, val);
+            }
+
+            friend void _print_impl(printer& p, wchar val)
+            requires (!(fmt.tag & fmt.exp))
+            {
+                HSD_WPRINT_USE_FMT(fmt, fmt.hex, L"0x%x", L"%lc", p._file, val);
             }
 
             friend void _print_impl(printer& p, i16 val)

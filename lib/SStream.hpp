@@ -5,38 +5,35 @@
 
 namespace hsd
 {
-    template <typename CharT, usize Size>
-    class basic_sstream
+    template <typename CharT>
+    class basic_sstream : private vector<CharT>
     {
     private:
-        CharT _data[Size] = {};
-        usize _size = 0;
+        static constexpr CharT _default_seps[] = {' ', '\t', '\n', '\r'};
+        const CharT* _separators = _default_seps;
 
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
         
-        constexpr basic_sstream() = default;
-        constexpr basic_sstream(const basic_sstream&) = delete;
-        constexpr basic_sstream& operator=(const basic_sstream&) = delete;
+        inline basic_sstream() = default;
+        inline basic_sstream(const basic_sstream&) = delete;
+        inline basic_sstream& operator=(const basic_sstream&) = delete;
 
-        constexpr void write_raw_data(const CharT* raw_data)
+        inline void write_raw_data(const CharT* raw_data)
         {
             for (auto* it = raw_data; *it != '\0'; ++it)
             {
-                _data[_size++] = *it;
-
-                if (_size == Size)
-                {
-                    hsd_panic("static_basic_sstream: buffer overflow");
-                }
+                this->back() = *it;
+                this->emplace_back('\0');
             }
         }
 
         template <typename... Args>
         inline Result<void, runtime_error> set_data(Args&... args)
         {
-            auto _data_set = sstream_detail::split_data<sizeof...(Args)>(_data);
+            auto _data_set = sstream_detail::
+                split_data<sizeof...(Args)>(data(), _separators);
 
             if (sizeof...(Args) > _data_set.size())
             {
@@ -84,11 +81,11 @@ namespace hsd
                         };
 
                     sstream_detail::stream_writer<_curr_fmt> _writer = {
-                        _data, Size - _size, _size
+                        data(), capacity() - size(), size()
                     };
 
                     _write_impl(_writer, forward<arg_type>(_arg)).unwrap();
-                    _size += _writer.index();
+                    this->_size += _writer.index();
                 };
 
                 [&]<usize... Ints>(index_sequence<Ints...>)
@@ -108,58 +105,63 @@ namespace hsd
                 };
 
             sstream_detail::stream_writer<_curr_fmt> _writer = {
-                _data, Size - _size, _size
+                data(), capacity() - size(), size()
             };
 
             _write_impl(_writer).unwrap();
-            _size += _writer.index();
+            this->_size += _writer.index();
         }
 
-        constexpr void pop_back()
+        inline void pop_back()
         {
-            _data[--_size] = '\0';
+            vector<CharT>::pop_back();
+            this->back() = '\0';
         }
 
-        constexpr void push_back(CharT c)
+        inline void push_back(CharT c)
         {
-            _data[_size++] = c;
+            if (this->size() != 0)
+            {
+                this->back() = c;
+                this->emplace_back('\0');
+            }
+            else
+            {
+                this->emplace_back(c);
+                this->emplace_back('\0');
+            }
         }
 
-        constexpr void clear()
+        inline void set_separators(const CharT* separators)
         {
-            _size = 0;
-            _data[0] = '\0';
+            _separators = separators;
         }
 
-        constexpr usize capacity() const
+        inline void clear()
         {
-            return Size;
+            vector<CharT>::clear();
+            this->emplace_back('\0');
         }
 
-        constexpr usize size() const
-        {
-            return _size;
-        }
+        using vector<CharT>::resize;
+        using vector<CharT>::reserve;
+        using vector<CharT>::capacity;
+        using vector<CharT>::size;
+        using vector<CharT>::data;
+        using vector<CharT>::begin;
+        using vector<CharT>::end;
+        using vector<CharT>::cbegin;
+        using vector<CharT>::cend;
 
-        constexpr iterator data()
+        inline const_iterator c_str() const
         {
-            return _data;
-        }
-
-        constexpr const_iterator c_str() const
-        {
-            return _data;
+            return this->data();
         }
     };
     
-    template <usize Size>
-    using sstream = basic_sstream<char, Size>;
-    template <usize Size>
-    using wsstream = basic_sstream<wchar, Size>;
-    template <usize Size>
-    using u8sstream = basic_sstream<char8, Size>;
-    template <usize Size>
-    using u16sstream = basic_sstream<char16, Size>;
-    template <usize Size>
-    using u32sstream = basic_sstream<char32, Size>;
+    using sstream = basic_sstream<char>;
+    using wsstream = basic_sstream<wchar>;
+    using u8sstream = basic_sstream<char8>;
+    using u16sstream = basic_sstream<char16>;
+    using u32sstream = basic_sstream<char32>;
 } // namespace hsd

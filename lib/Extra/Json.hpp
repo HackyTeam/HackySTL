@@ -607,7 +607,7 @@ namespace hsd
     {
         auto _res = try_as<JsonObject<CharT>>(JsonValueType::Object);
 
-        if(_res)
+        if (_res)
         {
             return *_res.unwrap().values().at(key).unwrap();
         }
@@ -620,7 +620,7 @@ namespace hsd
     {
         auto _res = try_as<JsonArray>(JsonValueType::Array);
 
-        if(_res)
+        if (_res)
         {
             return *_res.unwrap().values().at(index).unwrap();
         }
@@ -806,7 +806,7 @@ namespace hsd
                 }
                 default:
                     return JsonError("Syntax error: unexpected token", static_cast<usize>(_tok));
-                }
+            }
         }
     };
 }

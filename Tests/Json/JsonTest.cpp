@@ -10,6 +10,7 @@ static constexpr auto s_test_string =
 LR"json({
     "Cow": "milk",
     "gold": 5000,
+    "price": 121.5423,
     "primes": [2, 3, 5, 7, 11, 13, 23],
     "Unicode": "蛋",
     "MontyPython": "import pickle",
@@ -55,13 +56,16 @@ int main()
 void print_prefix(hsd::vector<hsd::wstring_view>& path)
 {
     if (path.size() == 0)
-        hsd_print(L"<root>");
+    {
+        hsd_wprint(L"<root>");
+    }
     else
     {
         for (auto part : path)
-            hsd_print(L"{}:", part);
+            hsd_wprint(L"{}:", part);
     }
-    hsd_print(L" ");
+
+    hsd_wprint(L" ");
 }
 
 void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
@@ -72,29 +76,54 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     switch (type)
     {
         case hsd::JsonValueType::Null:
-            hsd_print(L"null");
+            hsd_wprint(L"null");
             break;
         case hsd::JsonValueType::True:
-            hsd_print(L"true");
+            hsd_wprint(L"true");
             break;
         case hsd::JsonValueType::False:
-            hsd_print(L"false");
+            hsd_wprint(L"false");
             break;
         case hsd::JsonValueType::Number:
-            hsd_print(L"{}", v.as_num<hsd::i32>().unwrap());
+        {
+            auto res = v.as_num<hsd::i32>();
+
+            if (res.is_ok())
+            {
+                hsd_wprint(L"{}", res.unwrap());
+            }
+            else
+            {
+                auto res = v.as_num<hsd::f32>();
+
+                if (res.is_ok())
+                {
+                    hsd_wprint(L"{}", res.unwrap());
+                }
+                else
+                {
+                    hsd_wprint(L"<number>");
+                }
+            }
+        }
             break;
         case hsd::JsonValueType::String:
             // TODO: Escape?
-            hsd_print(L"\"{}\"", v.as_str<hsd::wchar>().unwrap());
+            hsd_wprint(L"\"{}\"", v.as_str<hsd::wchar>().unwrap());
             break;
         case hsd::JsonValueType::Array:
-            hsd_print(L"array");
+            hsd_wprint(L"array");
             break;
         case hsd::JsonValueType::Object:
-            hsd_print(L"object");
+            hsd_wprint(L"object");
             break;
-        }
-    hsd_println(L"");
+
+        default:
+            hsd_wprint(L"unknown");
+            break;
+    }
+
+    hsd_wprintln(L"");
 
     if (type == hsd::JsonValueType::Array)
     {

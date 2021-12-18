@@ -40,16 +40,16 @@ namespace hsd
         static constexpr usize npos = ~static_cast<usize>(0u);
 
         constexpr basic_string_view(const_pointer cstr)
-            : _data(cstr), _size(cstring_utils::length(cstr))
+            : _data{cstr}, _size{cstring_utils::length(cstr)}
         {}
 
         constexpr basic_string_view(const_pointer str, usize size)
-            : _data(str), _size(size)
+            : _data{str}, _size{size}
         {}
 
         template <usize N>
         constexpr basic_string_view(const CharT (&str)[N])
-            : _data(str), _size(N - 1)
+            : _data{str}, _size{N - 1}
         {}
 
         constexpr void reset()
@@ -285,7 +285,7 @@ namespace hsd
         {
             using fmt_char_type = typename decltype(fmt)::char_type;
             constexpr auto _fmt = format_literal<fmt_char_type, 1> {
-                .format = "",
+                .format = {{'\0'}},
                 .tag = fmt.tag,
                 .foreground = fmt.foreground,
                 .background = fmt.background

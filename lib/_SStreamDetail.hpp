@@ -9,15 +9,40 @@ namespace hsd
     namespace sstream_detail
     {
         template <usize N, typename CharT>
-        inline static_vector<const CharT*, N> split_data(const CharT* str)
+        inline static_vector<const CharT*, N> split_data(const CharT* str, const CharT* sep)
         {
             static_vector<const CharT*, N> _buf;
             const CharT* _iter_f = str;
 
+            auto _find_and_consume_sep = [](const CharT* str, const CharT* sep)
+            {
+                while (*str != '\0')
+                {
+                    if (*basic_cstring<CharT>::find_or_end(sep, *str) == *str)
+                    {
+                        break;
+                    }
+
+                    str++;
+                }
+
+                while (*str != '\0')
+                {
+                    if (*basic_cstring<CharT>::find_or_end(sep, *str) != *str)
+                    {
+                        break;
+                    }
+
+                    str++;
+                }
+
+                return str;  
+            };
+
             for (; *_iter_f == ' '; _iter_f++)
                 ;
 
-            const CharT* _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
+            const CharT* _iter_s = _find_and_consume_sep(_iter_f, sep);
 
             while (*_iter_s != '\0')
             {
@@ -26,7 +51,7 @@ namespace hsd
 
                 _buf.emplace_back(_iter_f);
                 _iter_f = _iter_s;
-                _iter_s = basic_cstring<CharT>::find_or_end(_iter_f, ' ');
+                _iter_s = _find_and_consume_sep(_iter_f, sep);
             }
             
             _buf.emplace_back(_iter_f);

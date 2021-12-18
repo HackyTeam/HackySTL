@@ -105,13 +105,13 @@ namespace hsd
 
         inline basic_string(basic_string_view<CharT> view)
         requires (DefaultConstructible<alloc_type>)
-            : basic_string(view.data(), view.size())
+            : basic_string{view.data(), view.size()}
         {}
 
         template <typename Alloc = alloc_type>
         inline basic_string(basic_string_view<CharT> view, const Alloc& alloc)
         requires (Constructible<alloc_type, Alloc>)
-            : basic_string(view.data(), view.size(), alloc)
+            : basic_string{view.data(), view.size(), alloc}
         {}
 
         inline basic_string(const basic_string& other)
@@ -1824,7 +1824,7 @@ namespace hsd
         using ResultType = HashType;
 
         static constexpr ResultType get_hash(const basic_string<CharT>& str) {
-            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end());
+            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end() - 1);
         }
     };
 
@@ -1908,7 +1908,7 @@ namespace hsd
         using ResultType = HashType;
 
         static constexpr ResultType get_hash(const static_basic_string<CharT, N>& str) {
-            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end());
+            return hash<HashType, const CharT*>::get_hash(str.begin(), str.end() - 1);
         }
     };
 

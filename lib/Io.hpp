@@ -85,6 +85,11 @@ namespace hsd
             _io_buf.reserve(capacity);
         }
 
+        inline void set_separators(const CharT* separators)
+        {
+            _io_buf.set_separators(separators);
+        }
+
         inline usize buffer_capacity() const
         {
             return _io_buf.capacity();

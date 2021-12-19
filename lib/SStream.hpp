@@ -155,7 +155,7 @@ namespace hsd
 
         inline const_iterator c_str() const
         {
-            return this->data();
+            return this->begin();
         }
     };
     

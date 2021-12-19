@@ -799,7 +799,7 @@ namespace hsd
         template <typename... Args>
         inline void emplace_back(Args&&... args)
         {
-            reserve(_size + 1);
+            reserve(_size + 2);
             _data[_size] = CharT{forward<Args>(args)...};
             _data[++_size] = '\0';
         }
@@ -847,7 +847,7 @@ namespace hsd
 
         inline usize size() const
         {
-            return _size + 1;
+            return (_size != 0) ? _size + 1 : 0;
         }
 
         inline usize length() const
@@ -929,14 +929,20 @@ namespace hsd
 
             str.clear();
 
+            if (str.size() == 0)
+            {
+                str.emplace_back('\0');
+            }
+
             for (
                 usize _index = 0; p.data().first[p.index()][_index] != '\0' && 
                 !basic_cstring<CharT>::iswhitespace(p.data().first[p.index()][_index]); ++_index)
             {
-                str.emplace_back(p.data().first[p.index()][_index]);
+                str.back() = p.data().first[p.index()][_index];
+                str.emplace_back('\0');
             }
 
-            str[str._size] = '\0';
+            str._size--;
             p.index()++;
             return {};
         }
@@ -1656,7 +1662,7 @@ namespace hsd
 
         constexpr usize size() const
         {
-            return _size + 1;
+            return (_size != 0) ? _size + 1 : 0;
         }
 
         constexpr usize length() const

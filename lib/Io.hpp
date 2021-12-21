@@ -54,6 +54,36 @@ namespace hsd
             );
         }
 
+        inline auto _read_chr(CharT& chr, const CharT* sep) -> bool
+        {
+            if constexpr(is_same<CharT, char>::value)
+            {
+                chr = static_cast<CharT>(fgetc(_file_buf));
+                return (chr != EOF && basic_cstring<CharT>::find(sep, chr) == nullptr);
+            }
+            else if constexpr(is_same<CharT, wchar>::value)
+            {
+                chr = static_cast<CharT>(fgetwc(_file_buf));
+                return (chr != WEOF && basic_cstring<CharT>::find(sep, chr) == nullptr);
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        inline auto _unget_chr(CharT chr)
+        {
+            if constexpr(is_same<CharT, char>::value)
+            {
+                ungetc(chr, _file_buf);
+            }
+            else if constexpr(is_same<CharT, wchar>::value)
+            {
+                ungetwc(chr, _file_buf);
+            }
+        };
+
     public:
 
         inline io() = default;
@@ -168,6 +198,7 @@ namespace hsd
         inline Result< reference<basic_sstream<CharT>>, runtime_error > read()
         {
             _io_buf.clear();
+            CharT _chr;
 
             if (only_write())
             {
@@ -176,28 +207,34 @@ namespace hsd
                 };
             }
             
-            if constexpr(is_same<CharT, char>::value)
-            {
-                for (CharT c = fgetc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetc(_file_buf))
-                {
-                    _io_buf.push_back(c);
-                }
-            }
-            else if constexpr(is_same<CharT, wchar>::value)
-            {
-                for (CharT c = fgetwc(_file_buf); c != EOF && cstring::iswhitespace(c); c = fgetwc(_file_buf))
-                {
-                    _io_buf.push_back(c);
-                }
-            }
-            else
-            {
-                return runtime_error {
-                    "Unsupported character type"
-                };
-            }
+            while (_chr != EOF && !_read_chr(_chr, _io_buf.get_separators()))
+                ;
             
+            if (_chr != EOF) 
+            {
+                _unget_chr(_chr);
+
+                while (_read_chr(_chr, _io_buf.get_separators()))
+                {
+                    _io_buf.push_back(_chr);
+                }
+            }
+
             return {_io_buf};
+        }
+
+        template <typename T>
+        inline T read_value()
+        {
+            if (read().is_ok())
+            {
+                T value;
+                _io_buf.set_data(value).unwrap();
+                
+                return value;
+            }
+
+            return T{};
         }
 
         template < basic_string_literal fmt, typename... Args >
@@ -356,6 +393,24 @@ namespace hsd
         return move(_instance.to_base());
     }
 } // namespace hsd
+
+#define hsd_read_line()\
+    hsd::cin<char>().template read_line().unwrap()
+
+#define hsd_read()\
+    hsd::cin<char>().template read().unwrap()
+
+#define hsd_read_value(value)\
+    value = hsd::cin<char>().template read_value<hsd::remove_cvref_t<decltype(value)>>()
+
+#define hsd_wread_line()\
+    hsd::cin<hsd::wchar>().template read_line().unwrap()
+
+#define hsd_wread()\
+    hsd::cin<hsd::wchar>().template read().unwrap()
+
+#define hsd_wread_value(value)\
+    value = hsd::cin<hsd::wchar>().template read_value<hsd::remove_cvref_t<decltype(value)>>()
 
 #define hsd_print(fmt, ...)\
     hsd::cout<char>().template print<fmt>(__VA_ARGS__).unwrap()

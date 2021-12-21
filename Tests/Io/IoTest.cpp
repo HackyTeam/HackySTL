@@ -9,7 +9,11 @@ int main()
     hsd_wprintln(L"hello, {} and other words", 123.2);
     str.write_data<L"hello, {} and other words\n">(hsd::string{"123.2"});
     
-    hsd::cin<char>().read_line().unwrap().set_data(x, y, z).unwrap();
+    //hsd_read_line().set_data(x, y, z).unwrap();
+    hsd_read_value(x);
+    hsd_read_value(y);
+    hsd_read_value(z);
+
     hsd_wprintln(L"{x,fg=234,bg=43}, {e,fg=143,bg=78}, {fg=84,bg=193}", x, y, z);
     
     auto file = hsd::load_file<char>(

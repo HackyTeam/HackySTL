@@ -137,6 +137,11 @@ namespace hsd
             _separators = separators;
         }
 
+        inline const CharT* get_separators() const
+        {
+            return _separators;
+        }
+
         inline void clear()
         {
             vector<CharT>::clear();

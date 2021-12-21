@@ -819,19 +819,15 @@ namespace hsd
             if (_capacity != 0)
             {
                 _data[0] = '\0';
-                _size = 1;
+                _size = 0;
             }
         }
 
         inline void pop_back()
         {
-            if (_size != 1)
+            if (_size > 0)
             {
-                _data[--_size] = '\0';
-            }
-            else if (_data[0] != '\0')
-            {
-                _data[0] = '\0';
+                _data[_size--] = '\0';
             }
         }
 
@@ -847,7 +843,7 @@ namespace hsd
 
         inline usize size() const
         {
-            return (_size != 0) ? _size + 1 : 0;
+            return (_data != nullptr) ? _size + 1 : 0;
         }
 
         inline usize length() const

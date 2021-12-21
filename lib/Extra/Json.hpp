@@ -258,7 +258,7 @@ namespace hsd
                         }
                         else if (_ch == static_cast<CharT>('e') or _ch == static_cast<CharT>('E'))
                         {
-                            return JsonError{"Work in progress: exponential motation", _pos};
+                            return JsonError{"Work in progress: exponential notation", _pos};
                         }
                         else
                         {

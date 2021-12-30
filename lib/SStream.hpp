@@ -75,9 +75,7 @@ namespace hsd
                         format_literal<char_type, _fmt_buf[I].length + 1>
                         {
                             .format = {_fmt_buf[I].format, _fmt_buf[I].length},
-                            .tag = _fmt_buf[I].tag,
-                            .foreground = _fmt_buf[I].foreground,
-                            .background = _fmt_buf[I].background
+                            .base = _fmt_buf[I].base
                         };
 
                     sstream_detail::stream_writer<_curr_fmt> _writer = {
@@ -99,9 +97,7 @@ namespace hsd
                 format_literal<char_type, _last.length + 1>
                 {
                     .format = {_last.format, _last.length},
-                    .tag = _last.tag,
-                    .foreground = _last.foreground,
-                    .background = _last.background
+                    .base = _last.base
                 };
 
             sstream_detail::stream_writer<_curr_fmt> _writer = {

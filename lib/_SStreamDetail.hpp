@@ -63,6 +63,7 @@ namespace hsd
         {
             using char_type = typename decltype(fmt)::char_type;
             using info_type = format_info<char_type>;
+            using info_base_type = fmt_common<char_type>;
             using buf_type = static_vector<info_type, N>;
             using res_type = Result<buf_type, runtime_error>;
 
@@ -104,7 +105,7 @@ namespace hsd
 
                     if (*(_iter_f + _pos_s) == 'x')
                     {
-                        if ((_tag & info_type::hex) || (_tag & info_type::exp))
+                        if ((_tag & info_base_type::hex) || (_tag & info_base_type::exp))
                         {
                             return res_type {
                                 runtime_error {
@@ -113,7 +114,7 @@ namespace hsd
                             };
                         }
 
-                        _tag |= info_type::hex;
+                        _tag |= info_base_type::hex;
                         _pos_s++;
 
                         if (*(_iter_f + _pos_s) != '}' && *(_iter_f + _pos_s) != ',')
@@ -127,7 +128,7 @@ namespace hsd
                     }
                     else if (*(_iter_f + _pos_s) == 'e')
                     {
-                        if (_tag & info_type::hex || _tag & info_type::exp)
+                        if (_tag & info_base_type::hex || _tag & info_base_type::exp)
                         {
                             return res_type {
                                 runtime_error {
@@ -136,7 +137,7 @@ namespace hsd
                             };
                         }
 
-                        _tag |= info_type::exp;
+                        _tag |= info_base_type::exp;
                         _pos_s++;
 
                         if (*(_iter_f + _pos_s) != '}' && *(_iter_f + _pos_s) != ',')
@@ -150,7 +151,7 @@ namespace hsd
                     }
                     else if (*(_iter_f + _pos_s) == 'f' && *(_iter_f + _pos_s + 1) == 'g')
                     {
-                        if (_tag & info_type::fg)
+                        if (_tag & info_base_type::fg)
                         {
                             return res_type {
                                 runtime_error {
@@ -159,7 +160,7 @@ namespace hsd
                             };
                         }
 
-                        _tag |= info_type::fg;
+                        _tag |= info_base_type::fg;
                         _pos_s += 2;
 
                         if (*(_iter_f + _pos_s) != '=')
@@ -201,7 +202,7 @@ namespace hsd
                     }
                     else if (*(_iter_f + _pos_s) == 'b' && *(_iter_f + _pos_s + 1) == 'g')
                     {
-                        if (_tag & info_type::bg)
+                        if (_tag & info_base_type::bg)
                         {
                             return res_type {
                                 runtime_error {
@@ -210,7 +211,7 @@ namespace hsd
                             };
                         }
 
-                        _tag |= info_type::bg;
+                        _tag |= info_base_type::bg;
                         _pos_s += 2;
 
                         if (*(_iter_f + _pos_s) != '=')
@@ -265,9 +266,11 @@ namespace hsd
                         info_type {
                             .format = _iter_f,
                             .length = _curly_pos,
-                            .tag = _tag,
-                            .foreground = _fg,
-                            .background = _bg,
+                            .base = {
+                                .tag = _tag,
+                                .foreground = _fg,
+                                .background = _bg
+                            }
                         }
                     );
 
@@ -281,9 +284,11 @@ namespace hsd
                 info_type {
                     .format = _iter_f,
                     .length = static_cast<usize>(_fmt_end - _iter_f),
-                    .tag = _tag,
-                    .foreground = _fg,
-                    .background = _bg,
+                    .base = {
+                        .tag = _tag,
+                        .foreground = _fg,
+                        .background = _bg
+                    }
                 }
             );
 
@@ -860,7 +865,7 @@ namespace hsd
             }
 
             friend Result<void, runtime_error> _write_impl(stream_writer& p)
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -879,7 +884,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, bool val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -901,7 +906,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, char val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -913,7 +918,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%hhx", "%c", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%hhx", "%c", _dest_pair, val
                     );
                 }();
                 
@@ -923,7 +928,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, char8 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -935,7 +940,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%hhx", "%zc", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%hhx", "%zc", _dest_pair, val
                     );
                 }();
                 
@@ -945,7 +950,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i16 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -957,7 +962,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%hx", "%hd", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%hx", "%hd", _dest_pair, val
                     );
                 }();
                 
@@ -967,7 +972,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u16 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -979,7 +984,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%hx", "%hu", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%hx", "%hu", _dest_pair, val
                     );
                 }();
                 
@@ -989,7 +994,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1001,7 +1006,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%x", "%d", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%x", "%d", _dest_pair, val
                     );
                 }();
                 
@@ -1011,7 +1016,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1023,7 +1028,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%x", "%u", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%x", "%u", _dest_pair, val
                     );
                 }();
                 
@@ -1033,7 +1038,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1045,7 +1050,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%llx", "%lld", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%llx", "%lld", _dest_pair, val
                     );
                 }();
                 
@@ -1055,7 +1060,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1067,7 +1072,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%llx", "%llu", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%llx", "%llu", _dest_pair, val
                     );
                 }();
                 
@@ -1077,7 +1082,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, long val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1089,7 +1094,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%lx", "%ld", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%lx", "%ld", _dest_pair, val
                     );
                 }();
                 
@@ -1099,7 +1104,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, ulong val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1111,7 +1116,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.hex, "0x%lx", "%lu", _dest_pair, val
+                        fmt, fmt.base.hex, "0x%lx", "%lu", _dest_pair, val
                     );
                 }();
                 
@@ -1121,7 +1126,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1133,7 +1138,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.exp, "%e", "%f", _dest_pair, val
+                        fmt, fmt.base.exp, "%e", "%f", _dest_pair, val
                     );
                 }();
                 
@@ -1143,7 +1148,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1155,7 +1160,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.exp, "%le", "%lf", _dest_pair, val
+                        fmt, fmt.base.exp, "%le", "%lf", _dest_pair, val
                     );
                 }();
                 
@@ -1165,7 +1170,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f128 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1177,7 +1182,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_SSTREAM_USE_FMT(
-                        fmt, fmt.exp, "%Le", "%Lf", _dest_pair, val
+                        fmt, fmt.base.exp, "%Le", "%Lf", _dest_pair, val
                     );
                 }();
                 
@@ -1187,7 +1192,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, const char* val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1209,7 +1214,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, const char8* val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1260,7 +1265,7 @@ namespace hsd
             }
 
             friend Result<void, runtime_error> _write_impl(stream_writer& p)
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1279,7 +1284,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, bool val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1301,7 +1306,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, char val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1313,7 +1318,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%hhx", L"%c", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%hhx", L"%c", _dest_pair, val
                     );
                 }();
                 
@@ -1323,7 +1328,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, char8 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1335,7 +1340,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%hhx", L"%zc", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%hhx", L"%zc", _dest_pair, val
                     );
                 }();
                 
@@ -1345,7 +1350,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i16 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1357,7 +1362,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%hx", L"%hd", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%hx", L"%hd", _dest_pair, val
                     );
                 }();
                 
@@ -1367,7 +1372,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u16 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1379,7 +1384,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%hx", L"%hu", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%hx", L"%hu", _dest_pair, val
                     );
                 }();
                 
@@ -1389,7 +1394,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1401,7 +1406,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%x", L"%d", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%x", L"%d", _dest_pair, val
                     );
                 }();
                 
@@ -1411,7 +1416,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1423,7 +1428,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%x", L"%u", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%x", L"%u", _dest_pair, val
                     );
                 }();
                 
@@ -1433,7 +1438,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, i64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1445,7 +1450,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%llx", L"%lld", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%llx", L"%lld", _dest_pair, val
                     );
                 }();
                 
@@ -1455,7 +1460,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, u64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1467,7 +1472,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%llx", L"%llu", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%llx", L"%llu", _dest_pair, val
                     );
                 }();
                 
@@ -1477,7 +1482,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, long val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1489,7 +1494,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%lx", L"%ld", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%lx", L"%ld", _dest_pair, val
                     );
                 }();
                 
@@ -1499,7 +1504,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, ulong val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.exp))
+            requires (!(fmt.base.tag & fmt.base.exp))
             {
                 if (p._index >= p._size)
                 {
@@ -1511,7 +1516,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.hex, L"0x%lx", L"%lu", _dest_pair, val
+                        fmt, fmt.base.hex, L"0x%lx", L"%lu", _dest_pair, val
                     );
                 }();
                 
@@ -1521,7 +1526,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f32 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1533,7 +1538,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.exp, L"%e", L"%f", _dest_pair, val
+                        fmt, fmt.base.exp, L"%e", L"%f", _dest_pair, val
                     );
                 }();
                 
@@ -1543,7 +1548,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f64 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1555,7 +1560,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.exp, L"%le", L"%lf", _dest_pair, val
+                        fmt, fmt.base.exp, L"%le", L"%lf", _dest_pair, val
                     );
                 }();
                 
@@ -1565,7 +1570,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, f128 val)
                 -> Result<void, runtime_error>
-            requires (!(fmt.tag & fmt.hex))
+            requires (!(fmt.base.tag & fmt.base.hex))
             {
                 if (p._index >= p._size)
                 {
@@ -1577,7 +1582,7 @@ namespace hsd
                 pair _dest_pair = {p._data + p._index, p._size - p._index};
                 u32 _write_len = [&]{
                     HSD_WSSTREAM_USE_FMT(
-                        fmt, fmt.exp, L"%Le", L"%Lf", _dest_pair, val
+                        fmt, fmt.base.exp, L"%Le", L"%Lf", _dest_pair, val
                     );
                 }();
                 
@@ -1587,7 +1592,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, const char* val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1609,7 +1614,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, const char8* val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {
@@ -1631,7 +1636,7 @@ namespace hsd
 
             friend auto _write_impl(stream_writer& p, const wchar* val)
                 -> Result<void, runtime_error>
-            requires (!((fmt.tag & fmt.hex) || (fmt.tag & fmt.exp)))
+            requires (!((fmt.base.tag & fmt.base.hex) || (fmt.base.tag & fmt.base.exp)))
             {
                 if (p._index >= p._size)
                 {

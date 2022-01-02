@@ -11,7 +11,7 @@ int main()
     {
         hsd_print("> ");
         
-        auto& stream_ref = hsd::io::cin().read_line().unwrap();
+        auto& stream_ref = hsd::cin<char>().read_line().unwrap();
         hsd::cstring::copy_until(send_buffer, stream_ref.c_str(), '\n');
         auto send_state = client.send(send_buffer, 1024);
 

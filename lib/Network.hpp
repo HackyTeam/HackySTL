@@ -133,18 +133,18 @@ namespace hsd
     private:
         using underlying_socket = network_detail::native_socket_type;
         using socket_type = network_detail::udp_child_socket<Protocol>;
-        network_detail::udp_socket<Protocol> _master_socket;
+        network_detail::udp_socket<Protocol> _main_socket;
         unordered_map<static_string<18>, socket_type> _sockets{};
 
     public:
         inline udp_server(const char* const addr)
-            : _master_socket{static_cast<underlying_socket>(-1), sockaddr_storage{}, 0}
+            : _main_socket{static_cast<underlying_socket>(-1), sockaddr_storage{}, 0}
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             network_detail::init_winsock();
             #endif
 
-            _master_socket.switch_to(addr, true);
+            _main_socket.switch_to(addr, true);
         }
 
         static inline const char* error_message()
@@ -161,8 +161,8 @@ namespace hsd
         {
             static static_vector<char, 1024> _buffer;
             _buffer.resize(1024);
-            memset(&_master_socket.addr(), 0, _master_socket.length());
-            auto _result = _master_socket.receive(
+            memset(&_main_socket.addr(), 0, _main_socket.length());
+            auto _result = _main_socket.receive(
                 _buffer.data(), _buffer.size()
             );
             
@@ -184,10 +184,10 @@ namespace hsd
             }
             else
             {
-                auto _key_string = network_detail::to_str(&_master_socket.addr());
+                auto _key_string = network_detail::to_str(&_main_socket.addr());
                 auto& _find_result = _sockets.emplace(
-                    _key_string, _master_socket.fd(), 
-                    _master_socket.addr(), _master_socket.length()
+                    _key_string, _main_socket.fd(), 
+                    _main_socket.addr(), _main_socket.length()
                 ).first->second;
 
                 _buffer.resize(_result);

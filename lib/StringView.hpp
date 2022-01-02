@@ -286,9 +286,7 @@ namespace hsd
             using fmt_char_type = typename decltype(fmt)::char_type;
             constexpr auto _fmt = format_literal<fmt_char_type, 1> {
                 .format = {{'\0'}},
-                .tag = fmt.tag,
-                .foreground = fmt.foreground,
-                .background = fmt.background
+                .base = fmt.base
             };
 
             io_detail::printer<_fmt> _p = {p.file()};
@@ -305,10 +303,8 @@ namespace hsd
         {
             using fmt_char_type = typename decltype(fmt)::char_type;
             constexpr auto _fmt = format_literal<fmt_char_type, 1> {
-                .format = "",
-                .tag = fmt.tag,
-                .foreground = fmt.foreground,
-                .background = fmt.background
+                .format = {{'\0'}},
+                .base = fmt.base
             };
 
             sstream_detail::stream_writer<_fmt> _p = {p.data(), p.size(), p.index()};

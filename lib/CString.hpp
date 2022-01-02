@@ -243,6 +243,11 @@ namespace hsd
             return str;
         }
 
+        static constexpr bool is_letter(CharT ch)
+        {
+            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+        }
+
         static inline CharT* reverse(const CharT* str, usize size = 0)
         {
             usize _begin = 0;

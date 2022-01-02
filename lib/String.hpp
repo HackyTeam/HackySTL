@@ -61,10 +61,15 @@ namespace hsd
         requires (DefaultConstructible<alloc_type>)
             : _alloc{}
         {
-            _size = _str_utils::length(cstr);
+            _size = (cstr != nullptr) ? _str_utils::length(cstr) : 0;
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
-            _str_utils::copy(_data, cstr, _size);
+            
+            if (cstr != nullptr)
+            {
+                _str_utils::copy(_data, cstr, _size);
+            }
+
             _data[_size] = static_cast<CharT>(0);
         }
 
@@ -73,10 +78,15 @@ namespace hsd
         requires (Constructible<alloc_type, Alloc>)
             : _alloc{alloc}
         {
-            _size = _str_utils::length(cstr);
+            _size = (cstr != nullptr) ? _str_utils::length(cstr) : 0;
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
-            _str_utils::copy(_data, cstr, _size);
+            
+            if (cstr != nullptr)
+            {
+                _str_utils::copy(_data, cstr, _size);
+            }
+
             _data[_size] = static_cast<CharT>(0);
         }
 
@@ -87,7 +97,12 @@ namespace hsd
             _size = size;
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
-            _str_utils::copy(_data, cstr, _size);
+            
+            if (cstr != nullptr)
+            {
+                _str_utils::copy(_data, cstr, _size);
+            }
+
             _data[_size] = static_cast<CharT>(0);
         }
 
@@ -99,7 +114,12 @@ namespace hsd
             _size = size;
             _capacity = _size;
             _data = _alloc.allocate(_size + 1).unwrap();
-            _str_utils::copy(_data, cstr, _size);
+            
+            if (cstr != nullptr)
+            {
+                _str_utils::copy(_data, cstr, _size);
+            }
+
             _data[_size] = static_cast<CharT>(0);
         }
 
@@ -120,7 +140,12 @@ namespace hsd
             _size = other._size;
             _capacity = other._capacity;
             _data = _alloc.allocate(_capacity + 1).unwrap();
-            _str_utils::copy(_data, other._data, _size);
+            
+            if (other._data != nullptr)
+            {
+                _str_utils::copy(_data, other._data, _size);
+            }
+
             _data[_size] = static_cast<CharT>(0);
         }
 
@@ -986,11 +1011,15 @@ namespace hsd
 
         constexpr static_basic_string(const CharT* cstr)
         {
-            _size = _str_utils::length(cstr);
+            _size = (cstr != nullptr) ? _str_utils::length(cstr) : 0;
 
             if (_size < N)
             {
-                _str_utils::copy(_data, cstr, _size);
+                if (cstr != nullptr)
+                {
+                    _str_utils::copy(_data, cstr, _size);
+                }
+
                 _data[_size] = static_cast<CharT>(0);
             }
             else
@@ -1009,7 +1038,12 @@ namespace hsd
             if (size < N)
             {
                 _size = size;
-                _str_utils::copy(_data, cstr, _size);
+                
+                if (cstr != nullptr)
+                {
+                    _str_utils::copy(_data, cstr, _size);
+                }
+
                 _data[_size] = static_cast<CharT>(0);
             }
             else

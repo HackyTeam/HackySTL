@@ -444,13 +444,13 @@ namespace hsd
             '\x1b', '[', '0', 'm', '\0'
         };
 
-        static constexpr uchar none = 0; 
-        static constexpr uchar hex  = 1; // hexadecimal
-        static constexpr uchar exp  = 2; // exponent
-        static constexpr uchar fg   = 4; // foreground color
-        static constexpr uchar bg   = 8; // background color
+        static constexpr usize none = 0; 
+        static constexpr usize hex  = 1; // hexadecimal
+        static constexpr usize exp  = 2; // exponent
+        static constexpr usize fg   = 4; // foreground color
+        static constexpr usize bg   = 8; // background color
 
-        uchar tag;
+        usize tag;
         uchar foreground;
         uchar background;
     };

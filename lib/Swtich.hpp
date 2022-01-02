@@ -226,13 +226,13 @@ namespace hsd
     };
 
     template <typename T, typename Func> 
-    static void switch_cases(const T&, DefaultCase<Func> default_case)
+    static constexpr void switch_cases(const T&, DefaultCase<Func> default_case)
     {
         default_case().unwrap();
     }
 
     template <typename Op, typename T, typename U, typename Func, typename... Pairs> 
-    static void switch_cases(const T& compare_value, 
+    static constexpr void switch_cases(const T& compare_value, 
         CasePair<Op, U, Func> case_pair, Pairs... case_pairs)
     {
         if (case_pair(compare_value).unwrap()) return;

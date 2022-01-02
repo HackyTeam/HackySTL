@@ -254,8 +254,8 @@ namespace hsd
             );
             
             tuple _args_tup = {forward<Args&>(args)...};
-            constexpr auto _fmt_buf = sstream_detail::parse_literal<
-                fmt, sizeof...(Args) + 1>().unwrap();
+            constexpr auto _fmt_buf = 
+                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
 
             static_assert(
                 _fmt_buf.size() == sizeof...(Args) + 1, 

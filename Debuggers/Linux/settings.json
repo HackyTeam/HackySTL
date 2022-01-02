@@ -89,7 +89,8 @@
         "*.ipp": "cpp",
         "source_location": "cpp",
         "numbers": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "charconv": "cpp"
     },
     "cSpell.words": [
         "IRWXA",

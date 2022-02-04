@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_SStreamDetail.hpp"
+#include "FormatGenerator.hpp"
 #include "Tuple.hpp"
 
 namespace hsd
@@ -19,15 +20,6 @@ namespace hsd
         inline basic_sstream() = default;
         inline basic_sstream(const basic_sstream&) = delete;
         inline basic_sstream& operator=(const basic_sstream&) = delete;
-
-        inline void write_raw_data(const CharT* raw_data)
-        {
-            for (auto* it = raw_data; *it != '\0'; ++it)
-            {
-                this->back() = *it;
-                this->emplace_back('\0');
-            }
-        }
 
         template <typename... Args>
         inline Result<void, runtime_error> set_data(Args&... args)
@@ -54,58 +46,95 @@ namespace hsd
         inline void write_data(Args&&... args)
         {
             using char_type = typename decltype(fmt)::char_type;
-            tuple _args_tup = {forward<Args&>(args)...};
+            using tup_type = type_tuple<Args...>;
 
-            constexpr auto _fmt_buf = 
-                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
-            
             static_assert(
-                _fmt_buf.size() == sizeof...(Args) + 1, 
-                "Arguments don\'t match"
+                is_same<char_type, CharT>::value, 
+                "Unsupported character type"
             );
 
-            if constexpr (sizeof...(Args) != 0)
-            {
-                auto _forward_write = [&]<usize I>()
-                {
-                    using arg_type = decltype(_args_tup.template get<I>());
-                    arg_type _arg = _args_tup.template get<I>();
+            static constexpr auto _fmt_buf =
+                parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
 
-                    constexpr auto _curr_fmt = 
-                        format_literal<char_type, _fmt_buf[I].length + 1>
-                        {
-                            .format = {_fmt_buf[I].format, _fmt_buf[I].length},
-                            .base = _fmt_buf[I].base
-                        };
-
-                    sstream_detail::stream_writer<_curr_fmt> _writer = {
-                        data(), capacity() - size(), size()
-                    };
-
-                    _write_impl(_writer, forward<arg_type>(_arg)).unwrap();
-                    this->_size += _writer.index();
-                };
-
-                [&]<usize... Ints>(index_sequence<Ints...>)
-                {
-                    ((_forward_write.template operator()<Ints>()), ...);
-                }(make_index_sequence<sizeof...(Args)>{});
-            }
-
-            constexpr auto _last = _fmt_buf[sizeof...(Args)];
-            constexpr auto _curr_fmt = 
+            constexpr auto _last = _fmt_buf[tup_type::size];
+            constexpr auto _last_fmt = 
                 format_literal<char_type, _last.length + 1>
                 {
                     .format = {_last.format, _last.length},
                     .base = _last.base
                 };
 
-            sstream_detail::stream_writer<_curr_fmt> _writer = {
-                data(), capacity() - size(), size()
-            };
 
-            _write_impl(_writer).unwrap();
-            this->_size += _writer.index();
+            static_assert(
+                _fmt_buf.size() == sizeof...(Args) + 1, 
+                "The number of arguments doesn't match"
+            );
+
+            if constexpr (sizeof...(Args) != 0)
+            {
+                constexpr auto _print_fmt =
+                    []<usize... Ints>(index_sequence<Ints...>)
+                    {
+                        constexpr auto _gen_fmt = []<usize I>()
+                        {
+                            constexpr auto _curr_fmt = 
+                                format_literal<char_type, _fmt_buf[I].length + 1>
+                                {
+                                    .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                                    .base = _fmt_buf[I].base
+                                };
+
+                            return format<_curr_fmt, typename tup_type::template type_at<I>>();
+                        };
+
+                        return ((_gen_fmt.template operator()<Ints>()) + ...);
+                    }(make_index_sequence<tup_type::size>{}) + _last_fmt.format;
+
+                const tuple _args = (make_args(args) + ...);
+
+                [&]<usize... Ints>(index_sequence<Ints...>)
+                {
+                    if constexpr (is_same<char_type, char>::value)
+                    {
+                        this->_size += static_cast<usize>(
+                            snprintf(
+                                data() + size(), capacity() - size(), 
+                                _print_fmt.data, _args.template get<Ints>()...
+                            )
+                        ) - 1;
+                    }
+                    else
+                    {
+                        this->_size += static_cast<usize>(
+                            swprintf(
+                                data() + size(), capacity() - size(),
+                                _print_fmt.data, _args.template get<Ints>()...
+                            )
+                        ) - 1;
+                    }
+                }(make_index_sequence<decltype(_args)::size()>{});
+            }
+            else
+            {
+                if constexpr (is_same<char_type, char>::value)
+                {
+                    this->_size += static_cast<usize>(
+                        snprintf(
+                            data() + size(), capacity() - size(),
+                            _last_fmt.format.data
+                        )
+                    ) - 1;
+                }
+                else
+                {
+                    this->_size += static_cast<usize>(
+                        swprintf(
+                            data() + size(), capacity() - size(),
+                            _last_fmt.format.data
+                        )
+                    ) - 1;
+                }
+            }
         }
 
         inline void pop_back()

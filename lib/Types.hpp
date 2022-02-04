@@ -96,6 +96,7 @@ namespace hsd
     using u16 = unsigned short;
     using u8 = unsigned char;
 
+    using ilong = long;
     using i64 = long long;
     using i32 = int;
     using i16 = short;

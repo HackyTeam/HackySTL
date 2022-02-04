@@ -1,9 +1,9 @@
 #pragma once
 
 #include "CString.hpp"
-#include "_IoDetail.hpp"
 #include "StringView.hpp"
 #include "Algorithm.hpp"
+#include "_SStreamDetail.hpp"
 
 namespace hsd
 {
@@ -931,12 +931,6 @@ namespace hsd
             return basic_string_view<CharT>(_data, _size);
         }
 
-        template <format_literal fmt>
-        friend void _print_impl(io_detail::printer<fmt>& p, const basic_string& str)
-        {
-            _print_impl(p, str.c_str());
-        }
-    
         template <typename CharU>
         friend auto _parse_impl(sstream_detail::stream_parser<CharU>& p, basic_string& str)
             -> Result<void, runtime_error>
@@ -968,10 +962,9 @@ namespace hsd
             return {};
         }
 
-        template <format_literal fmt>
-        friend auto _write_impl(sstream_detail::stream_writer<fmt>& p, const basic_string& str)
+        constexpr auto pretty_args() const
         {
-            return _write_impl(p, str.c_str());
+            return make_tuple(size(), data());
         }
     };
 
@@ -1753,6 +1746,11 @@ namespace hsd
         explicit constexpr operator basic_string_view<CharT>() const
         {
             return basic_string_view<CharT>(_data, _size);
+        }
+
+        constexpr auto pretty_args() const
+        {
+            return make_tuple(size(), data());
         }
     };
 

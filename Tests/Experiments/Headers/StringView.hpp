@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CString.hpp"
-#include "Hash.hpp"
-#include "Tuple.hpp"
+#include <CString.hpp>
+#include <Hash.hpp>
+#include <Tuple.hpp>
 
 namespace hsd
 {

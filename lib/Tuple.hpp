@@ -1,19 +1,12 @@
 #pragma once
 
-#include "IntegerSequence.hpp"
+#include "Reference.hpp"
 #include "Pair.hpp"
 
 namespace hsd
 {
     template <typename... T>
-    class tuple
-    {
-    public:
-        static consteval usize size()
-        {
-            return sizeof...(T);
-        }
-    };
+    class tuple;
 
     template <typename... Args>
     static constexpr auto make_tuple(Args&&... args)
@@ -22,23 +15,60 @@ namespace hsd
     template < typename Tuple1, typename Tuple2 >
     using is_same_tuple = is_same<Tuple1, Tuple2>;
 
+    template <typename>
+    struct is_tuple : false_type {};
+
+    template <typename... Args>
+    struct is_tuple<tuple<Args...>> : true_type {};
+
+    template <typename T>
+    concept IsTuple = is_tuple<T>::value;
+
+    template <>
+    class tuple<>
+    {
+    public:
+        template <typename... U>
+        friend class tuple;
+
+        static consteval usize size()
+        {
+            return 0;
+        }
+
+        template <typename... Args>
+        constexpr auto operator+(const tuple<Args...>& rhs) const
+        {
+            return rhs;
+        }
+
+        template <typename U> requires (!is_tuple<U>::value)
+        constexpr auto operator+(const U& rhs) const
+        {
+            return make_tuple(forward<U>(rhs));
+        }
+    };
+
     template <typename T>
     class tuple<T>
     {   
     private:   
         T _first;       
 
+        template <typename... U>
+        friend class tuple;
+
+        template <usize N> requires (N == 0)
+        constexpr const auto& get_raw() const
+        {
+            return _first;
+        }
     public:
         constexpr tuple() = default;
 
         template <typename U>
         constexpr tuple(U&& first) 
             : _first{forward<U>(first)}
-        {}
-
-        constexpr tuple(T& first)
-        requires (IsReference<T>)
-            : _first{first}
         {}
 
         constexpr tuple(const tuple& other)
@@ -66,37 +96,50 @@ namespace hsd
         {
             return [&]<usize... Ints>(index_sequence<Ints...>)
             {
-                [](auto... args) {
-                    static_assert(
-                        is_same_tuple<
-                            tuple<T, Args...>, 
-                            tuple<decltype(args)...>
-                        >::value, "Invalid concatenation"
+                return []<typename... TupArgs>(TupArgs... args)
+                {
+                    return make_tuple<T, Args...>(
+                        forward<TupArgs>(args)...
                     );
-                }(get_copy<0>(), rhs.template get_copy<Ints>()...);
-
-                return make_tuple<T, Args...>(
-                    get_copy<0>(), rhs.template get_copy<Ints>()...
-                );
+                }(get_raw<0>(), rhs.template get_raw<Ints>()...);
             }(index_sequence_for<Args...>{});
+        }
+
+        template <typename U> requires (!is_tuple<U>::value)
+        constexpr auto operator+(const U& rhs) const
+        {
+            return []<typename... TupArgs>(TupArgs... args)
+            {
+                return make_tuple<T, U>(
+                    forward<TupArgs>(args)...
+                );
+            }(get_raw<0>(), rhs);
         }
 
         template <usize N> requires (N == 0)
         constexpr auto& get()
         {
-            return _first;
+            if constexpr (requires {{_first.get()} -> IsReference;})
+            {
+                return _first.get();
+            }
+            else
+            {
+                return _first;
+            }
         }
 
         template <usize N> requires (N == 0)
         constexpr const auto& get() const
         {
-            return _first;
-        }
-
-        template <usize N> requires (N == 0)
-        constexpr auto get_copy() const
-        {
-            return _first;
+            if constexpr (requires {{_first.get()} -> IsReference;})
+            {
+                return _first.get();
+            }
+            else
+            {
+                return _first;
+            }
         }
 
         static consteval usize size()
@@ -105,13 +148,33 @@ namespace hsd
         }
     };
 
+    template <typename T>
+    class tuple<T&>
+        : public tuple<reference<T>>
+    {};
+
     template < typename T, typename... Rest >
     class tuple<T, Rest...>
     {   
     private:   
         T _first;
-        tuple<Rest...> _rest;        
+        tuple<Rest...> _rest;  
 
+        template <typename... U>
+        friend class tuple;      
+
+        template <usize N>
+        constexpr const auto& get_raw() const
+        {
+            if constexpr (N == 0)
+            {
+                return _first;
+            }
+            else
+            {
+                return _rest.template get_raw<N - 1>();
+            }
+        }
     public:
         constexpr tuple() = default;
 
@@ -119,12 +182,6 @@ namespace hsd
         requires (Constructible<tuple<Rest...>, Args...>)
         constexpr tuple(U&& first, Args&&... rest) 
             : _first{forward<U>(first)}, _rest{forward<Args>(rest)...}
-        {}
-
-        template <typename... Args>
-        requires (IsReference<T> && Constructible<tuple<Rest...>, Args...>)
-        constexpr tuple(T& first, Args&&... rest) 
-            : _first{first}, _rest{forward<Args>(rest)...}
         {}
 
         constexpr tuple(const tuple& other)
@@ -155,27 +212,41 @@ namespace hsd
             return [&]< usize... Ints1, usize... Ints2 >
                 (index_sequence<Ints1...>, index_sequence<Ints2...>)
             {
-                [](auto... args) {
-                    static_assert(
-                        is_same_tuple<
-                            tuple<T, Rest..., Args...>, 
-                            tuple<decltype(args)...>
-                        >::value, "Invalid concatenation"
+                return []<typename... TupArgs>(TupArgs... args)
+                {
+                    return make_tuple<T, Rest..., Args...>(
+                        forward<TupArgs>(args)...
                     );
-                }(get_copy<Ints1>()..., rhs.template get_copy<Ints2>()...);
-
-                return make_tuple<T, Rest..., Args...>(
-                    get_copy<Ints1>()..., rhs.template get_copy<Ints2>()...
-                );
+                }(get_raw<Ints1>()..., rhs.template get_raw<Ints2>()...);
             }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
+        }
+
+        template <typename U> requires (!is_tuple<U>::value)
+        constexpr auto operator+(const U& rhs) const
+        {
+            return [&]< usize... Ints1>
+                (index_sequence<Ints1...>)
+            {
+                return []<typename... TupArgs>(TupArgs... args)
+                {
+                    return make_tuple<T, Rest..., U>(forward<TupArgs>(args)...);
+                }(get_raw<Ints1>()..., rhs);
+            }(index_sequence_for<T, Rest...>{});
         }
 
         template <usize N>
         constexpr auto& get()
         {
-            if constexpr(N == 0)
+            if constexpr (N == 0)
             {
-                return _first;
+                if constexpr (requires {{_first.get()} -> IsReference;})
+                {
+                    return _first.get();
+                }
+                else
+                {
+                    return _first;
+                }
             }
             else
             {
@@ -188,24 +259,18 @@ namespace hsd
         {
             if constexpr(N == 0)
             {
-                return _first;
+                if constexpr (requires {{_first.get()} -> IsReference;})
+                {
+                    return _first.get();
+                }
+                else
+                {
+                    return _first;
+                }
             }
             else
             {
                 return _rest.template get<N - 1>();
-            }
-        }
-
-        template <usize N>
-        constexpr auto get_copy() const
-        {
-            if constexpr(N == 0)
-            {
-                return _first;
-            }
-            else
-            {
-                return _rest.template get_copy<N - 1>();
             }
         }
 
@@ -214,6 +279,41 @@ namespace hsd
             return 1 + sizeof...(Rest);
         }
     };
+
+    template < typename T, typename... Rest >
+    class tuple<T&, Rest...>
+        : public tuple<reference<T>, Rest...>
+    {};
+
+    template <hsd::usize, typename...>
+    struct type_tuple_impl;
+
+    template <typename T, typename... Ts>
+    struct type_tuple_impl<0, T, Ts...>
+    {
+        using type = T;
+    };
+
+    template <hsd::usize Idx, typename T, typename... Ts>
+    struct type_tuple_impl<Idx, T, Ts...>
+    {
+        using next = type_tuple_impl<Idx - 1, Ts...>;
+        using type = typename next::type;
+    };
+
+    template <typename... Ts>
+    struct type_tuple
+    {
+        static constexpr usize size = sizeof...(Ts);
+
+        template <hsd::usize Idx>
+        using type_at = typename type_tuple_impl<Idx, Ts...>::type;
+    };
+
+    template <typename... Ts>
+    struct type_tuple<tuple<Ts...>>
+        : type_tuple<Ts...>
+    {};
 
     template < typename... UTypes > tuple(UTypes...) -> tuple<UTypes...>;
     template < typename T1, typename T2 > tuple(pair<T1, T2>) -> tuple<T1, T2>;

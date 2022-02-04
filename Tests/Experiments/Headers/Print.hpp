@@ -1,74 +1,78 @@
 #pragma once
 
-#include <Concepts.hpp>
-#include <unistd.h>
+#include "FormatGenerator.hpp"
 
-namespace hsd_test
+namespace hsd
 {
-    template <typename CharT>
-    struct fmt_common
+    template <basic_string_literal fmt, typename... Args>
+    static inline Result<void, runtime_error> print(Args &&...args)
     {
-        static constexpr const CharT fg_fmt[8] = {
-            '\x1b', '[', '3', '8', ';', '5', ';', 'm'
-        };
-        static constexpr const CharT bg_fmt[8] = {
-            '\x1b', '[', '4', '8', ';', '5', ';', 'm'
-        };
-        static constexpr const CharT reset_fmt[4] = {
-            '\x1b', '[', '0', 'm'
-        };
+        using char_type = typename decltype(fmt)::char_type;
+        using tup_type = type_tuple<Args...>;
 
-        static constexpr hsd::uchar none = 0; 
-        static constexpr hsd::uchar hex  = 1; // hexadecimal
-        static constexpr hsd::uchar exp  = 2; // exponent
-        static constexpr hsd::uchar fg   = 4; // foreground color
-        static constexpr hsd::uchar bg   = 8; // background color
+        static constexpr auto _fmt_buf =
+            parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
 
-        hsd::uchar tag;
-        hsd::uchar foreground;
-        hsd::uchar background;
-    };
+        constexpr auto _last = _fmt_buf[tup_type::size];
+        constexpr auto _last_fmt = 
+            format_literal<char_type, _last.length + 1>
+            {
+                .format = {_last.format, _last.length},
+                .base = _last.base
+            };
 
-    template <typename CharT, hsd::usize N>
-    struct fmt_storage
-    {
-        CharT data[N];
-        hsd::usize len;
+        static_assert(
+            is_same<char_type, char>::value ||
+            is_same<char_type, wchar>::value,
+            "char_type must be char or wchar."
+        );
 
-        constexpr const CharT* get_cstr() const
+        if constexpr (sizeof...(Args) != 0)
         {
-            return data + N - len;
+            constexpr auto _print_fmt =
+                []<usize... Ints>(index_sequence<Ints...>) {
+                    
+                    constexpr auto _gen_fmt = []<usize I>()
+                    {
+                        constexpr auto _curr_fmt = 
+                            format_literal<char_type, _fmt_buf[I].length + 1>
+                            {
+                                .format = {_fmt_buf[I].format, _fmt_buf[I].length},
+                                .base = _fmt_buf[I].base
+                            };
+
+                        return format<_curr_fmt, typename tup_type::template type_at<I>>();
+                    };
+
+                    return ((_gen_fmt.template operator()<Ints>()) + ...);
+                }(make_index_sequence<tup_type::size>{}) + _last_fmt.format;
+
+            const tuple _args = (make_args(args) + ...);
+
+            [&]<usize... Ints>(index_sequence<Ints...>)
+            {
+                if constexpr (is_same<char_type, char>::value)
+                {
+                    printf(_print_fmt.data, _args.template get<Ints>()...);
+                }
+                else
+                {
+                    wprintf(_print_fmt.data, _args.template get<Ints>()...);
+                }
+            }(make_index_sequence<decltype(_args)::size()>{});
+        }
+        else
+        {
+            if constexpr (is_same<char_type, char>::value)
+            {
+                fputs(_last_fmt.format.data, stdout);
+            }
+            else
+            {
+                fputws(_last_fmt.format.data, stdout);
+            }
         }
 
-        constexpr hsd::usize get_size() const
-        {
-            return N;
-        }
-    };
-    
-
-    template <typename CharT, fmt_common<CharT> fmt>
-    requires (!(fmt.tag & fmt.hex) && !(fmt.tag & fmt.exp))
-    static constexpr auto format(auto value)
-    requires (hsd::is_integral<decltype(value)>::value)
-    {
-        fmt_storage<CharT, 20> _buffer = {};
-        bool _neg = (value < 0) ? (value = -value, true) : false;
-        
-        do
-        {
-            _buffer.data[_buffer.get_size() - ++_buffer.len] = 
-                static_cast<CharT>('0' + (value % 10));
-            
-            value /= 10;
-        } while (value != 0);
-        
-        if (_neg == true)
-        {
-            _buffer.data[_buffer.get_size() - ++_buffer.len] = 
-                static_cast<CharT>('-');
-        }
-        
-        return _buffer;
+        return {};
     }
-} // namespace hsd_test
+} // namespace hsd

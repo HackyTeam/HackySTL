@@ -105,7 +105,7 @@ namespace hsd
         using res_type = Result<buf_type, runtime_error>;
         using color_type = typename info_base_type::fmt_color;
 
-        constexpr const char_type *_fmt_end = fmt.data + fmt.size();
+        constexpr const char_type *_fmt_end = fmt.data + fmt.size() - 1;
         constexpr auto _npos = static_cast<usize>(-1);
 
         buf_type _buf;
@@ -331,8 +331,7 @@ namespace hsd
         static constexpr void _check_duplicate_tag(
             usize tag, usize duplicate)
         {
-            if (tag & duplicate)
-                hsd_panic("Duplicate tag");
+            if (tag & duplicate) hsd_panic("Duplicate tag");
         };
 
         template <typename CharT>
@@ -355,10 +354,10 @@ namespace hsd
         {
             switchable _result = {};
 
-            for (usize i = 0; i < sz; i++)
+            for (usize _index = 0; _index < sz; _index++)
             {
-                _result.value[i % 2] |=
-                    static_cast<u64>(str[i]) << ((i / 2) * 8);
+                _result.value[_index % 2] |=
+                    static_cast<u64>(str[_index]) << ((_index / 2) * 8);
             }
 
             return _result;

@@ -286,7 +286,13 @@ namespace hsd
                                     .base = _fmt_buf[I].base
                                 };
 
-                            return format<_curr_fmt, typename tup_type::template type_at<I>>();
+                            
+                            constexpr auto _pretty_fmt = 
+                                format<_curr_fmt, typename tup_type::template type_at<I>>();
+                            
+                            constexpr auto _sz = basic_cstring<char_type>::length(_pretty_fmt.data);
+                            static_assert(_pretty_fmt.size() == _sz + 1);
+                            return _pretty_fmt;
                         };
 
                         return ((_gen_fmt.template operator()<Ints>()) + ...);

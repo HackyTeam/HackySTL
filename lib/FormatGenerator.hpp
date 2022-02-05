@@ -10,16 +10,25 @@ namespace hsd
         if constexpr (lit.base.tag & lit.base.ovr)
         {
             static_assert(
+                !(lit.base.tag & lit.base.fg) && 
+                !(lit.base.tag & lit.base.bg),
+                "Format literal cannot have both "
+                "foreground and background color "
+                "tags for overloading format"
+            );
+
+            static_assert(
                 requires (T _t) {{_t.pretty_args()} -> IsTuple;},
                 "Object must have a pretty_args() method which returns a tuple."    
             );
 
+            using arg_type = remove_cvref_t<T>;
             using type_tup = type_tuple<decltype(declval<T>().pretty_args())>;
             using char_type = typename decltype(lit)::char_type;
 
-            constexpr usize _ovr_arg_size = type_tup::size();            
+            constexpr usize _ovr_arg_size = type_tup::size;            
             constexpr auto _ovr_fmt_buf = 
-                parse_literal<T::pretty_fmt(), _ovr_arg_size + 1>().unwrap();
+                parse_literal<arg_type::template pretty_fmt<char_type>(), _ovr_arg_size + 1>().unwrap();
 
             constexpr auto _ovr_last = 
                 basic_string_literal<char_type, _ovr_fmt_buf[_ovr_arg_size].length + 1>

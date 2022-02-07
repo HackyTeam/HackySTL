@@ -96,18 +96,18 @@ namespace hsd
                 {
                     if constexpr (is_same<char_type, char>::value)
                     {
-                        this->_size += static_cast<usize>(
+                        this->_size = static_cast<usize>(
                             snprintf(
-                                data() + size(), capacity() - size(), 
+                                data(), capacity(), 
                                 _print_fmt.data, _args.template get<Ints>()...
                             )
                         ) - 1;
                     }
                     else
                     {
-                        this->_size += static_cast<usize>(
+                        this->_size = static_cast<usize>(
                             swprintf(
-                                data() + size(), capacity() - size(),
+                                data(), capacity(),
                                 _print_fmt.data, _args.template get<Ints>()...
                             )
                         ) - 1;
@@ -118,18 +118,18 @@ namespace hsd
             {
                 if constexpr (is_same<char_type, char>::value)
                 {
-                    this->_size += static_cast<usize>(
+                    this->_size = static_cast<usize>(
                         snprintf(
-                            data() + size(), capacity() - size(),
+                            data(), capacity(),
                             _last_fmt.format.data
                         )
                     ) - 1;
                 }
                 else
                 {
-                    this->_size += static_cast<usize>(
+                    this->_size = static_cast<usize>(
                         swprintf(
-                            data() + size(), capacity() - size(),
+                            data(), capacity(),
                             _last_fmt.format.data
                         )
                     ) - 1;

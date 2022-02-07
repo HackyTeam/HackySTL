@@ -8,35 +8,69 @@
 namespace hsd
 {
     template <typename CharT>
-    struct fmt_common
+    struct fmt_style
     {
+        template <usize N>
+        using lit_type = basic_string_literal<CharT, N>;
+
+        static constexpr lit_type<3> attr_base = {
+            {'\x1b', '[', '\0'}
+        };
+
+        static constexpr lit_type<2> attr_sep = {
+            {';', '\0'}
+        };
+
+        static constexpr lit_type<2> attr_end = {
+            {'m', '\0'}
+        };
+
+        static constexpr lit_type<6> fg_base = {
+            {'3', '8', ';', '5', ';', '\0'}
+        };
+
+        static constexpr lit_type<6> bg_base = {
+            {'4', '8', ';', '5', ';', '\0'}
+        };
+
+        static constexpr lit_type<5> reset_attr = {
+            {'\x1b', '[', '0', 'm', '\0'}
+        };
+
         struct fmt_color
         {
             usize length = 0;
             CharT value[4] = {};
         };
 
-        static constexpr const CharT fg_fmt[8] = {
-            '\x1b', '[', '3', '8', ';', '5', ';', '\0'
-        };
-        static constexpr const CharT bg_fmt[8] = {
-            '\x1b', '[', '4', '8', ';', '5', ';', '\0'
-        };
-        static constexpr const CharT reset_fmt[5] = {
-            '\x1b', '[', '0', 'm', '\0'
-        };
+        static constexpr usize bold   = 1;   // bold
+        static constexpr usize dim    = 2;   // dim
+        static constexpr usize italic = 4;   // italic
+        static constexpr usize undrln = 8;   // underline
+        static constexpr usize blink  = 16;  // blink
+        static constexpr usize revrse = 32;  // reverse
+        static constexpr usize hidden = 64;  // hidden
+        static constexpr usize strike = 128; // striketrough
+        static constexpr usize foregr = 256; // foreground
+        static constexpr usize backgr = 512; // background
+        static constexpr usize size   = 10;  // size
 
-        static constexpr usize none = 0; 
-        static constexpr usize hex  = 1;  // hexadecimal
-        static constexpr usize exp  = 2;  // exponent
-        static constexpr usize ovr  = 4;  // override
-        static constexpr usize fg   = 8;  // foreground color
-        static constexpr usize bg   = 16; // background color
+        usize tag = 0;
+        fmt_color foreground = {};
+        fmt_color background = {};
+    };
+
+    template <typename CharT>
+    struct fmt_common
+    {
+        static constexpr usize none  = 0; 
+        static constexpr usize hex   = 1;  // hexadecimal
+        static constexpr usize exp   = 2;  // exponent
+        static constexpr usize ovr   = 4;  // override
+        static constexpr usize style = 8;  // style
 
         usize tag;
-        
-        fmt_color foreground;
-        fmt_color background;
+        fmt_style<CharT> style_val;
     };
 
     template <typename CharT>
@@ -91,7 +125,7 @@ namespace hsd
         template <typename CharT>
         static constexpr auto _parse_color(
             const CharT* color_fmt, usize& pos_current
-        ) -> Result<typename fmt_common<CharT>::fmt_color, runtime_error>;
+        ) -> Result<typename fmt_style<CharT>::fmt_color, runtime_error>;
     } // namespace parse_lit_detail
 
     template <basic_string_literal fmt, usize N>
@@ -103,7 +137,7 @@ namespace hsd
         using info_base_type = fmt_common<char_type>;
         using buf_type = static_vector<info_type, N>;
         using res_type = Result<buf_type, runtime_error>;
-        using color_type = typename info_base_type::fmt_color;
+        using style_type = fmt_style<char_type>;
 
         constexpr const char_type *_fmt_end = fmt.data + fmt.size() - 1;
         constexpr auto _npos = static_cast<usize>(-1);
@@ -111,7 +145,7 @@ namespace hsd
         buf_type _buf;
         usize _tag = 0;
 
-        color_type _fg = {}, _bg = {};
+        style_type _style = {};
         const char_type* _fmt_ptr = fmt.data;
 
         usize _pos_current = parse_lit_detail::
@@ -158,36 +192,12 @@ namespace hsd
                         parse_lit_detail::_to_switchable(""), []{}
                     },
                     EqualCase {
-                        parse_lit_detail::_to_switchable("x"), [&]
-                        {
-                            parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::hex);
-                            
-                            _tag |= info_base_type::hex;
-                            
-                            parse_lit_detail::
-                                _check_following_fmt(_fmt_ptr, _pos_current);
-                        }
-                    },
-                    EqualCase {
                         parse_lit_detail::_to_switchable("hex"), [&]
                         {
                             parse_lit_detail::
                                 _check_duplicate_tag(_tag, info_base_type::hex);
                             
                             _tag |= info_base_type::hex;
-                            
-                            parse_lit_detail::
-                                _check_following_fmt(_fmt_ptr, _pos_current);
-                        }
-                    },
-                    EqualCase {
-                        parse_lit_detail::_to_switchable("e"), [&]
-                        {
-                            parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::exp);
-                            
-                            _tag |= info_base_type::exp;
                             
                             parse_lit_detail::
                                 _check_following_fmt(_fmt_ptr, _pos_current);
@@ -218,39 +228,15 @@ namespace hsd
                         }
                     },
                     EqualCase {
-                        parse_lit_detail::_to_switchable("override"), [&]
-                        {
-                            parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::ovr);
-                            
-                            _tag |= info_base_type::ovr;
-                            
-                            parse_lit_detail::
-                                _check_following_fmt(_fmt_ptr, _pos_current);
-                        }
-                    },
-                    EqualCase {
                         parse_lit_detail::_to_switchable("fg"), [&]
                         {
                             parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::fg);
+                                _check_duplicate_tag(_style.tag, _style.foregr);
                             
-                            _tag |= info_base_type::fg;
-                            _fg = parse_lit_detail::
-                                _parse_color(_fmt_ptr, _pos_current).unwrap();
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.foregr;
                             
-                            parse_lit_detail::
-                                _check_following_fmt(_fmt_ptr, _pos_current);
-                        }
-                    },
-                    EqualCase {
-                        parse_lit_detail::_to_switchable("foreground"), [&]
-                        {
-                            parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::fg);
-                            
-                            _tag |= info_base_type::fg;
-                            _fg = parse_lit_detail::
+                            _style.foreground = parse_lit_detail::
                                 _parse_color(_fmt_ptr, _pos_current).unwrap();
                             
                             parse_lit_detail::
@@ -261,10 +247,12 @@ namespace hsd
                         parse_lit_detail::_to_switchable("bg"), [&]
                         {
                             parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::bg);
+                                _check_duplicate_tag(_style.tag, _style.backgr);
                             
-                            _tag |= info_base_type::bg;
-                            _bg = parse_lit_detail::
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.backgr;
+
+                            _style.background = parse_lit_detail::
                                 _parse_color(_fmt_ptr, _pos_current).unwrap();
                             
                             parse_lit_detail::
@@ -272,14 +260,104 @@ namespace hsd
                         }
                     },
                     EqualCase {
-                        parse_lit_detail::_to_switchable("background"), [&]
+                        parse_lit_detail::_to_switchable("bold"), [&]
                         {
                             parse_lit_detail::
-                                _check_duplicate_tag(_tag, info_base_type::bg);
+                                _check_duplicate_tag(_style.tag, _style.bold);
                             
-                            _tag |= info_base_type::bg;
-                            _bg = parse_lit_detail::
-                                _parse_color(_fmt_ptr, _pos_current).unwrap();
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.bold;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("dim"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.dim);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.dim;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("italic"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.italic);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.italic;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("undrln"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.undrln);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.undrln;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("blink"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.blink);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.blink;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("rev"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.revrse);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.revrse;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("hid"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.hidden);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.hidden;
+                            
+                            parse_lit_detail::
+                                _check_following_fmt(_fmt_ptr, _pos_current);
+                        }
+                    },
+                    EqualCase {
+                        parse_lit_detail::_to_switchable("strike"), [&]
+                        {
+                            parse_lit_detail::
+                                _check_duplicate_tag(_style.tag, _style.strike);
+                            
+                            _tag |= info_base_type::style;
+                            _style.tag |= _style.strike;
                             
                             parse_lit_detail::
                                 _check_following_fmt(_fmt_ptr, _pos_current);
@@ -296,8 +374,7 @@ namespace hsd
                         .length = _curly_pos,
                         .base = {
                             .tag = _tag,
-                            .foreground = _fg,
-                            .background = _bg
+                            .style_val = _style,
                         }
                     }
                 );
@@ -307,7 +384,7 @@ namespace hsd
                     _find<char_type>(_fmt_ptr, '{');
                 
                 _tag = 0;
-                _fg = _bg = color_type{};
+                _style = style_type{};
             }
         }
 
@@ -317,8 +394,7 @@ namespace hsd
                 .length = static_cast<usize>(_fmt_end - _fmt_ptr),
                 .base = {
                     .tag = _tag,
-                    .foreground = _fg,
-                    .background = _bg
+                    .style_val = _style,
                 }
             }
         );
@@ -383,9 +459,9 @@ namespace hsd
         template <typename CharT>
         static constexpr auto _parse_color(
             const CharT *color_fmt, usize &pos_current)
-            -> Result<typename fmt_common<CharT>::fmt_color, runtime_error>
+            -> Result<typename fmt_style<CharT>::fmt_color, runtime_error>
         {
-            using color_type = typename fmt_common<CharT>::fmt_color;
+            using color_type = typename fmt_style<CharT>::fmt_color;
 
             if (color_fmt[pos_current] != '=')
             {

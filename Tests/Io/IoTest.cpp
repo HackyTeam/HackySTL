@@ -43,14 +43,14 @@ public:
 
         if constexpr (hsd::is_same<CharT, char>::value)
         {
-            return hsd::string_literal<54>{
-                "CustomObject(error_text: {fg=9}, error_type: {fg=14})"
+            return hsd::string_literal<70>{
+                "CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"
             };
         }
         else
         {
-            return hsd::wstring_literal<54>{
-                L"CustomObject(error_text: {fg=9}, error_type: {fg=14})"
+            return hsd::wstring_literal<70>{
+                L"CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"
             };
         }
     }
@@ -167,7 +167,7 @@ int main()
     hsd_read_value(y);
     hsd_read_value(z);
 
-    hsd_wprintln(L"{x,fg=234,bg=43}, {e,fg=143,bg=78}, {fg=84,bg=193}", x, y, z);
+    hsd_wprintln(L"{italic,hex,fg=234,bg=255}, {undrln,exp,fg=143,bg=95}, {strike,fg=84,bg=105}", x, y, z);
     
     auto file = hsd::load_file<char>(
         "Tests/Io/test.txt", hsd::io_options::text::read_write

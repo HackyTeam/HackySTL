@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <wchar.h>
 
 #define BIT8_COLOR_RESET   L"\x1b[0m"
 #define BIT8_COLOR_FMT     L"\x1b[38;5;%hhum"
@@ -30,9 +31,9 @@ int main()
     while (i != 255)
     {
         wprintf(
-            "TEST BEFORE "
+            L"TEST BEFORE "
             BIT8_COLOR_FMT 
-            L"\x1b[48;5;%hhum" 
+            L"\x1b[0;48;5;%hhum" 
             L"Test Text" BIT8_COLOR_RESET "\n", 
             i, static_cast<unsigned char>(255) - i
         );
@@ -43,7 +44,7 @@ int main()
     wprintf(
             "TEST BEFORE "
             BIT8_COLOR_FMT 
-            L"\x1b[48;5;%hhum" 
+            L"\x1b[0;48;5;%hhum" 
             L"Test Text" BIT8_COLOR_RESET "\n", 
             static_cast<unsigned char>(255), static_cast<unsigned char>(0)
         );

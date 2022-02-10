@@ -41,7 +41,7 @@ namespace hsd
             constexpr auto _sz = basic_cstring<char_type>::length(_ovr_last.data);
             static_assert(_ovr_last.size() == _sz + 1);
 
-            return lit.format + [&]<usize... I>(index_sequence<I...>) {
+            return lit.format + [&_ovr_fmt_buf]<usize... I>(index_sequence<I...>) {
                 return (
                     format<
                         format_literal<char_type, _ovr_fmt_buf[I].length + 1>

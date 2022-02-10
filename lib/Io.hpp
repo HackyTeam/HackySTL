@@ -197,15 +197,15 @@ namespace hsd
 
         inline Result< reference<basic_sstream<CharT>>, runtime_error > read()
         {
-            _io_buf.clear();
-            CharT _chr;
-
             if (only_write())
             {
                 return runtime_error {
                     "Cannot read file. It is in write mode"
                 };
             }
+
+            _io_buf.clear();
+            CharT _chr = 0;
             
             while (_chr != EOF && !_read_chr(_chr, _io_buf.get_separators()))
                 ;

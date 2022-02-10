@@ -60,7 +60,14 @@ namespace hsd
 
             virtual ResultType operator()(Args&&... args) override
             {
-                return _func(forward<Args>(args)...);
+                if constexpr (UnwrapInvocable<Func, Args...>)
+                {
+                    return _func(forward<Args>(args)...).unwrap();
+                }
+                else
+                {
+                    return _func(forward<Args>(args)...);
+                }
             }
         };
         
@@ -90,25 +97,14 @@ namespace hsd
             reset();
         }
 
-        inline function& operator=(const function& other)
-        {
-            reset();
-            _func_impl = other._func_impl;
-            return *this;
-        }
+        inline function& operator=(const function& other);
+
+        inline function& operator=(auto func)
+        requires (func_detail::IsFunction<decltype(func), ResultType, Args...>);
 
         inline function& operator=(function&& other)
         {
             swap(_func_impl, other._func_impl);
-            return *this;
-        }
-
-        template <typename Func>
-        requires (func_detail::IsFunction<Func, ResultType, Args...>)
-        inline function& operator=(Func&& func)
-        {
-            reset();
-            _func_impl = make_safe_shared<callable<Func>>(forward<Func>(func));
             return *this;
         }
 
@@ -211,6 +207,27 @@ namespace hsd
     requires (func_detail::IsFunction<decltype(func), Res, Args...>)
     {
         _func_impl = make_safe_shared<callable<decltype(func)>>(func);
+    }
+
+    template < typename Res, typename... Args >
+    inline auto function<Res(Args...)>::operator=(const function<Res(Args...)>& other)
+        -> function<Res(Args...)>&
+    {
+        reset();
+        _func_impl = other._func_impl;
+        return *this;
+    }
+
+    template < typename Res, typename... Args >
+    inline auto function<Res(Args...)>::operator=(auto func)
+        -> function<Res(Args...)>&
+    requires (func_detail::IsFunction<decltype(func), Res, Args...>)
+    {
+        using func_type = decltype(func);
+
+        reset();
+        _func_impl = make_safe_shared<callable<func_type>>(forward<func_type>(func));
+        return *this;
     }
 
     template < typename Func, typename T, typename... Args >

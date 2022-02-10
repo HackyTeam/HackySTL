@@ -42,7 +42,7 @@ namespace hsd
 
     struct this_thread
     {
-        static id get_id() 
+        static inline id get_id() 
         {
             #if defined(HSD_PLATFORM_POSIX)
             return id {
@@ -55,7 +55,7 @@ namespace hsd
             #endif
         }
 
-        static Result<void, runtime_error> sleep_for(f32 seconds)
+        static inline Result<void, runtime_error> sleep_for(f32 seconds)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
                 Sleep(seconds * 1000); // milliseconds
@@ -74,6 +74,15 @@ namespace hsd
             #endif
 
             return {};
+        }
+
+        static inline void yield()
+        {
+            #if defined(HSD_PLATFORM_WINDOWS)
+                Sleep(0);
+            #else
+                sched_yield();
+            #endif
         }
     };
 

@@ -31,41 +31,37 @@ Maintain and improve this project which was started over a year ago
   13. Functions
   14. Futures
   15. Gorbitsa (qookie)
-  16. GPIO (using sysfs)
-  17. Integer Sequence
-  18. IO
-  19. Json Parser (DeKrain)
-  20. Limits (numerical)
-  21. Mutexes (Locking)
-  22. Futexes (Locking)
-  23. Unique Lock
-  24. Basic Logging
-  25. Basic Backtrace
-  26. Constexpr Math (Adaptation of a project)
-  27. UDP and TCP client and server
-  28. Random Engine (Mersenne Twister)
-  29. Ranges
-  30. Atomic and Non-Atomic Shared Pointers
-  31. String and String Views
-  32. Clock and Precise Clock
-  33. Date Support (POSIX Epoch)
-  34. Tuples
-  35. Unicode Conversions
-  36. Unique Pointers
-  37. Compressed Pair (DeKrain)
-  38. Variant (DeKrain) 
-  39. Threads (qookie)
-  40. Algorithm (Very incomplete)
-  41. String Parser
+  16. Type Tuple
+  17. Format Generator (internal for IO)
+  18. Integer Sequence
+  19. IO
+  20. Json Parser (DeKrain)
+  21. Limits (numerical)
+  22. Mutexes (Locking)
+  23. Futexes (Locking)
+  24. Unique Lock
+  25. Basic Logging
+  26. Basic Backtrace
+  27. Constexpr Math (Adaptation of a project)
+  28. UDP and TCP client and server
+  29. Random Engine (Mersenne Twister)
+  30. Ranges
+  31. Atomic and Non-Atomic Shared Pointers
+  32. String and String Views
+  33. Clock and Precise Clock
+  34. Date Support (POSIX Epoch)
+  35. Tuples
+  36. Unicode Conversions
+  37. Unique Pointers
+  38. Compressed Pair (DeKrain)
+  39. Variant (DeKrain) 
+  40. Threads (qookie)
+  41. Algorithm (Very incomplete)
+  42. String Parser
   
 # Contributors:
 - DeKrain (Implementations)
 - qookie (Mostly debugging and some implementations)
-
-# Dependency graph
-<p align = 'left'>
-  <img src='https://raw.githubusercontent.com/HackyTeam/HackySTL/dev/HSD_Depencency_graph.png'>
-</p>
 
 # Platforms
   [Discord](https://discord.gg/dEghMASRKb)

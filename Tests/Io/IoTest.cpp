@@ -162,11 +162,7 @@ int main()
     hsd_wprintln(L"hello, {} and other words", 123.2);
     str.write_data<L"hello, {} and other words\n">(hsd::string{"123.2"});
     
-    //hsd_read_line().set_data(x, y, z).unwrap();
-    hsd_read_value(x);
-    hsd_read_value(y);
-    hsd_read_value(z);
-
+    hsd_read_line().set_data(x, y, z).unwrap();
     hsd_wprintln(L"{italic,hex,fg=234,bg=255}, {undrln,exp,fg=143,bg=95}, {strike,fg=84,bg=105}", x, y, z);
     
     auto file = hsd::load_file<char>(

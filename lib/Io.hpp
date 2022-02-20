@@ -418,19 +418,19 @@ namespace hsd
 } // namespace hsd
 
 #define hsd_read_line()\
-    hsd::cin<char>().template read_line().unwrap()
+    hsd::cin<char>().read_line().unwrap()
 
 #define hsd_read()\
-    hsd::cin<char>().template read().unwrap()
+    hsd::cin<char>().read().unwrap()
 
 #define hsd_read_value(value)\
     value = hsd::cin<char>().template read_value<hsd::remove_cvref_t<decltype(value)>>()
 
 #define hsd_wread_line()\
-    hsd::cin<hsd::wchar>().template read_line().unwrap()
+    hsd::cin<hsd::wchar>().read_line().unwrap()
 
 #define hsd_wread()\
-    hsd::cin<hsd::wchar>().template read().unwrap()
+    hsd::cin<hsd::wchar>().read().unwrap()
 
 #define hsd_wread_value(value)\
     value = hsd::cin<hsd::wchar>().template read_value<hsd::remove_cvref_t<decltype(value)>>()

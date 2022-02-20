@@ -45,6 +45,13 @@ namespace hsd
         template < basic_string_literal fmt, typename... Args >
         inline void write_data(Args&&... args)
         {
+            this->_size = 0;
+            append_data<fmt, Args...>(forward<Args>(args)...);
+        }
+
+        template < basic_string_literal fmt, typename... Args >
+        inline void append_data(Args&&... args)
+        {
             using char_type = typename decltype(fmt)::char_type;
             using tup_type = type_tuple<Args...>;
 
@@ -96,18 +103,18 @@ namespace hsd
                 {
                     if constexpr (is_same<char_type, char>::value)
                     {
-                        this->_size = static_cast<usize>(
+                        this->_size += static_cast<usize>(
                             snprintf(
-                                data(), capacity(), 
+                                data() + size(), capacity() - size(), 
                                 _print_fmt.data, _args.template get<Ints>()...
                             )
                         ) - 1;
                     }
                     else
                     {
-                        this->_size = static_cast<usize>(
+                        this->_size += static_cast<usize>(
                             swprintf(
-                                data(), capacity(),
+                                data() + size(), capacity() - size(),
                                 _print_fmt.data, _args.template get<Ints>()...
                             )
                         ) - 1;
@@ -118,18 +125,18 @@ namespace hsd
             {
                 if constexpr (is_same<char_type, char>::value)
                 {
-                    this->_size = static_cast<usize>(
+                    this->_size += static_cast<usize>(
                         snprintf(
-                            data(), capacity(),
+                            data() + size(), capacity() - size(),
                             _last_fmt.format.data
                         )
                     ) - 1;
                 }
                 else
                 {
-                    this->_size = static_cast<usize>(
+                    this->_size += static_cast<usize>(
                         swprintf(
-                            data(), capacity(),
+                            data() + size(), capacity() - size(),
                             _last_fmt.format.data
                         )
                     ) - 1;

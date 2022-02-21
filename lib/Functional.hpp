@@ -2,7 +2,7 @@
 
 #include "Tuple.hpp"
 #include "Result.hpp"
-#include "SharedPtr.hpp"
+#include "UniquePtr.hpp"
 
 namespace hsd
 {
@@ -46,6 +46,7 @@ namespace hsd
     private:
         struct callable_base
         {
+            virtual unique_ptr<callable_base> clone() const = 0;
             virtual ResultType operator()(Args&&...) = 0;
             virtual ~callable_base() = default;
         };
@@ -69,9 +70,14 @@ namespace hsd
                     return _func(forward<Args>(args)...);
                 }
             }
+
+            virtual unique_ptr<callable_base> clone() const override
+            {
+                return make_unique<callable<Func>>(_func);
+            }
         };
         
-        safe_shared_ptr<callable_base> _func_impl{};
+        unique_ptr<callable_base> _func_impl{};
 
         inline void reset()
         {
@@ -126,7 +132,9 @@ namespace hsd
         requires (!is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)
+            {
                 return func_detail::bad_function{};
+            }
 
             return {_func_impl->operator()(forward<Args>(args)...)};
         }
@@ -136,7 +144,9 @@ namespace hsd
         requires (is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)
+            {
                 return func_detail::bad_function{};
+            }
 
             _func_impl->operator()(forward<Args>(args)...);
             return {};
@@ -149,7 +159,9 @@ namespace hsd
         requires (!is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)
+            {
                 return func_detail::bad_function{};
+            }
 
             return {_func_impl->operator()(forward<Args>(args)...)};
         }
@@ -159,7 +171,9 @@ namespace hsd
         requires (is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)
+            {
                 return func_detail::bad_function{};
+            }
 
             _func_impl->operator()(forward<Args>(args)...);
             return {};
@@ -199,14 +213,14 @@ namespace hsd
     template < typename Res, typename... Args >
     inline function<Res(Args...)>::function(const function& other)
     {
-        _func_impl = other._func_impl;
+        _func_impl = other._func_impl->clone();
     }
 
     template < typename Res, typename... Args >
     inline function<Res(Args...)>::function(auto func)
     requires (func_detail::IsFunction<decltype(func), Res, Args...>)
     {
-        _func_impl = make_safe_shared<callable<decltype(func)>>(func);
+        _func_impl = make_unique<callable<decltype(func)>>(func);
     }
 
     template < typename Res, typename... Args >
@@ -214,7 +228,7 @@ namespace hsd
         -> function<Res(Args...)>&
     {
         reset();
-        _func_impl = other._func_impl;
+        _func_impl = other._func_impl->clone();
         return *this;
     }
 
@@ -226,7 +240,7 @@ namespace hsd
         using func_type = decltype(func);
 
         reset();
-        _func_impl = make_safe_shared<callable<func_type>>(forward<func_type>(func));
+        _func_impl = make_unique<callable<func_type>>(forward<func_type>(func));
         return *this;
     }
 

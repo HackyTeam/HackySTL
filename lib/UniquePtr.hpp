@@ -208,6 +208,11 @@ namespace hsd
             return _value.get_pointer() != nullptr;
         }
 
+        inline bool operator==(NullType) const
+        {
+            return _value.get_pointer() == nullptr;
+        }
+
         inline auto* operator->()
         {
             return get();

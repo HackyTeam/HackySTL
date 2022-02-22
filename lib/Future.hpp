@@ -2,6 +2,7 @@
 
 #include "Functional.hpp"
 #include "ConditionVariable.hpp"
+#include "SharedPtr.hpp"
 
 namespace hsd
 {

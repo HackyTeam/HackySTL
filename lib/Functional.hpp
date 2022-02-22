@@ -61,13 +61,13 @@ namespace hsd
 
             virtual ResultType operator()(Args&&... args) override
             {
-                if constexpr (UnwrapInvocable<Func, Args...>)
-                {
-                    return _func(forward<Args>(args)...).unwrap();
-                }
-                else
+                if constexpr (requires {{_func(forward<Args>(args)...)} -> IsSame<ResultType>;})
                 {
                     return _func(forward<Args>(args)...);
+                }
+                else if constexpr (UnwrapInvocable<Func, Args...>)
+                {
+                    return _func(forward<Args>(args)...).unwrap();
                 }
             }
 

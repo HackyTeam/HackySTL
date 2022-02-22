@@ -413,10 +413,12 @@ namespace hsd
             {
                 #ifdef __cpp_aligned_new
                 T* _result = static_cast<pointer_type>(::operator new(
-                    size * _type_size, static_cast<std::align_val_t>(_alignment)
+                    size * _type_size, static_cast<std::align_val_t>(_alignment), std::nothrow
                 ));
                 #else
-                T* _result = static_cast<pointer_type>(::operator new(size * _type_size));
+                T* _result = static_cast<pointer_type>(
+                    ::operator new(size * _type_size, std::nothrow)
+                );
                 #endif
 
                 if (_result == nullptr)

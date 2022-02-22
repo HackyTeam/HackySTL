@@ -148,10 +148,12 @@ public:
 
 int main()
 {
-    hsd::wsstream str;
-    str.reserve(256);
+    hsd::wsstream ss;
+    ss.reserve(256);
     hsd::i32 x, z;
     hsd::f32 y;
+
+    hsd::string str{"123.2"};
     
     CustomObject obj{
         "Invalid Function Arguments", 
@@ -160,7 +162,7 @@ int main()
 
     hsd_wprintln(L"CustomObject Error: {ovr} ", obj);
     hsd_wprintln(L"hello, {} and other words", 123.2);
-    str.write_data<L"hello, {} and other words\n">(hsd::string{"123.2"});
+    ss.write_data<L"hello, {} and other words\n">(str);
     
     hsd_read_line().set_data(x, y, z).unwrap();
     hsd_wprintln(L"{italic,hex,fg=234,bg=255}, {undrln,exp,fg=143,bg=95}, {strike,fg=84,bg=105}", x, y, z);

@@ -12,11 +12,11 @@ int main()
     hsd_print("Today we are in {}", t1.get_time().to_text());
 
     // EU date format
-    constexpr auto random_date_eu = "28.03.2021 13:43:53"_dmy;
-    hsd_println("{}", random_date_eu.to_text());
+    constexpr auto random_date_eu = "28.03.2022 13:43:53"_dmy;
+    hsd_print("{}", random_date_eu.to_text());
 
     // US date format
-    constexpr auto random_date_us = "4.20.2021 12:33:00"_mdy;
+    constexpr auto random_date_us = "4.20.2022 12:33:00"_mdy;
     hsd_print("{}", random_date_us.to_text());
-    hsd_println("{}", random_date_eu > random_date_us);
+    hsd_println("{}", (random_date_eu > random_date_us) ? "true" : "false");
 }

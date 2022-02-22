@@ -128,13 +128,13 @@ int main()
         hsd_println("No B in va2");
     }
 
-    hsd_println("va2 == va3: {}", va2 == va3);
+    hsd_println("va2 == va3: {}", (va2 == va3) ? "true" : "false");
     va2 = va3;
-    hsd_println("(after assignment) {}", va2 == va3);
+    hsd_println("(after assignment) {}", (va2 == va3) ? "true" : "false");
     va3 = hsd::variant<A, B>(6);
-    hsd_println("(after new assignment)\nva3 == va4: {}", va3 == va4);
+    hsd_println("(after new assignment)\nva3 == va4: {}", (va3 == va4) ? "true" : "false");
     va3.get<B>().unwrap()._a = 5;
-    hsd_println("(after modification) {}\n", va3 == va4);
+    hsd_println("(after modification) {}\n", (va3 == va4) ? "true" : "false");
 
     hsd::variant<A, B> va5;
 

@@ -49,7 +49,7 @@ namespace hsd
         }
     };
 
-    template <typename T>
+    template <typename T> requires (!IsReference<T>)
     class tuple<T>
     {   
     private:   
@@ -98,9 +98,7 @@ namespace hsd
             {
                 return []<typename... TupArgs>(TupArgs... args)
                 {
-                    return make_tuple<T, Args...>(
-                        forward<TupArgs>(args)...
-                    );
+                    return make_tuple<TupArgs...>(move(args)...);
                 }(get_raw<0>(), rhs.template get_raw<Ints>()...);
             }(index_sequence_for<Args...>{});
         }
@@ -110,9 +108,7 @@ namespace hsd
         {
             return []<typename... TupArgs>(TupArgs... args)
             {
-                return make_tuple<T, U>(
-                    forward<TupArgs>(args)...
-                );
+                return make_tuple<TupArgs...>(move(args)...);
             }(get_raw<0>(), rhs);
         }
 
@@ -148,12 +144,12 @@ namespace hsd
         }
     };
 
-    template <typename T>
-    class tuple<T&>
-        : public tuple<reference<T>>
+    template <typename T> requires (IsReference<T>)
+    class tuple<T>
+        : public tuple<reference<remove_reference_t<T>>>
     {};
 
-    template < typename T, typename... Rest >
+    template < typename T, typename... Rest > requires (!IsReference<T>)
     class tuple<T, Rest...>
     {   
     private:   
@@ -214,9 +210,7 @@ namespace hsd
             {
                 return []<typename... TupArgs>(TupArgs... args)
                 {
-                    return make_tuple<T, Rest..., Args...>(
-                        forward<TupArgs>(args)...
-                    );
+                    return make_tuple<TupArgs...>(move(args)...);
                 }(get_raw<Ints1>()..., rhs.template get_raw<Ints2>()...);
             }(index_sequence_for<T, Rest...>{}, index_sequence_for<Args...>{});
         }
@@ -229,7 +223,7 @@ namespace hsd
             {
                 return []<typename... TupArgs>(TupArgs... args)
                 {
-                    return make_tuple<T, Rest..., U>(forward<TupArgs>(args)...);
+                    return make_tuple<TupArgs...>(move(args)...);
                 }(get_raw<Ints1>()..., rhs);
             }(index_sequence_for<T, Rest...>{});
         }
@@ -280,9 +274,9 @@ namespace hsd
         }
     };
 
-    template < typename T, typename... Rest >
-    class tuple<T&, Rest...>
-        : public tuple<reference<T>, Rest...>
+    template <typename T, typename... Rest> requires (IsReference<T>)
+    class tuple<T, Rest...>
+        : public tuple<reference<remove_reference_t<T>>, Rest...>
     {};
 
     template <hsd::usize, typename...>

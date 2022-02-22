@@ -186,6 +186,9 @@ namespace hsd
     struct formatter_overloads
     {
         template <typename T>
+        static constexpr bool is_char = is_same<decay_t<T>, char>::value;
+
+        template <typename T>
         static constexpr bool is_i8 = is_same<decay_t<T>, i8>::value;
 
         template <typename T>
@@ -236,6 +239,35 @@ namespace hsd
             static_cast<const wchar_t*>(t);
         };
     };
+
+    template <typename CharT, fmt_common<CharT> info, typename T>
+    requires (formatter_overloads::is_char<T>)
+    static consteval auto get_value_format_string()
+    {
+        static_assert(
+            is_same<CharT, wchar>::value || 
+            is_same<CharT, char>::value, 
+            "Unsupported character type"
+        );
+
+        static_assert(
+            !(info.tag & info.hex) && 
+            !(info.tag & info.exp) &&
+            !(info.tag & info.ovr), 
+            "hex, exp, and ovr flags"
+            " are mutually exclusive"
+            " for char"
+        );
+
+        if constexpr (is_same<CharT, char>::value)
+        {
+            return string_literal<3>{"%c"};
+        }
+        else if constexpr (is_same<CharT, wchar>::value)
+        {
+            return wstring_literal<3>{L"%c"};
+        }
+    }
 
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_overloads::is_i8<T>)

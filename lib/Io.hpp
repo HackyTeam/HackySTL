@@ -258,8 +258,8 @@ namespace hsd
             static constexpr auto _fmt_buf =
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
 
-            constexpr auto _last = _fmt_buf[tup_type::size];
-            constexpr auto _last_fmt = 
+            static constexpr auto _last = _fmt_buf[tup_type::size];
+            static constexpr auto _last_fmt = 
                 format_literal<char_type, _last.length + 1>
                 {
                     .format = {_last.format, _last.length},
@@ -274,7 +274,7 @@ namespace hsd
 
             if constexpr (sizeof...(Args) != 0)
             {
-                constexpr auto _print_fmt =
+                static constexpr auto _print_fmt =
                     []<usize... Ints>(index_sequence<Ints...>)
                     {
                         constexpr auto _gen_fmt = []<usize I>()

@@ -75,10 +75,14 @@ namespace hsd
             -> Result<RetType, runtime_error>
         {
             if (from >= to)
+            {
                 return runtime_error{"Invalid interval"};
+            }
             
             if (_index == state_size)
+            {
                 _twist();
+            }
 
             UType _result = _mt_states[_index];
             _result = _result ^ ((_result >> tempering_u) & tempering_d);

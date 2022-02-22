@@ -64,7 +64,7 @@ namespace hsd
 
         inline vector(const vector& other)
         requires (CopyConstructible<alloc_type>)
-            : _alloc{other._alloc}, _size{other._size}, _capacity{other._capacity}
+            : _alloc{other._alloc}, _capacity{other._capacity}, _size{other._size}
         {
             _data = _alloc.allocate(other._capacity).unwrap();
 

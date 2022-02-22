@@ -319,7 +319,7 @@ namespace hsd
                 {
                     usize _point_pos = relative_name().rfind('.');
 
-                    if (_point_pos != string::npos)
+                    if (_point_pos != string::npos && relative_name()[_point_pos + 1] != PATH_SEPARATOR)
                     {
                         const char* _str_data = relative_name().c_str();
                         usize _str_size = relative_name().size();

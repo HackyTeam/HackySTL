@@ -19,7 +19,7 @@ int main()
     a = 3.14;
     hsd_println("{}", a.cast_to<hsd::f64>().unwrap());
     a = true;
-    hsd_println("{}", a.cast_to<bool>().unwrap());
+    hsd_println("{}", a.cast_to<bool>().unwrap() ? "true" : "false");
  
     // bad cast
     a = 1;

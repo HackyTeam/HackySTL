@@ -5,7 +5,7 @@
 int main()
 {
     hsd::precise_clock c1;
-    const hsd::u32 iterations = 4'000'000;
+    const hsd::u32 iterations = 1'000'000;
     c1.restart();
 
     for (hsd::u32 i = 0; i < iterations; i++)

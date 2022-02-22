@@ -220,32 +220,32 @@ int main()
         hsd::string str = "Test String";
 
         hsd_println("Starts with letter:");
-        hsd_println("{}", str.starts_with('T'));
-        hsd_println("{}", str.starts_with('E'));
+        hsd_println("{}", str.starts_with('T') ? "true" : "false");
+        hsd_println("{}", str.starts_with('E') ? "true" : "false");
         hsd_println("Starts with sequence:");
-        hsd_println("{}", str.starts_with("Tes"));
-        hsd_println("{}", str.starts_with("Ter"));
+        hsd_println("{}", str.starts_with("Tes") ? "true" : "false");
+        hsd_println("{}", str.starts_with("Ter") ? "true" : "false");
         hsd_println("Starts with string:");
-        hsd_println("{}", str.starts_with(hsd::string{"Tes"}));
-        hsd_println("{}", str.starts_with(hsd::string{"Ter"}));
+        hsd_println("{}", str.starts_with(hsd::string{"Tes"}) ? "true" : "false");
+        hsd_println("{}", str.starts_with(hsd::string{"Ter"}) ? "true" : "false");
         hsd_println("Contains letter:");
-        hsd_println("{}", str.contains('t'));
-        hsd_println("{}", str.contains('q'));
+        hsd_println("{}", str.contains('t') ? "true" : "false");
+        hsd_println("{}", str.contains('q') ? "true" : "false");
         hsd_println("Contains sequence:");
-        hsd_println("{}", str.contains("Str"));
-        hsd_println("{}", str.contains("Ste"));
+        hsd_println("{}", str.contains("Str") ? "true" : "false");
+        hsd_println("{}", str.contains("Ste") ? "true" : "false");
         hsd_println("Contains string:");
-        hsd_println("{}", str.contains(hsd::string{"Str"}));
-        hsd_println("{}", str.contains(hsd::string{"Ste"}));
+        hsd_println("{}", str.contains(hsd::string{"Str"}) ? "true" : "false");
+        hsd_println("{}", str.contains(hsd::string{"Ste"}) ? "true" : "false");
         hsd_println("Ends with letter:");
-        hsd_println("{}", str.ends_with('g'));
-        hsd_println("{}", str.ends_with('e'));
+        hsd_println("{}", str.ends_with('g') ? "true" : "false");
+        hsd_println("{}", str.ends_with('e') ? "true" : "false");
         hsd_println("Ends with sequence:");
-        hsd_println("{}", str.ends_with("ing"));
-        hsd_println("{}", str.ends_with("ind"));
+        hsd_println("{}", str.ends_with("ing") ? "true" : "false");
+        hsd_println("{}", str.ends_with("ind") ? "true" : "false");
         hsd_println("Ends with string:");
-        hsd_println("{}", str.ends_with(hsd::string{"ing"}));
-        hsd_println("{}", str.ends_with(hsd::string{"ind"}));
+        hsd_println("{}", str.ends_with(hsd::string{"ing"}) ? "true" : "false");
+        hsd_println("{}", str.ends_with(hsd::string{"ind"}) ? "true" : "false");
     }
 
     // sub_string

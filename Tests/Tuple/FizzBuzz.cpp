@@ -30,8 +30,7 @@ struct FizzGame
             ((acc |= bases.template get<I>().fizz(x)), ...);
         }(hsd::index_sequence_for<Ts...>());
         
-        if (!acc)
-            hsd_print("{}", x);
+        if (!acc) hsd_print("{}", x);
         
         hsd_println("");
     }

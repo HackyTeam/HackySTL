@@ -3,13 +3,13 @@
 #include "Limits.hpp"
 #include "Concepts.hpp"
 #include <cmath>
-
-/// The implementations are NOT original, they are, in fact
-/// A C++20 adaptation of a C++11 codebase thanks to the
-/// compile-time math library: https://github.com/kthohr/gcem
-
 namespace hsd
 {
+    /// The implementations are NOT original, they are, in fact
+    /// A C++20 adaptation of a C++11 codebase thanks to the
+    /// compile-time math library: https://github.com/kthohr/gcem
+
+
     namespace math
     {
         namespace constants

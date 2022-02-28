@@ -1,7 +1,5 @@
 #pragma once
 
-/// @brief JSON stream parser
-
 #include "../List.hpp"
 #include "../String.hpp"
 #include "../UniquePtr.hpp"
@@ -84,6 +82,7 @@ namespace hsd
         }
     };
 
+    /// @brief JSON stream parser
     template <typename CharT>
     class JsonStream
     {

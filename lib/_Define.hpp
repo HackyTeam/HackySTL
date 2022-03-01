@@ -1,8 +1,11 @@
 #pragma once
 
 ///
+/// @file _Define.hpp
+///
+
+///
 /// @brief Compiler specific defines
-/// 
 ///
 #if defined(__GNUC__)
     #define HSD_COMPILER_GCC
@@ -18,7 +21,6 @@
 
 ///
 /// @brief Defifinitions for PRETTY_FUNCTION depending on compiler
-/// 
 ///
 #if defined(HSD_COMPILER_MSVC)
     #define HSD_FUNCTION_NAME __FUNCSIG__
@@ -31,7 +33,6 @@
 ///
 /// @brief Platform specific defines for handling
 /// different platform specific implementations
-/// 
 ///
 #if defined(_WIN64) || defined(_WIN32) || defined(__WINDOWS__)
     #define HSD_PLATFORM_WINDOWS
@@ -51,7 +52,6 @@
 ///
 /// @brief Defifinition for the platforms that
 /// comply with the POSIX standard
-/// 
 ///
 #if defined(HSD_PLATFORM_LINUX) || defined(HSD_PLATFORM_BSD) || \
     defined(HSD_PLATFORM_OSX) || defined(HSD_PLATFORM_UNIX)

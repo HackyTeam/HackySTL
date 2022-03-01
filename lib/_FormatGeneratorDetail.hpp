@@ -3,6 +3,10 @@
 #include "Tuple.hpp"
 #include "LiteralParser.hpp"
 
+///
+/// @brief Used in identifying the classes
+/// and functions in the library. 
+///
 namespace hsd
 {
     ///

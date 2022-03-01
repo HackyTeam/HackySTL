@@ -37,3 +37,7 @@
 
 # Vscode specific folder
 .vscode
+
+# Doxygen output folders
+Docs/html
+Docs/latex

@@ -1,11 +1,9 @@
 #pragma once
 
-#ifndef HSD_NOT_SUPPORTS_CONSTEXPR
-    #define HSD_CONSTEXPR constexpr
-#else
-    #define HSD_CONSTEXPR
-#endif
-
+///
+/// @brief Compiler specific defines
+/// 
+///
 #if defined(__GNUC__)
     #define HSD_COMPILER_GCC
 #elif defined(__INTEL_COMPILER)
@@ -18,6 +16,10 @@
     #define HSD_COMPILER_UNKNOWN
 #endif
 
+///
+/// @brief Defifinitions for PRETTY_FUNCTION depending on compiler
+/// 
+///
 #if defined(HSD_COMPILER_MSVC)
     #define HSD_FUNCTION_NAME __FUNCSIG__
 #elif defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
@@ -26,6 +28,11 @@
     #define HSD_FUNCTION_NAME __builtin_FUNCTION()
 #endif
 
+///
+/// @brief Platform specific defines for handling
+/// different platform specific implementations
+/// 
+///
 #if defined(_WIN64) || defined(_WIN32) || defined(__WINDOWS__)
     #define HSD_PLATFORM_WINDOWS
 #elif defined(__linux) || defined(linux) || defined(__linux__)
@@ -41,6 +48,11 @@
     #define HSD_PLATFORM_UNKNOWN
 #endif
 
+///
+/// @brief Defifinition for the platforms that
+/// comply with the POSIX standard
+/// 
+///
 #if defined(HSD_PLATFORM_LINUX) || defined(HSD_PLATFORM_BSD) || \
     defined(HSD_PLATFORM_OSX) || defined(HSD_PLATFORM_UNIX)
     #define HSD_PLATFORM_POSIX

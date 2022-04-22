@@ -3,6 +3,8 @@
 
 int main()
 {
+    using namespace hsd::format_literals;
+
     hsd::udp_server_v4 server = "0.0.0.0:54000";
     char send_buffer[1024]{};
     char recv_buffer[1024]{};
@@ -17,18 +19,18 @@ int main()
             
             if (recv_state > 0)
             {
-                hsd_println("CLIENT> {}", recv_buffer);
+                hsd::println("CLIENT> {}"_fmt, recv_buffer);
                 hsd::cstring::copy(send_buffer, recv_buffer);
                 auto send_state = socket.send(send_buffer, 1024);
 
                 if (send_state < 0)
                 {
-                    hsd_println("Error: {}", server.error_message());
+                    hsd::println("Error: {}"_fmt, server.error_message());
                 }
             }
             else if (recv_state < 0)
             {
-                hsd_println_err("Error: {}", server.error_message());
+                hsd::println_err("Error: {}"_fmt, server.error_message());
             }
         }
     }

@@ -2,10 +2,13 @@
 
 #include "../../StackArray.hpp"
 
-// Credits:
-// -DeKrain
-// -qookie
-//
+///
+/// Credits:
+/// -DeKrain
+/// -qookie
+///
+
+
 namespace hsd
 {
     template < const char* s, usize i, char f, char... ss >

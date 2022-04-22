@@ -1,17 +1,21 @@
-#include <Io.hpp>
 #include <IntegerSequence.hpp>
+#include <Io.hpp>
 
-static void print(size_t S)
+using namespace hsd::format_literals;
+
+static void print_num(size_t S)
 {
-    hsd_print("{} ", S);
+    hsd::print("{} "_fmt, S);
 }
 
-template<typename T, T... ints>
+template <typename T, T... ints>
 static void print_sequence(hsd::integer_sequence<T, ints...> int_seq)
 {
-    hsd_print("The sequence of size {}: ", int_seq.size());
-    (print(ints), ...);
-    hsd_println("");
+    hsd::print("The sequence of size {}: "_fmt, int_seq.size());
+    
+    (print_num(ints), ...);
+    
+    hsd::print("\n"_fmt);
 }
 
 int main()

@@ -1,6 +1,8 @@
 #include <Io.hpp>
 #include <Tuple.hpp>
 
+using namespace hsd::format_literals;
+
 template <hsd::usize N>
 struct FizzBase
 {
@@ -9,7 +11,11 @@ struct FizzBase
     bool fizz(hsd::u32 x) const
     {
         if (x % N == 0)
-            return (hsd_print("{}", msg)), true;
+        {
+            hsd::print("{}"_fmt, msg);
+            return true;
+        }
+
         return false;
     }
 };
@@ -30,9 +36,9 @@ struct FizzGame
             ((acc |= bases.template get<I>().fizz(x)), ...);
         }(hsd::index_sequence_for<Ts...>());
         
-        if (!acc) hsd_print("{}", x);
+        if (!acc) hsd::print("{}"_fmt, x);
         
-        hsd_println("");
+        hsd::print("\n"_fmt);
     }
 
     FizzGame& operator++() {
@@ -45,7 +51,7 @@ struct FizzGame
 
 int main() {
     constexpr hsd::usize game_size = 1000;
-    auto game = FizzGame(FizzBase<3>{"fizz"}, FizzBase<5>{"buzz"});
+    auto game = FizzGame{FizzBase<3>{"fizz"}, FizzBase<5>{"buzz"}};
     
     for (hsd::usize i = 0; i < game_size; ++i)
         *++game;

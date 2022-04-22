@@ -20,7 +20,9 @@ int main()
     auto output = run< typename hsd::str_to_arr<source>::type>();
 
 	for (auto c : output)
+	{
 		putchar(c);
+	}
 
 	putchar('\n');
 }

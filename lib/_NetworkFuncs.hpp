@@ -2,6 +2,9 @@
 
 #include "_NetworkDetail.hpp"
 
+///
+/// @brief Namespace for Network implementation details.
+///
 namespace hsd::network_detail
 {
     #if defined(HSD_PLATFORM_WINDOWS)
@@ -24,6 +27,11 @@ namespace hsd::network_detail
     }
     #endif
 
+    ///
+    /// @brief Closes a socket.
+    /// 
+    /// @param socket - The socket to close.
+    ///
     static inline void close_socket(native_socket_type& socket)
     {
         #if defined(HSD_PLATFORM_WINDOWS)
@@ -87,11 +95,7 @@ namespace hsd::network_detail
     {
         if (addr == nullptr)
         {
-            hsd_fputs_check(
-                stderr, "Error at to_str, addr is nullptr"
-            );
-
-            abort();
+            panic("addr is nullptr");
         }
 
         if (addr->ss_family == AF_INET)
@@ -123,11 +127,7 @@ namespace hsd::network_detail
         }
         else
         {
-            hsd_fputs_check(
-                stderr, "Error at to_str, unknown family"
-            );
-
-            abort();
+            panic("Unknown address family");
         }
     }
 

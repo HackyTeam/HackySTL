@@ -1,6 +1,8 @@
 #include <Io.hpp>
 #include <String.hpp>
 
+using namespace hsd::format_literals;
+
 class CustomObject
 {
 public:
@@ -43,15 +45,17 @@ public:
 
         if constexpr (hsd::is_same<CharT, char>::value)
         {
-            return hsd::string_literal<70>{
-                "CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"
-            };
+            constexpr auto _fmt = 
+                "CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"_fmt;
+
+            return _fmt();
         }
         else
         {
-            return hsd::wstring_literal<70>{
-                L"CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"
-            };
+            constexpr auto _fmt = 
+                L"CustomObject(error_text: {bold,blink,fg=9}, error_type: {bold,fg=14})"_fmt;
+
+            return _fmt();
         }
     }
 
@@ -148,32 +152,58 @@ public:
 
 int main()
 {
-    hsd::wsstream ss;
+    hsd::sstream ss;
     ss.reserve(256);
     hsd::i32 x, z;
     hsd::f32 y;
 
     hsd::string str{"123.2"};
+    hsd::io::cin().get_stream().reserve(1024);
     
     CustomObject obj{
         "Invalid Function Arguments", 
         CustomObject::ErrorType::InvalidArgument
     };
 
-    hsd_wprintln(L"CustomObject Error: {ovr} ", obj);
-    hsd_wprintln(L"hello, {} and other words", 123.2);
-    ss.write_data<L"hello, {} and other words\n">(str);
+    hsd::println("CustomObject Error: {ovr} "_fmt, obj);
+    hsd::println("hello, {} and other words"_fmt, 123.2);
+    ss.write_data<"hello, {} and other words\n">(str);
     
-    hsd_read_line().set_data(x, y, z).unwrap();
-    hsd_wprintln(L"{italic,hex,fg=234,bg=255}, {undrln,exp,fg=143,bg=95}, {strike,fg=84,bg=105}", x, y, z);
+    hsd::io::cin().
+    read_chunk().
+    unwrap().
+    get_stream().
+    set_data(x, y, z).
+    unwrap();
     
-    auto file = hsd::load_file<char>(
-        "Tests/Io/test.txt", hsd::io_options::text::read_write
+    hsd::io::cin().
+    read_chunk().
+    unwrap().
+    get_stream().
+    set_data(x, y, z).
+    unwrap();
+    
+    hsd::println(
+        "{italic,hex,fg=234,bg=255}, "
+        "{undrln,exp,fg=143,bg=95}, "
+        "{strike,fg=84,bg=105}"_fmt, 
+        x, y, z
+    );
+    
+    auto file = hsd::io::load_file(
+        "Tests/Io/test.txt", hsd::io_options::read_write
     ).unwrap();
 
-    file.set_buffer_capacity(1024);
+    file.get_stream().reserve(1024);
     
     [[maybe_unused]] auto c = 0;
-    file.read_line().unwrap().set_data(c).unwrap();
-    file.print<"{} {} {}">("Hello", 12, -3.4).unwrap();
+    
+    file.
+    read_chunk().
+    unwrap().
+    get_stream().
+    set_data(c).
+    unwrap();
+    
+    file.print<"{} {} {}">("Hello", 12, -3.4);
 }

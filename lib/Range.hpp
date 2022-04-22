@@ -181,7 +181,7 @@ namespace hsd
                         return _begin;
                     }
 
-                    constexpr const auto begin() const
+                    constexpr auto begin() const
                     {
                         return _begin;
                     }
@@ -191,7 +191,7 @@ namespace hsd
                         return _end;
                     }
 
-                    constexpr const auto end() const
+                    constexpr auto end() const
                     {
                         return _end;
                     }
@@ -267,7 +267,7 @@ namespace hsd
                         return _begin;
                     }
 
-                    constexpr const auto begin() const
+                    constexpr auto begin() const
                     {
                         return _begin;
                     }
@@ -277,7 +277,7 @@ namespace hsd
                         return _end;
                     }
 
-                    constexpr const auto end() const
+                    constexpr auto end() const
                     {
                         return _end;
                     }

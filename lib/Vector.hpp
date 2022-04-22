@@ -816,7 +816,7 @@ namespace hsd
                 }
                 else
                 {
-                    hsd_fprint_check(
+                    fprintf(
                         stderr, "Error at static_vector::resize(%zu): "
                         "new size is greater than capacity.\n", new_size
                     );
@@ -853,7 +853,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_vector:"
                     ": emplace_back: Vector is full\n"
                 );

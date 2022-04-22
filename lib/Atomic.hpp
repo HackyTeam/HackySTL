@@ -29,9 +29,9 @@ namespace hsd
         template <typename T>
         concept valid_atomic_type =
             std::is_trivially_copyable_v<T> &&
-            CopyConstructible<T> && 
-            MoveConstructible<T> &&
-            CopyAssignable<T> 	 && 
+            CopyConstructible<T>            && 
+            MoveConstructible<T>            &&
+            CopyAssignable<T> 	            && 
             MoveAssignable<T>;
 
         template <typename T, bool IsRef>

@@ -13,42 +13,54 @@ struct S
 
 int main()
 {
+    using namespace hsd::format_literals;
+
     // any type
     hsd::any a = 1;
-    hsd_println("{}", a.cast_to<hsd::i32>().unwrap());
+    hsd::println("{}"_fmt, a.cast_to<hsd::i32>().unwrap());
     a = 3.14;
-    hsd_println("{}", a.cast_to<hsd::f64>().unwrap());
+    hsd::println("{}"_fmt, a.cast_to<hsd::f64>().unwrap());
     a = true;
-    hsd_println("{}", a.cast_to<bool>().unwrap() ? "true" : "false");
+    hsd::println("{}"_fmt, a.cast_to<bool>().unwrap() ? "true" : "false");
  
     // bad cast
     a = 1;
-    hsd_println("{}", a.cast_to<hsd::f32>().unwrap_err()());
+    hsd::println("{}"_fmt, a.cast_to<hsd::f32>().unwrap_err()());
  
     // has value
     a = 1;
     
     if (a.has_value())
-        hsd_println("Has value");
+    {
+        hsd::println("Has value"_fmt);
+    }
  
     // reset
     a.reset();
     
     if (!a.has_value())
-        hsd_println("No value");
+    {
+        hsd::println("No value"_fmt);
+    }
  
     // pointer to contained data
     a = 1;
     
     if (int* i = a.cast_if<hsd::i32>())
-        hsd_println("{}", *i);
+    {
+        hsd::println("{}"_fmt, *i);
+    }
 
     // holds a given type
     a.emplace<S>(1, 'c', 4.2f, "str");
     
     if (a.holds_type<S>())
-        hsd_println("Holds a S");
+    {
+        hsd::println("Holds a S"_fmt);
+    }
     
     if (a.holds_type<hsd::i32>())
-        hsd_println("Holds an int");
+    {
+        hsd::println("Holds an int"_fmt);
+    }
 }

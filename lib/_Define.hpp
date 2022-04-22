@@ -4,23 +4,35 @@
 /// @file _Define.hpp
 ///
 
-///
-/// @brief Compiler specific defines
-///
 #if defined(__GNUC__)
+    ///
+    /// @brief GCC specific define.
+    ///
     #define HSD_COMPILER_GCC
 #elif defined(__INTEL_COMPILER)
+    ///
+    /// @brief ICC specific define.
+    ///
     #define HSD_COMPILER_INTEL
 #elif defined(__clang__)
+    ///
+    /// @brief Clang specific define.
+    ///
     #define HSD_COMPILER_CLANG
 #elif defined(_MSC_VER)
+    ///
+    /// @brief MSVC specific define.
+    ///
     #define HSD_COMPILER_MSVC
 #else
+    ///
+    /// @brief Unknown compiler or compiler not supported.
+    ///
     #define HSD_COMPILER_UNKNOWN
 #endif
 
 ///
-/// @brief Defifinitions for PRETTY_FUNCTION depending on compiler
+/// @brief Definitions for PRETTY_FUNCTION depending on compiler.
 ///
 #if defined(HSD_COMPILER_MSVC)
     #define HSD_FUNCTION_NAME __FUNCSIG__
@@ -30,22 +42,42 @@
     #define HSD_FUNCTION_NAME __builtin_FUNCTION()
 #endif
 
-///
-/// @brief Platform specific defines for handling
-/// different platform specific implementations
-///
+
 #if defined(_WIN64) || defined(_WIN32) || defined(__WINDOWS__)
+    ///
+    /// @brief Windows specific defines for handling
+    /// different specific implementations.
+    ///
     #define HSD_PLATFORM_WINDOWS
 #elif defined(__linux) || defined(linux) || defined(__linux__)
+    ///
+    /// @brief Linux specific defines for handling
+    /// different specific implementations.
+    ///
     #define HSD_PLATFORM_LINUX
 #elif defined(__DragonFly__) || defined(__FreeBSD__) || \
     defined(__NETBSD__) || defined(__OpenBSD__)
+    ///
+    /// @brief BSD specific defines for handling
+    /// different specific implementations.
+    ///
     #define HSD_PLATFORM_BSD
 #elif defined(__APPLE__) || defined(macintosh) || defined(__MACH__)
+    ///
+    /// @brief OSX specific defines for handling
+    /// different specific implementations.
+    ///
     #define HSD_PLATFORM_OSX
 #elif defined(__unix) || defined(unix)
+    ///
+    /// @brief UNIX specific defines for handling
+    /// different specific implementations.
+    ///
     #define HSD_PLATFORM_UNIX
 #else
+    ///
+    /// @brief Unknown platform, or platform not supported.
+    ///
     #define HSD_PLATFORM_UNKNOWN
 #endif
 

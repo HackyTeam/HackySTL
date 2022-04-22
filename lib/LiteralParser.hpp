@@ -363,7 +363,7 @@ namespace hsd
                                 _check_following_fmt(_fmt_ptr, _pos_current);
                         }
                     },
-                    DefaultCase{[]{ hsd_panic("Invalid format token"); }}
+                    DefaultCase{[]{ hsd::panic("Invalid format token"); }}
                 );
             }
             else
@@ -407,7 +407,7 @@ namespace hsd
         static constexpr void _check_duplicate_tag(
             usize tag, usize duplicate)
         {
-            if (tag & duplicate) hsd_panic("Duplicate tag");
+            if (tag & duplicate) hsd::panic("Duplicate tag");
         };
 
         template <typename CharT>
@@ -452,7 +452,7 @@ namespace hsd
         {
             if (fmt[pos_current] != '}' && fmt[pos_current] != ',')
             {
-                hsd_panic("Invalid format literal: must be followed by '}' or ','");
+                hsd::panic("Invalid format literal: must be followed by '}' or ','");
             }
         }
 

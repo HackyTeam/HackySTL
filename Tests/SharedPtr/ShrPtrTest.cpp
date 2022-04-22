@@ -13,11 +13,13 @@ struct S
     {}
 };
 
+using namespace hsd::format_literals;
+
 static void print(
     hsd::safe_shared_ptr<S, hsd::buffered_allocator> ptr)
 {
-    hsd_println(
-        "{}\n{}\n{}\n{}\n", 
+    hsd::println(
+        "{}\n{}\n{}\n{}\n"_fmt, 
         ptr->_a, ptr->_b, 
         ptr->_c, ptr->_d
     );
@@ -26,8 +28,8 @@ static void print(
 static void print(
     hsd::unsafe_shared_ptr<S, hsd::buffered_allocator> ptr)
 {
-    hsd_println(
-        "{}\n{}\n{}\n{}", 
+    hsd::println(
+        "{}\n{}\n{}\n{}"_fmt, 
         ptr->_a, ptr->_b, 
         ptr->_c, ptr->_d
     );
@@ -49,7 +51,8 @@ struct derived
 int main()
 {
     {
-        puts("Safe version:");
+        hsd::println("Safe version:"_fmt);
+        
         hsd::uchar buf[128]{};
         hsd::buffered_allocator<int> alloc{buf, 128};
 
@@ -70,7 +73,8 @@ int main()
     }
 
     {
-        puts("Unsafe version:");
+        hsd::println("Unsafe version:"_fmt);
+        
         hsd::uchar buf[128]{};
         hsd::buffered_allocator<int> alloc{buf, 128};
 

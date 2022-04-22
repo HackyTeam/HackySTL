@@ -4,6 +4,8 @@
 #include <String.hpp>
 #include <Io.hpp>
 
+using namespace hsd::format_literals;
+
 class FutexTest
 {
 private:
@@ -23,7 +25,7 @@ public:
 
     static void test()
     {
-        hsd_println("FutexTest::test():");
+        hsd::println("FutexTest::test():"_fmt);
         hsd::thread t1{save_page, "http://foo"};
         hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
@@ -32,7 +34,7 @@ public:
         // safe to access g_pages without lock now, as the threads are joined
         for (const auto& pair : g_pages)
         {
-            hsd_println("{} => {}", pair.first, pair.second);
+            hsd::println("{} => {}"_fmt, pair.first, pair.second);
         }
     }
 };
@@ -56,7 +58,7 @@ public:
 
     static void test()
     {
-        hsd_println("MutexTest::test():");
+        hsd::println("MutexTest::test():"_fmt);
         hsd::thread t1{save_page, "http://foo"};
         hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
@@ -65,7 +67,7 @@ public:
         // safe to access g_pages without lock now, as the threads are joined
         for (const auto& pair : g_pages)
         {
-            hsd_println("{} => {}", pair.first, pair.second);
+            hsd::println("{} => {}"_fmt, pair.first, pair.second);
         }
     }
 };
@@ -89,7 +91,7 @@ public:
 
     static void test()
     {
-        hsd_println("SpinTest::test():");
+        hsd::println("SpinTest::test():"_fmt);
         hsd::thread t1{save_page, "http://foo"};
         hsd::thread t2{save_page, "http://bar"};
         t1.join().unwrap();
@@ -98,7 +100,7 @@ public:
         // safe to access g_pages without lock now, as the threads are joined
         for (const auto& pair : g_pages)
         {
-            hsd_println("{} => {}", pair.first, pair.second);
+            hsd::println("{} => {}"_fmt, pair.first, pair.second);
         }
     }
 };

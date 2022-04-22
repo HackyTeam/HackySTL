@@ -13,6 +13,10 @@ namespace hsd
         static constexpr CharT _default_seps[] = {' ', '\t', '\n', '\r'};
         const CharT* _separators = _default_seps;
 
+    protected:
+        using vector<CharT>::_size;
+        bool _is_complete = false;
+
     public:
         using iterator = CharT*;
         using const_iterator = const CharT*;
@@ -21,15 +25,30 @@ namespace hsd
         inline basic_sstream(const basic_sstream&) = delete;
         inline basic_sstream& operator=(const basic_sstream&) = delete;
 
+        inline basic_sstream(basic_sstream&& other)
+            : vector<CharT>{move(other)}, _separators{other._separators}
+        {}
+
+        inline basic_sstream& operator=(basic_sstream&& rhs)
+        {
+            vector<CharT>::operator=(move(rhs));
+            _separators = rhs._separators;
+            return *this;
+        }
+
         template <typename... Args>
         inline Result<void, runtime_error> set_data(Args&... args)
         {
             auto _data_set = sstream_detail::
-                split_data<sizeof...(Args)>(data(), _separators);
+                split_data<sizeof...(Args) + 1>(data(), _separators);
 
             if (sizeof...(Args) > _data_set.size())
             {
                 return runtime_error{"Input too small to parse"};
+            }
+            else if (sizeof...(Args) == _data_set.size() && _is_complete == false)
+            {
+                return runtime_error{"Attempted to parse incomplete data"};
             }
             else
             {
@@ -37,6 +56,20 @@ namespace hsd
                     pair{_data_set.data(), _data_set.size()};
                 
                 ((_parse_impl(_parser, args).unwrap()), ...);
+
+                    usize _sz = 0;
+
+                for (const auto* _ptr = _data_set[_parser.index()]; *_ptr != '\0'; ++_ptr, ++_sz)
+                {
+                    data()[_sz] = *_ptr;
+                }
+
+                _size = _sz;
+
+                [[unlikely]] if (_size < capacity())
+                {
+                    data()[_size] = '\0';
+                }
             }
 
             return {};

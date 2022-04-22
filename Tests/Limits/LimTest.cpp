@@ -3,21 +3,23 @@
 
 int main()
 {
-    hsd_println("Upper limits:");
+    using namespace hsd::format_literals;
 
-    hsd_println("the limit is: {}", hsd::limits<hsd::i16>::max);
-    hsd_println("the limit is: {}", hsd::limits<hsd::i32>::max);
-    hsd_println("the limit is: {}", hsd::limits<hsd::i64>::max);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f32>::max);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f64>::max);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f128>::max);
+    hsd::println("Upper limits:"_fmt);
 
-    hsd_println("Lower limits:");
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i16>::max);
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i32>::max);
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i64>::max);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f32>::max);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f64>::max);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f128>::max);
 
-    hsd_println("the limit is: {}", hsd::limits<hsd::i16>::min);
-    hsd_println("the limit is: {}", hsd::limits<hsd::i32>::min);
-    hsd_println("the limit is: {}", hsd::limits<hsd::i64>::min);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f32>::min);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f64>::min);
-    hsd_println("the limit is: {exp}", hsd::limits<hsd::f128>::min);
+    hsd::println("Lower limits:"_fmt);
+
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i16>::min);
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i32>::min);
+    hsd::println("the limit is: {}"_fmt, hsd::limits<hsd::i64>::min);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f32>::min);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f64>::min);
+    hsd::println("the limit is: {exp}"_fmt, hsd::limits<hsd::f128>::min);
 }

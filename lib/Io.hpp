@@ -3,104 +3,169 @@
 #include "FormatGenerator.hpp"
 #include "SStream.hpp"
 
+#if defined(HSD_PLATFORM_WINDOWS)
+
+#else
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
+#endif
+
 namespace hsd
 {
+    #if defined(HSD_PLATFORM_WINDOWS)
+    struct io_options {};
+    #else
     struct io_options
     {
-        struct text
-        {
-            static inline constexpr char read[] = "r";
-            static inline constexpr char write[] = "w";
-            static inline constexpr char append[] = "a";
-            static inline constexpr char read_write[] = "r+";
-            static inline constexpr char rw_create[] = "w+";
-            static inline constexpr char rw_append[] = "a+";
-        };
-
-        struct binary
-        {
-            static inline constexpr char read[] = "rb";
-            static inline constexpr char write[] = "wb";
-            static inline constexpr char append[] = "ab";
-            static inline constexpr char read_write[] = "r+b";
-            static inline constexpr char rw_create[] = "w+b";
-            static inline constexpr char rw_append[] = "a+b";
-        };
+        static constexpr i32 read       = O_RDONLY;
+        static constexpr i32 write      = O_WRONLY | O_CREAT | O_TRUNC;
+        static constexpr i32 append     = O_WRONLY | O_CREAT | O_APPEND;
+        static constexpr i32 read_write = O_RDWR;
+        static constexpr i32 rw_create  = O_RDWR | O_CREAT | O_TRUNC;
+        static constexpr i32 rw_append  = O_RDWR | O_CREAT | O_APPEND;
     };
 
-    template <typename CharT>
-    class io
+    namespace io_detail
     {
-    protected:
-        FILE* _file_buf = nullptr;
-        const char* _file_mode = "";
-        bool _is_console_file = false;
-        basic_sstream<CharT> _io_buf;
+        class file_handler
+        {
+        private:
+            i32 _fd = -1;
+            i32 _mode = 0;
+            bool is_external = false;
 
+        public:
+            inline file_handler() = default;
+
+            inline file_handler(const file_handler&) = delete;
+            inline file_handler& operator=(const file_handler&) = delete;
+
+            inline file_handler(file_handler&& other)
+                : _fd{other._fd}, _mode{other._mode}, is_external{other.is_external}
+            {
+                other._fd = -1;
+            }
+
+            inline file_handler& operator=(file_handler&& rhs)
+            {
+                _fd = rhs._fd;
+                _mode = rhs._mode;
+                is_external = rhs.is_external;
+                rhs._fd = -1;
+                
+                return *this;
+            }
+
+            inline ~file_handler()
+            {
+                close();
+            }
+
+            inline void close()
+            {
+                if (_fd != -1 && is_external == false)
+                {
+                    ::close(_fd);
+                    _fd = -1;
+                }
+            }
+
+            inline bool is_open() const
+            {
+                return _fd != -1;
+            }
+
+            inline bool only_read() const
+            {
+                return _mode == io_options::read;
+            }
+
+            inline bool only_write() const
+            {
+                return _mode == io_options::write;
+            }
+
+            inline isize write(const char* data, usize size)
+            {
+                return ::write(_fd, data, size);
+            }
+
+            inline isize read(char* data, usize size)
+            {
+                return ::read(_fd, data, size);
+            }
+
+            static inline file_handler open(const char* path, i32 mode)
+            {
+                file_handler fd;
+                fd._fd = ::open(path, mode);
+                fd._mode = mode;
+                fd.is_external = true;
+
+                return fd;
+            }
+
+            static inline file_handler get_stdin()
+            {
+                file_handler fd;
+                fd._fd = 0;
+                fd._mode = io_options::read;
+                fd.is_external = false;
+
+                return fd;
+            }
+
+            static inline file_handler get_stdout()
+            {
+                file_handler fd;
+                fd._fd = 1;
+                fd._mode = io_options::write;
+                fd.is_external = false;
+
+                return fd;
+            }
+
+            static inline file_handler get_stderr()
+            {
+                file_handler fd;
+                fd._fd = 2;
+                fd._mode = io_options::write;
+                fd.is_external = false;
+
+                return fd;
+            }
+        };  
+    } // namespace io_detail
+    #endif
+
+    class io : private sstream
+    {
     private:
-        inline bool only_write()
-        {
-            return (
-                cstring::compare(_file_mode, "w") == 0 || 
-                cstring::compare(_file_mode, "wb") == 0
-            );
-        }
+        io_detail::file_handler _file;
+        bool _is_eof = false;
 
-        inline bool only_read()
-        {
-            return (
-                cstring::compare(_file_mode, "r") == 0 || 
-                cstring::compare(_file_mode, "rb") == 0
-            );
-        }
-
-        inline auto _read_chr(CharT& chr, const CharT* sep) -> bool
-        {
-            if constexpr(is_same<CharT, char>::value)
-            {
-                chr = static_cast<CharT>(fgetc(_file_buf));
-                return (chr != EOF && basic_cstring<CharT>::find(sep, chr) == nullptr);
-            }
-            else if constexpr(is_same<CharT, wchar>::value)
-            {
-                chr = static_cast<CharT>(fgetwc(_file_buf));
-                return (chr != WEOF && basic_cstring<CharT>::find(sep, chr) == nullptr);
-            }
-            else
-            {
-                return false;
-            }
-        };
-
-        inline auto _unget_chr(CharT chr)
-        {
-            if constexpr(is_same<CharT, char>::value)
-            {
-                ungetc(chr, _file_buf);
-            }
-            else if constexpr(is_same<CharT, wchar>::value)
-            {
-                ungetwc(chr, _file_buf);
-            }
-        };
+        inline io(io_detail::file_handler&& file)
+            : _file{move(file)}
+        {}
 
     public:
 
-        inline io() = default;
         inline io(const io&) = delete;
         inline io& operator=(const io&) = delete;
 
         inline io(io&& other)
-            : _file_buf{exchange(other._file_buf, nullptr)}, 
-            _file_mode{exchange(other._file_mode, nullptr)},
-            _is_console_file{exchange(other._is_console_file, true)}
+            : sstream{move(other.get_stream())}, 
+            _file{move(other._file)}, _is_eof{other._is_eof} 
         {}
 
         inline io& operator=(io&& rhs)
         {
-            _file_buf = exchange(rhs._file_buf, nullptr);
-            _file_mode = exchange(rhs._file_mode, nullptr);
-            _is_console_file = exchange(rhs._is_console_file, true);
+            swap(get_stream(), rhs.get_stream());
+            swap(_file, rhs._file);
+            swap(_is_eof, rhs._is_eof);
 
             return *this;
         }
@@ -110,127 +175,116 @@ namespace hsd
             close();
         }
 
-        inline void set_buffer_capacity(usize capacity)
+        inline sstream& get_stream()
         {
-            _io_buf.reserve(capacity);
-        }
-
-        inline void set_separators(const CharT* separators)
-        {
-            _io_buf.set_separators(separators);
-        }
-
-        inline usize buffer_capacity() const
-        {
-            return _io_buf.capacity();
+            return *this;
         }
 
         inline bool is_open() const
         {
-            return (_file_buf != nullptr);
+            return _file.is_open();
         }
 
         inline bool is_eof() const
         {
-            return feof(_file_buf) != 0;
+            return _is_eof;
         }
 
         inline void close()
         {
-            if (!_is_console_file && _file_buf != nullptr)
-            {
-                fclose(_file_buf);
-                _file_buf = nullptr;
-            }
+            _file.close();
         }
 
-        inline Result<void, runtime_error> flush()
+        inline Result< reference<io>, runtime_error > flush()
         {
-            if (only_read())
-            {
-                fflush(_file_buf);
-            }
-            else
+            if (_file.only_read() == true)
             {
                 return runtime_error {
-                    "Cannot flush in write or read-write mode"
+                    "Cannot write file. It is in read mode"
+                };
+            }
+            else if (_file.is_open() == false)
+            {
+                return runtime_error {
+                    "Cannot write file. It is not open"
                 };
             }
 
-            return {};
+            auto _sz = _file.write(get_stream().data(), get_stream().size());
+            get_stream().clear();
+            
+            if (_sz == -1)
+            {
+                return runtime_error {strerror(errno)};
+            }
+            
+            return {*this};
         }
 
-        inline Result< reference<basic_sstream<CharT>>, runtime_error > read_line()
+        inline Result< reference<io>, runtime_error > read_chunk()
         {
-            _io_buf.clear();
-            
-            if (only_write())
+            if (_file.only_write())
             {
                 return runtime_error {
                     "Cannot read file. It is in write mode"
                 };
             }
-
-            if constexpr(is_same<CharT, char>::value)
-            {
-                if (fgets(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
-                { 
-                    _io_buf.clear();
-                }
-            }
-            else if constexpr(is_same<CharT, wchar>::value)
-            {
-                if (fgetws(_io_buf.data(), _io_buf.capacity(), _file_buf) == nullptr)
-                {
-                    _io_buf.clear();
-                }
-            }
-            else
+            else if (_file.is_open() == false)
             {
                 return runtime_error {
-                    "Unsupported character type"
-                };
-            }
-            
-            return {_io_buf};
-        }
-
-        inline Result< reference<basic_sstream<CharT>>, runtime_error > read()
-        {
-            if (only_write())
-            {
-                return runtime_error {
-                    "Cannot read file. It is in write mode"
+                    "Cannot read file. It is not open"
                 };
             }
 
-            _io_buf.clear();
-            CharT _chr = 0;
-            
-            while (_chr != EOF && !_read_chr(_chr, _io_buf.get_separators()))
-                ;
-            
-            if (_chr != EOF) 
-            {
-                _unget_chr(_chr);
+            auto _sz = _file.read(
+                get_stream().data() + this->_size, 
+                get_stream().capacity() - this->_size - 1
+            );
 
-                while (_read_chr(_chr, _io_buf.get_separators()))
-                {
-                    _io_buf.push_back(_chr);
-                }
+            if (_sz == -1)
+            {
+                #if defined(HSD_PLATFORM_WINDOWS)
+                //_is_eof = true;
+                return runtime_error {"Undefined error"};
+                #else
+                return runtime_error {strerror(errno)};
+                #endif
             }
 
-            return {_io_buf};
+            get_stream().data()[_sz + this->_size] = '\0';
+            _is_eof = static_cast<usize>(_sz) < (get_stream().capacity() - 1);
+            this->_size += _sz;
+            
+            this->_is_complete = (
+                cstring::find(
+                    get_stream().get_separators(), 
+                    get_stream().data()[this->_size - 1]
+                ) != nullptr || _is_eof == true
+            );
+
+            return {*this};
         }
 
-        template <typename T>
+        template <typename T> requires (DefaultConstructible<T>)
         inline T read_value()
         {
-            if (read().is_ok())
+            if (get_stream().size() != 0)
             {
-                T value;
-                _io_buf.set_data(value).unwrap();
+                T value{};
+                get_stream().set_data(value).unwrap();
                 
+                return value;
+            }
+            else if (_is_eof == false)
+            {
+                T value{};
+                
+                read_chunk().
+                unwrap().
+                get_stream().
+                set_data(value).
+                unwrap();
+
                 return value;
             }
 
@@ -238,22 +292,10 @@ namespace hsd
         }
 
         template < basic_string_literal fmt, typename... Args >
-        inline Result<void, runtime_error> print(Args&&... args)
-        {
-            if(only_read() == true)
-            {
-                return runtime_error {
-                    "Cannot write file. It is in read mode"
-                };
-            }
-            
+        inline io& print(Args&&... args)
+        {   
             using char_type = typename decltype(fmt)::char_type;
             using tup_type = type_tuple<Args...>;
-
-            static_assert(
-                is_same<char_type, CharT>::value, 
-                "Unsupported character type"
-            );
 
             static constexpr auto _fmt_buf =
                 parse_literal<fmt, sizeof...(Args) + 1>().unwrap();
@@ -290,7 +332,9 @@ namespace hsd
                             constexpr auto _pretty_fmt = 
                                 format<_curr_fmt, typename tup_type::template type_at<I>>();
                             
-                            constexpr auto _sz = basic_cstring<char_type>::length(_pretty_fmt.data);
+                            constexpr auto _sz = 
+                                basic_cstring<char_type>::length(_pretty_fmt.data);
+                            
                             static_assert(_pretty_fmt.size() == _sz + 1);
                             return _pretty_fmt;
                         };
@@ -302,159 +346,130 @@ namespace hsd
 
                 [&]<usize... Ints>(index_sequence<Ints...>)
                 {
-                    if constexpr (is_same<char_type, char>::value)
-                    {
-                        fprintf(_file_buf, _print_fmt.data, _args.template get<Ints>()...);
-                    }
-                    else
-                    {
-                        fwprintf(_file_buf, _print_fmt.data, _args.template get<Ints>()...);
-                    }
+                    this->_size += snprintf(
+                        get_stream().data() + this->_size, 
+                        get_stream().capacity() - this->_size, 
+                        _print_fmt.data, _args.template get<Ints>()...
+                    );
                 }(make_index_sequence<decltype(_args)::size()>{});
             }
             else
             {
-                if constexpr (is_same<char_type, char>::value)
-                {
-                    fputs(_last_fmt.format.data, _file_buf);
-                }
-                else
-                {
-                    fputws(_last_fmt.format.data, _file_buf);
-                }
+                this->_size += snprintf(
+                    get_stream().data() + this->_size, 
+                    get_stream().capacity() - this->_size, 
+                    "%s", _last_fmt.format.data
+                );
             }
 
-            return {};
+            return *this;
+        }
+
+        static inline auto& cout()
+        {
+            static io _cout{io_detail::file_handler::get_stdout()};
+            return _cout;
+        }
+
+        static inline auto& cerr()
+        {
+            static io _cerr{io_detail::file_handler::get_stderr()};
+            return _cerr;
+        }
+
+        static inline auto& cin()
+        {
+            static io _cin{io_detail::file_handler::get_stdin()};
+            return _cin;
+        }
+
+        static inline auto load_file(
+            const char* file_path, i32 mode = io_options::read)
+            -> Result<io, runtime_error>
+        {
+            auto _file = io_detail::file_handler::open(file_path, mode);
+
+            if (_file.is_open() == false)
+            {
+                return runtime_error {
+                    "Cannot open file. It is not open"
+                };
+            }
+
+            return io{move(_file)};
         }
     };
 
-    namespace io_detail
+    namespace format_literals
     {
-        template <typename CharT>
-        struct warpper : public io<CharT>
+        template <hsd::basic_string_literal fmt>
+        static constexpr auto operator""_fmt()
         {
-            inline warpper() = default;
+            return [] { return fmt; };
+        }
+    } // namespace format_literals
 
-            inline warpper(usize capacity)
-            {
-                this->set_buffer_capacity(capacity);
-            }
-
-            inline void set_file_buf(FILE* file_buf)
-            {
-                this->_file_buf = file_buf;
-            }
-            
-            inline void set_is_console_file(bool is_console_file)
-            {
-                this->_is_console_file = is_console_file;
-            }
-
-            inline void set_file_mode(const char* file_mode)
-            {
-                this->_file_mode = file_mode;
-            }
-
-            inline io<CharT>& to_base()
-            {
-                return *this;
-            }
-        };
-    } // namespace io_detail
-    
-
-    template <typename CharT>
-    static inline auto& cout()
+    template <typename T, typename... Args>
+    static void print(T&&, Args&&... args)
     {
-        static io_detail::warpper<CharT> _instance{};
-        _instance.set_is_console_file(true);
-        _instance.set_file_mode(io_options::text::write);
-        _instance.set_file_buf(stdout);
-
-        return _instance.to_base();
-    }
-
-    template <typename CharT>
-    static inline io<CharT>& cerr()
-    {
-        static io_detail::warpper<CharT> _instance{};
-        _instance.set_is_console_file(true);
-        _instance.set_file_mode(io_options::text::write);
-        _instance.set_file_buf(stderr);
-
-        return _instance.to_base();
-    }
-
-    template <typename CharT>
-    static inline io<CharT>& cin()
-    {
-        static io_detail::warpper<CharT> _instance{1024};
-        _instance.set_is_console_file(true);
-        _instance.set_file_mode(io_options::text::read);
-        _instance.set_file_buf(stdin);
-
-        return _instance;
-    }
-
-    template <typename CharT>
-    static inline auto load_file(const char* file_path, 
-        const char* open_option = io_options::text::read)
-        -> Result<io<CharT>, runtime_error>
-    {
-        static io_detail::warpper<CharT> _instance{};
-        _instance.set_is_console_file(false);
-        _instance.set_file_mode(open_option);
-        
-        auto* _file_buf = fopen(file_path, open_option);
-        
-        if (_file_buf == nullptr)
+        if (hsd::io::cout().get_stream().capacity() == 0)
         {
-            return runtime_error{"File not found"};
+            hsd::io::cout().get_stream().reserve(1024);
         }
 
-        _instance.set_file_buf(_file_buf);
-        return move(_instance.to_base());
+        static constexpr T _func{};
+
+        hsd::io::cout().template 
+        print<_func()>(hsd::forward<Args>(args)...).
+        flush().
+        unwrap();
+    }
+
+    template <typename T, typename... Args>
+    static void println(T&&, Args&&... args)
+    {
+        if (hsd::io::cout().get_stream().capacity() == 0)
+        {
+            hsd::io::cout().get_stream().reserve(1024);
+        }
+
+        static constexpr T _func{};
+
+        hsd::io::cout().template 
+        print<_func() + "\n">(hsd::forward<Args>(args)...).
+        flush().
+        unwrap();
+    }
+
+    template <typename T, typename... Args>
+    static void print_err(T&&, Args&&... args)
+    {
+        if (hsd::io::cerr().get_stream().capacity() == 0)
+        {
+            hsd::io::cerr().get_stream().reserve(1024);
+        }
+
+        static constexpr T _func{};
+
+        hsd::io::cerr().template 
+        print<_func()>(hsd::forward<Args>(args)...).
+        flush().
+        unwrap();
+    }
+
+    template <typename T, typename... Args>
+    static void println_err(T&&, Args&&... args)
+    {
+        if (hsd::io::cerr().get_stream().capacity() == 0)
+        {
+            hsd::io::cerr().get_stream().reserve(1024);
+        }
+
+        static constexpr T _func{};
+
+        hsd::io::cerr().template 
+        print<_func() + "\n">(hsd::forward<Args>(args)...).
+        flush().
+        unwrap();
     }
 } // namespace hsd
-
-#define hsd_read_line()\
-    hsd::cin<char>().read_line().unwrap()
-
-#define hsd_read()\
-    hsd::cin<char>().read().unwrap()
-
-#define hsd_read_value(value)\
-    value = hsd::cin<char>().template read_value<hsd::remove_cvref_t<decltype(value)>>()
-
-#define hsd_wread_line()\
-    hsd::cin<hsd::wchar>().read_line().unwrap()
-
-#define hsd_wread()\
-    hsd::cin<hsd::wchar>().read().unwrap()
-
-#define hsd_wread_value(value)\
-    value = hsd::cin<hsd::wchar>().template read_value<hsd::remove_cvref_t<decltype(value)>>()
-
-#define hsd_print(fmt, ...)\
-    hsd::cout<char>().template print<fmt>(__VA_ARGS__).unwrap()
-
-#define hsd_print_err(fmt, ...)\
-    hsd::cerr<char>().template print<fmt>(__VA_ARGS__).unwrap()
-
-#define hsd_println(fmt, ...)\
-    hsd::cout<char>().template print<fmt "\n">(__VA_ARGS__).unwrap()
-
-#define hsd_println_err(fmt, ...)\
-    hsd::cerr<char>().template print<fmt "\n">(__VA_ARGS__).unwrap()
-
-#define hsd_wprint(fmt, ...)\
-    hsd::cout<hsd::wchar>().template print<fmt>(__VA_ARGS__).unwrap()
-
-#define hsd_wprint_err(fmt, ...)\
-    hsd::cerr<hsd::wchar>().template print<fmt>(__VA_ARGS__).unwrap()
-
-#define hsd_wprintln(fmt, ...)\
-    hsd::cout<hsd::wchar>().template print<fmt L"\n">(__VA_ARGS__).unwrap()
-
-#define hsd_wprintln_err(fmt, ...)\
-    hsd::cerr<hsd::wchar>().template print<fmt L"\n">(__VA_ARGS__).unwrap()

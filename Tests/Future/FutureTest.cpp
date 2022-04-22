@@ -58,6 +58,8 @@ auto future_test(hsd::f32 f)
 
 int main()
 {
+    using namespace hsd::format_literals;
+
     {
         // future from a packaged_task
         hsd::packaged_task task = {[]{ return 7; }}; // wrap the function
@@ -71,11 +73,13 @@ int main()
             [&p]{ p.set_value(9); }
         }.detach().unwrap();
 
-        hsd_println("Waiting non-erroring void calls");
+        hsd::println("Waiting non-erroring void calls"_fmt);
+        
         f1.wait();
         f2.wait();
-        hsd_println(
-            "Results are: {} {}", 
+        
+        hsd::println(
+            "Results are: {} {}"_fmt, 
             f1.get().unwrap(), f2.get().unwrap()
         );
 
@@ -94,11 +98,13 @@ int main()
         hsd::future f2 = task2.get_future();
         hsd::thread t2 = {hsd::move(task2), true};
 
-        hsd_println("Waiting erroring void calls");
+        hsd::println("Waiting erroring void calls"_fmt);
+        
         f1.wait();
         f2.wait();
-        hsd_println(
-            "Results are: '{}' '{}'", 
+        
+        hsd::println(
+            "Results are: '{}' '{}'"_fmt, 
             f1.get().is_ok() ? "void" : f1.get().unwrap_err()(),
             f2.get().is_ok() ? "void" : f2.get().unwrap_err()()
         );
@@ -119,11 +125,13 @@ int main()
         hsd::future f2 = task2.get_future();
         hsd::thread t2 = {hsd::move(task2), -357};
 
-        hsd_println("Waiting erroring retruning calls");
+        hsd::println("Waiting erroring retruning calls"_fmt);
+        
         f1.wait();
         f2.wait();
-        hsd_println(
-            "Results are: '{}' '{}'", 
+        
+        hsd::println(
+            "Results are: '{}' '{}'"_fmt, 
             f1.get().is_ok() ? f1.get().unwrap() : -1,
             f2.get().is_ok() ? f2.get().unwrap() : -1
         );
@@ -144,11 +152,13 @@ int main()
         hsd::future f2 = task2.get_future();
         hsd::thread t2 = {hsd::move(task2), -3.57f};
 
-        hsd_println("Waiting erroring retruning calls");
+        hsd::println("Waiting erroring retruning calls"_fmt);
+        
         f1.wait();
         f2.wait();
-        hsd_println(
-            "Results are: '{}' '{}'", 
+        
+        hsd::println(
+            "Results are: '{}' '{}'"_fmt, 
             f1.get().is_ok() ? f1.get().unwrap().f : -1.f,
             f2.get().is_ok() ? f2.get().unwrap().f : -1.f
         );

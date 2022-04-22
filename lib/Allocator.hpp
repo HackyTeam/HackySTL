@@ -182,11 +182,11 @@ namespace hsd
         {
             if (_buf == nullptr)
             {
-                hsd_panic("Buffer is nullptr");
+                hsd::panic("Buffer is nullptr");
             }
             else if (_size <= sizeof(block))
             {
-                hsd_panic("Buffer is too small to contain data");
+                hsd::panic("Buffer is too small to contain data");
             }
             else
             {

@@ -8,6 +8,8 @@ hsd::string data;
 bool ready = false;
 bool processed = false;
 
+using namespace hsd::format_literals;
+
 void worker_thread()
 {
     // Wait until main() sends data
@@ -15,7 +17,7 @@ void worker_thread()
     cond_var.wait(lock, []{ return ready; });
 
     // after the wait, we own the lock.
-    hsd_println("Worker thread is processing data");
+    hsd::println("Worker thread is processing data"_fmt);
     data += " after processing";
 
     // Send data back to main()
@@ -36,7 +38,7 @@ int main()
     {
         hsd::unique_lock<hsd::mutex> lock{mutex};
         ready = true;
-        hsd_println("main() signals data ready for processing");
+        hsd::println("main() signals data ready for processing"_fmt);
     }
     
     cond_var.notify_one();
@@ -47,6 +49,6 @@ int main()
         cond_var.wait(lock, []{ return processed; });
     }
     
-    hsd_println("Back in main(), data = {}", data);
+    hsd::println("Back in main(), data = {}"_fmt, data);
     worker.join().unwrap();
 }

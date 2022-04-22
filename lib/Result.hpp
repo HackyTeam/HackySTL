@@ -7,61 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(HSD_COMPILER_MSVC)
-
-#define hsd_fprint_check(stream, format, ...)\
-do\
-{\
-    fprintf(stream, format __VA_OPT__(,) __VA_ARGS__);\
-} while (0)
-
-#else
-
-#define hsd_fprint_check(stream, format, ...)\
-do\
-{\
-    if(fprintf(stream, format __VA_OPT__(,) __VA_ARGS__) == -1)\
-        fwprintf(stream, L##format __VA_OPT__(,) __VA_ARGS__);\
-} while (0)
-
-#endif
-
-#if defined(HSD_COMPILER_MSVC)
-
-#define hsd_fputs_check(stream, string)\
-do\
-{\
-    fputs(string "\n", stream);\
-} while (0)
-
-#else
-
-#define hsd_fputs_check(stream, string)\
-do\
-{\
-    if(fputs(string "\n", stream) == -1)\
-        fputws(L##string L"\n", stream);\
-} while (0)
-
-#endif
-
-#define hsd_panic(message)\
-do\
-{\
-    hsd_fprint_check(\
-        stderr, "Got an error in file:"\
-        "\n%s\nInvoked from: %s at line:"\
-        " %d\nWith the Err result value:"\
-        " %s\n", __FILE__, HSD_FUNCTION_NAME,\
-        __LINE__, message\
-    );\
-    \
-    abort();\
-} while (0) 
-
-#define hsd_unimplemented()\
-    hsd_panic("This funcion is unimplemented")
-
 namespace hsd
 {
     namespace Result_detail
@@ -84,6 +29,30 @@ namespace hsd
             {str.c_str()} -> is_same<const char*>;
         };
     } // namespace Result_detail
+
+    [[noreturn]] static inline void panic(
+        const char* message,
+        const char* func = __builtin_FUNCTION(),
+        const char* file_name = __builtin_FILE(),
+        usize line = __builtin_LINE())
+    {
+        fprintf(
+            stderr, "Got an error in file:"
+            "\n%s\nInvoked from: %s at line:"
+            " %zu\nWith the message: %s\n", 
+            file_name, func, line, message
+        );
+
+        abort();
+    }
+
+    [[noreturn]] static inline void unimplemented(
+        const char* func = __builtin_FUNCTION(),
+        const char* file_name = __builtin_FILE(),
+        usize line = __builtin_LINE())
+    {
+        panic("This funcion is unimplemented", func, file_name, line);
+    }
 
     struct ok_value {};
     struct err_value {};
@@ -250,35 +219,16 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err result value:"
-                        " %s\n", file_name, func, line, 
-                        _err_data()
-                    );
+                    panic(_err_data(), func, file_name, line);
                 }
                 else if constexpr (Result_detail::IsString<Err>)
                 {
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err value: %s\n",
-                        file_name, func, line, 
-                        _err_data.c_str()
-                    );
+                    panic(_err_data.c_str(), func, file_name, line);
                 }
                 else
                 {
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err value: %s\n",
-                        file_name, func, line, _err_data
-                    );
+                    panic(_err_data, func, file_name, line);
                 }
-
-                abort();
             }
         }
 
@@ -301,13 +251,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
 
@@ -407,13 +351,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:\n"
-                    "%s\nInvoked from: %s at line: %zu"
-                    "\nExpected Err, got Ok instead\n",
-                    file_name, func, line
-                );
-                abort();
+                panic("Expected Err, got Ok instead", func, file_name, line);
             }
         }
 
@@ -443,13 +381,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
     };
@@ -551,35 +483,16 @@ namespace hsd
                         "Error: Invoke result type is not same with \'const char*\'"
                     );
                     
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err result value:"
-                        " %s\n", file_name, func, line, 
-                        _err_data()
-                    );
+                    panic(_err_data(), func, file_name, line);
                 }
                 else if constexpr (Result_detail::IsString<Err>)
                 {
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err value: %s\n",
-                        file_name, func, line, 
-                        _err_data.c_str()
-                    );
+                    panic(_err_data.c_str(), func, file_name, line);
                 }
                 else
                 {
-                    hsd_fprint_check(
-                        stderr, "Got an error in file:"
-                        "\n%s\nInvoked from: %s at line:"
-                        " %zu\nWith the Err value: %s\n",
-                        file_name, func, line, _err_data
-                    );
+                    panic(_err_data, func, file_name, line);
                 }
-                
-                abort();
             }
         }
 
@@ -591,13 +504,7 @@ namespace hsd
         {
             if (!_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
 
@@ -618,12 +525,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\n", file_name, func, line
-                );
-                abort();
+                panic("Expected Err, got Ok instead", func, file_name, line);
             }
             else
             {
@@ -646,12 +548,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message);
-                abort();
+                panic(message, func, file_name, line);
             }
             else
             {
@@ -769,13 +666,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\n", file_name, func, line
-                );
-
-                abort();
+                panic("Expected Ok, got Err instead", func, file_name, line);
             }
         }
 
@@ -798,13 +689,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
 
@@ -886,13 +771,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:\n"
-                    "%s\nInvoked from: %s at line: %zu"
-                    "\nExpected Err, got Ok instead\n",
-                    file_name, func, line
-                );
-                abort();
+                panic("Expected Err, got Ok instead", func, file_name, line);
             }
         }
 
@@ -904,13 +783,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
     };
@@ -930,15 +803,15 @@ namespace hsd
             : _initialized{false}
         {}
 
-        inline Result(const Result& other)
+        constexpr Result(const Result& other)
             : _initialized{other._initialized}
         {}
 
-        inline Result(Result&& other)
+        constexpr Result(Result&& other)
             : _initialized{other._initialized}
         {}
 
-        inline Result& operator=(Result&& rhs)
+        constexpr Result& operator=(Result&& rhs)
         {
             swap(_initialized, rhs._initialized);
             return *this;
@@ -954,7 +827,10 @@ namespace hsd
             return _initialized;
         }
 
-        inline friend void swap(Result&, Result&) {}
+        inline friend void swap(Result& lhs, Result& rhs)
+        {
+            swap(lhs._initialized, rhs._initialized);
+        }
 
         constexpr void unwrap(
             const char* func = __builtin_FUNCTION(),
@@ -963,13 +839,7 @@ namespace hsd
         {
             if (_initialized == false)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\n", file_name, func, line
-                );
-
-                abort();
+                panic("Expected Ok, got Err instead", func, file_name, line);
             }
         }
 
@@ -981,13 +851,7 @@ namespace hsd
         {
             if (_initialized == false)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
 
@@ -1008,13 +872,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:\n"
-                    "%s\nInvoked from: %s at line: %zu"
-                    "\nExpected Err, got Ok instead\n",
-                    file_name, func, line
-                );
-                abort();
+                panic("Expected Err, got Ok instead", func, file_name, line);
             }
         }
 
@@ -1026,13 +884,7 @@ namespace hsd
         {
             if (_initialized)
             {
-                hsd_fprint_check(
-                    stderr, "Got an error in file:"
-                    "\n%s\nInvoked from: %s at line:"
-                    " %zu\nWith the message: %s\n",
-                    file_name, func, line, message
-                );
-                abort();
+                panic(message, func, file_name, line);
             }
         }
     };

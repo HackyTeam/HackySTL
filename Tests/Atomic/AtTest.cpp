@@ -7,12 +7,14 @@ hsd::atomic_flag lock{};
  
 void thread_func(hsd::i32 thread_index)
 {
+    using namespace hsd::format_literals;
+
     for (hsd::i32 count = 0; count < 100; count++)
     {
         // spin until the lock is acquired
         while (lock.test_and_set(hsd::memory_order_acquire));
 
-        hsd_println("Output from thread {}", thread_index);
+        hsd::println("Output from thread {}"_fmt, thread_index);
         lock.clear(hsd::memory_order_release);
     }
 }

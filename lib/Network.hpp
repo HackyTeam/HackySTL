@@ -174,7 +174,7 @@ namespace hsd
                 if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)
                 #endif
                 {
-                    hsd_fprint_check(
+                    fprintf(
                         stderr, "udp_server: error in receive"
                         ", error: %s", error_message()
                     );

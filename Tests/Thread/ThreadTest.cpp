@@ -14,7 +14,9 @@ public:
 
 	void foo() 
 	{
-		hsd_println("{} {}", _a, _b);
+		using namespace hsd::format_literals;
+
+		hsd::println("{} {}"_fmt, _a, _b);
 	}
 };
 

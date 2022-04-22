@@ -21,8 +21,10 @@ static inline hsd::safe_shared_ptr<S> elm =
 
 static void print(hsd::safe_shared_ptr<S> ptr)
 {
-    hsd_println(
-        "{}\n{}\n{}\n{}", 
+    using namespace hsd::format_literals;
+
+    hsd::println(
+        "{}\n{}\n{}\n{}"_fmt, 
         ptr->_a, ptr->_b, 
         ptr->_c, ptr->_d
     );

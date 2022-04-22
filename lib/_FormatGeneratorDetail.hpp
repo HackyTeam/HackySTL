@@ -5,16 +5,16 @@
 
 ///
 /// @brief Used in identifying the classes
-/// and functions in the library. 
+/// and functions in the standard library. 
 ///
 namespace hsd
 {
     ///
-    /// @brief Get the foreground string value out of the style info
+    /// @brief Get the foreground string value out of the style info.
     /// 
-    /// @tparam CharT - The character type (char or wchar)
-    /// @tparam info - The style info with its fields
-    /// @return A compile time string with the foreground color escape sequence
+    /// @tparam CharT - The character type (char or wchar).
+    /// @tparam info - The style info with its fields.
+    /// @return A compile time string with the foreground color escape sequence.
     ///
     template <typename CharT, fmt_style<CharT> info>
     static consteval auto get_foreground_attr()
@@ -50,11 +50,11 @@ namespace hsd
     }
 
     ///
-    /// @brief Get the background string value out of the style info
+    /// @brief Get the background string value out of the style info.
     /// 
-    /// @tparam CharT - The character type (char or wchar)
-    /// @tparam info - The style info with its fields
-    /// @return A compile time string with the background color escape sequence
+    /// @tparam CharT - The character type (char or wchar).
+    /// @tparam info - The style info with its fields.
+    /// @return A compile time string with the background color escape sequence.
     ///
     template <typename CharT, fmt_style<CharT> info>
     static consteval auto get_background_attr()
@@ -91,11 +91,11 @@ namespace hsd
 
     ///
     /// @brief Get the reset string value out
-    /// of the style info if there is any
+    /// of the style info if there is any.
     /// 
-    /// @tparam CharT - The character type (char or wchar)
-    /// @tparam info - The style info with its fields
-    /// @return A compile time string with the reset escape sequence
+    /// @tparam CharT - The character type (char or wchar).
+    /// @tparam info - The style info with its fields.
+    /// @return A compile time string with the reset escape sequence.
     ///
     template <typename CharT, fmt_style<CharT> info>
     static consteval auto get_reset_attr()
@@ -117,12 +117,12 @@ namespace hsd
     }
 
     ///
-    /// @brief Get the style string value out of the style info
+    /// @brief Get the style string value out of the style info.
     /// 
-    /// @tparam CharT - The character type (char or wchar)
-    /// @tparam tag - mask of the style
-    /// @tparam info - The style info with its fields
-    /// @return A compile time string with the style value
+    /// @tparam CharT - The character type (char or wchar).
+    /// @tparam tag - mask of the style.
+    /// @tparam info - The style info with its fields.
+    /// @return A compile time string with the style value.
     ///
     template <typename CharT, usize tag, fmt_style<CharT> info>
     static consteval auto get_style_attr_impl()
@@ -180,11 +180,11 @@ namespace hsd
     }
 
     ///
-    /// @brief Get the format attribute string escape sequence out of the style info
+    /// @brief Get the format attribute string escape sequence out of the style info.
     /// 
-    /// @tparam CharT - The character type (char or wchar)
-    /// @tparam info - The style info with its fields
-    /// @return A compile time string with the format attribute escape sequence
+    /// @tparam CharT - The character type (char or wchar).
+    /// @tparam info - The style info with its fields.
+    /// @return A compile time string with the format attribute escape sequence.
     ///
     template <typename CharT, fmt_style<CharT> info>
     static consteval auto get_format_style_attr()
@@ -225,127 +225,126 @@ namespace hsd
     }
 
     ///
-    /// @brief Structure used as a namespace
-    /// for the format traits
+    /// @brief Structure used as a namespace for the format traits.
     ///
     struct formatter_traits
     {
         ///
-        /// @brief Checks if T is a character type
+        /// @brief Checks if T is a character type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_char = is_same<decay_t<T>, char>::value;
 
         ///
-        /// @brief Checks if T is a 8-bit integer type
+        /// @brief Checks if T is a 8-bit integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_i8 = is_same<decay_t<T>, i8>::value;
 
         ///
-        /// @brief Checks if T is a 8-bit unsigned integer type
+        /// @brief Checks if T is a 8-bit unsigned integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_u8 = is_same<decay_t<T>, u8>::value;
 
         ///
-        /// @brief Checks if T is a 16-bit integer type
+        /// @brief Checks if T is a 16-bit integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_i16 = is_same<decay_t<T>, i16>::value;
 
         ///
-        /// @brief Checks if T is a 16-bit unsigned integer type
+        /// @brief Checks if T is a 16-bit unsigned integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_u16 = is_same<decay_t<T>, u16>::value;
 
         ///
-        /// @brief Checks if T is a 32-bit integer type
+        /// @brief Checks if T is a 32-bit integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_i32 = is_same<decay_t<T>, i32>::value;
 
         ///
-        /// @brief Checks if T is a 32-bit unsigned integer type
+        /// @brief Checks if T is a 32-bit unsigned integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_u32 = is_same<decay_t<T>, u32>::value;
 
         ///
-        /// @brief Checks if T is a 64-bit integer type
+        /// @brief Checks if T is a 64-bit integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_i64 = is_same<decay_t<T>, i64>::value;
 
         ///
-        /// @brief Checks if T is a 64-bit unsigned integer type
+        /// @brief Checks if T is a 64-bit unsigned integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_u64 = is_same<decay_t<T>, u64>::value;
 
         ///
-        /// @brief Checks if T is a 32/64-bit (depends on the OS) integer type
+        /// @brief Checks if T is a 32/64-bit (depends on the OS) integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_ilong = is_same<decay_t<T>, ilong>::value;
 
         ///
-        /// @brief Checks if T is a 32/64-bit (depends on the OS) unsigned integer type
+        /// @brief Checks if T is a 32/64-bit (depends on the OS) unsigned integer type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_ulong = is_same<decay_t<T>, ulong>::value;
 
         ///
-        /// @brief Checks if T is a 32-bit floating point type
+        /// @brief Checks if T is a 32-bit floating point type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_f32 = is_same<decay_t<T>, f32>::value;
 
         ///
-        /// @brief Checks if T is a 64-bit floating point type
+        /// @brief Checks if T is a 64-bit floating point type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_f64 = is_same<decay_t<T>, f64>::value;
 
         ///
-        /// @brief Checks if T is a +80-bit (depends on the CPU arch) floating point type
+        /// @brief Checks if T is a +80-bit (depends on the CPU arch) floating point type.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_f128 = is_same<decay_t<T>, f128>::value;
 
         ///
-        /// @brief Checks if T is convertible to a character pointer
+        /// @brief Checks if T is convertible to a character pointer.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_char_ptr = requires(T t)
@@ -354,9 +353,9 @@ namespace hsd
         };
 
         ///
-        /// @brief Checks if T is convertible to a wide character pointer
+        /// @brief Checks if T is convertible to a wide character pointer.
         /// 
-        /// @tparam T - The type to check
+        /// @tparam T - The type to check.
         ///
         template <typename T>
         static constexpr bool is_wchar_ptr = requires(T t)
@@ -366,13 +365,13 @@ namespace hsd
     };
 
     ///
-    /// @brief Gets the coresponding `printf` format (char overload)
+    /// @brief Gets the coresponding `printf` format (char overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// in this case all possible options are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// in this case all possible options are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_char<T>)
@@ -404,13 +403,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (i8 overload)
+    /// @brief Gets the coresponding `printf` format (i8 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_i8<T>)
@@ -453,13 +452,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (u8 overload)
+    /// @brief Gets the coresponding `printf` format (u8 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_u8<T>)
@@ -502,13 +501,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (i16 overload)
+    /// @brief Gets the coresponding `printf` format (i16 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_i16<T>)
@@ -551,13 +550,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (u16 overload)
+    /// @brief Gets the coresponding `printf` format (u16 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_u16<T>)
@@ -600,13 +599,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (i32 overload)
+    /// @brief Gets the coresponding `printf` format (i32 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_i32<T>)
@@ -649,13 +648,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (u32 overload)
+    /// @brief Gets the coresponding `printf` format (u32 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_u32<T>)
@@ -698,13 +697,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (i64 overload)
+    /// @brief Gets the coresponding `printf` format (i64 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_i64<T>)
@@ -747,13 +746,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (u64 overload)
+    /// @brief Gets the coresponding `printf` format (u64 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_u64<T>)
@@ -796,13 +795,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (ilong overload)
+    /// @brief Gets the coresponding `printf` format (ilong overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_ilong<T>)
@@ -845,13 +844,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (ulong overload)
+    /// @brief Gets the coresponding `printf` format (ulong overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// hexadecimal format option is supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// hexadecimal format option is supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_ulong<T>)
@@ -894,14 +893,14 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (f32 overload)
+    /// @brief Gets the coresponding `printf` format (f32 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
     /// hexadecimal (0xh.hhhhp+/-d) and exponential (e.g. d.dddde+d)
-    /// format options are supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// format options are supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_f32<T>)
@@ -951,14 +950,14 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (f64 overload)
+    /// @brief Gets the coresponding `printf` format (f64 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
     /// hexadecimal (0xh.hhhhp+/-d) and exponential (e.g. d.dddde+d)
-    /// format options are supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// format options are supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_f64<T>)
@@ -1008,14 +1007,14 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (f128 overload)
+    /// @brief Gets the coresponding `printf` format (f128 overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
     /// hexadecimal (0xh.hhhhp+/-d) and exponential (e.g. d.dddde+d)
-    /// format options are supported, the rest are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// format options are supported, the rest are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_f128<T>)
@@ -1065,13 +1064,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (const char* overload)
+    /// @brief Gets the coresponding `printf` format (const char* overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// in this case all possible options are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// in this case all possible options are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_char_ptr<T>)
@@ -1103,13 +1102,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (const wchar* overload)
+    /// @brief Gets the coresponding `printf` format (const wchar* overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// in this case all possible options are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// in this case all possible options are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (formatter_traits::is_wchar_ptr<T>)
@@ -1133,13 +1132,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (string-view-like overload)
+    /// @brief Gets the coresponding `printf` format (string-view-like overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// in this case all possible options are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// in this case all possible options are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (is_same<T, tuple<usize, const char*>>::value)
@@ -1171,13 +1170,13 @@ namespace hsd
     }
 
     ///
-    /// @brief Gets the coresponding `printf` format (wstring-view-like overload)
+    /// @brief Gets the coresponding `printf` format (wstring-view-like overload).
     /// 
-    /// @tparam CharT - The character type (char or wchar)
+    /// @tparam CharT - The character type (char or wchar).
     /// @tparam info - The format info with specific formatting options
-    /// in this case all possible options are invalid
-    /// @tparam T - The type to format
-    /// @return The coresponding `printf` format string
+    /// in this case all possible options are invalid.
+    /// @tparam T - The type to format.
+    /// @return The coresponding `printf` format string.
     ///
     template <typename CharT, fmt_common<CharT> info, typename T>
     requires (is_same<T, tuple<usize, const wchar*>>::value)

@@ -5,9 +5,10 @@
 #include <cassert>
 
 using namespace hsd::string_view_literals;
+using namespace hsd::format_literals;
 
 static constexpr auto s_test_string =
-LR"json({
+R"json({
     "Cow": "milk",
     "gold": 5000,
     "price": 121.5423,
@@ -31,12 +32,12 @@ LR"json({
     "primitives": [null, true, false]
 })json"_sv;
 
-void print_prefix(hsd::vector<hsd::wstring_view>& path);
-void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v);
+void print_prefix(hsd::vector<hsd::string_view>& path);
+void print_value(hsd::vector<hsd::string_view>& path, hsd::JsonValue& v);
 
 int main()
 {
-    hsd::JsonStream<hsd::wchar> lexer;
+    hsd::JsonStream<char> lexer;
     // Lex the string
     lexer.lex(s_test_string).unwrap();
     lexer.push_eot().unwrap();
@@ -49,26 +50,28 @@ int main()
     assert(value->is_complete());
 
     // Traverse the object
-    hsd::vector<hsd::wstring_view> path;
+    hsd::vector<hsd::string_view> path;
     print_value(path, *value);
 }
 
-void print_prefix(hsd::vector<hsd::wstring_view>& path)
+void print_prefix(hsd::vector<hsd::string_view>& path)
 {
     if (path.size() == 0)
     {
-        hsd_wprint(L"<root>");
+        hsd::print("<root>"_fmt);
     }
     else
     {
         for (auto part : path)
-            hsd_wprint(L"{}:", part);
+        {
+            hsd::print("{}:"_fmt, part);
+        }
     }
 
-    hsd_wprint(L" ");
+    hsd::print(" "_fmt);
 }
 
-void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
+void print_value(hsd::vector<hsd::string_view>& path, hsd::JsonValue& v)
 {
     print_prefix(path);
     hsd::JsonValueType type = v.type();
@@ -76,21 +79,27 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     switch (type)
     {
         case hsd::JsonValueType::Null:
-            hsd_wprint(L"null");
+        {
+            hsd::print("null"_fmt);
             break;
+        }
         case hsd::JsonValueType::True:
-            hsd_wprint(L"true");
+        {
+            hsd::print("true"_fmt);
             break;
+        }
         case hsd::JsonValueType::False:
-            hsd_wprint(L"false");
+        {
+            hsd::print("false"_fmt);
             break;
+        }
         case hsd::JsonValueType::Number:
         {
             auto res = v.as_num<hsd::i32>();
 
             if (res.is_ok())
             {
-                hsd_wprint(L"{}", res.unwrap());
+                hsd::print("{}"_fmt, res.unwrap());
             }
             else
             {
@@ -98,32 +107,40 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
 
                 if (res.is_ok())
                 {
-                    hsd_wprint(L"{}", res.unwrap());
+                    hsd::print("{}"_fmt, res.unwrap());
                 }
                 else
                 {
-                    hsd_wprint(L"<number>");
+                    hsd::print("<number>"_fmt);
                 }
             }
-        }
-            break;
-        case hsd::JsonValueType::String:
-            // TODO: Escape?
-            hsd_wprint(L"\"{}\"", v.as_str<hsd::wchar>().unwrap());
-            break;
-        case hsd::JsonValueType::Array:
-            hsd_wprint(L"array");
-            break;
-        case hsd::JsonValueType::Object:
-            hsd_wprint(L"object");
-            break;
 
-        default:
-            hsd_wprint(L"unknown");
             break;
+        }
+        case hsd::JsonValueType::String:
+        {
+            // TODO: Escape?
+            hsd::print("\"{}\""_fmt, v.as_str<char>().unwrap());
+            break;
+        }
+        case hsd::JsonValueType::Array:
+        {
+            hsd::print("array"_fmt);
+            break;
+        }
+        case hsd::JsonValueType::Object:
+        {
+            hsd::print("object"_fmt);
+            break;
+        }
+        default:
+        {
+            hsd::print("unknown"_fmt);
+            break;
+        }
     }
 
-    hsd_wprintln(L"");
+    hsd::print("\n"_fmt);
 
     if (type == hsd::JsonValueType::Array)
     {
@@ -131,8 +148,8 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
 
         for (hsd::usize idx = 0; auto& it : vec)
         {
-            auto s = hsd::to_wstring(idx);
-            path.push_back(static_cast<hsd::wstring_view>(s));
+            auto s = hsd::to_string(idx);
+            path.push_back(static_cast<hsd::string_view>(s));
             print_value(path, *it);
             path.pop_back();
             idx++;
@@ -140,11 +157,11 @@ void print_value(hsd::vector<hsd::wstring_view>& path, hsd::JsonValue& v)
     }
     else if (type == hsd::JsonValueType::Object)
     {
-        auto& map = v.as<hsd::JsonObject<hsd::wchar>>().values();
+        auto& map = v.as<hsd::JsonObject<char>>().values();
         
         for (auto& kv : map)
         {
-            path.push_back(static_cast<hsd::wstring_view>(kv.first));
+            path.push_back(static_cast<hsd::string_view>(kv.first));
             print_value(path, *kv.second);
             path.pop_back();
         }

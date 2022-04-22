@@ -238,7 +238,7 @@ namespace hsd
                     if (expected & waitersBit)
                     {
                         if (!waiter.wait_on(reinterpret_cast<u32&>(_lock), expected))
-                            hsd_panic("waiter.wait_on() failed");
+                            hsd::panic("waiter.wait_on() failed");
 
                         expected = 0;
                     }

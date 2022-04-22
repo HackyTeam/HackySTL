@@ -11,7 +11,7 @@ int main()
         {
             if (output[i].to_usize() != arr[i])
             {
-                hsd_panic("Failed to parse string");
+                hsd::panic("Failed to parse string");
             }
         }
     }

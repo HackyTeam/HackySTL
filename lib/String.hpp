@@ -170,8 +170,7 @@ namespace hsd
             }
             else
             {
-                hsd_fputs_check(stderr, "Unsupported char size");
-                abort();
+                panic("Unsupported character size");
             }
 
             _data[_size] = static_cast<CharT>(0);
@@ -244,8 +243,7 @@ namespace hsd
             }
             else
             {
-                hsd_fputs_check(stderr, "Unsupported char size");
-                abort();
+                panic("Unsupported character size");
             }
 
             _data[_size] = static_cast<CharT>(0);
@@ -265,8 +263,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else
             {
@@ -283,8 +280,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else
             {
@@ -301,8 +297,7 @@ namespace hsd
         {
             if (rhs == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else
             {
@@ -321,8 +316,7 @@ namespace hsd
         {
             if (lhs.data() == nullptr || rhs._data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else
             {
@@ -338,8 +332,7 @@ namespace hsd
         {
             if (lhs == nullptr || rhs._data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else
             {
@@ -356,8 +349,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Cannot concatenate null strings");
             }
             else if (_capacity <= _size + rhs._size)
             {
@@ -382,8 +374,7 @@ namespace hsd
         {
             if (rhs.data() == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Error: nullptr argument.");
             }
             else if (_capacity <= _size + rhs.size())
             {
@@ -408,8 +399,7 @@ namespace hsd
         {
             if (rhs == nullptr || _data == nullptr)
             {
-                hsd_fputs_check(stderr, "Error: nullptr argument.");
-                abort();
+                panic("Error: nullptr argument.");
             }
             else 
             {
@@ -993,7 +983,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%zu)"
                     ": size is too big\n", size
                 );
@@ -1017,7 +1007,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%s)"
                     ": cstr is too big to be contained\n", cstr
                 );
@@ -1041,7 +1031,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%s, %zu)"
                     ": size is too big\n", cstr, size
                 );
@@ -1070,7 +1060,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%s)"
                     ": other is too big to be contained\n", other._data
                 );
@@ -1102,7 +1092,7 @@ namespace hsd
                 }
                 else
                 {
-                    hsd_fprint_check(
+                    fprintf(
                         stderr, "Error at static_basic_string(%s, %zu)"
                         ": sizeof(CharT) is not 1, 2 or 4\n", other._data, other._size
                     );
@@ -1112,7 +1102,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%s, %zu)"
                     ": cstr is too big to be contained\n", other._data, other._size
                 );
@@ -1137,7 +1127,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string(%s, %zu)"
                     ": other is too big to be contained\n", other._data
                 );
@@ -1154,7 +1144,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at operator=(%s): rhs"
                     " is too big to be contained\n", rhs
                 );
@@ -1174,7 +1164,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string::operator"
                     "=(%s): rhs is too big to be contained\n", rhs
                 );
@@ -1218,7 +1208,7 @@ namespace hsd
                 }
                 else
                 {
-                    hsd_fprint_check(
+                    fprintf(
                         stderr, "Error at static_basic_string::operator"
                         "=(%s): sizeof(CharT) is not 1, 2 or 4\n", rhs
                     );
@@ -1226,7 +1216,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string::operator"
                     "=(%s): rhs is too big to be contained\n", rhs
                 );
@@ -1616,7 +1606,7 @@ namespace hsd
             }
             else
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string"
                     ":: emplace_back: String is full\n"
                 );
@@ -1648,7 +1638,7 @@ namespace hsd
         {
             if (size > _capacity)
             {
-                hsd_fprint_check(
+                fprintf(
                     stderr, "Error at static_basic_string::resize"
                     "(%zu): size is bigger than capacity\n", size
                 );

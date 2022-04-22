@@ -1,47 +1,26 @@
 #pragma once
 
 #include "LiteralParser.hpp"
+
 namespace hsd
 {
     namespace sstream_detail
     {
+        template <typename CharT>
+        auto _find_and_consume_sep(const CharT* str, const CharT* sep);
+
         template <usize N, typename CharT>
-        inline auto split_data(const CharT* str, const CharT* sep)
+        static inline auto split_data(const CharT* str, const CharT* sep)
         {
             static_vector<const CharT*, N> _buf;
             const CharT* _iter_f = str;
-
-            auto _find_and_consume_sep = [](const CharT* str, const CharT* sep)
-            {
-                while (*str != '\0')
-                {
-                    if (*basic_cstring<CharT>::find_or_end(sep, *str) == *str)
-                    {
-                        break;
-                    }
-
-                    str++;
-                }
-
-                while (*str != '\0')
-                {
-                    if (*basic_cstring<CharT>::find_or_end(sep, *str) != *str)
-                    {
-                        break;
-                    }
-
-                    str++;
-                }
-
-                return str;  
-            };
 
             for (; *_iter_f == ' '; _iter_f++)
                 ;
 
             const CharT* _iter_s = _find_and_consume_sep(_iter_f, sep);
 
-            while (*_iter_s != '\0')
+            while (*_iter_s != '\0' && _buf.size() < N - 1)
             {
                 for (; *_iter_s == ' '; _iter_s++)
                     ;
@@ -52,8 +31,40 @@ namespace hsd
             }
             
             _buf.emplace_back(_iter_f);
+
+            if (_buf.size() == N - 1)
+            {
+                _buf.emplace_back(_iter_s);
+            }
+
             return _buf;
         }
+
+        template <typename CharT>
+        auto _find_and_consume_sep(const CharT* str, const CharT* sep)
+        {
+            while (*str != '\0')
+            {
+                if (*basic_cstring<CharT>::find_or_end(sep, *str) == *str)
+                {
+                    break;
+                }
+
+                str++;
+            }
+
+            while (*str != '\0')
+            {
+                if (*basic_cstring<CharT>::find_or_end(sep, *str) != *str)
+                {
+                    break;
+                }
+
+                str++;
+            }
+
+            return str;  
+        };
 
         template <typename>
         class stream_parser;
@@ -70,17 +81,17 @@ namespace hsd
                 : _data{data}
             {}
 
-            const auto& data() const
+            inline const auto& data() const
             {
                 return _data;
             }
 
-            auto& index()
+            inline auto& index()
             {
                 return _index;
             }
 
-            friend auto _parse_impl(stream_parser& p, char& val)
+            friend inline auto _parse_impl(stream_parser& p, char& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -94,7 +105,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, uchar& val)
+            friend inline auto _parse_impl(stream_parser& p, uchar& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -108,7 +119,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i16& val)
+            friend inline auto _parse_impl(stream_parser& p, i16& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -127,7 +138,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i32& val)
+            friend inline auto _parse_impl(stream_parser& p, i32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -146,7 +157,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, long& val)
+            friend inline auto _parse_impl(stream_parser& p, long& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -165,7 +176,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i64& val)
+            friend inline auto _parse_impl(stream_parser& p, i64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -184,7 +195,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u16& val)
+            friend inline auto _parse_impl(stream_parser& p, u16& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -203,7 +214,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u32& val)
+            friend inline auto _parse_impl(stream_parser& p, u32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -222,7 +233,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, ulong& val)
+            friend inline auto _parse_impl(stream_parser& p, ulong& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -241,7 +252,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u64& val)
+            friend inline auto _parse_impl(stream_parser& p, u64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -260,7 +271,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f32& val)
+            friend inline auto _parse_impl(stream_parser& p, f32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -279,7 +290,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f64& val)
+            friend inline auto _parse_impl(stream_parser& p, f64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -298,7 +309,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f128& val)
+            friend inline auto _parse_impl(stream_parser& p, f128& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -330,17 +341,17 @@ namespace hsd
                 : _data{data}
             {}
 
-            const auto& data() const
+            inline const auto& data() const
             {
                 return _data;
             }
 
-            auto& index()
+            inline auto& index()
             {
                 return _index;
             }
 
-            friend auto _parse_impl(stream_parser& p, char& val)
+            friend inline auto _parse_impl(stream_parser& p, char& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -354,7 +365,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, uchar& val)
+            friend inline auto _parse_impl(stream_parser& p, uchar& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -368,7 +379,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, wchar& val)
+            friend inline auto _parse_impl(stream_parser& p, wchar& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -382,7 +393,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i16& val)
+            friend inline auto _parse_impl(stream_parser& p, i16& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -401,7 +412,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i32& val)
+            friend inline auto _parse_impl(stream_parser& p, i32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -420,7 +431,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, long& val)
+            friend inline auto _parse_impl(stream_parser& p, long& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -439,7 +450,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, i64& val)
+            friend inline auto _parse_impl(stream_parser& p, i64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -458,7 +469,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u16& val)
+            friend inline auto _parse_impl(stream_parser& p, u16& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -477,7 +488,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u32& val)
+            friend inline auto _parse_impl(stream_parser& p, u32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -496,7 +507,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, ulong& val)
+            friend inline auto _parse_impl(stream_parser& p, ulong& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -515,7 +526,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, u64& val)
+            friend inline auto _parse_impl(stream_parser& p, u64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -534,7 +545,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f32& val)
+            friend inline auto _parse_impl(stream_parser& p, f32& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -553,7 +564,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f64& val)
+            friend inline auto _parse_impl(stream_parser& p, f64& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)
@@ -572,7 +583,7 @@ namespace hsd
                 return {};
             }
 
-            friend auto _parse_impl(stream_parser& p, f128& val)
+            friend inline auto _parse_impl(stream_parser& p, f128& val)
                 -> Result<void, runtime_error>
             {
                 if (p._index >= p._data.second)

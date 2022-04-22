@@ -559,14 +559,16 @@ namespace hsd
                     return runtime_error{"Wrong numeric type selected"};
                 }
                 
-                if (_val.unwrap() < limits<Number>::min or _val.unwrap() > limits<Number>::max)
+                auto _num = _val.unwrap();
+
+                if (_num < limits<Number>::min or _num > limits<Number>::max)
                 {
                     return runtime_error{"Number out of range"};
                 }
 
-                return static_cast<Number>(_val.unwrap());
+                return static_cast<Number>(_num);
             }
-            else
+            else if constexpr (IsFloat<Number>)
             {
                 auto _val = _res.unwrap().value().template get<f128>();
 
@@ -574,13 +576,19 @@ namespace hsd
                 {
                     return runtime_error{"Wrong numeric type selected"};
                 }
-                
-                if (_val.unwrap() < limits<Number>::min or _val.unwrap() > limits<Number>::max)
+
+                auto _num = _val.unwrap();
+
+                if (_num < limits<Number>::min or _num > limits<Number>::max)
                 {
                     return runtime_error{"Number out of range"};
                 }
 
-                return static_cast<Number>(_val.unwrap());
+                return static_cast<Number>(_num);
+            }
+            else
+            {
+                return runtime_error{"Wrong numeric type selected"};
             }
         }
         else

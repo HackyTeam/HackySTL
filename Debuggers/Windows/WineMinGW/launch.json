@@ -8,10 +8,8 @@
             "name": "g++ - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/usr/x86_64-w64-mingw32/bin/gdb.exe",
-            "args": [
-                "${workspaceFolder}/Tests/ExecDumps/${fileBasenameNoExtension}.exe"
-            ],
+            "program": "${workspaceFolder}/Tests/ExecDumps/${fileBasenameNoExtension}.exe",
+            "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -25,7 +23,7 @@
                 }
             ],
             "preLaunchTask": "C/C++: g++.exe build active file",
-            "miDebuggerPath": "wine"
+            "miDebuggerPath": "/usr/x86_64-w64-mingw32/bin/gdb.exe"
         }
     ]
 }

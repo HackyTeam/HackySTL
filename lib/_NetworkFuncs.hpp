@@ -64,15 +64,16 @@ namespace hsd::network_detail
         return true;
     }
 
-    static inline const char* error_message()
+    static inline const char* sock_error_msg()
     {
         #if defined(HSD_PLATFORM_WINDOWS)
         static char _msg_buf[256]{};
+
         FormatMessageA(
             FORMAT_MESSAGE_FROM_SYSTEM | 
             FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr, WSAGetLastError(), 
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+            MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), 
             _msg_buf, sizeof(_msg_buf), nullptr
         );
         
@@ -82,7 +83,7 @@ namespace hsd::network_detail
         #endif
     }
 
-    static inline auto error_code()
+    static inline auto sock_error_code()
     {
         #if defined(HSD_PLATFORM_WINDOWS)
         return WSAGetLastError();

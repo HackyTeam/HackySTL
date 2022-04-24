@@ -57,12 +57,12 @@ namespace hsd
 
         static inline const char* error_message()
         {
-            return network_detail::error_message();
+            return network_detail::sock_error_msg();
         }
 
         static inline auto error_code()
         {
-            return network_detail::error_code();
+            return network_detail::sock_error_code();
         }
 
         inline auto begin()
@@ -103,12 +103,12 @@ namespace hsd
 
         static inline const char* error_message()
         {
-            return network_detail::error_message();
+            return network_detail::sock_error_msg();
         }
 
         static inline auto error_code()
         {
-            return network_detail::error_code();
+            return network_detail::sock_error_code();
         }
 
         inline isize send(const char* const data, const usize size)
@@ -149,12 +149,12 @@ namespace hsd
 
         static inline const char* error_message()
         {
-            return network_detail::error_message();
+            return network_detail::sock_error_msg();
         }
 
         static inline auto error_code()
         {
-            return network_detail::error_code();
+            return network_detail::sock_error_code();
         }
 
         inline void poll()
@@ -229,12 +229,12 @@ namespace hsd
 
         static inline const char* error_message()
         {
-            return network_detail::error_message();
+            return network_detail::sock_error_msg();
         }
 
         static inline auto error_code()
         {
-            return network_detail::error_code();
+            return network_detail::sock_error_code();
         }
 
         inline isize send(const char* const data, const usize size)

@@ -4,7 +4,7 @@
 #include "SStream.hpp"
 
 #if defined(HSD_PLATFORM_WINDOWS)
-
+#include <windows.h>
 #else
 #include <unistd.h>
 #include <sys/stat.h>
@@ -16,25 +16,265 @@
 namespace hsd
 {
     #if defined(HSD_PLATFORM_WINDOWS)
-    struct io_options {};
-    #else
-    struct io_options
+    enum class io_options : DWORD
     {
-        static constexpr i32 read       = O_RDONLY;
-        static constexpr i32 write      = O_WRONLY | O_CREAT | O_TRUNC;
-        static constexpr i32 append     = O_WRONLY | O_CREAT | O_APPEND;
-        static constexpr i32 read_write = O_RDWR;
-        static constexpr i32 rw_create  = O_RDWR | O_CREAT | O_TRUNC;
-        static constexpr i32 rw_append  = O_RDWR | O_CREAT | O_APPEND;
+        none = 0,
+        read = GENERIC_READ,
+        write = GENERIC_WRITE,
+        read_write = GENERIC_READ | GENERIC_WRITE,
+        append = FILE_APPEND_DATA,
+        rw_append = GENERIC_READ | FILE_APPEND_DATA,
+        rw_create = GENERIC_READ | GENERIC_WRITE | CREATE_ALWAYS
     };
 
     namespace io_detail
     {
+        static inline auto file_error_code()
+        {
+            return ::GetLastError();
+        }
+
+        static inline const char* file_error_msg()
+        {
+            static char _msg_buf[256]{};
+            
+            FormatMessageA(
+                FORMAT_MESSAGE_FROM_SYSTEM | 
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, file_error_code(), 
+                MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), 
+                _msg_buf, sizeof(_msg_buf), nullptr
+            );
+
+            return _msg_buf;
+        }
+
+        class file_handler
+        {
+        private:
+            HANDLE _handle = nullptr;
+            OVERLAPPED _overlapped = {};
+            bool _is_overlapped = false;
+            bool _is_external = false;
+            io_options _mode = io_options::none;
+
+        public:
+            inline file_handler() = default;
+
+            inline file_handler(const file_handler&) = delete;
+            inline file_handler& operator=(const file_handler&) = delete;
+
+            inline file_handler(file_handler&& other)
+            {
+                swap(other._handle, _handle);
+                swap(other._overlapped, _overlapped);
+                swap(other._is_overlapped, _is_overlapped);
+                swap(other._is_external, _is_external);
+                swap(other._mode, _mode);
+            }
+
+            inline file_handler& operator=(file_handler&& other)
+            {
+                swap(other._handle, _handle);
+                swap(other._overlapped, _overlapped);
+                swap(other._is_overlapped, _is_overlapped);
+                swap(other._is_external, _is_external);
+                swap(other._mode, _mode);
+
+                return *this;
+            }
+
+            inline ~file_handler()
+            {
+                close();
+            }
+
+            inline void close()
+            {
+                if (_handle != nullptr)
+                {
+                    if (_is_overlapped == false)
+                    {
+                        if (CloseHandle(_handle) == 0)
+                        {
+                            panic(file_error_msg());
+                        }
+                    }
+                    else if (_is_external == false)
+                    {
+                        if (CancelIoEx(_handle, &_overlapped) == 0)
+                        {
+                            panic(file_error_msg());
+                        }
+                    }
+
+                    _handle = nullptr;
+                }
+            }
+
+            inline bool is_open() const
+            {
+                return _handle != nullptr;
+            }
+
+            inline bool only_read() const
+            {
+                return _mode == io_options::read;
+            }
+
+            inline bool only_write() const
+            {
+                return _mode == io_options::write;
+            }
+
+            inline auto write(const void* data, u64 size)
+            {
+                DWORD _written = 0;
+
+                if (WriteFile(_handle, data, size, &_written, &_overlapped) == 0)
+                {
+                    if (file_error_code() != ERROR_IO_PENDING)
+                    {
+                        return static_cast<DWORD>(-1);
+                    }
+
+                    if (GetOverlappedResult(_handle, &_overlapped, &_written, true) == 0)
+                    {
+                        return static_cast<DWORD>(-1);
+                    }
+                }
+
+                return _written;
+            }
+
+            inline auto read(void* data, u64 size)
+            {
+                DWORD _read = 0;
+
+                if (ReadFile(_handle, data, size, &_read, &_overlapped) == 0)
+                {
+                    if (file_error_code() != ERROR_IO_PENDING)
+                    {
+                        return static_cast<DWORD>(-1);
+                    }
+
+                    if (GetOverlappedResult(_handle, &_overlapped, &_read, true) == 0)
+                    {
+                        return static_cast<DWORD>(-1);
+                    }
+                }
+
+                return _read;
+            }
+
+            static inline file_handler open(
+                const char* path, io_options mode)
+            {
+                file_handler _file;
+
+                if (mode == io_options::rw_create)
+                {
+                    _file._handle = CreateFileA(
+                        path,
+                        static_cast<DWORD>(mode),
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        nullptr, CREATE_ALWAYS,
+                        FILE_FLAG_OVERLAPPED, nullptr
+                    );
+                }
+                else
+                {
+                    _file._handle = CreateFileA(
+                        path, static_cast<DWORD>(mode), 
+                        FILE_SHARE_READ | FILE_SHARE_WRITE, 
+                        nullptr, OPEN_EXISTING, 
+                        FILE_FLAG_OVERLAPPED, nullptr
+                    );
+
+                    if (file_error_code() == ERROR_FILE_NOT_FOUND)
+                    {
+                        _file._handle = CreateFileA(
+                            path, static_cast<DWORD>(mode), 
+                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
+                            nullptr, CREATE_ALWAYS, 
+                            FILE_FLAG_OVERLAPPED, nullptr
+                        );
+                    }
+                }
+
+                _file._mode = mode;
+                _file._is_overlapped = true;
+                _file._is_external = true;
+
+                return _file;
+            }
+
+            static inline file_handler get_stdin()
+            {
+                file_handler _file;
+
+                _file._handle = GetStdHandle(STD_INPUT_HANDLE);
+                _file._mode = io_options::read;
+                _file._is_overlapped = true;
+                _file._is_external = true;
+
+                return _file;
+            }
+
+            static inline file_handler get_stdout()
+            {
+                file_handler _file;
+
+                _file._handle = GetStdHandle(STD_OUTPUT_HANDLE);
+                _file._mode = io_options::write;
+                _file._is_overlapped = true;
+                _file._is_external = true;
+
+                return _file;
+            }
+
+            static inline file_handler get_stderr()
+            {
+                file_handler _file;
+
+                _file._handle = GetStdHandle(STD_ERROR_HANDLE);
+                _file._mode = io_options::write;
+                _file._is_overlapped = true;
+                _file._is_external = true;
+
+                return _file;
+            }
+        };        
+    } // namespace io_detail
+    #else
+    enum class io_options : i32
+    {
+        none = 0,
+        read       = O_RDONLY,
+        write      = O_WRONLY | O_CREAT | O_TRUNC,
+        append     = O_WRONLY | O_CREAT | O_APPEND,
+        read_write = O_RDWR,
+        rw_create  = O_RDWR | O_CREAT | O_TRUNC,
+        rw_append  = O_RDWR | O_CREAT | O_APPEND
+    };
+
+    namespace io_detail
+    {
+        static inline auto file_error_code()
+        {
+            return errno;
+        }
+
+        static inline const char* file_error_msg()
+        {
+            return strerror(file_error_code());
+        }
+
         class file_handler
         {
         private:
             i32 _fd = -1;
-            i32 _mode = 0;
+            io_options _mode = io_options::none;
             bool is_external = false;
 
         public:
@@ -98,10 +338,11 @@ namespace hsd
                 return ::read(_fd, data, size);
             }
 
-            static inline file_handler open(const char* path, i32 mode)
+            static inline file_handler open(
+                const char* path, io_options mode)
             {
                 file_handler fd;
-                fd._fd = ::open(path, mode);
+                fd._fd = ::open(path, static_cast<i32>(mode));
                 fd._mode = mode;
                 fd.is_external = true;
 
@@ -213,9 +454,9 @@ namespace hsd
             auto _sz = _file.write(get_stream().data(), get_stream().size());
             get_stream().clear();
             
-            if (_sz == -1)
+            if (_sz == static_cast<decltype(_sz)>(-1))
             {
-                return runtime_error {strerror(errno)};
+                return runtime_error {io_detail::file_error_msg()};
             }
             
             return {*this};
@@ -241,14 +482,9 @@ namespace hsd
                 get_stream().capacity() - this->_size - 1
             );
 
-            if (_sz == -1)
+            if (_sz == static_cast<decltype(_sz)>(-1))
             {
-                #if defined(HSD_PLATFORM_WINDOWS)
-                //_is_eof = true;
-                return runtime_error {"Undefined error"};
-                #else
-                return runtime_error {strerror(errno)};
-                #endif
+                return runtime_error {io_detail::file_error_msg()};
             }
 
             get_stream().data()[_sz + this->_size] = '\0';
@@ -384,7 +620,7 @@ namespace hsd
         }
 
         static inline auto load_file(
-            const char* file_path, i32 mode = io_options::read)
+            const char* file_path, io_options mode = io_options::read)
             -> Result<io, runtime_error>
         {
             auto _file = io_detail::file_handler::open(file_path, mode);

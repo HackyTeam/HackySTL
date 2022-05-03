@@ -123,11 +123,11 @@ namespace hsd
         {
             if (_initialized)
             {
-                new (&_ok_data) Ok(other._ok_data);
+                new (&_ok_data) Ok{other._ok_data};
             }
             else
             {
-                new (&_err_data) Err(other._err_data);
+                new (&_err_data) Err{other._err_data};
             }
         }
 
@@ -597,7 +597,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                new(&_ok_data) Ok(other._ok_data);
+                new(&_ok_data) Ok{other._ok_data};
             }
         }
 
@@ -606,7 +606,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                new(&_ok_data) Ok(move(other._ok_data));
+                new(&_ok_data) Ok{move(other._ok_data)};
             }
         }
 

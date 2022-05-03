@@ -7,7 +7,48 @@
 ///
 namespace hsd::network_detail
 {
+    ///
+    /// @brief Gets the error message for the last error.
+    /// 
+    /// @return const char* - The error message.
+    ///
+    static inline const char* sock_error_msg()
+    {
+        #if defined(HSD_PLATFORM_WINDOWS)
+        static char _msg_buf[256]{};
+
+        FormatMessageA(
+            FORMAT_MESSAGE_FROM_SYSTEM | 
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr, WSAGetLastError(), 
+            MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), 
+            _msg_buf, sizeof(_msg_buf), nullptr
+        );
+        
+        return _msg_buf;
+        #else
+        return strerror(errno);
+        #endif
+    }
+
+    ///
+    /// @brief Gets the error code for the last error.
+    /// 
+    /// @return auto - The error code.
+    ///
+    static inline auto sock_error_code()
+    {
+        #if defined(HSD_PLATFORM_WINDOWS)
+        return WSAGetLastError();
+        #else
+        return errno;
+        #endif
+    }
+
     #if defined(HSD_PLATFORM_WINDOWS)
+    ///
+    /// @brief Initializes the windows socket library.
+    ///
     static inline void init_winsock()
     {
         static WSAData _data;
@@ -18,8 +59,8 @@ namespace hsd::network_detail
         {
             printf(
                 "Can't start Winsock, here's"
-                " a irrelevant number #%d\n",
-                _ws_result
+                " the error message %s\n",
+                sock_error_msg()
             );
             
             return;
@@ -28,7 +69,7 @@ namespace hsd::network_detail
     #endif
 
     ///
-    /// @brief Closes a socket.
+    /// @brief Closes a socket and sets the handle to -1.
     /// 
     /// @param socket - The socket to close.
     ///
@@ -43,6 +84,16 @@ namespace hsd::network_detail
         socket = static_cast<native_socket_type>(-1);
     }
 
+    ///
+    /// @brief Get the addr info object for the given host and port.
+    /// 
+    /// @param name - The domain name or ip address.
+    /// @param service - The port number.
+    /// @param hints - The hints for the addr info object.
+    /// @param result - The addr info object.
+    /// @return true - If the addr info object was successfully retrieved.
+    /// @return false - If the addr info object was not retrieved.
+    ///
     bool get_addr_info(
         const char* name, const char* service,
         const addrinfo* hints, addrinfo** result)
@@ -64,34 +115,12 @@ namespace hsd::network_detail
         return true;
     }
 
-    static inline const char* sock_error_msg()
-    {
-        #if defined(HSD_PLATFORM_WINDOWS)
-        static char _msg_buf[256]{};
-
-        FormatMessageA(
-            FORMAT_MESSAGE_FROM_SYSTEM | 
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr, WSAGetLastError(), 
-            MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), 
-            _msg_buf, sizeof(_msg_buf), nullptr
-        );
-        
-        return _msg_buf;
-        #else
-        return strerror(errno);
-        #endif
-    }
-
-    static inline auto sock_error_code()
-    {
-        #if defined(HSD_PLATFORM_WINDOWS)
-        return WSAGetLastError();
-        #else
-        return errno;
-        #endif
-    }
-
+    ///
+    /// @brief Transforms the ip address and port to a byte array.
+    /// 
+    /// @param addr - The ip address.
+    /// @return auto - A byte array containing the ip address and port.
+    ///
     inline auto to_str(const sockaddr_storage* addr)
     {
         if (addr == nullptr)
@@ -132,6 +161,16 @@ namespace hsd::network_detail
         }
     }
 
+    ///
+    /// @brief Connects the socket to the given ip address and port.
+    /// 
+    /// @tparam SocketType - The socket type.
+    /// @param new_socket 
+    /// @param ip_addr 
+    /// @param is_server 
+    /// @return true 
+    /// @return false 
+    ///
     template <typename SocketType>
     static inline bool switch_to(
         SocketType& new_socket, const char* ip_addr, bool is_server)
@@ -179,6 +218,7 @@ namespace hsd::network_detail
                 return false;
             }
         }
+
         for (_rp = _result; _rp != nullptr; _rp = _rp->ai_next)
         {
             new_socket = pollfd {
@@ -200,6 +240,7 @@ namespace hsd::network_detail
 
         bool _expr_res = _rp != nullptr;
         freeaddrinfo(_result);
+        
         return _expr_res; 
     }
 } // namespace hsd::network_detail

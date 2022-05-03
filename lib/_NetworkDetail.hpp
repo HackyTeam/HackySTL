@@ -30,12 +30,22 @@ namespace hsd::network_detail
     ///
     /// @brief Internal alias for the windows socket handle.
     ///
-    using native_socket_type = SOCKET;
+    using windows_socket_handle = SOCKET;
+
+    ///
+    /// @brief Internal handle for the socket.
+    ///
+    using native_socket_type = windows_socket_handle;
     #else
     ///
     /// @brief Internal alias for the unix socket handle.
     ///
-    using native_socket_type = i32;
+    using unix_socket_handle = i32;
+
+    ///
+    /// @brief Internal handle for the socket.
+    ///
+    using native_socket_type = unix_socket_handle;
     #endif
 
     ///
@@ -59,7 +69,7 @@ namespace hsd::network_detail
     ///
     /// @brief Enumeration for the different socket types, used for windows.
     ///
-    enum class socket_type
+    enum class windows_socket_type
     {
         stream     = SOCK_STREAM,   ///< Stream socket.
         dgram      = SOCK_DGRAM,    ///< Datagram socket.
@@ -67,11 +77,16 @@ namespace hsd::network_detail
         rdm        = SOCK_RDM,      ///< Reliable message datagram socket.
         seq_packet = SOCK_SEQPACKET ///< Sequenced packet socket.
     };
+
+    ///
+    /// @brief Alias for the socket type enum
+    ///
+    using socket_type = windows_socket_type;
     #else
     ///
     /// @brief Enumeration for the different socket types, used for POSIX.
     ///
-    enum class socket_type
+    enum class unix_socket_type
     {
         stream     = SOCK_STREAM,   ///< Stream socket.
         clo_exec   = SOCK_CLOEXEC,  ///< Close on exec socket.
@@ -83,5 +98,10 @@ namespace hsd::network_detail
         rdm        = SOCK_RDM,      ///< Reliable message datagram socket.
         seq_packet = SOCK_SEQPACKET ///< Sequenced packet socket.
     };
+
+    ///
+    /// @brief Alias for the socket type enum
+    ///
+    using socket_type = unix_socket_type;
     #endif
 } // namespace hsd::network_detail

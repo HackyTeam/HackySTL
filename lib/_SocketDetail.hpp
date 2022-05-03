@@ -6,12 +6,25 @@
 
 namespace hsd::network_detail
 {
+    ///
+    /// @brief TCP socket handler implementation
+    /// 
+    /// @tparam Protocol - protocol type
+    ///
     template <ip_protocol Protocol>
     class tcp_socket
     {
     private:
+        /// Data type for socket handle
         pollfd _data;
 
+        ///
+        /// @brief Creates a server socket using the given address
+        /// 
+        /// @param info - address info used to create the socket
+        /// @return true - socket created successfully
+        /// @return false - socket creation failed
+        ///
         inline bool _handle_server(const addrinfo* const info)
         {
             if (info->ai_socktype == SOCK_STREAM)
@@ -74,6 +87,13 @@ namespace hsd::network_detail
             return false;
         }
 
+        ///
+        /// @brief Creates a client socket using the given address
+        /// 
+        /// @param info - address info used to create the socket
+        /// @return true - socket created successfully
+        /// @return false - socket creation failed
+        ///
         inline bool _handle_client(const addrinfo* const info)
         {
             if (info->ai_socktype == SOCK_STREAM)
@@ -99,19 +119,44 @@ namespace hsd::network_detail
         }
 
     public:
-        inline tcp_socket(const tcp_socket& other) = delete;
-        inline tcp_socket& operator=(const tcp_socket& other) = delete;
+        ///
+        /// @brief Deleted copy constructor for TCP socket
+        ///
+        inline tcp_socket(const tcp_socket&) = delete;
+
+        ///
+        /// @brief Deleted copy assignment operator for TCP socket
+        ///
+        inline tcp_socket& operator=(const tcp_socket&) = delete;
         
+        ///
+        /// @brief Construct a new tcp socket object
+        /// 
+        /// @param data - socket data conaining the socket
+        /// handle and events type to be monitored
+        ///
         inline tcp_socket(pollfd&& data)
-            : _data(data)
+            : _data{data}
         {}
 
+        ///
+        /// @brief Construct by move a new tcp socket object
+        /// 
+        /// @param other - socket class to be moved
+        ///
         inline tcp_socket(tcp_socket&& other)
-            : _data(move(other._data))
+            : _data{move(other._data)}
         {
             other._data.fd = static_cast<network_detail::native_socket_type>(-1);
         }
-    
+
+        ///
+        /// @brief Construct a new tcp socket
+        /// object for the given address
+        /// 
+        /// @param addr - address to be used to create the socket
+        /// @param is_server - true if the socket is a server socket
+        ///
         inline tcp_socket(const char* const addr, bool is_server = false)
         {
             _data = pollfd {
@@ -122,11 +167,18 @@ namespace hsd::network_detail
 
             if (switch_to(addr, is_server) == false)
             {
-                fputs("hsd::network_detail::tcp_socket::switch_to() failed.\n", stderr);
+                fputs(
+                    "hsd::network_detail::"
+                    "tcp_socket::switch_to()"
+                    " failed.\n", stderr
+                );
                 close();
             }
         }
 
+        ///
+        /// @brief Destroy the tcp socket object
+        ///
         inline ~tcp_socket()
         {
             close();

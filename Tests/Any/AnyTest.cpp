@@ -17,15 +17,15 @@ int main()
 
     // any type
     hsd::any a = 1;
-    hsd::println("{}"_fmt, a.cast_to<hsd::i32>().unwrap());
+    hsd::println("{}"_fmt, a.cast_to<hsd::i32>().unwrap().get());
     a = 3.14;
-    hsd::println("{}"_fmt, a.cast_to<hsd::f64>().unwrap());
+    hsd::println("{}"_fmt, a.cast_to<hsd::f64>().unwrap().get());
     a = true;
-    hsd::println("{}"_fmt, a.cast_to<bool>().unwrap() ? "true" : "false");
+    hsd::println("{}"_fmt, a.cast_to<bool>().unwrap().get() ? "true" : "false");
  
     // bad cast
     a = 1;
-    hsd::println("{}"_fmt, a.cast_to<hsd::f32>().unwrap_err()());
+    hsd::println("{}"_fmt, a.cast_to<hsd::f32>().unwrap_err().pretty_error());
  
     // has value
     a = 1;

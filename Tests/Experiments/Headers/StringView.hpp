@@ -8,7 +8,7 @@ namespace hsd
 {
     struct bad_access
     {
-        const char* operator()() const
+        const char* pretty_error() const
         {
             return "Tried to access an element out of bounds";
         }
@@ -65,7 +65,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index) const
-            -> Result< reference<const CharT>, bad_access >
+            -> result<reference<const CharT>, bad_access>
         {
             if(index >= _size)
                 return bad_access{};
@@ -271,7 +271,7 @@ namespace hsd
         }
 
         constexpr auto sub_string(usize start, usize len) const
-            -> Result<basic_string_view, out_of_range>
+            -> result<basic_string_view, out_of_range>
         {
             if (start >= _size)
                 return out_of_range{};

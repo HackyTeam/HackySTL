@@ -15,7 +15,7 @@ namespace hsd
 
         struct bad_key
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return "Tried to use an invalid key";
             }
@@ -23,7 +23,7 @@ namespace hsd
 
         struct bad_access
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return "Tried to access an element out of bounds";
             }
@@ -72,7 +72,7 @@ namespace hsd
         }
 
         inline auto _get_iter(const Key& key)
-            -> Result< pair<bucket_iter, usize>, umap_detail::bad_access >
+            -> result< pair<bucket_iter, usize>, umap_detail::bad_access >
         {
             auto _key_hash = Hasher::get_hash(key);
             usize _index = _key_hash % _buckets.size();
@@ -230,7 +230,7 @@ namespace hsd
         }
 
         inline auto at(const Key& key)
-            -> Result< reference<T>, umap_detail::bad_key >
+            -> result<reference<T>, umap_detail::bad_key>
         {
             usize _data_index = _get(key).first;
 
@@ -241,7 +241,7 @@ namespace hsd
         }
 
         inline auto at(const Key& key) const
-            -> Result< reference<const T>, umap_detail::bad_key >
+            -> result<reference<const T>, umap_detail::bad_key>
         {
             usize _data_index = _get(key).first;
 
@@ -308,12 +308,14 @@ namespace hsd
         }
 
         inline auto erase(const_iterator pos)
-            -> Result<iterator, umap_detail::bad_access>
+            -> result<iterator, umap_detail::bad_access>
         {
             auto _result = _get_iter(pos->first);
             
             if (_result.is_ok() == false)
+            {
                 return umap_detail::bad_access{};
+            }
             
             // now .unwrap() should not fail
             auto [_iter, _index] = _result.unwrap();

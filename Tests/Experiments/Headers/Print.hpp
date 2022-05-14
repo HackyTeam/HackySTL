@@ -5,7 +5,7 @@
 namespace hsd
 {
     template <basic_string_literal fmt, typename... Args>
-    static inline Result<void, runtime_error> print(Args &&...args)
+    static inline option_err<runtime_error> print(Args &&...args)
     {
         using char_type = typename decltype(fmt)::char_type;
         using tup_type = type_tuple<Args...>;

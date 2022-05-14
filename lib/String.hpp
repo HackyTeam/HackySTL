@@ -469,7 +469,7 @@ namespace hsd
         }
 
         inline auto at(usize index)
-            -> Result< reference<CharT>, bad_access >
+            -> result<reference<CharT>, bad_access>
         {
             if(index >= _size)
                 return bad_access{};
@@ -478,7 +478,7 @@ namespace hsd
         }
 
         inline auto at(usize index) const
-            -> Result< reference<const CharT>, bad_access >
+            -> result<reference<const CharT>, bad_access>
         {
             if(index >= _size)
                 return bad_access{};
@@ -744,7 +744,7 @@ namespace hsd
         }
 
         inline auto sub_string(usize from, usize count)
-            -> Result<basic_string, bad_access>
+            -> result<basic_string, bad_access>
         {
             if (from > _size || (from + count) > _size)
                 return bad_access{};
@@ -753,19 +753,19 @@ namespace hsd
         }
 
         inline auto sub_string(usize from)
-            -> Result<basic_string, bad_access>
+            -> result<basic_string, bad_access>
         {
             return sub_string(from, _size - from);
         }
 
         inline auto erase(const_iterator pos)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             return erase_for(pos, pos + 1);
         }
 
         inline auto erase_for(const_iterator from, const_iterator to)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
@@ -923,7 +923,7 @@ namespace hsd
 
         template <typename CharU>
         friend auto _parse_impl(sstream_detail::stream_parser<CharU>& p, basic_string& str)
-            -> Result<void, runtime_error>
+            -> option_err<runtime_error>
         {
             if (p.index() >= p.data().second)
             {
@@ -1287,7 +1287,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index)
-            -> Result< reference<CharT>, bad_access >
+            -> result<reference<CharT>, bad_access>
         {
             if(index >= _size)
                 return bad_access{};
@@ -1296,7 +1296,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index) const
-            -> Result< reference<const CharT>, bad_access >
+            -> result<reference<const CharT>, bad_access>
         {
             if(index >= _size)
                 return bad_access{};
@@ -1572,13 +1572,13 @@ namespace hsd
         }
 
         constexpr auto erase(const_iterator pos)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             return erase_for(pos, pos + 1);
         }
 
         constexpr auto erase_for(const_iterator from, const_iterator to)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};

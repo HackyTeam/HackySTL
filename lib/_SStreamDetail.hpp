@@ -92,7 +92,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, char& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -106,7 +106,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, uchar& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -120,7 +120,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i16& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -139,7 +139,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -158,7 +158,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, long& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -177,7 +177,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -196,7 +196,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u16& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -215,7 +215,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -234,7 +234,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, ulong& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -253,7 +253,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -272,7 +272,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -291,7 +291,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -310,7 +310,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f128& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -352,7 +352,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, char& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -366,7 +366,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, uchar& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -380,7 +380,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, wchar& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -394,7 +394,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i16& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -413,7 +413,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -432,7 +432,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, long& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -451,7 +451,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, i64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -470,7 +470,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u16& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -489,7 +489,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -508,7 +508,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, ulong& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -527,7 +527,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, u64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -546,7 +546,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f32& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -565,7 +565,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f64& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {
@@ -584,7 +584,7 @@ namespace hsd
             }
 
             friend inline auto _parse_impl(stream_parser& p, f128& val)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (p._index >= p._data.second)
                 {

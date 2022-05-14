@@ -29,7 +29,7 @@ static constexpr auto parse_literal()
     using char_type = typename decltype(fmt)::char_type;
     using info_type = format_info<char_type>;
     using buf_type = hsd::static_vector<info_type, N>;
-    using res_type = hsd::Result<buf_type, hsd::runtime_error>;
+    using res_type = hsd::result<buf_type, hsd::runtime_error>;
 
     constexpr const char_type* _fmt_end = fmt.data + fmt.size();
     constexpr auto _npos = static_cast<hsd::usize>(-1);
@@ -255,7 +255,7 @@ static constexpr auto parse_literal()
 }
 
 template <hsd::basic_string_literal fmt, typename... Args>
-inline hsd::Result<void, hsd::runtime_error> print(Args&&...)
+inline hsd::result<void, hsd::runtime_error> print(Args&&...)
 {
     auto _fmt_buf = parse_literal<
         fmt, sizeof...(Args) + 1>().unwrap();

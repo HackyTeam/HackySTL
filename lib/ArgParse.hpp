@@ -22,7 +22,7 @@ namespace hsd
         inline ~parser_stream() = default;
 
         template <typename... Args>
-        Result<void, runtime_error> set_data(Args&... args)
+        option_err<runtime_error> set_data(Args&... args)
         {
             if (sizeof...(Args) > _args_buf.size())
             {
@@ -103,7 +103,7 @@ namespace hsd
                 while (_index < argc)
                 {
                     auto& [_function, _num_args] = _actions
-                        .at(argv[_index]).unwrap(HSD_FUNCTION_NAME);
+                        .at(argv[_index]).unwrap(HSD_FUNCTION_NAME).get();
                     _incrementor = _num_args;
                     _index += 1;
                     

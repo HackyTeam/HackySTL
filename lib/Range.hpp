@@ -137,7 +137,7 @@ namespace hsd
                     {}
 
                     constexpr auto drop(usize quantity) const
-                        -> Result<reverse, runtime_error> 
+                        -> result<reverse, runtime_error> 
                     {
                         if (quantity > _view_size)
                         {
@@ -156,7 +156,7 @@ namespace hsd
                     }
 
                     constexpr auto take(usize quantity) const
-                        -> Result<reverse, runtime_error> 
+                        -> result<reverse, runtime_error> 
                     {
                         if(quantity > _view_size)
                         {
@@ -220,7 +220,7 @@ namespace hsd
                     {}
 
                     constexpr auto drop(usize quantity) const
-                        -> Result<random, runtime_error>
+                        -> result<random, runtime_error>
                     {
                         if (quantity > _view_size)
                         {
@@ -239,7 +239,7 @@ namespace hsd
                     }
 
                     constexpr auto take(usize quantity) const
-                        -> Result<random, runtime_error> 
+                        -> result<random, runtime_error> 
                     {
                         if (quantity > _view_size)
                         {
@@ -559,7 +559,7 @@ namespace hsd
 
             template <views::IsView U>
             inline friend auto operator|(const U& lhs, const filter_map& rhs)
-            requires (InvocableRet<optional<
+            requires (InvocableRet<option<
                     remove_cvref_t<decltype(*lhs.begin())>
                 >, FuncType, decltype(*lhs.begin())>)
             {
@@ -580,7 +580,7 @@ namespace hsd
 
             template <typename U> requires (IsForwardContainer<U> && !views::IsView<U>)
             inline friend auto operator|(const U& lhs, const filter_map& rhs)
-            requires (InvocableRet<optional<
+            requires (InvocableRet<option<
                     remove_cvref_t<decltype(*lhs.begin())>
                 >, FuncType, decltype(*lhs.begin())>)
             {

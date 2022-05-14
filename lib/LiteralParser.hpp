@@ -125,7 +125,7 @@ namespace hsd
         template <typename CharT>
         static constexpr auto _parse_color(
             const CharT* color_fmt, usize& pos_current
-        ) -> Result<typename fmt_style<CharT>::fmt_color, runtime_error>;
+        ) -> result<typename fmt_style<CharT>::fmt_color, runtime_error>;
     } // namespace parse_lit_detail
 
     template <basic_string_literal fmt, usize N>
@@ -136,7 +136,7 @@ namespace hsd
         using info_type = format_info<char_type>;
         using info_base_type = fmt_common<char_type>;
         using buf_type = static_vector<info_type, N>;
-        using res_type = Result<buf_type, runtime_error>;
+        using res_type = result<buf_type, runtime_error>;
         using style_type = fmt_style<char_type>;
 
         constexpr const char_type *_fmt_end = fmt.data + fmt.size() - 1;
@@ -459,7 +459,7 @@ namespace hsd
         template <typename CharT>
         static constexpr auto _parse_color(
             const CharT *color_fmt, usize &pos_current)
-            -> Result<typename fmt_style<CharT>::fmt_color, runtime_error>
+            -> result<typename fmt_style<CharT>::fmt_color, runtime_error>
         {
             using color_type = typename fmt_style<CharT>::fmt_color;
 

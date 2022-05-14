@@ -8,7 +8,7 @@ namespace hsd
     {
         struct bad_access
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return "Tried to access elements out of bounds";
             }
@@ -100,7 +100,7 @@ namespace hsd
         }
 
         inline auto at(usize index) 
-            -> Result<reference<T>, harray_detail::bad_access>
+            -> result<reference<T>, harray_detail::bad_access>
         {
             if (index >= N)
                 return harray_detail::bad_access{};
@@ -109,7 +109,7 @@ namespace hsd
         }
 
         inline auto at(usize index) const 
-            -> Result<const reference<T>, harray_detail::bad_access>
+            -> result<reference<const T>, harray_detail::bad_access>
         {
             if (index >= N)
                 return harray_detail::bad_access{};

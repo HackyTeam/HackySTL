@@ -2,7 +2,7 @@
 
 template <hsd::usize N>
 auto test_trace(hsd::stack_trace, const char* msg)
-    -> hsd::Result<void, hsd::stack_trace_error>
+    -> hsd::option_err<hsd::stack_trace_error>
 {
     invoke_stacktrace_func(test_trace<N - 1>, msg).unwrap();
     return {};
@@ -10,7 +10,7 @@ auto test_trace(hsd::stack_trace, const char* msg)
 
 template <>
 auto test_trace<0>(hsd::stack_trace, const char*)
-    -> hsd::Result<void, hsd::stack_trace_error>
+    -> hsd::option_err<hsd::stack_trace_error>
 {
     return hsd::stack_trace_error{};
 }

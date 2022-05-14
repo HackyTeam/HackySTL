@@ -22,19 +22,19 @@ namespace hsd
             _sockets.emplace_back(addr, true);
         }
         
-        inline void poll()
+        inline void poll(hsd::i32 timeout = -1)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
             auto _result = ::WSAPoll(
                 reinterpret_cast<pollfd*>(
                     _sockets.data()
-                ), _sockets.size(), -1
+                ), _sockets.size(), timeout
             );
             #else
             auto _result = ::poll(
                 reinterpret_cast<pollfd*>(
                     _sockets.data()
-                ), _sockets.size(), -1
+                ), _sockets.size(), timeout
             );
             #endif
 

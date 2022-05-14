@@ -132,7 +132,7 @@ namespace hsd
         using char_type = typename decltype(fmt)::char_type;
         using val_type = parser_value<char_type>;
         using buf_type = static_vector<val_type, N>;
-        using res_type = Result<buf_type, parser_error>;
+        using res_type = result<buf_type, parser_error>;
         
         buf_type _buf = {};
         bool _maybe_format = false, _valid_format = false;

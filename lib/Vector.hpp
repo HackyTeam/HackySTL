@@ -2,6 +2,7 @@
 
 #include "Allocator.hpp"
 #include "Span.hpp"
+#include "Reference.hpp"
 
 namespace hsd
 {
@@ -19,7 +20,7 @@ namespace hsd
 
         struct bad_access
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return "Tried to access an element out of bounds";
             }
@@ -275,13 +276,13 @@ namespace hsd
         }
 
         inline auto erase(const_iterator pos)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             return erase_for(pos, pos + 1);
         }
 
         inline auto erase_for(const_iterator from, const_iterator to)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
@@ -310,7 +311,7 @@ namespace hsd
         }
 
         inline auto at(usize index)
-            -> Result<reference<T>, bad_access>
+            -> result<reference<T>, bad_access>
         {
             if (index >= _size)
                 return bad_access{};
@@ -319,7 +320,7 @@ namespace hsd
         }
 
         inline auto at(usize index) const
-            -> Result< const reference<T>, bad_access >
+            -> result<reference<const T>, bad_access>
         {
             if (index >= _size)
                 return bad_access{};
@@ -573,7 +574,7 @@ namespace hsd
 
         struct bad_access
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return "Tried to access an element out of bounds";
             }
@@ -736,13 +737,13 @@ namespace hsd
         }
 
         inline auto erase(const_iterator pos)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             return erase_for(pos, pos + 1);
         }
 
         inline auto erase_for(const_iterator from, const_iterator to)
-            -> Result<iterator, bad_access>
+            -> result<iterator, bad_access>
         {
             if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
@@ -771,7 +772,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index)
-            -> Result<reference<T>, bad_access>
+            -> result<reference<T>, bad_access>
         {
             if (index >= _size)
                 return bad_access{};
@@ -780,7 +781,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index) const
-            -> Result< const reference<T>, bad_access >
+            -> result<reference<const T>, bad_access>
         {
             if (index >= _size)
                 return bad_access{};

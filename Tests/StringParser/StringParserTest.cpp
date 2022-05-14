@@ -17,13 +17,15 @@ int main()
     }
 
     {
+        using namespace hsd::format_literals;
+
         auto output = hsd::parse_string<
             "Name: {}\nAge: {}\nColor: {}\n", 3>(
                 "Name: Rufus\nAge: 42\nColor: red\n"
             ).unwrap();
 
-        hsd_println(
-            "({}, {}, {})", 
+        hsd::println(
+            "({}, {}, {})"_fmt, 
             output[0].to_string(), 
             output[1].to_string(), 
             output[2].to_string()

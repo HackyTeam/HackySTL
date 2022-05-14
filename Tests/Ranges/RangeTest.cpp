@@ -16,7 +16,7 @@ int main()
         constexpr auto square = [](const auto& val){ return val * val; };
         constexpr auto less = [](const auto& val){ return val < 5; };
         constexpr auto is_even_square = [](const auto& val) 
-            -> hsd::optional<hsd::remove_cvref_t<decltype(val)>>
+            -> hsd::option<hsd::remove_cvref_t<decltype(val)>>
         {
             if ((val & 1) == 0)
             {
@@ -209,7 +209,7 @@ int main()
         constexpr auto is_even = [](const auto& val){ return (val.second & 1) == 0; };
         constexpr auto square = [](const auto& val){ return hsd::pair{val.first, val.second * val.second}; };
         constexpr auto is_even_square = [](const auto& val) 
-            -> hsd::optional<hsd::remove_cvref_t<decltype(val)>>
+            -> hsd::option<hsd::remove_cvref_t<decltype(val)>>
         {
             if ((val.second & 1) == 0)
             {

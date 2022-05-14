@@ -14,11 +14,11 @@ int main()
         hsd::EqualCase{"test value", []{hsd::println("5"_fmt);}},
         hsd::EqualCase{"test Value", []{hsd::println("6"_fmt);}},
         hsd::EqualCase{
-            "Test value", []() -> hsd::Result<void, hsd::runtime_error>
+            "Test value", []() -> hsd::option_err<hsd::runtime_error>
             {
                 hsd::println("7"_fmt);
-                //return {};
-                return hsd::runtime_error{"Got the 7th value"};
+                return {};
+                //return hsd::runtime_error{"Got the 7th value"};
             }
         },
         hsd::EqualCase{"Test Value", []{hsd::println("8"_fmt);}},
@@ -31,7 +31,7 @@ int main()
         hsd::EqualCase  {120, []{hsd::println("Equal than 120"_fmt  );}},
         hsd::GreaterCase{120, []{hsd::println("Greater than 120"_fmt);}},
         hsd::DefaultCase{
-            []() -> hsd::Result<void, hsd::runtime_error>
+            []() -> hsd::option_err<hsd::runtime_error>
             {
                 return hsd::runtime_error{"It's impossible to get here"};
             }

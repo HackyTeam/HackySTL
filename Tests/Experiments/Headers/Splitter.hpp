@@ -38,7 +38,7 @@ namespace hsd
             const CharT* fmt, usize pos_current);
 
         template <typename CharT>
-        static constexpr Result<uchar, runtime_error> _parse_color(
+        static constexpr result<uchar, runtime_error> _parse_color(
             const CharT* color_fmt, usize& pos_current
         );
 
@@ -50,7 +50,7 @@ namespace hsd
             using info_type = format_info<char_type>;
             using info_base_type = fmt_common<char_type>;
             using buf_type = static_vector<info_type, N>;
-            using res_type = Result<buf_type, runtime_error>;
+            using res_type = result<buf_type, runtime_error>;
 
             constexpr const char_type* _fmt_end = fmt.data + fmt.size();
             constexpr auto _npos = static_cast<usize>(-1);
@@ -252,7 +252,7 @@ namespace hsd
         }
 
         template <typename CharT>
-        static constexpr Result<uchar, runtime_error> _parse_color(
+        static constexpr result<uchar, runtime_error> _parse_color(
             const CharT* color_fmt, usize& pos_current)
         {
             if (color_fmt[pos_current] != '=')

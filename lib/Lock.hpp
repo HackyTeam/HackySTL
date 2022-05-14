@@ -408,7 +408,7 @@ namespace hsd
             return *this;
         }
 
-        inline Result<void, runtime_error> lock()
+        inline option_err<runtime_error> lock()
         {
             if (_is_locked == true)
             {
@@ -422,7 +422,7 @@ namespace hsd
             return {};
         }
 
-        inline Result<void, runtime_error> unlock()
+        inline option_err<runtime_error> unlock()
         {
             if (_is_locked == false)
             {
@@ -505,7 +505,7 @@ namespace hsd
             return *this;
         }
 
-        inline Result<void, runtime_error> lock()
+        inline option_err<runtime_error> lock()
         {
             if (_is_locked == true)
             {
@@ -519,7 +519,7 @@ namespace hsd
             return {};
         }
 
-        inline Result<void, runtime_error> unlock()
+        inline option_err<runtime_error> unlock()
         {
             if (_is_locked == false)
             {

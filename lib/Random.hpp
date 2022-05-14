@@ -72,7 +72,7 @@ namespace hsd
         // This one can "throw" an error
         template <typename RetType> requires (IsNumber<RetType>)
         constexpr auto generate(RetType from, RetType to)
-            -> Result<RetType, runtime_error>
+            -> result<RetType, runtime_error>
         {
             if (from >= to)
             {

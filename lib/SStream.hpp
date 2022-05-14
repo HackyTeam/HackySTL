@@ -37,7 +37,7 @@ namespace hsd
         }
 
         template <typename... Args>
-        inline Result<void, runtime_error> set_data(Args&... args)
+        inline option_err<runtime_error> set_data(Args&... args)
         {
             auto _data_set = sstream_detail::
                 split_data<sizeof...(Args) + 1>(data(), _separators);

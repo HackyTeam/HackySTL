@@ -14,7 +14,7 @@ int main()
         hsd::print("> "_fmt);
         hsd::io::cin().get_stream().reserve(1024);
 
-        auto& stream_ref = hsd::io::cin().read_chunk().unwrap().get_stream();
+        auto& stream_ref = hsd::io::cin().read_chunk().unwrap().get().get_stream();
         hsd::cstring::copy_until(send_buffer, stream_ref.c_str(), '\n');
         auto send_state = client.send(send_buffer, 1024);
 

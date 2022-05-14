@@ -172,6 +172,7 @@ int main()
     hsd::io::cin().
     read_chunk().
     unwrap().
+    get().
     get_stream().
     set_data(x, y, z).
     unwrap();
@@ -179,6 +180,7 @@ int main()
     hsd::io::cin().
     read_chunk().
     unwrap().
+    get().
     get_stream().
     set_data(x, y, z).
     unwrap();
@@ -201,6 +203,7 @@ int main()
     file.
     read_chunk().
     unwrap().
+    get().
     get_stream().
     set_data(c).
     unwrap();

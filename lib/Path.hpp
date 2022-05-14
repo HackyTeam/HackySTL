@@ -33,7 +33,7 @@ namespace hsd
         namespace fs_detail
         {
             inline auto copy_file(const char* from, const char* to)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 i32 _value;
                 using file_type = FILE*;
@@ -190,7 +190,7 @@ namespace hsd
             }
 
             inline auto list()
-                -> Result<hsd::vector<path>, runtime_error>
+                -> result<hsd::vector<path>, runtime_error>
             {
                 if (_directory != nullptr)
                 {
@@ -234,7 +234,7 @@ namespace hsd
             }
 
             inline auto change_permissions(const fs_perms_mask& mask)
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (!status().exists())
                 {
@@ -256,7 +256,7 @@ namespace hsd
             }
 
             inline auto rename(const string& new_name)
-                -> Result<void, runtime_error> 
+                -> option_err<runtime_error> 
             {
                 if (!status().exists())
                 {
@@ -337,7 +337,7 @@ namespace hsd
             }
 
             inline auto copy(const path& to)
-                -> Result<void, runtime_error> 
+                -> option_err<runtime_error> 
             {
                 if (status().is_directory().unwrap() &&
                     to.status().is_directory().unwrap())
@@ -411,7 +411,7 @@ namespace hsd
             }
 
             inline auto create_directory(const string& name) const
-                -> Result<void, runtime_error>
+                -> option_err<runtime_error>
             {
                 if (name.rfind(PATH_SEPARATOR) < name.size() - 1)
                 {

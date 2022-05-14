@@ -99,17 +99,17 @@ int main()
     hsd::println("{}"_fmt, va3.index());
     hsd::println("{}"_fmt, va4.index());
 
-    hsd::println("{}"_fmt, va1.get<0>().unwrap());
+    hsd::println("{}"_fmt, va1.get<0>().unwrap().get());
     
     auto _res = va1.get<hsd::f32>();
 
     if(_res) 
     {
-        hsd::println("{}"_fmt, _res.unwrap());
+        hsd::println("{}"_fmt, _res.unwrap().get());
     } 
     else
     {
-        hsd::println_err("Caught error: {}"_fmt, _res.unwrap_err()());
+        hsd::println_err("Caught error: {}"_fmt, _res.unwrap_err().pretty_error());
     }
 
     if (auto* val = hsd::get_if<hsd::f32>(&va1)) 
@@ -135,7 +135,7 @@ int main()
     hsd::println("(after assignment) {}"_fmt, (va2 == va3) ? "true" : "false");
     va3 = hsd::variant<A, B>(6);
     hsd::println("(after new assignment)\nva3 == va4: {}"_fmt, (va3 == va4) ? "true" : "false");
-    va3.get<B>().unwrap()._a = 5;
+    va3.get<B>().unwrap().get()._a = 5;
     hsd::println("(after modification) {}\n"_fmt, (va3 == va4) ? "true" : "false");
 
     hsd::variant<A, B> va5;

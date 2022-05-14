@@ -18,9 +18,9 @@ namespace hsd
 
         struct bad_function
         {
-            const char* operator()() const
+            const char* pretty_error() const
             {
-                return "Bad function";
+                return "Tried to invoke a bad function";
             }
         };
 
@@ -37,7 +37,7 @@ namespace hsd
         };
 
         template <typename T>
-        using store_ref_t = typename store_ref<remove_cv_t<T>>::type;
+        using store_ref_t = typename store_ref<T>::type;
     } // namespace func_detail
 
     template < typename ResultType, typename... Args >
@@ -126,7 +126,7 @@ namespace hsd
         }
 
         inline auto operator()(Args... args) 
-            -> Result<
+            -> result<
                 func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
         requires (!is_void<ResultType>::value)
@@ -140,7 +140,7 @@ namespace hsd
         }
 
         inline auto operator()(Args... args) 
-            -> Result< void, func_detail::bad_function >
+            -> option_err<func_detail::bad_function>
         requires (is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)
@@ -153,8 +153,8 @@ namespace hsd
         }
 
         inline auto operator()(Args... args) const
-            -> Result<
-                const func_detail::store_ref_t<ResultType>, 
+            -> result<
+                func_detail::store_ref_t<ResultType>, 
                 func_detail::bad_function >
         requires (!is_void<ResultType>::value)
         {
@@ -167,7 +167,7 @@ namespace hsd
         }
 
         inline auto operator()(Args... args) const
-            -> Result< void, func_detail::bad_function >
+            -> option_err<func_detail::bad_function>
         requires (is_void<ResultType>::value)
         {
             if (_func_impl == nullptr)

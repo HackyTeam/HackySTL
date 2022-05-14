@@ -73,7 +73,7 @@ namespace hsd
         JsonError(const char* msg, usize pos)
             : runtime_error{msg}, position{pos} {}
 
-        const char* operator()()
+        const char* pretty_error()
         {
             if (_str.size() != 0)
                 return _str.c_str();
@@ -118,7 +118,7 @@ namespace hsd
         }
 
         // If an error occurs, the rest of buffer can be passed in
-        Result<void, JsonError> lex(vstr frag)
+        option_err<JsonError> lex(vstr frag)
         {
             static const char* const s_keywords[] = {"null", "true", "false"};
             for (bool _floating = false; CharT _ch : frag)
@@ -294,7 +294,7 @@ namespace hsd
         }
 
         // If an error occurs, the rest of buffer can be passed in
-        Result<void, JsonError> lex_file(string_view filename)
+        option_err<JsonError> lex_file(string_view filename)
         {
             //static const char* const s_keywords[] = {"null", "true", "false"};
             auto* _stream = fopen(filename.data(), "r");
@@ -325,7 +325,7 @@ namespace hsd
         }
 
         // End the stream of tokens
-        Result<void, JsonError> push_eot()
+        option_err<JsonError> push_eot()
         {
             ++_pos;
             
@@ -378,7 +378,7 @@ namespace hsd
         Class& as() { return static_cast<Class&>(*this); }
 
         template <typename Class>
-        Result<reference<Class>, runtime_error> try_as(JsonValueType t)
+        result<reference<Class>, runtime_error> try_as(JsonValueType t)
         {
             if (type() == t)
             {
@@ -391,19 +391,19 @@ namespace hsd
         }
 
         template <typename CharT>
-        Result<basic_string_view<CharT>, runtime_error> as_str();
-        Result<bool, runtime_error> as_bool();
+        result<basic_string_view<CharT>, runtime_error> as_str();
+        result<bool, runtime_error> as_bool();
 
         template <NumericType Number>
-        Result<Number, runtime_error> as_num();
+        result<Number, runtime_error> as_num();
 
         template <typename CharT>
         auto& as_object();
         auto& as_array();
 
         template <typename CharT>
-        Result<reference<JsonValue>, runtime_error> access(const basic_string_view<CharT>& key);
-        Result<reference<JsonValue>, runtime_error> access(usize index);
+        result<reference<JsonValue>, runtime_error> access(const basic_string_view<CharT>& key);
+        result<reference<JsonValue>, runtime_error> access(usize index);
 
         template <typename CharT>
         JsonValue& operator[](const basic_string_view<CharT>& key);
@@ -514,13 +514,13 @@ namespace hsd
 
     template <typename CharT>
     inline auto JsonValue::as_str()
-        -> Result<basic_string_view<CharT>, runtime_error>
+        -> result<basic_string_view<CharT>, runtime_error>
     {
         auto _res = try_as<JsonString<CharT>>(JsonValueType::String);
 
         if (_res)
         {
-            return _res.unwrap().value();
+            return _res.unwrap().get().value();
         }
         else
         {
@@ -528,7 +528,7 @@ namespace hsd
         }
     }
 
-    inline Result<bool, runtime_error> JsonValue::as_bool()
+    inline result<bool, runtime_error> JsonValue::as_bool()
     {
         if (type() == JsonValueType::True)
         {
@@ -544,7 +544,7 @@ namespace hsd
     }
 
     template <NumericType Number>
-    Result<Number, runtime_error> JsonValue::as_num()
+    result<Number, runtime_error> JsonValue::as_num()
     {
         auto _res = try_as<JsonNumber>(JsonValueType::Number);
 
@@ -552,7 +552,7 @@ namespace hsd
         {
             if constexpr (IsIntegral<Number>)
             {
-                auto _val = _res.unwrap().value().template get<i64>();
+                auto _val = _res.unwrap().get().value().template get<i64>();
 
                 if (!_val)
                 {
@@ -570,7 +570,7 @@ namespace hsd
             }
             else if constexpr (IsFloat<Number>)
             {
-                auto _val = _res.unwrap().value().template get<f128>();
+                auto _val = _res.unwrap().get().value().template get<f128>();
 
                 if (!_val)
                 {
@@ -599,37 +599,37 @@ namespace hsd
 
     inline auto& JsonValue::as_array()
     {
-        return try_as<JsonArray>(JsonValueType::Array).unwrap().values();
+        return try_as<JsonArray>(JsonValueType::Array).unwrap().get().values();
     }
 
     template <typename CharT>
     inline auto& JsonValue::as_object()
     {
-        return try_as<JsonObject<CharT>>(JsonValueType::Object).unwrap().values();
+        return try_as<JsonObject<CharT>>(JsonValueType::Object).unwrap().get().values();
     }
 
     template <typename CharT>
     inline auto JsonValue::access(const basic_string_view<CharT>& key)
-        -> Result<reference<JsonValue>, runtime_error>
+        -> result<reference<JsonValue>, runtime_error>
     {
         auto _res = try_as<JsonObject<CharT>>(JsonValueType::Object);
 
         if (_res)
         {
-            return *_res.unwrap().values().at(key).unwrap();
+            return {*_res.unwrap().get().values().at(key).unwrap().get()};
         }
 
         return _res.unwrap_err();
     }
 
     inline auto JsonValue::access(usize index)
-        -> Result<reference<JsonValue>, runtime_error>
+        -> result<reference<JsonValue>, runtime_error>
     {
         auto _res = try_as<JsonArray>(JsonValueType::Array);
 
         if (_res)
         {
-            return *_res.unwrap().values().at(index).unwrap();
+            return {*_res.unwrap().get().values().at(index).unwrap().get()};
         }
 
         return _res.unwrap_err();
@@ -696,7 +696,7 @@ namespace hsd
     public:
         JsonParser(JsonStream<CharT>& s) : _stream(s) {}
 
-        Result<unique_ptr<JsonValue>, JsonError> parse_next()
+        result<unique_ptr<JsonValue>, JsonError> parse_next()
         {
             if (_stream.empty())
                 //return JsonPendingValue::make();
@@ -708,15 +708,15 @@ namespace hsd
                 case JsonToken::Eof:
                     return JsonError{"Unexpected EOF", 0};
                 case JsonToken::Null:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_null());
+                    return {make_unique<JsonPrimitive>(JsonPrimitive::mk_null())};
                 case JsonToken::True:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_true());
+                    return {make_unique<JsonPrimitive>(JsonPrimitive::mk_true())};
                 case JsonToken::False:
-                    return make_unique<JsonPrimitive>(JsonPrimitive::mk_false());
+                    return {make_unique<JsonPrimitive>(JsonPrimitive::mk_false())};
                 case JsonToken::Number:
-                    return make_unique<JsonNumber>(_stream.next_number());
+                    return {make_unique<JsonNumber>(_stream.next_number())};
                 case JsonToken::String:
-                    return make_unique<JsonString<CharT>>(_stream.next_string());
+                    return {make_unique<JsonString<CharT>>(_stream.next_string())};
                 case JsonToken::BArray:
                 {
                     vector<unique_ptr<JsonValue>> _array;
@@ -754,7 +754,7 @@ namespace hsd
                         }
                     }
                     
-                    return make_unique<JsonArray>(move(_array));
+                    return {make_unique<JsonArray>(move(_array))};
                 }
                 case JsonToken::BObject:
                 {
@@ -809,10 +809,10 @@ namespace hsd
                             }
                         }
                     }
-                    return make_unique<JsonObject<CharT>>(move(_map));
+                    return {make_unique<JsonObject<CharT>>(move(_map))};
                 }
                 default:
-                    return JsonError("Syntax error: unexpected token", static_cast<usize>(_tok));
+                    return JsonError{"Syntax error: unexpected token", static_cast<usize>(_tok)};
             }
         }
     };

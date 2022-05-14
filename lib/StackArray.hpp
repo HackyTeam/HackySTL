@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Result.hpp"
+#include "Reference.hpp"
 
 namespace hsd
 {
@@ -22,7 +23,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index)
-            -> Result< reference<T>, runtime_error >
+            -> result<reference<T>, runtime_error>
         {
             if (index >= N)
             {
@@ -33,7 +34,7 @@ namespace hsd
         }
 
         constexpr auto at(usize index) const
-            -> Result< reference<const T>, runtime_error >
+            -> result<reference<const T>, runtime_error>
         {
             if (index >= N)
             {

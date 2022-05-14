@@ -6,7 +6,7 @@ namespace hsd
 {
     struct bad_any_cast
     {
-        const char* operator()() 
+        const char* pretty_error() const
         {
             return "Illegal casting:\n"
             "Cannot cast into different type";
@@ -71,13 +71,13 @@ namespace hsd
 
         template <typename T>
         inline auto cast_to() const
-            -> Result<reference<T>, bad_any_cast>
+            -> result<reference<T>, bad_any_cast>
         {
             using type = typename remove_pointer<T>::type;
 
             if (auto* p_base = dynamic_cast<_any_derived<type>*>(_data.get()))
             {
-                return p_base->_value;
+                return reference<T>{p_base->_value};
             }
             else
             {

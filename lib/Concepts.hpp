@@ -169,7 +169,7 @@ namespace hsd
             {value.begin()} -> IsSame<decltype(value.end())>;
         } && requires(Container value) 
         {
-            ForwardIterable<decltype(value.end())>;
+            requires ForwardIterable<decltype(value.end())>;
         } && requires(Container value) 
         {
             {value.size()} -> IsSame<usize>;
@@ -183,7 +183,7 @@ namespace hsd
             {value.rbegin()} -> IsSame<decltype(value.rend())>;
         } && requires(Container value) 
         {
-            ReverseIterable<decltype(value.rend())>;
+            requires ReverseIterable<decltype(value.rend())>;
         } && requires(Container value) 
         {
             {value.size()} -> IsSame<usize>;

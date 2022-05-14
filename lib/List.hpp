@@ -308,7 +308,7 @@ namespace hsd
         }
 
         inline auto erase(const_iterator pos)
-            -> Result<iterator, runtime_error>
+            -> result<iterator, runtime_error>
         {
             if (pos._iterator == nullptr)
             {

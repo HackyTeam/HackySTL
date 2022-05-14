@@ -2,7 +2,7 @@
 #include <Future.hpp>
 #include <Io.hpp>
 
-hsd::Result<void, hsd::runtime_error> future_test(bool err)
+hsd::option_err<hsd::runtime_error> future_test(bool err)
 {
     if (err == true)
     {
@@ -14,7 +14,7 @@ hsd::Result<void, hsd::runtime_error> future_test(bool err)
     return {};
 }
 
-hsd::Result<hsd::i32, hsd::runtime_error> future_test(hsd::i32 i)
+hsd::result<hsd::i32, hsd::runtime_error> future_test(hsd::i32 i)
 {
     if (i < 0)
     {
@@ -31,7 +31,7 @@ auto future_test(hsd::f32 f)
     struct future_test_result;
 
     using RefType = hsd::reference<future_test_result>;
-    using RetType = hsd::Result<RefType, hsd::runtime_error>;
+    using RetType = hsd::result<RefType, hsd::runtime_error>;
 
     struct future_test_result
     {
@@ -105,8 +105,8 @@ int main()
         
         hsd::println(
             "Results are: '{}' '{}'"_fmt, 
-            f1.get().is_ok() ? "void" : f1.get().unwrap_err()(),
-            f2.get().is_ok() ? "void" : f2.get().unwrap_err()()
+            f1.get().is_ok() ? "void" : f1.get().unwrap_err().pretty_error(),
+            f2.get().is_ok() ? "void" : f2.get().unwrap_err().pretty_error()
         );
 
         t.join().unwrap();
@@ -159,8 +159,8 @@ int main()
         
         hsd::println(
             "Results are: '{}' '{}'"_fmt, 
-            f1.get().is_ok() ? f1.get().unwrap().f : -1.f,
-            f2.get().is_ok() ? f2.get().unwrap().f : -1.f
+            f1.get().is_ok() ? f1.get().unwrap().get().f : -1.f,
+            f2.get().is_ok() ? f2.get().unwrap().get().f : -1.f
         );
 
         t.join().unwrap();

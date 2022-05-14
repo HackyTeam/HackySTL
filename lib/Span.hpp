@@ -153,7 +153,7 @@ namespace hsd
         constexpr span(U&& container) = delete;
 
         constexpr auto drop(usize quantity) const
-            -> Result<span, runtime_error>
+            -> result<span, runtime_error>
         {
             if(quantity > _view_size)
             {
@@ -172,7 +172,7 @@ namespace hsd
         }
 
         constexpr auto take(usize quantity) const
-            -> Result<span, runtime_error> 
+            -> result<span, runtime_error> 
         {
             if(quantity > _view_size)
             {

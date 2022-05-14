@@ -55,7 +55,7 @@ namespace hsd
             #endif
         }
 
-        static inline Result<void, runtime_error> sleep_for(f32 seconds)
+        static inline option_err<runtime_error> sleep_for(f32 seconds)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
                 Sleep(seconds * 1000); // milliseconds
@@ -217,10 +217,12 @@ namespace hsd
             #endif
         }
 
-        inline Result<void, runtime_error> detach() 
+        inline option_err<runtime_error> detach() 
         {
             if (!joinable())
+            {
                 return runtime_error{"Current Thread cannot be detached"};
+            }
 
             #if defined(HSD_PLATFORM_POSIX)
             pthread_detach(_handle);
@@ -234,10 +236,12 @@ namespace hsd
             return {};
         }
 
-        inline Result<void, runtime_error> join() 
+        inline option_err<runtime_error> join() 
         {
             if (!joinable())
+            {
                 return runtime_error{"Current Thread cannot be joined"};
+            }
 
             #if defined(HSD_PLATFORM_POSIX)
             pthread_join(_handle, nullptr);

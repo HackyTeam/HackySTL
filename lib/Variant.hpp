@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Result.hpp"
+#include "Reference.hpp"
 
 namespace hsd
 {
@@ -66,7 +67,7 @@ namespace hsd
     // class bad_variant_access
     struct bad_variant_access
     {
-        const char* operator()() const 
+        const char* pretty_error() const 
         {
             return "A variant was accessed "
                 "with the wrong stored type";
@@ -166,48 +167,21 @@ namespace hsd
             constexpr static void construct_copy(Storage& l, Storage const& r, usize& li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
-                    using _ValType = remove_cvref_t<decltype(val.val)>;
-                    using _ArgType = remove_cvref_t<decltype(get_impl<decltype(val)::index>(r))>;
-
-                    if constexpr (LiteralConstructible<_ValType, _ArgType> && MoveConstructible<_ValType>)
-                    {
-                        val.val = _ValType{get_impl<decltype(val)::index>(r)};
-                    }
-                    else
-                    {
-                        new (&val.val) _ValType{get_impl<decltype(val)::index>(r)};
-                    }
+                    std::construct_at(&val.val, get_impl<decltype(val)::index>(r));
                 });
             }
 
             constexpr static void construct_move(Storage& l, Storage&& r, usize& li, usize ri)
             {
                 visit(l, li = ri, [&](auto val) {
-                    using _ValType = remove_cvref_t<decltype(val.val)>;
-                    using _ArgType = remove_cvref_t<decltype(get_mut_impl<decltype(val)::index>(r))>;
-
-                    if constexpr (LiteralConstructible<_ValType, _ArgType> && MoveConstructible<_ValType>)
-                    {
-                        val.val = _ValType{move(get_mut_impl<decltype(val)::index>(r))};
-                    }
-                    else
-                    {
-                        new (&val.val) _ValType{get_impl<decltype(val)::index>(r)};
-                    }
+                    std::construct_at(&val.val, move(get_mut_impl<decltype(val)::index>(r)));
                 });
             }
 
             template <usize _Idx, typename _Ty>
             constexpr static void construct_fwd(Storage& l, _Ty&& value)
             {
-                if constexpr (LiteralConstructible<Storage, index_constant<_Idx>, _Ty> && MoveConstructible<Storage>)
-                {
-                    l = Storage{index_constant<_Idx>(), forward<_Ty>(value)};
-                }
-                else
-                {
-                    new (&l) Storage{index_constant<_Idx>(), forward<_Ty>(value)};
-                }
+                std::construct_at(&l, index_constant<_Idx>(), forward<_Ty>(value));
             }
 
             // Destructor
@@ -533,16 +507,18 @@ namespace hsd
         }
 
         template <usize _Idx>
-        constexpr auto get() -> Result<reference<variant_alternative_t<_Idx, variant>>, bad_variant_access>
+        constexpr auto get() -> result<reference<variant_alternative_t<_Idx, variant>>, bad_variant_access>
         {
             if (index() != _Idx)
+            {
                 return bad_variant_access{};
+            }
 
-            return {_StorageTraits::template get_mut_impl<_Idx>(this->_storage()), ok_value{}};
+            return {_StorageTraits::template get_mut_impl<_Idx>(this->_storage())};
         }
 
         template <usize _Idx>
-        constexpr auto get() const -> Result<reference<const variant_alternative_t<_Idx, variant>>, bad_variant_access>
+        constexpr auto get() const -> result<reference<const variant_alternative_t<_Idx, variant>>, bad_variant_access>
         {
             if (index() != _Idx)
                 return bad_variant_access{};
@@ -599,7 +575,7 @@ namespace hsd
             constexpr usize _Idx = variant_detail::_variant_index<
                 remove_cv_t<remove_reference<_Ty>>, _Tfirst, _Trest... >::value;
             this->_StoredIndex = _Idx;
-            _StorageTraits::construct_fwd<_Idx>(this->_storage(), forward<_Ty>(value));
+            _StorageTraits::template construct_fwd<_Idx>(this->_storage(), forward<_Ty>(value));
         }
 
         template <typename _Ty>

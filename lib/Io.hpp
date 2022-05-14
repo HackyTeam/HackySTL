@@ -436,7 +436,7 @@ namespace hsd
             _file.close();
         }
 
-        inline Result< reference<io>, runtime_error > flush()
+        inline result<reference<io>, runtime_error> flush()
         {
             if (_file.only_read() == true)
             {
@@ -462,7 +462,7 @@ namespace hsd
             return {*this};
         }
 
-        inline Result< reference<io>, runtime_error > read_chunk()
+        inline result<reference<io>, runtime_error> read_chunk()
         {
             if (_file.only_write())
             {
@@ -621,7 +621,7 @@ namespace hsd
 
         static inline auto load_file(
             const char* file_path, io_options mode = io_options::read)
-            -> Result<io, runtime_error>
+            -> result<io, runtime_error>
         {
             auto _file = io_detail::file_handler::open(file_path, mode);
 

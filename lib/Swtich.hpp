@@ -38,7 +38,7 @@ namespace hsd
                 if constexpr (requires {invoke_func().unwrap();})
                 {
                     using ErrType = decltype(invoke_func().unwrap_err());
-                    using ResType = hsd::Result<bool, ErrType>;
+                    using ResType = hsd::result<bool, ErrType>;
 
                     if (left == right)
                     {
@@ -60,7 +60,7 @@ namespace hsd
                 }
                 else
                 {
-                    using ResType = hsd::Result<bool, hsd::runtime_error>;
+                    using ResType = hsd::result<bool, hsd::runtime_error>;
 
                     if (left == right)
                     {
@@ -85,7 +85,7 @@ namespace hsd
                 if constexpr (requires {invoke_func().unwrap();})
                 {
                     using ErrType = decltype(invoke_func().unwrap_err());
-                    using ResType = hsd::Result<bool, ErrType>;
+                    using ResType = hsd::result<bool, ErrType>;
 
                     if (left < right)
                     {
@@ -107,7 +107,7 @@ namespace hsd
                 }
                 else
                 {
-                    using ResType = hsd::Result<bool, hsd::runtime_error>;
+                    using ResType = hsd::result<bool, hsd::runtime_error>;
 
                     if (left < right)
                     {
@@ -132,7 +132,7 @@ namespace hsd
                 if constexpr (requires {invoke_func().unwrap();})
                 {
                     using ErrType = decltype(invoke_func().unwrap_err());
-                    using ResType = hsd::Result<bool, ErrType>;
+                    using ResType = hsd::result<bool, ErrType>;
 
                     if (left > right)
                     {
@@ -154,7 +154,7 @@ namespace hsd
                 }
                 else
                 {
-                    using ResType = hsd::Result<bool, hsd::runtime_error>;
+                    using ResType = hsd::result<bool, hsd::runtime_error>;
 
                     if (left > right)
                     {
@@ -211,7 +211,7 @@ namespace hsd
         constexpr auto operator()() const
         requires (switch_detail::InvocableVoid<Func>)
         {
-            using ResType = Result<void, runtime_error>;
+            using ResType = option_err<runtime_error>;
 
             if constexpr (requires {_invoke_func().unwrap();})
             {

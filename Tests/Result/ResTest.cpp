@@ -3,14 +3,14 @@
 
 struct S
 {
-    const char* operator()() const
+    const char* pretty_error() const
     {
         return "Catched an error";
     }
 };
 
 static auto fail_func(hsd::i32 val) 
-    -> hsd::Result<hsd::string, S>
+    -> hsd::result<hsd::string, S>
 {
     if (val < 10)
         return S{};
@@ -20,7 +20,7 @@ static auto fail_func(hsd::i32 val)
 
 template <typename T>
 static auto fail_func2(const T& val) 
-    -> hsd::Result<hsd::string, S>
+    -> hsd::result<hsd::string, S>
 {
     if (!static_cast<bool>(val))
         return S{};
@@ -44,7 +44,7 @@ int main()
     auto err1 = fail_func(1);
     puts(err1.is_ok() ? 
         err1.expect("Test").c_str() : 
-        err1.expect_err("Test2")()
+        err1.expect_err("Test2").pretty_error()
     );
 
     fail_func(10).expect("Test");
@@ -52,7 +52,7 @@ int main()
     auto err2 = fail_func2(1);
     puts(err2.is_ok() ? 
         err2.expect("Test").c_str() : 
-        err2.expect_err("Test2")()
+        err2.expect_err("Test2").pretty_error()
     );
 
     fail_func(10).unwrap_or("this");

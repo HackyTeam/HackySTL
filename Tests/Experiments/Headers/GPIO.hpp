@@ -116,7 +116,7 @@ namespace hsd
                 _direction = dir;
             }
 
-            inline Result<void, runtime_error> set_value(value val)
+            inline option_err<runtime_error> set_value(value val)
             {
                 if (_direction == direction::output)
                 {
@@ -139,7 +139,7 @@ namespace hsd
                 }
             }
 
-            inline Result<value, runtime_error> get_value()
+            inline result<value, runtime_error> get_value()
             {
                 if (_direction == direction::input)
                 {

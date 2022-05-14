@@ -21,7 +21,7 @@ namespace hsd
                 : _err{error}
             {}
 
-            const char* operator()() const
+            const char* pretty_error() const
             {
                 return _err;
             }
@@ -38,28 +38,28 @@ namespace hsd
 
         template <typename T, typename... Args>
         [[nodiscard]] static inline auto allocate_single(Args&&... args)
-            -> Result< T*, allocator_detail::allocator_error >
+            -> result<T*, allocator_detail::allocator_error>
         {
             T* _result = static_cast<T*>(malloc(sizeof(T)));
 
             if (_result == nullptr)
             {
-                return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                return allocator_detail::allocator_error{"No space left in RAM"};
             }
             else
             {
                 construct_at(_result, forward<Args>(args)...);
-                return {_result, ok_value{}};
+                return _result;
             }
         }
 
         template <typename T, typename U, usize N>
         [[nodiscard]] static inline auto allocate_multiple(usize size, const U (&arr)[N])
-            -> Result< T*, allocator_detail::allocator_error >
+            -> result<T*, allocator_detail::allocator_error>
         {
             if (size > limits<usize>::max / sizeof(T))
             {
-                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
+                return allocator_detail::allocator_error{"Bad length for allocation"};
             }
             else
             {
@@ -67,13 +67,13 @@ namespace hsd
 
                 if (_result == nullptr)
                 {
-                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                    return allocator_detail::allocator_error{"No space left in RAM"};
                 }
                 else
                 {
                     if (size < N)
                     {
-                        return {allocator_detail::allocator_error{"Array too small"}, err_value{}};
+                        return allocator_detail::allocator_error{"Array too small"};
                     }
                     else
                     {
@@ -89,18 +89,18 @@ namespace hsd
                         }
                     }
 
-                    return {_result, ok_value{}};
+                    return _result;
                 }
             }
         }
 
         template <typename T, typename... Args>
         [[nodiscard]] static inline auto allocate_multiple(usize size, Args&&... args)
-            -> Result< T*, allocator_detail::allocator_error >
+            -> result<T*, allocator_detail::allocator_error>
         {
             if (size > limits<usize>::max / sizeof(T))
             {
-                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
+                return allocator_detail::allocator_error{"Bad length for allocation"};
             }
             else
             {
@@ -108,13 +108,13 @@ namespace hsd
 
                 if (_result == nullptr)
                 {
-                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                    return allocator_detail::allocator_error{"No space left in RAM"};
                 }
                 else
                 {
                     if (size < sizeof...(args))
                     {
-                        return {allocator_detail::allocator_error{"Array too small"}, err_value{}};
+                        return allocator_detail::allocator_error{"Array too small"};
                     }
                     else
                     {
@@ -131,7 +131,7 @@ namespace hsd
                         }
                     }
 
-                    return {_result, ok_value{}};
+                    return _result;
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace hsd
         }
 
         [[nodiscard]] inline auto allocate(usize size)
-            -> Result< T*, allocator_detail::allocator_error >
+            -> result<T*, allocator_detail::allocator_error>
         {
             size *= sizeof(T);
             usize _free_size = 0;
@@ -234,10 +234,8 @@ namespace hsd
 
             if (size > _size)
             {
-                return {
-                    allocator_detail::allocator_error{
-                        "No space left in buffer"
-                    }, err_value{}
+                return allocator_detail::allocator_error {
+                    "No space left in buffer"
                 };
             }
 
@@ -261,7 +259,7 @@ namespace hsd
                             _block_ptr->size = size;
                         }
 
-                        return {_get_data(_block_ptr), ok_value{}};
+                        return {_get_data(_block_ptr)};
                     }
                     else if (_block_ptr->size >= size)
                     {
@@ -302,7 +300,7 @@ namespace hsd
                             };
                         }
 
-                        return {_get_data(_prev_block), ok_value{}};
+                        return {_get_data(_prev_block)};
                     }
                     else
                     {
@@ -322,15 +320,11 @@ namespace hsd
                 }
             }
 
-            return {
-                allocator_detail::allocator_error{
-                    "Insufficient memory"
-                }, err_value{}
-            };
+            return allocator_detail::allocator_error{"Insufficient memory"};
         }
 
         inline auto deallocate(T* ptr, usize)
-            -> Result< void, allocator_detail::allocator_error >
+            -> option_err<allocator_detail::allocator_error>
         {
             if (ptr != nullptr)
             {
@@ -403,11 +397,11 @@ namespace hsd
         }
 
         [[nodiscard]] inline auto allocate(usize size)
-            -> Result< T*, allocator_detail::allocator_error >
+            -> result<T*, allocator_detail::allocator_error>
         {
             if (size > limits<usize>::max / sizeof(T))
             {
-                return {allocator_detail::allocator_error{"Bad length for allocation"}, err_value{}};
+                return allocator_detail::allocator_error{"Bad length for allocation"};
             }
             else
             {
@@ -423,17 +417,17 @@ namespace hsd
 
                 if (_result == nullptr)
                 {
-                    return {allocator_detail::allocator_error{"No space left in RAM"}, err_value{}};
+                    return allocator_detail::allocator_error{"No space left in RAM"};
                 }
                 else
                 {
-                    return {_result, ok_value{}};
+                    return _result;
                 }
             }
         }
 
         inline auto deallocate(pointer_type ptr, usize size)
-            -> Result< void, allocator_detail::allocator_error >
+            -> option_err<allocator_detail::allocator_error>
         {
             if (size > limits<usize>::max / sizeof(T))
             {

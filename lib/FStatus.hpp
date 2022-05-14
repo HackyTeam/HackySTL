@@ -109,7 +109,7 @@ namespace hsd
             }
 
             inline auto is_directory() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                     return S_ISDIR(_status.st_mode);
@@ -118,7 +118,7 @@ namespace hsd
             }
 
             inline auto is_character() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                     return S_ISCHR(_status.st_mode);
@@ -127,7 +127,7 @@ namespace hsd
             }
 
             inline auto is_block_file() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                     return S_ISBLK(_status.st_mode);
@@ -136,7 +136,7 @@ namespace hsd
             }
 
             inline auto is_regular_file() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                     return S_ISREG(_status.st_mode);
@@ -145,7 +145,7 @@ namespace hsd
             }
 
             inline auto is_fifo_file() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                     return S_ISFIFO(_status.st_mode);
@@ -154,7 +154,7 @@ namespace hsd
             }
 
             inline auto is_symlink() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                 {
@@ -169,7 +169,7 @@ namespace hsd
             }
 
             inline auto is_socket() const
-                -> Result<bool, runtime_error>
+                -> result<bool, runtime_error>
             {
                 if (_exists == true)
                 {
@@ -184,7 +184,7 @@ namespace hsd
             }
 
             inline auto permissions() const
-                -> Result<fs_permissions, runtime_error>
+                -> result<fs_permissions, runtime_error>
             {
                 if (_exists == true)
                 {
@@ -209,7 +209,7 @@ namespace hsd
             }
 
             inline auto size() const
-                -> Result<usize, runtime_error>
+                -> result<usize, runtime_error>
             {
                 if (_exists == true)
                     return static_cast<usize>(_status.st_size);

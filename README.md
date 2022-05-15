@@ -6,11 +6,6 @@ This is a project which discards any backwards compatibility
 thus, it's written using the latest version of the C++ standard.
 The idea came from another [project](https://github.com/LegatAbyssWalker/amazingCode) 
 
-# Little meme:
-<p align = 'center'>
-  <img src='https://user-images.githubusercontent.com/51459619/145557801-3e09c36f-6c61-4958-87aa-62119ad64415.png'>
-</p>
-
 # Goal:
 ~~To have implemented a bare minimum of useful features~~\
 Maintain and improve this project which was started over a year ago

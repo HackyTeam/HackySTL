@@ -65,6 +65,11 @@ namespace hsd
             return network_detail::sock_error_code();
         }
 
+        inline auto erase(socket_type* it)
+        {
+            return _sockets.erase(it);
+        }
+
         inline auto begin()
         {
             // Always skip the first element.
@@ -193,6 +198,11 @@ namespace hsd
                 _buffer.resize(_result);
                 _find_result.add(_buffer);
             }
+        }
+
+        inline auto erase(socket_type* it)
+        {
+            return _sockets.erase(it);
         }
 
         inline auto begin()

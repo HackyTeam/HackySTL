@@ -287,11 +287,13 @@ namespace hsd
             if (from < begin() || from > end() || to < begin() || to > end() || from > to)
                 return bad_access{};
 
-            if (to == end())
+            _size -= static_cast<usize>(to - from);
+
+            if (to == end() + 1)
             {
-                for(; from != end(); from++)
+                for(; from != end() + 1; from++)
                     from->~T();
-    
+
                 return end();
             }
             else
@@ -305,8 +307,7 @@ namespace hsd
                         move(_data[_last_pos + _index]);
                 }
 
-                _size -= static_cast<usize>(to - from) + 1;
-                return begin() + _last_pos;
+                return begin() + _current_pos;
             }
         }
 

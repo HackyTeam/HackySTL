@@ -96,7 +96,7 @@ int main()
 
         for (auto iter = e.begin(); iter != e.end();)
         {
-            if (*iter == 6)
+            if (*iter == 2)
             {
                 iter = e.erase(iter).unwrap();
             }

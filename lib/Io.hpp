@@ -517,6 +517,7 @@ namespace hsd
                 
                 read_chunk().
                 unwrap().
+                get().
                 get_stream().
                 set_data(value).
                 unwrap();

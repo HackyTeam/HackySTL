@@ -2,11 +2,11 @@
   <img src='https://cdn.discordapp.com/attachments/809046217370763274/818426647753654302/HackySTLlogo2.png'>
 </p>
 
+ARCHIVED, the repo can be found on [GitLab](https://gitlab.com/HackyTeam/HackySTL)
+
 This is a project which discards any backwards compatibility
 thus, it's written using the latest version of the C++ standard.
 The idea came from another [project](https://github.com/LegatAbyssWalker/amazingCode) 
-
-This is temporary text only used to test the mirror
 
 # Goal:
 ~~To have implemented a bare minimum of useful features~~\

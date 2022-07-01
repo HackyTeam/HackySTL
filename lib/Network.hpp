@@ -100,7 +100,7 @@ namespace hsd
             network_detail::init_winsock();
             #endif
 
-            if (_socket.switch_to(addr, false) == false)
+            if (_socket.create_socket(addr, false) == false)
             {
                 fputs("Error in initializing socket", stderr);
             }
@@ -149,7 +149,7 @@ namespace hsd
             network_detail::init_winsock();
             #endif
 
-            _main_socket.switch_to(addr, true);
+            _main_socket.create_socket(addr, true);
         }
 
         static inline const char* error_message()
@@ -231,7 +231,7 @@ namespace hsd
             network_detail::init_winsock();
             #endif
 
-            if (_socket.switch_to(addr, false) == false)
+            if (_socket.create_socket(addr, false) == false)
             {
                 fputs("Error in initializing socket", stderr);
             }

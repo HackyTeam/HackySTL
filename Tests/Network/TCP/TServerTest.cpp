@@ -79,7 +79,7 @@ static inline auto manage_socket(auto& socket)
                     "<html>\r\n"
                     "   <head>\r\n"
                     "       <meta charset=\"UTF-8\">\r\n"
-                    "           <title>Proiect Informatică Aplicată</title>\r\n"
+                    "           <title>Test HTTP site</title>\r\n"
                     "   </head>\r\n"
                     "   \r\n"
                     "   <script>\r\n"
@@ -109,14 +109,14 @@ static inline auto manage_socket(auto& socket)
                     "       }\r\n"
                     "   </script>\r\n"
                     "   <body style=\"background-color: rgb(52, 52, 52);\">\r\n"
-                    "      <h1 style=\"color: white; text-align: center;\">Testează butonul</h1>\r\n"
+                    "      <h1 style=\"color: white; text-align: center;\">Test the button</h1>\r\n"
                     "   \r\n"
                     "      <div style=\"text-align: center; height: 800px\">\r\n"
                     "          <button style=\"border-radius: 15px; width: fit-content;"
                     "          padding: 0 10px; color: white; margin-top: 10px;"
                     "          border-color: #9904f5; background-color: rgb(52, 52, 52);\""
                     "          id=\"status\" onclick=\"toggle(); return false;\">\r\n"
-                    "              Status: oprit\r\n"
+                    "              Status: on\r\n"
                     "          </button>\r\n"
                     "      </div>\r\n"
                     "   </body>\r\n"
@@ -138,8 +138,7 @@ static inline auto manage_socket(auto& socket)
                     static constexpr auto on = "HTTP/1.1 200 OK\r\n"
                         "Content-Length: 7\r\n"
                         "Content-Type: text\r\n"
-                        "\r\n"
-                        "pornit\r\n"_sv;
+                        "\r\non\r\n"_sv;
 
                     return {true, socket.send(on.data(), on.size())};
                 }
@@ -148,8 +147,7 @@ static inline auto manage_socket(auto& socket)
                     static constexpr auto off = "HTTP/1.1 200 OK\r\n"
                         "Content-Length: 6\r\n"
                         "Content-Type: text\r\n"
-                        "\r\n"
-                        "oprit\r\n"_sv;
+                        "\r\noff\r\n"_sv;
 
                     return {true, socket.send(off.data(), off.size())};
                 }

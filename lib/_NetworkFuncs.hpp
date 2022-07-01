@@ -118,7 +118,7 @@ namespace hsd::network_detail
     ///
     /// @brief Transforms the ip address and port to a byte array.
     /// 
-    /// @param addr - The ip address.
+    /// @param addr - The ip address of the server/client.
     /// @return auto - A byte array containing the ip address and port.
     ///
     inline auto to_str(const sockaddr_storage* addr)
@@ -162,17 +162,18 @@ namespace hsd::network_detail
     }
 
     ///
-    /// @brief Connects the socket to the given ip address and port.
+    /// @brief Creates the socket for the given ip address and port.
     /// 
-    /// @tparam SocketType - The socket type.
-    /// @param new_socket 
-    /// @param ip_addr 
-    /// @param is_server 
-    /// @return true 
-    /// @return false 
+    /// @tparam SocketType - The socket abstraction provided.
+    /// @param new_socket - The socket which will be created
+    /// @param ip_addr - The IP address of the server/ client
+    /// @param is_server - If the socket is responsible for
+    /// connecting to a server or being one
+    /// @return true - If the socket could be created and handled
+    /// @return false - If the creation/handling fails
     ///
     template <typename SocketType>
-    static inline bool switch_to(
+    static inline bool create_socket(
         SocketType& new_socket, const char* ip_addr, bool is_server)
     {
         addrinfo* _result = nullptr;

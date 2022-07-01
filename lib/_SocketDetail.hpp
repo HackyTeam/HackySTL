@@ -132,7 +132,7 @@ namespace hsd::network_detail
         ///
         /// @brief Construct a new tcp socket object
         /// 
-        /// @param data - socket data conaining the socket
+        /// @param data - socket data containing the socket
         /// handle and events type to be monitored
         ///
         inline tcp_socket(pollfd&& data)
@@ -165,11 +165,11 @@ namespace hsd::network_detail
                 .revents = 0
             };
 
-            if (switch_to(addr, is_server) == false)
+            if (create_socket(addr, is_server) == false)
             {
                 fputs(
                     "hsd::network_detail::"
-                    "tcp_socket::switch_to()"
+                    "tcp_socket::create_socket()"
                     " failed.\n", stderr
                 );
                 close();
@@ -184,14 +184,26 @@ namespace hsd::network_detail
             close();
         }
 
-        inline tcp_socket& operator=(tcp_socket&& other)
+        ///
+        /// @brief Move attribution operator overload,
+        /// swaps the data between 2 tcp_socket objects
+        /// 
+        /// @param rhs - The object which replaces the left hand one
+        /// @return tcp_socket& - The reference to the left hand operand
+        ///
+        inline tcp_socket& operator=(tcp_socket&& rhs)
         {
-            close();
-            _data = other._data;
-            other._data.fd = static_cast<network_detail::native_socket_type>(-1);
+            swap(_data, rhs._data);
             return *this;
         }
 
+        ///
+        /// @brief Attributes the socket a new pollfd
+        /// value whilst closing the old connection
+        /// 
+        /// @param rhs -  
+        /// @return tcp_socket& - The reference to the left hand operand
+        ///
         inline tcp_socket& operator=(pollfd&& rhs)
         {
             close();
@@ -199,16 +211,34 @@ namespace hsd::network_detail
             return *this;
         }
 
+        ///
+        /// @brief Checks if 2 sockets have the same file descriptor
+        /// 
+        /// @param rhs - Socket to compare with
+        /// @return true - If the sockets share the same file descriptor
+        /// @return false - If they are unique sockets
+        ///
         inline bool operator==(const tcp_socket& rhs) const
         {
             return _data.fd == rhs._data.fd;
         }
 
+        ///
+        /// @brief Checks if 2 sockets have different file descriptor
+        /// 
+        /// @param rhs - Socket to compare with
+        /// @return true - If the sockets are unique relative to each other
+        /// @return false - If they are they share the same file descriptor
+        ///
         inline bool operator!=(const tcp_socket& rhs) const
         {
             return _data.fd != rhs._data.fd;
         }
 
+        ///
+        /// @brief Closes the current socket
+        /// and resets the event data stored 
+        ///
         inline void close()
         {
             if (is_valid() == true)
@@ -219,26 +249,30 @@ namespace hsd::network_detail
             }
         }
 
-        inline bool handle(const addrinfo* const info, bool is_server)
+        ///
+        /// @brief Handles the current socket based on the `info`
+        /// provided with separate logic for server/client
+        /// 
+        /// @param info -
+        /// @param is_server -
+        /// @return true -
+        /// @return false -
+        ///
+        inline bool handle(const addrinfo* info, bool is_server)
         {
             if (is_valid() == false)
             {
                 fputs("tcp_socket::handle() called on invalid socket\n", stderr);
                 return false;
             } 
-            else if (is_server == true)
-            {
-                return _handle_server(info);
-            }
-            else
-            {
-                return _handle_client(info);
-            }
+            
+            return is_server ? _handle_server(info) : _handle_client(info);
         }
 
-        [[nodiscard]] inline bool switch_to(const char* const addr, bool is_server = false)
+        [[nodiscard]] inline bool create_socket(
+            const char* addr, bool is_server = false)
         {
-            return hsd::network_detail::switch_to(*this, addr, is_server);
+            return hsd::network_detail::create_socket(*this, addr, is_server);
         }
 
         inline bool is_valid() const
@@ -276,7 +310,7 @@ namespace hsd::network_detail
             return _data.fd;
         }
 
-        inline isize send(const void* const buffer, const usize size)
+        inline isize send(const void* buffer, usize size)
         {
             if (is_valid() == false || size > 65635)
             {
@@ -285,14 +319,14 @@ namespace hsd::network_detail
             
             #if defined(HSD_PLATFORM_WINDOWS)
             return ::send(
-                _data.fd, reinterpret_cast<const char* const>(buffer), size, 0
+                _data.fd, reinterpret_cast<const char*>(buffer), size, 0
             );
             #else
             return ::send(_data.fd, buffer, size, 0);
             #endif
         }
 
-        inline isize receive(void* const buffer, const usize size)
+        inline isize receive(void* buffer, usize size)
         {
             if (is_valid() == false)
             {
@@ -302,7 +336,7 @@ namespace hsd::network_detail
             {
                 #if defined(HSD_PLATFORM_WINDOWS)
                 return ::recv(
-                    _data.fd, reinterpret_cast<char* const>(buffer), size, 0
+                    _data.fd, reinterpret_cast<char*>(buffer), size, 0
                 );
                 #else
                 return ::recv(_data.fd, buffer, size, 0);
@@ -328,7 +362,7 @@ namespace hsd::network_detail
             : tcp_socket<Protocol>(move(other))
         {}
 
-        inline tcp_child_socket(const char* const addr, bool is_server = false)
+        inline tcp_child_socket(const char* addr, bool is_server = false)
             : tcp_socket<Protocol>(addr, is_server)
         {}
 
@@ -363,7 +397,7 @@ namespace hsd::network_detail
         sockaddr_storage _addr;
         socklen_t _addr_len;
 
-        inline bool _handle_server(const addrinfo* const info)
+        inline bool _handle_server(const addrinfo* info)
         {
             if (info->ai_socktype == SOCK_DGRAM)
             {
@@ -399,7 +433,7 @@ namespace hsd::network_detail
                 if (_rc < 0)
                 {
                     perror("setsockopt() failed");
-                    close(); abort();
+                    this->close(); ::abort();
                 }
             
                 #if defined(HSD_PLATFORM_WINDOWS)
@@ -411,7 +445,7 @@ namespace hsd::network_detail
                 if (_rc < 0)
                 {
                     perror("ioctl() failed");
-                    close(); abort();
+                    this->close(); ::abort();
                 }
 
                 return true;
@@ -420,7 +454,7 @@ namespace hsd::network_detail
             return false;
         }
 
-        inline bool _handle_client(const addrinfo* const info)
+        inline bool _handle_client(const addrinfo* info)
         {
             if (info->ai_socktype == SOCK_DGRAM)
             {
@@ -447,13 +481,13 @@ namespace hsd::network_detail
         inline udp_socket(const udp_socket& other) = delete;
         inline udp_socket& operator=(const udp_socket& other) = delete;
 
-        inline udp_socket(const char* const addr, bool is_server = false)
+        inline udp_socket(const char* addr, bool is_server = false)
         {
             _data = static_cast<network_detail::native_socket_type>(-1);
 
-            if (switch_to(addr, is_server) == false)
+            if (create_socket(addr, is_server) == false)
             {
-                fputs("hsd::network_detail::udp_socket::switch_to() failed.\n", stderr);
+                fputs("hsd::network_detail::udp_socket::create_socket() failed.\n", stderr);
                 close();
             }
         }
@@ -512,7 +546,7 @@ namespace hsd::network_detail
             }
         }
 
-        inline bool handle(const addrinfo* const info, bool is_server)
+        inline bool handle(const addrinfo* info, bool is_server)
         {
             if (is_valid() == false)
             {
@@ -564,12 +598,12 @@ namespace hsd::network_detail
             return _addr_len;
         }
 
-        inline bool switch_to(const char* const addr, bool is_server = false)
+        inline bool create_socket(const char* addr, bool is_server = false)
         {
-            return hsd::network_detail::switch_to(*this, addr, is_server);
+            return hsd::network_detail::create_socket(*this, addr, is_server);
         }
 
-        inline isize send(const void* const buffer, const usize size)
+        inline isize send(const void* buffer, usize size)
         {
             if (is_valid() == false)
             {
@@ -585,13 +619,13 @@ namespace hsd::network_detail
             #else
             return ::sendto(
                 _data, buffer, size, 0, 
-                reinterpret_cast<sockaddr*>(&_addr), 
+                reinterpret_cast<const sockaddr*>(&_addr), 
                 _addr_len
             );
             #endif
         }
 
-        inline isize receive(void* const buffer, const usize size)
+        inline isize receive(void* buffer, usize size)
         {
             if (is_valid() == false)
             {
@@ -673,7 +707,7 @@ namespace hsd::network_detail
             _recv_buffer.push_back(buffer);
         }
 
-        inline isize send(const void* const buffer, const usize size)
+        inline isize send(const void* buffer, usize size)
         {
             if (is_valid() == false)
             {
@@ -687,7 +721,7 @@ namespace hsd::network_detail
             );
         }
 
-        inline isize receive(void* const buffer, const usize size)
+        inline isize receive(void* buffer, usize size)
         {
             if (is_valid() == false || size < 1024)
             {

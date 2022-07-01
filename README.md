@@ -6,6 +6,8 @@ This is a project which discards any backwards compatibility
 thus, it's written using the latest version of the C++ standard.
 The idea came from another [project](https://github.com/LegatAbyssWalker/amazingCode) 
 
+This is temporary text only used to test the mirror
+
 # Goal:
 ~~To have implemented a bare minimum of useful features~~\
 Maintain and improve this project which was started over a year ago

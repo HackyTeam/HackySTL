@@ -19,7 +19,10 @@ constexpr bool add_overflows(T left, T right)
     {
         return right < 0 && left < hsd::limits<T>::min - right;
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 template <typename T>
@@ -47,7 +50,10 @@ constexpr bool mul_overflows(T left, T right)
         }
         return left < hsd::limits<T>::min / right;
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 static_assert(!add_overflows<hsd::i8>(100, 27));

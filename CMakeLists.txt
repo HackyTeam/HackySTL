@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.23)
 
+# CMake 4.0 moves the MSVC runtime checks into the MSVC_RUNTIME_CHECKS property
+# (CMP0184). The profiling targets clear that property, see below.
+if(POLICY CMP0184)
+    cmake_policy(SET CMP0184 NEW)
+endif()
+
 project(HackySTL LANGUAGES CXX)
 
 include(CTest)
@@ -147,6 +153,10 @@ if(BUILD_TESTING)
         if(relative_test_source MATCHES "^Profiling/")
             target_link_libraries(
                 "${test_target}" PRIVATE hackystl_profile_config
+            )
+            # MSVC rejects /O2 together with the /RTC1 checks that Debug enables.
+            set_target_properties(
+                "${test_target}" PROPERTIES MSVC_RUNTIME_CHECKS ""
             )
         else()
             target_link_libraries("${test_target}" PRIVATE hackystl_test_config)

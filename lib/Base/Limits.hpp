@@ -50,7 +50,7 @@ namespace hsd
                 return ((_lshf - 1) << 1) + 1;
             }
 
-            return ~static_cast<T>(0);
+            return static_cast<T>(~static_cast<T>(0));
         }
 
         template <typename T, usize B>

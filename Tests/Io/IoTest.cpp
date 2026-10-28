@@ -116,14 +116,9 @@ public:
             "UnsupportedOperation"
         };
         
-        switch (error_type)
-        {
-            default: return {
-                error_text.c_str(), arr[static_cast<hsd::usize>(error_type)], test
-            };
-        }
-    
-        return {"", "", TestingOVR{}};
+        return {
+            error_text.c_str(), arr[static_cast<hsd::usize>(error_type)], test
+        };
     }
 };
 

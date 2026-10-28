@@ -66,7 +66,7 @@ namespace hsd
         static inline void wait(
             native_handle_type& cv, mutex& lock)
         {
-            SleepConditionVariableCS(&cv, lock.native_handle(), -1);
+            SleepConditionVariableCS(&cv, lock.native_handle(), INFINITE);
         }
 
         /// @brief Atomically releases `lock` and blocks until woken or

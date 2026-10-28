@@ -126,7 +126,7 @@ static inline auto manage_socket(auto& socket)
                 //return send_html("Hello world\r\n"_sv, socket);
             }
         }
-        else if (auto* req = hsd::cstring::find(recv_buffer, "POST"); req != nullptr)
+        else if (auto* post_req = hsd::cstring::find(recv_buffer, "POST"); post_req != nullptr)
         {
             auto* data = hsd::cstring::find(recv_buffer, "\r\n\r\n");
 
@@ -134,7 +134,7 @@ static inline auto manage_socket(auto& socket)
             {
                 data += 4;
 
-                if (auto* req = hsd::cstring::find(data, "on"); req != nullptr)
+                if (auto* on_req = hsd::cstring::find(data, "on"); on_req != nullptr)
                 {
                     static constexpr auto on = "HTTP/1.1 200 OK\r\n"
                         "Content-Length: 7\r\n"
@@ -143,7 +143,7 @@ static inline auto manage_socket(auto& socket)
 
                     return {true, socket.send(on.data(), on.length())};
                 }
-                else if (auto* req = hsd::cstring::find(data, "off"); req != nullptr)
+                else if (auto* off_req = hsd::cstring::find(data, "off"); off_req != nullptr)
                 {
                     static constexpr auto off = "HTTP/1.1 200 OK\r\n"
                         "Content-Length: 6\r\n"

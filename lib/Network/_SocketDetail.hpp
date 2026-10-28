@@ -64,7 +64,7 @@ namespace hsd::network_detail
                     panic("setsockopt() failed");
                 }
 
-                if (::bind(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                if (::bind(_data.fd, info->ai_addr, static_cast<socklen_t>(info->ai_addrlen)) == -1)
                 {
                     close();
                     return false;
@@ -113,7 +113,7 @@ namespace hsd::network_detail
                 _data.events = POLLOUT;
                 _data.revents = POLLOUT | POLLIN;
                 
-                if (::connect(_data.fd, info->ai_addr, info->ai_addrlen) == -1)
+                if (::connect(_data.fd, info->ai_addr, static_cast<socklen_t>(info->ai_addrlen)) == -1)
                 {
                     close();
                     return false;
@@ -383,7 +383,7 @@ namespace hsd::network_detail
             
             #if defined(HSD_PLATFORM_WINDOWS)
             return ::send(
-                _data.fd, reinterpret_cast<const char*>(buffer), size, 0
+                _data.fd, reinterpret_cast<const char*>(buffer), static_cast<int>(size), 0
             );
             #else
             return ::send(_data.fd, buffer, size, 0);
@@ -408,7 +408,7 @@ namespace hsd::network_detail
             {
                 #if defined(HSD_PLATFORM_WINDOWS)
                 return ::recv(
-                    _data.fd, reinterpret_cast<char*>(buffer), size, 0
+                    _data.fd, reinterpret_cast<char*>(buffer), static_cast<int>(size), 0
                 );
                 #else
                 return ::recv(_data.fd, buffer, size, 0);
@@ -569,14 +569,14 @@ namespace hsd::network_detail
                     panic("setsockopt() failed");
                 }
 
-                if (::bind(_data, info->ai_addr, info->ai_addrlen) == -1)
+                if (::bind(_data, info->ai_addr, static_cast<socklen_t>(info->ai_addrlen)) == -1)
                 {
                     close();
                     return false;
                 }
 
                 memcpy(&_addr, info->ai_addr, info->ai_addrlen);
-                _addr_len = info->ai_addrlen;
+                _addr_len = static_cast<socklen_t>(info->ai_addrlen);
 
             
                 #if defined(HSD_PLATFORM_WINDOWS)
@@ -614,14 +614,14 @@ namespace hsd::network_detail
                     return false;
                 }
 
-                if (::connect(_data, info->ai_addr, info->ai_addrlen) == -1)
+                if (::connect(_data, info->ai_addr, static_cast<socklen_t>(info->ai_addrlen)) == -1)
                 {
                     close();
                     return false;
                 }
 
                 memcpy(&_addr, info->ai_addr, info->ai_addrlen);
-                _addr_len = info->ai_addrlen;
+                _addr_len = static_cast<socklen_t>(info->ai_addrlen);
                 return true;
             }
 

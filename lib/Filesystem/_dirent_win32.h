@@ -303,7 +303,7 @@ static __ino_t __inode(const wchar_t* name)
 
 	result = GetFileInformationByHandleEx(hFile, (FILE_INFO_BY_HANDLE_CLASS)dirent_FileIdInfo, &fileid, sizeof(fileid));
 	
-    if (result == true)
+    if (result)
 	{
 		value.serial = fileid.VolumeSerialNumber;
 		memcpy(value.fileid, fileid.FileId.Identifier, 16);
@@ -347,7 +347,6 @@ static DIR* __internal_opendir(wchar_t* wname, int size)
 	
     char default_char = '?';
 	
-    const wchar_t* prefix = L"\\\\?\\";
 	const wchar_t* suffix = L"\\*.*";
 	const int extra_prefix = 4; /* use prefix "\\?\" to handle long file names */
 	const int extra_suffix = 4; /* use suffix "\*.*" to find everything */
@@ -363,7 +362,7 @@ static DIR* __internal_opendir(wchar_t* wname, int size)
 	memcpy(wname + size - 1, suffix, sizeof(wchar_t) * extra_suffix);
 	wname[size + extra_suffix - 1] = 0;
 
-	if (relative == true)
+	if (relative)
     {
 		wname += extra_prefix;
 		size -= extra_prefix;

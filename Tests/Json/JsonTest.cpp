@@ -274,11 +274,11 @@ void print_value(hsd::vector<hsd::string_view>& path, hsd::JsonValue& v)
             }
             else
             {
-                auto res = v.as_num<hsd::f32>();
+                auto float_res = v.as_num<hsd::f32>();
 
-                if (res.is_ok())
+                if (float_res.is_ok())
                 {
-                    hsd::print("{}"_fmt, res.unwrap());
+                    hsd::print("{}"_fmt, float_res.unwrap());
                 }
                 else
                 {

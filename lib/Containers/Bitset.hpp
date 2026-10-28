@@ -28,7 +28,7 @@ namespace hsd
         static constexpr internal_type _one = 1;
         
         /// @brief Word with every bit set.
-        static constexpr internal_type _set_val = -1;
+        static constexpr internal_type _set_val = static_cast<internal_type>(-1);
         /// @brief Number of valid bits in the leading storage word.
         static constexpr internal_type _len_mod = (N & _mod_val);
         /// @brief Number of storage words required for `N` bits.

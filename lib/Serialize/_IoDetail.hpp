@@ -4,12 +4,13 @@
 /// @brief Internal platform-specific file and standard-stream handlers.
 /// @details Encapsulates POSIX descriptors and Windows handles behind the
 /// common read, write, seek, and ownership operations used by Io.
-
-#include "../Base/CString.hpp"
+#include "../Base/Types.hpp"
 
 #if defined(HSD_PLATFORM_WINDOWS)
 #define _WINSOCKAPI_
 #include <windows.h>
+#include "../Base/CString.hpp"
+#include "../Base/Limits.hpp"
 #else
 #include <unistd.h>
 #include <sys/stat.h>
@@ -174,14 +175,21 @@ namespace hsd
 
             /// @brief Writes `size` bytes from `data` to the handle.
             /// @param data Pointer to the bytes to write.
-            /// @param size Number of bytes to write.
+            /// @param size Number of bytes to write; at most `limits<DWORD>::max`.
             /// @return Number of bytes written, or `static_cast<DWORD>(-1)` on failure.
             /// @details Waits for completion of overlapped writes via `GetOverlappedResult`.
+            /// A larger request fails instead of writing a truncated count.
             inline auto write(const void* data, u64 size)
             {
                 DWORD _written = 0;
 
-                if (WriteFile(_handle, data, size, &_written, &_overlapped) == 0)
+                if (size > limits<DWORD>::max)
+                {
+                    SetLastError(ERROR_FILE_TOO_LARGE);
+                    return static_cast<DWORD>(-1);
+                }
+
+                if (WriteFile(_handle, data, static_cast<DWORD>(size), &_written, &_overlapped) == 0)
                 {
                     if (file_error_code() != ERROR_IO_PENDING)
                     {
@@ -199,14 +207,18 @@ namespace hsd
 
             /// @brief Reads up to `size` bytes from the handle into `data`.
             /// @param data Destination buffer for the read bytes.
-            /// @param size Capacity of `data` in bytes.
+            /// @param size Capacity of `data` in bytes. At most `limits<DWORD>::max`
+            /// bytes are read per call; callers already accept short reads.
             /// @return Number of bytes read, or `static_cast<DWORD>(-1)` on failure.
             /// @details Waits for completion of overlapped reads via `GetOverlappedResult`.
             inline auto read(void* data, u64 size)
             {
                 DWORD _read = 0;
+                const DWORD _count = (size > limits<DWORD>::max)
+                    ? limits<DWORD>::max
+                    : static_cast<DWORD>(size);
 
-                if (ReadFile(_handle, data, size, &_read, &_overlapped) == 0)
+                if (ReadFile(_handle, data, _count, &_read, &_overlapped) == 0)
                 {
                     if (file_error_code() != ERROR_IO_PENDING)
                     {

@@ -114,6 +114,8 @@ struct D : A, B
 struct alignas(64) Big
 {
     int x;
+    // Explicit padding fills the alignment, so the compiler adds none (MSVC C4324).
+    char padding[60]{};
 
     explicit Big(int v)
         : x(v)
@@ -130,6 +132,8 @@ struct alignas(64) Big
 struct alignas(16) Mid
 {
     int x;
+    // Explicit padding fills the alignment, so the compiler adds none (MSVC C4324).
+    char padding[12]{};
 
     explicit Mid(int v)
         : x(v)

@@ -31,7 +31,7 @@ namespace hsd
         /// @return Platform wait success.
         static inline bool wait(void* value, u32 expected)
         {
-            return WaitOnAddress(value, &expected, sizeof(expected), -1);
+            return WaitOnAddress(value, &expected, sizeof(expected), INFINITE);
         }
 
         /// @brief Wakes all platform waiters associated with an address.
@@ -264,7 +264,7 @@ namespace hsd
         /// @brief Shared platform wait/wake adapter.
         static inline futex_lock waiter{};
         /// @brief High bit marking that waiters may need waking.
-        static constexpr inline u32 waitersBit = (1 << 31);
+        static constexpr inline u32 waitersBit = (1u << 31);
 
     public:
         /// @brief Constructs an unlocked futex.

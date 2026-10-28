@@ -186,6 +186,22 @@ namespace hsd
                 return hsd::bit_cast<T>(_x87_bits{0xC000000000000000ull, 0x7FFF, {}});
             }
         }
+        /// @brief Builds an extended-precision value from its x87 layout, or from
+        /// `as_double` when `T` is plain `double` (MSVC's `long double`).
+        /// @details Literals such as `0x1p-16382L` overflow a `double` literal on MSVC,
+        /// so the x87 bit pattern is used instead.
+        template <typename T>
+        static constexpr T _extended(f64 as_double, [[maybe_unused]] _x87_bits as_x87)
+        {
+            if constexpr (sizeof(T) == 8)
+            {
+                return static_cast<T>(as_double);
+            }
+            else
+            {
+                return hsd::bit_cast<T>(as_x87);
+            }
+        }
     } // namespace detail
 
 
@@ -335,13 +351,13 @@ namespace hsd
         /// @brief Not-a-number value.
         static constexpr f128  nan                   = detail::_quiet_nan<f128>();
         /// @brief Difference between one and the next representable value.
-        static constexpr f128  epsilon               = sizeof(f128) == 8 ? static_cast<f128>(0x1p-52) : static_cast<f128>(0x1p-63L);
+        static constexpr f128  epsilon               = detail::_extended<f128>(0x1p-52, detail::_x87_bits{0x8000000000000000ull, 0x3FC0, {}});
         /// @brief Smallest positive normalized extended value.
-        static constexpr f128  min                   = sizeof(f128) == 8 ? static_cast<f128>(0x1p-1022) : static_cast<f128>(0x1p-16382L);
+        static constexpr f128  min                   = detail::_extended<f128>(0x1p-1022, detail::_x87_bits{0x8000000000000000ull, 0x0001, {}});
         /// @brief Largest finite extended value.
-        static constexpr f128  max                   = sizeof(f128) == 8 ? static_cast<f128>(0x1.fffffffffffffp+1023) : static_cast<f128>(0x1.fffffffffffffffep+16383L);
+        static constexpr f128  max                   = detail::_extended<f128>(0x1.fffffffffffffp+1023, detail::_x87_bits{0xFFFFFFFFFFFFFFFFull, 0x7FFE, {}});
         /// @brief Smallest positive subnormal extended value.
-        static constexpr f128  denorm_min            = sizeof(f128) == 8 ? static_cast<f128>(0x1p-1074) : static_cast<f128>(0x1p-16445L);
+        static constexpr f128  denorm_min            = detail::_extended<f128>(0x1p-1074, detail::_x87_bits{0x0000000000000001ull, 0x0000, {}});
         /// @brief Whether the extended type is signed.
         static constexpr bool  is_signed             = true;
         /// @brief Minimum binary exponent for normalized values.

@@ -257,7 +257,15 @@ namespace hsd
 
             for (auto _val : _arr)
             {
+                #if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
                 _cnt += __builtin_popcount(_val);
+                #else
+                // Kernighan's loop: each pass clears the lowest set bit.
+                for (auto _bits = _val; _bits != 0; _bits &= _bits - 1)
+                {
+                    ++_cnt;
+                }
+                #endif
             }
             
             return _cnt;

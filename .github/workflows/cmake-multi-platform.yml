@@ -63,7 +63,9 @@ jobs:
 
     - name: Build
       # --config is needed on Windows, where the default generator is multi-config.
-      run: cmake --build build --config ${{ matrix.build_type }} --parallel
+      # The runners have 4 vCPUs. An unlimited job count started about 290 compiles at once
+      # in the GCC run, and the runner was shut down before the build finished.
+      run: cmake --build build --config ${{ matrix.build_type }} --parallel 4
 
     - name: Test
       # --build-config picks the configuration to test for multi-config generators.

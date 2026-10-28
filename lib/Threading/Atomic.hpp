@@ -100,6 +100,27 @@ namespace hsd
             conditional_t<sizeof(T) == 2, u16,
             conditional_t<sizeof(T) == 4, u32, u64>>>;
 
+        /// @brief Views the object at `ptr` as the unsigned integer the intrinsics use.
+        template <typename T>
+        volatile atomic_bits<T>* as_bits(T* ptr)
+        {
+            return reinterpret_cast<volatile atomic_bits<T>*>(ptr);
+        }
+
+        /// @brief Bit pattern of `value` as the unsigned integer the intrinsics use.
+        template <typename T>
+        atomic_bits<T> to_bits(const T& value)
+        {
+            return bit_cast<atomic_bits<T>>(value);
+        }
+
+        /// @brief Value of type `T` with the bit pattern `bits`.
+        template <typename T>
+        T from_bits(atomic_bits<T> bits)
+        {
+            return bit_cast<T>(bits);
+        }
+
         /// @brief Replaces `*target` with `value` and returns the previous value.
         template <typename U>
         U msvc_exchange(volatile U* target, U value)
@@ -227,107 +248,88 @@ namespace hsd
         template <typename T>
         void atomic_op_store(T* ptr, T* val, i32)
         {
-            using _bits = atomic_bits<T>;
-            msvc_exchange<_bits>(reinterpret_cast<volatile _bits*>(ptr), __builtin_bit_cast(_bits, *val));
+            msvc_exchange(as_bits(ptr), to_bits(*val));
         }
 
         template <typename T>
         void atomic_op_load(const T* ptr, T* out, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_or<_bits>(
-                reinterpret_cast<volatile _bits*>(const_cast<T*>(ptr)), _bits{});
-            *out = __builtin_bit_cast(T, _old);
+            *out = from_bits<T>(msvc_fetch_or(as_bits(const_cast<T*>(ptr)), atomic_bits<T>{}));
         }
 
         template <typename T>
         void atomic_op_exchange(T* ptr, T* val, T* out, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_exchange<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), __builtin_bit_cast(_bits, *val));
-            *out = __builtin_bit_cast(T, _old);
+            const auto _old = msvc_exchange(as_bits(ptr), to_bits(*val));
+            *out = from_bits<T>(_old);
         }
 
         template <typename T>
         bool atomic_op_compare_exchange(T* ptr, T* expected, T* desired, bool, i32, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _expected = __builtin_bit_cast(_bits, *expected);
-            const auto _observed = msvc_compare_exchange<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr),
-                _expected, __builtin_bit_cast(_bits, *desired));
+            const auto _expected = to_bits(*expected);
+            const auto _observed = msvc_compare_exchange(as_bits(ptr), _expected, to_bits(*desired));
 
             if (_observed == _expected)
             {
                 return true;
             }
 
-            *expected = __builtin_bit_cast(T, _observed);
+            *expected = from_bits<T>(_observed);
             return false;
         }
 
         template <typename T, typename V>
         T atomic_op_fetch_add(T* ptr, V arg, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_add<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
-            return __builtin_bit_cast(T, _old);
+            const auto _old = msvc_fetch_add(as_bits(ptr), static_cast<atomic_bits<T>>(arg));
+            return from_bits<T>(_old);
         }
 
         template <typename T, typename V>
         T atomic_op_fetch_sub(T* ptr, V arg, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_sub<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
-            return __builtin_bit_cast(T, _old);
+            const auto _old = msvc_fetch_sub(as_bits(ptr), static_cast<atomic_bits<T>>(arg));
+            return from_bits<T>(_old);
         }
 
         template <typename T, typename V>
         T atomic_op_fetch_and(T* ptr, V arg, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_and<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
-            return __builtin_bit_cast(T, _old);
+            const auto _old = msvc_fetch_and(as_bits(ptr), static_cast<atomic_bits<T>>(arg));
+            return from_bits<T>(_old);
         }
 
         template <typename T, typename V>
         T atomic_op_fetch_or(T* ptr, V arg, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_or<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
-            return __builtin_bit_cast(T, _old);
+            const auto _old = msvc_fetch_or(as_bits(ptr), static_cast<atomic_bits<T>>(arg));
+            return from_bits<T>(_old);
         }
 
         template <typename T, typename V>
         T atomic_op_fetch_xor(T* ptr, V arg, i32)
         {
-            using _bits = atomic_bits<T>;
-            const auto _old = msvc_fetch_xor<_bits>(
-                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
-            return __builtin_bit_cast(T, _old);
+            const auto _old = msvc_fetch_xor(as_bits(ptr), static_cast<atomic_bits<T>>(arg));
+            return from_bits<T>(_old);
         }
 
         template <typename P>
         bool atomic_op_test_and_set(P* ptr, i32)
         {
-            return msvc_exchange<u8>(reinterpret_cast<volatile u8*>(ptr), 1) != 0;
+            return msvc_exchange(reinterpret_cast<volatile u8*>(ptr), u8{1}) != 0;
         }
 
         template <typename P>
         void atomic_op_clear(P* ptr, i32)
         {
-            msvc_exchange<u8>(reinterpret_cast<volatile u8*>(ptr), 0);
+            msvc_exchange(reinterpret_cast<volatile u8*>(ptr), u8{0});
         }
 
         template <typename P>
         u8 atomic_op_load_n(const P* ptr, i32)
         {
-            return msvc_fetch_or<u8>(reinterpret_cast<volatile u8*>(const_cast<P*>(ptr)), 0);
+            return msvc_fetch_or(reinterpret_cast<volatile u8*>(const_cast<P*>(ptr)), u8{0});
         }
 
         inline void atomic_op_thread_fence(i32)

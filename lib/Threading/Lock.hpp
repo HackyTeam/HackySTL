@@ -45,29 +45,27 @@ namespace hsd
     namespace mutex_detail
     {
         /// @brief Native mutex handle type selected for the platform.
-        using handle_type = CRITICAL_SECTION;
+        /// @details A slim reader/writer lock used in exclusive mode. A critical
+        /// section is recursive, so `try_lock` would succeed for the thread that
+        /// already owns it, which a non-recursive mutex must not do.
+        using handle_type = SRWLOCK;
 
         /// @brief Creates and initializes a native mutex handle.
         /// @return Initialized native handle.
         static inline handle_type create()
         {
-            handle_type _handle;
-            InitializeCriticalSection(&_handle);
-            return _handle;
+            return SRWLOCK_INIT;
         }
 
-        /// @brief Destroys a native mutex handle.
-        /// @param mutex Handle to destroy.
-        static inline void destroy(handle_type& mutex)
-        {
-            DeleteCriticalSection(&mutex);
-        }
+        /// @brief Destroys a native mutex handle. An SRW lock needs no cleanup.
+        static inline void destroy(handle_type&)
+        {}
 
         /// @brief Blocks until a native mutex is acquired.
         /// @param mutex Handle to lock.
         static inline void lock(handle_type& mutex)
         {
-            EnterCriticalSection(&mutex);
+            AcquireSRWLockExclusive(&mutex);
         }
 
         /// @brief Attempts to acquire a native mutex without blocking.
@@ -75,14 +73,14 @@ namespace hsd
         /// @return True when the mutex was acquired.
         static inline bool try_lock(handle_type& mutex)
         {
-            return TryEnterCriticalSection(&mutex);
+            return TryAcquireSRWLockExclusive(&mutex) != 0;
         }
 
         /// @brief Releases a native mutex.
         /// @param mutex Handle to unlock.
         static inline void unlock(handle_type& mutex)
         {
-            LeaveCriticalSection(&mutex);
+            ReleaseSRWLockExclusive(&mutex);
         }
     } // namespace mutex_detail
     #elif defined(HSD_PLATFORM_POSIX)

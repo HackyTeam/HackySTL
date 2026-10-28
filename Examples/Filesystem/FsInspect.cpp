@@ -2,6 +2,7 @@
 // Level: Basic
 // Shows: path::status(), exists/is_directory/is_regular_file/size/permissions, extension(), and checking a missing path.
 
+#include "../Support/ExampleSupport.hpp"
 #include <Filesystem/Path.hpp>
 #include <Serialize/Io.hpp>
 
@@ -47,14 +48,14 @@ int main()
     // A path is a name plus a view of what is on disk; status() asks the system.
     fs::path folder{"./inspect_demo"};
     auto folder_status = folder.status();
-    hsd::println("folder: {}"_fmt, folder.relative_name());
+    hsd::println("folder: {}"_fmt, example_support::with_forward_slashes(folder.relative_name()));
     hsd::println("exists: {}"_fmt, yes_no(folder_status.exists()));
     hsd::println("is directory: {}"_fmt, yes_no(folder_status.is_directory().unwrap()));
     hsd::println("is regular file: {}"_fmt, yes_no(folder_status.is_regular_file().unwrap()));
 
     fs::path notes{"./inspect_demo/notes.txt"};
     auto notes_status = notes.status();
-    hsd::println("file: {}"_fmt, notes.relative_name());
+    hsd::println("file: {}"_fmt, example_support::with_forward_slashes(notes.relative_name()));
     hsd::println("is regular file: {}"_fmt, yes_no(notes_status.is_regular_file().unwrap()));
     hsd::println("size in bytes: {}"_fmt, notes_status.size().unwrap());
 

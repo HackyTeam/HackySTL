@@ -12,7 +12,7 @@ if(MSVC)
     # CMake's default flags turn exceptions on with /EHsc. The library is built
     # without them, so the default is replaced here. Overriding it per target
     # instead makes MSVC report warning D9025 for every file.
-    string(REPLACE "/EHsc" "/EHs-c" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REPLACE "/EHsc" "/EHs-c-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
 include(CTest)

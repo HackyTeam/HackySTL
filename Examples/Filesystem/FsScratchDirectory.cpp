@@ -2,6 +2,7 @@
 // Level: Intermediate
 // Shows: creating a directory and files, listing it in sorted order, copying a file, and reading the copy back.
 
+#include "../Support/ExampleSupport.hpp"
 #include <Containers/String.hpp>
 #include <Containers/Vector.hpp>
 #include <Base/Algorithm.hpp>
@@ -46,7 +47,7 @@ static void show_directory(const char* label, fs::path& directory)
 
     for (auto& entry : entries)
     {
-        names.push_back(entry.relative_name());
+        names.push_back(example_support::with_forward_slashes(entry.relative_name()));
     }
 
     // The default predicate sorts ascending.

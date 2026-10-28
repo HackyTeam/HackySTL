@@ -83,6 +83,13 @@ Programs that need a peer, such as the TCP and UDP servers and clients, have no
 disabled, so they are built but not run. Start the matching peer in another
 terminal and run them by hand, as described in the header.
 
+## Shared helpers
+
+`Support/ExampleSupport.hpp` holds helpers that more than one example uses. Examples
+include it with a relative path, such as `#include "../Support/ExampleSupport.hpp"`.
+Its `with_forward_slashes` prints paths with `/` on every platform, because Windows
+reports them with `\`.
+
 ## Checking the tree
 
 `cmake/CheckExamples.py` runs as the CTest entry `hackystl_examples_lint`. It

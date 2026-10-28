@@ -78,12 +78,11 @@ namespace hsd
             /// @brief Underlying file, pipe, or console handle; `nullptr` when closed.
             HANDLE _handle = nullptr;
             /// @brief Overlapped-I/O state shared by `read`/`write`/`read_line`.
+            /// @details `Offset`/`OffsetHigh` hold the position of the next transfer.
             OVERLAPPED _overlapped = {};
-            /// @brief Whether `_handle` was opened for overlapped (asynchronous) I/O.
-            bool _is_overlapped = false;
             /// @brief Whether `_handle` is a borrowed standard-stream handle.
-            /// @details External handles use `CancelIoEx` instead of `CloseHandle`
-            /// on destruction, and are never actually owned by this instance.
+            /// @details The process owns external handles, so they are never closed
+            /// here. Every other handle is closed on destruction.
             bool _is_external = false;
             /// @brief Access mode the handle was opened with.
             io_options _mode = io_options::none;
@@ -101,7 +100,6 @@ namespace hsd
             {
                 hsd::swap(other._handle, _handle);
                 hsd::swap(other._overlapped, _overlapped);
-                hsd::swap(other._is_overlapped, _is_overlapped);
                 hsd::swap(other._is_external, _is_external);
                 hsd::swap(other._mode, _mode);
             }
@@ -113,7 +111,6 @@ namespace hsd
             {
                 hsd::swap(other._handle, _handle);
                 hsd::swap(other._overlapped, _overlapped);
-                hsd::swap(other._is_overlapped, _is_overlapped);
                 hsd::swap(other._is_external, _is_external);
                 hsd::swap(other._mode, _mode);
 
@@ -126,26 +123,16 @@ namespace hsd
                 close();
             }
 
-            /// @brief Releases the handle (or cancels the pending overlapped operation).
-            /// @details Panics if the underlying `CloseHandle`/`CancelIoEx` call fails.
+            /// @brief Releases the handle. A borrowed standard handle is only forgotten.
+            /// @details Panics if the underlying `CloseHandle` call fails.
             /// Safe to call multiple times; a no-op once already closed.
             inline void close()
             {
                 if (_handle != nullptr)
                 {
-                    if (_is_overlapped == false)
+                    if (_is_external == false && CloseHandle(_handle) == 0)
                     {
-                        if (CloseHandle(_handle) == 0)
-                        {
-                            panic(file_error_msg());
-                        }
-                    }
-                    else if (_is_external == false)
-                    {
-                        if (CancelIoEx(_handle, &_overlapped) == 0)
-                        {
-                            panic(file_error_msg());
-                        }
+                        panic(file_error_msg());
                     }
 
                     _handle = nullptr;
@@ -202,6 +189,7 @@ namespace hsd
                     }
                 }
 
+                advance(_written);
                 return _written;
             }
 
@@ -209,7 +197,8 @@ namespace hsd
             /// @param data Destination buffer for the read bytes.
             /// @param size Capacity of `data` in bytes. At most `limits<DWORD>::max`
             /// bytes are read per call; callers already accept short reads.
-            /// @return Number of bytes read, or `static_cast<DWORD>(-1)` on failure.
+            /// @return Number of bytes read, `0` at end of file, or
+            /// `static_cast<DWORD>(-1)` on failure.
             /// @details Waits for completion of overlapped reads via `GetOverlappedResult`.
             inline auto read(void* data, u64 size)
             {
@@ -220,6 +209,13 @@ namespace hsd
 
                 if (ReadFile(_handle, data, _count, &_read, &_overlapped) == 0)
                 {
+                    // An overlapped read that starts at or past the end fails with
+                    // ERROR_HANDLE_EOF, and that is an empty read, not an error.
+                    if (file_error_code() == ERROR_HANDLE_EOF)
+                    {
+                        return static_cast<DWORD>(0);
+                    }
+
                     if (file_error_code() != ERROR_IO_PENDING)
                     {
                         return static_cast<DWORD>(-1);
@@ -227,11 +223,32 @@ namespace hsd
 
                     if (GetOverlappedResult(_handle, &_overlapped, &_read, true) == 0)
                     {
+                        if (file_error_code() == ERROR_HANDLE_EOF)
+                        {
+                            return static_cast<DWORD>(0);
+                        }
+
                         return static_cast<DWORD>(-1);
                     }
                 }
 
+                advance(_read);
                 return _read;
+            }
+
+            /// @brief Moves the file position past `count` bytes that were transferred.
+            /// @param count Number of bytes the last transfer moved.
+            /// @details The system does not move the position of an overlapped file,
+            /// so the next transfer starts where this one stopped. Borrowed standard
+            /// handles are left as they are.
+            inline void advance(DWORD count)
+            {
+                if (_is_external == false)
+                {
+                    const u64 _next = ((static_cast<u64>(_overlapped.OffsetHigh) << 32) | _overlapped.Offset) + count;
+                    _overlapped.Offset = static_cast<DWORD>(_next);
+                    _overlapped.OffsetHigh = static_cast<DWORD>(_next >> 32);
+                }
             }
 
             
@@ -278,9 +295,15 @@ namespace hsd
                     }
                 }
 
+                // A failed CreateFileA returns INVALID_HANDLE_VALUE, which must not
+                // look like an open handle.
+                if (_file._handle == INVALID_HANDLE_VALUE)
+                {
+                    _file._handle = nullptr;
+                }
+
                 _file._mode = mode;
-                _file._is_overlapped = true;
-                _file._is_external = true;
+                _file._is_external = false;
 
                 return _file;
             }
@@ -293,7 +316,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_INPUT_HANDLE);
                 _file._mode = io_options::read;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;
@@ -307,7 +329,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_OUTPUT_HANDLE);
                 _file._mode = io_options::write;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;
@@ -321,7 +342,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_ERROR_HANDLE);
                 _file._mode = io_options::write;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;

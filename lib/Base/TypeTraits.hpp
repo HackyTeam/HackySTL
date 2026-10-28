@@ -1251,6 +1251,19 @@ namespace hsd
         : public literal_constant< bool, __is_trivially_copyable(T) >
     {};
 
+    #if defined(__has_builtin)
+        #if __has_builtin(__is_trivially_destructible)
+            /// @brief Compiler intrinsic behind `is_trivially_destructible`.
+            #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __is_trivially_destructible(T)
+        #else
+            /// @brief GCC 15 and older have no `__is_trivially_destructible`; the older
+            /// builtin gives the same answer there.
+            #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __has_trivial_destructor(T)
+        #endif
+    #else
+        #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __is_trivially_destructible(T)
+    #endif
+
     /// @brief Predicate: detects types whose destructor does nothing.
     /// @tparam T Type queried.
     /// @details `value` is `true` iff destroying a `T` needs no call to its
@@ -1258,8 +1271,10 @@ namespace hsd
     /// compiler's intrinsic, so no standard library header is needed.
     template <typename T>
     struct is_trivially_destructible
-        : public literal_constant< bool, __is_trivially_destructible(T) >
+        : public literal_constant< bool, HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) >
     {};
+
+    #undef HSD_IS_TRIVIALLY_DESTRUCTIBLE
 
     /// @brief Predicate: detects whether `T` can be constructed from `Args...` without throwing.
     /// @tparam T Type constructed.

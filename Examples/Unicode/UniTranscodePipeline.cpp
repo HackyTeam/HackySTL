@@ -75,11 +75,11 @@ int main()
     // A destination without enough room is reported as an error result.
     const hsd::char32 rocket[] = U"\U0001F680";
     hsd::char8 tiny[4]{};
-    auto small = hsd::unicode::convert_to(tiny, 4, rocket);
-    hsd::println("tiny buffer ok: {}"_fmt, small.is_ok() ? "true" : "false");
-    if (!small.is_ok())
+    auto tiny_result = hsd::unicode::convert_to(tiny, 4, rocket);
+    hsd::println("tiny buffer ok: {}"_fmt, tiny_result.is_ok() ? "true" : "false");
+    if (!tiny_result.is_ok())
     {
-        hsd::println("reason: {}"_fmt, small.unwrap_err().pretty_error());
+        hsd::println("reason: {}"_fmt, tiny_result.unwrap_err().pretty_error());
     }
 
     // The same text fits once the buffer is large enough.

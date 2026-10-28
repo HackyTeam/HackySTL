@@ -48,8 +48,8 @@ int main()
     hsd::println("division by zero ok: {}"_fmt, by_zero.is_ok() ? "true" : "false");
 
     // Integers compare with the usual operators and convert between widths.
-    hsd::integer<32> small = 77;
-    hsd::integer<128> widened = small;
+    hsd::integer<32> small_value = 77;
+    hsd::integer<128> widened = small_value;
     hsd::println("77 < cube: {}"_fmt, widened < cube ? "true" : "false");
     hsd::println("widened: {}"_fmt, widened);
 

@@ -204,7 +204,7 @@ namespace hsd::network_detail
             .ai_next = nullptr
         };
 
-        static string _domain_addr{};
+        string _domain_addr{};
         auto* _port = cstring::find_rev(ip_addr, ':');
 
         if (_port != nullptr)

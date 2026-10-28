@@ -43,7 +43,8 @@ endif()
 
 if(MSVC)
     # The tests check their results with assert, so it stays active in every build type.
-    target_compile_options(hackystl_test_config INTERFACE /W4 /EHs-c /UNDEBUG)
+    # /utf-8 reads sources as UTF-8, so literals such as u8"€" mean the same as on GCC and Clang.
+    target_compile_options(hackystl_test_config INTERFACE /utf-8 /W4 /EHs-c /UNDEBUG)
 else()
     target_compile_options(
         hackystl_test_config
@@ -91,7 +92,7 @@ target_include_directories(
 )
 target_link_libraries(hackystl_profile_config INTERFACE Threads::Threads)
 if(MSVC)
-    target_compile_options(hackystl_profile_config INTERFACE /W4 /EHs-c /O2)
+    target_compile_options(hackystl_profile_config INTERFACE /utf-8 /W4 /EHs-c /O2)
 else()
     target_compile_options(
         hackystl_profile_config

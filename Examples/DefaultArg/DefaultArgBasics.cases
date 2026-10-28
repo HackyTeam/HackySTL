@@ -1,0 +1,6 @@
+Case = default_v takes the stored value and other arguments are kept
+Input =
+Output = "add(10, 20) = 30
+add(10, default) = 14
+add(default, 20) = 23
+add(default, default) = 7"

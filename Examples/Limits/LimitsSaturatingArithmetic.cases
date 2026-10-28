@@ -1,0 +1,12 @@
+Case = Saturating operations clamp instead of wrapping
+Input =
+Output = "original: 0 40 128 200 255
+brighter: 70 110 198 255 255
+darker: 0 0 0 55 55
+naive u8 200 + 100 = 44, saturating = 255
+healed past the top: 32767
+after damage: 767
+after more damage: -31233
+stops at the bottom: -32768
+u16 total saturated after 10 additions at 65535
+f32 max doubled is infinity: true"

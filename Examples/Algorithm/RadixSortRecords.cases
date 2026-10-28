@@ -1,0 +1,9 @@
+Case = Records are ordered by key and equal keys keep arrival order
+Input =
+Output = "10 server down
+10 disk full
+20 password reset
+20 vpn timeout
+30 printer jam
+30 new monitor
+ids: 7 12 88 950 4021 100000"

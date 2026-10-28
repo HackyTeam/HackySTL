@@ -1,0 +1,15 @@
+Case = A directory, a file and a missing path are described
+Input =
+Output = "folder: ./inspect_demo
+exists: true
+is directory: true
+is regular file: false
+file: ./inspect_demo/notes.txt
+is regular file: true
+size in bytes: 23
+extension: .txt
+owner can read: true
+owner can write: true
+owner can execute: false
+missing exists: false
+missing size known: false"

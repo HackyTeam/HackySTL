@@ -1,0 +1,11 @@
+Case = Three responses are written and parsed back
+Input =
+Output = "HTTP/1.1 200 OK
+content-type: text/plain
+content-length: 5
+
+Hello
+--
+ok: status=200 message=OK length=5
+missing: status=404 message=Not Found length=12
+teapot: status=418 message=I'm a teapot length=0"

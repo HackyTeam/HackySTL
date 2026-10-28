@@ -1,0 +1,10 @@
+Case = Callables, state, and the empty function
+Input =
+Output = "lambda: 15
+function pointer: 15
+counter: 1 2 3
+original: 4 copy: 4
+total: 10
+empty is set: no
+empty call ok: no
+cleared is set: no"

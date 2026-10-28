@@ -1,0 +1,9 @@
+Case = Memoized path counting with a struct key
+Input =
+Output = "paths to the far corner: 30758
+cells cached: 135, misses: 135, hits: 103
+repeat gives the same answer: true
+repeat added misses: 0
+snapshot size: 135, original size: 0
+snapshot still knows the corner: 30758
+sum of cached values on row 1: 78"

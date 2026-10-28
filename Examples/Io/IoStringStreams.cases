@@ -1,0 +1,8 @@
+Case = Streams write, append and parse text, at run time and compile time
+Input =
+Output = "written: id=7 ratio=0.50 name=kiwi
+size: 25
+parsed: 12 3.5 apple
+too few fields: error
+compile time: 2 + 3 = 5
+grown: 1502 characters"

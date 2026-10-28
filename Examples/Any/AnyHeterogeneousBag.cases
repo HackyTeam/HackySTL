@@ -1,0 +1,10 @@
+Case = Each entry is described by its stored type
+Input =
+Output = "[0] int 10
+[1] double 3.14
+[2] string 'hello' (length 5)
+[3] point (3, -4)
+[4] empty
+[5] unknown type
+int total: 10
+point (13, -4)"

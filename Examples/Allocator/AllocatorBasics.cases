@@ -1,0 +1,5 @@
+Case = Allocate, construct, destroy and deallocate
+Input =
+Output = "values: 10 20 30
+released
+zero-sized request is null: true"

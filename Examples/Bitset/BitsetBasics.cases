@@ -1,0 +1,18 @@
+Case = Bits, counts, operators and shifts on a bitset of eight
+Input =
+Output = "flags    00100110
+size 8 count 3
+bit 1 true bit 3 false
+test(8) ok: false
+changed  10100101
+proxy    10101101
+and      10100000
+or       11111101
+xor      01011101
+not      01010010
+shl 2    10110100
+shr 3    00010101
+any true none false all false
+all set  11111111 all: true
+cleared  00000000 none: true
+chain bits: 3"

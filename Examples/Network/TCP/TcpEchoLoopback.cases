@@ -1,0 +1,6 @@
+Case = Every message comes back unchanged from the echo server
+Input =
+Output = "sent hello -> echoed hello (match)
+sent from -> echoed from (match)
+sent loopback -> echoed loopback (match)
+server echoed 3 messages"

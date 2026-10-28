@@ -1,0 +1,43 @@
+Case = A full config with sections, comments, an unknown key and bad lines
+Input =
+# demo
+[server]
+name: gateway
+port: 8080
+
+ratio: 0.5
+verbose: yes
+color: blue
+[extra]
+port: 99999
+nonsense
+Output = "section server
+section extra
+line 10: bad value for port
+line 11: cannot read 'nonsense'
+last section: extra
+name: gateway
+port: 8080
+ratio: 0.50
+verbose: yes
+unknown keys: 1, bad lines: 2"
+
+Case = A short config keeps the defaults for missing keys
+Input =
+port: 9000
+verbose: no
+Output = "last section: global
+name: unnamed
+port: 9000
+ratio: 1.00
+verbose: no
+unknown keys: 0, bad lines: 0"
+
+Case = Empty input leaves every default
+Input =
+Output = "last section: global
+name: unnamed
+port: 0
+ratio: 1.00
+verbose: no
+unknown keys: 0, bad lines: 0"

@@ -1,0 +1,31 @@
+Case = Precedence, parentheses and unary minus
+Input =
+1 + 2 * 3
+(1 + 2) * 3
+10 / 4
+-3 + 5
+2 * (3 + 4) - 5
+end
+Output = "1 + 2 * 3 => 7.00
+(1 + 2) * 3 => 9.00
+10 / 4 => 2.50
+-3 + 5 => 2.00
+2 * (3 + 4) - 5 => 9.00
+ok: 5 errors: 0"
+
+Case = Errors are reported without stopping
+Input =
+1 / 0
+2 +
+3 $ 4
+(1 + 2
+1 + 2)
+1.5 * 4
+end
+Output = "1 / 0 => error: division by zero
+2 + => error: unexpected end of expression
+3 $ 4 => error: unexpected character '$'
+(1 + 2 => error: missing ')'
+1 + 2) => error: unexpected token after expression
+1.5 * 4 => 6.00
+ok: 1 errors: 5"

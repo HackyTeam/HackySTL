@@ -1,0 +1,13 @@
+Case = Custom errors flow through transfers and references edit live accounts
+Input =
+Output = "alice -> bob 30: ok
+bob -> alice 500: insufficient funds
+alice -> carol 5: no such account
+bob -> bob 1: cannot transfer to the same account
+balances:
+  alice: 70
+  bob: 50
+after bonus:
+  alice: 70
+  bob: 1050
+dave found: false"

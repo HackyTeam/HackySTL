@@ -1,0 +1,9 @@
+Case = A message is compiled to Gorbitsa, run at compile time and echoed
+Input =
+Output = "message length: 16
+program length: 101
+program starts: S72 T S101 T
+echoed: Hello, HackySTL!
+S0 B4 ...: B
+S1 B4 ...: AB
+stored and reloaded: B"

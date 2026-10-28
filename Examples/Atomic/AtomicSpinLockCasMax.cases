@@ -1,0 +1,6 @@
+Case = Spin lock sum and CAS maximum match a single-thread check
+Input =
+Output = "sum: 2014161
+max: 1008
+sum matches: true
+max matches: true"

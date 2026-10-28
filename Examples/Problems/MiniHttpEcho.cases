@@ -1,0 +1,8 @@
+Case = Three requests travel over loopback UDP and get routed
+Input =
+Output = "server: GET /hello
+client: 200 "hello from the server"
+server: POST /echo
+client: 201 "ping pong"
+server: GET /missing
+client: 404 "no such route""

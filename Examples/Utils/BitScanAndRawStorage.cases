@@ -1,0 +1,11 @@
+Case = Bit scans give exact counts and raw storage follows the object life cycle
+Input =
+Output = "highest bit of 1000: 9
+set bits in 0xF0F0: 8
+trailing zeros of 96: 5
+leading zeros of 96: 25
+leading zeros of a zero byte: 8
+alive after construction: 3
+ids: 0 10 20
+alive after destruction: 0
+64-byte aligned: true"

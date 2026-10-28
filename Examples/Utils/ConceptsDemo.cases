@@ -1,0 +1,17 @@
+Case = Concepts choose overloads and answer type questions
+Input =
+Output = "42: signed integer
+42u: unsigned integer
+2.5: floating point
+text: pointer
+point: other
+twice(21)=42
+twice(1.25)=2.50
+call_checked=42
+point copyable: true
+move_only copyable: false
+move_only movable: true
+int to double: true
+int to pointer: false
+vector is container: true
+int is container: false"

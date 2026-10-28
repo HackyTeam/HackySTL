@@ -1,0 +1,18 @@
+Case = Recursive calls nest one level deeper per call
+Input =
+Output = "    fib
+    fib
+  fib
+  fib
+fib
+fib(3) = 2, calls = 5, deepest level = 2
+  level 0: 1 calls
+  level 1: 2 calls
+  level 2: 2 calls
+fib(6) = 8, calls = 25, deepest level = 5
+  level 0: 1 calls
+  level 1: 2 calls
+  level 2: 4 calls
+  level 3: 8 calls
+  level 4: 8 calls
+  level 5: 2 calls"

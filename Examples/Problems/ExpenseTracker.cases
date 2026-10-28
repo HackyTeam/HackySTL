@@ -1,0 +1,43 @@
+Case = Budgets, over-budget report, bad amount, undo and unknown command
+Input =
+budget food 20000
+add food 12050
+add rent 80000
+add food 9000
+report
+add food abc
+undo
+fly
+report
+Output = "budget set for food
+added food
+added rent
+added food
+report:
+  food: 210.50 (over budget by 10.50)
+  rent: 800.00
+  total: 1010.50
+error: amount is not a number
+removed last food expense
+error: unknown command 'fly'
+report:
+  food: 120.50
+  rent: 800.00
+  total: 920.50"
+
+Case = Undo on an empty history and a small report
+Input =
+undo
+add coffee 305
+add coffee 5
+budget coffee 400
+report
+add tea
+Output = "error: nothing to undo
+added coffee
+added coffee
+budget set for coffee
+report:
+  coffee: 3.10
+  total: 3.10
+error: unknown command 'add'"

@@ -1,0 +1,16 @@
+Case = Transpose, multiply and row sums of a small matrix
+Input =
+Output = "a:
+1 2 3
+4 5 6
+transpose of a:
+1 4
+2 5
+3 6
+a * transpose:
+14 32
+32 77
+a * a has 0 rows
+row 0 sum=6
+row 1 sum=15
+row 2 does not exist"

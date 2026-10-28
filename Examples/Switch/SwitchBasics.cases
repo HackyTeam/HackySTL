@@ -1,0 +1,9 @@
+Case = Number and string cases pick the first match, otherwise the default
+Input =
+Output = "two
+three
+42 is not 1, 2 or 3
+Bonjour
+Salut
+...
+chosen: 2"

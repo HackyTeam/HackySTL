@@ -1,0 +1,10 @@
+Case = Every allocation and construction made through the counting allocator is released
+Input =
+Output = "after reserve: allocations=1
+after 16 pushes: allocations=1 constructions=16
+vector holds 16 values, last is 15
+vector gone: balanced=true
+copy asked the traits: 1
+copy[4]=16 size=5
+map gone: balanced=true
+memory was used: true"

@@ -1,0 +1,7 @@
+Case = Handles push and pop call sites in scope order
+Input =
+Output = "line recorded correctly: true
+outer sees function outer
+inner sees function inner
+back in outer
+main still on top: main"

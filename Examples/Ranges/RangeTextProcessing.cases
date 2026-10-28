@@ -1,0 +1,27 @@
+Case = Blanks are trimmed, words counted and palindromes found
+Input =
+   Hello,  brave new world  
+A man, a plan, a canal: Panama
+racecar
+end
+Output = "[Hello,  brave new world]
+  4 words, longest 6 ("Hello,"), palindrome: no
+[A man, a plan, a canal: Panama]
+  7 words, longest 6 ("canal:"), palindrome: yes
+[racecar]
+  1 words, longest 7 ("racecar"), palindrome: yes
+string reversed: z y x"
+
+Case = A blank line and a line of punctuation
+Input =
+ ... ---
+    
+Never odd or even
+end
+Output = "[... ---]
+  2 words, longest 3 ("..."), palindrome: no
+[]
+  0 words, longest 0 (""), palindrome: no
+[Never odd or even]
+  4 words, longest 5 ("Never"), palindrome: yes
+string reversed: z y x"

@@ -1,0 +1,25 @@
+Case = All variables are present
+Input =
+name: Ada
+order: 1042
+city: London
+total: 59.90
+currency: GBP
+Output = "variables: 5, rejected lines: 0
+Dear Ada,
+Your order 1042 ships to London.
+Total: 59.90 GBP
+Write {{name}} to print a placeholder, or {{name
+totals: replaced 5 missing 0"
+
+Case = Fallbacks, missing names and a rejected line
+Input =
+name: Grace
+nonsense line
+total: 10
+Output = "variables: 2, rejected lines: 1
+Dear Grace,
+Your order <order?> ships to an unknown city.
+Total: 10 EUR
+Write {{name}} to print a placeholder, or {{name
+totals: replaced 4 missing 1"

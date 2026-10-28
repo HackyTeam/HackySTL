@@ -1,0 +1,9 @@
+Case = Valid and invalid orders get the expected statuses and JSON replies
+Input =
+Output = "order A-17: 201 order=A-17 accepted=true total=1200
+order B-02: 201 order=B-02 accepted=true total=0
+unknown sku: 422 error=unknown sku
+missing items: 422 error=missing field
+broken body: 400 error=invalid json
+wrong method: 405 error=use POST
+wrong path: 404 error=unknown path"

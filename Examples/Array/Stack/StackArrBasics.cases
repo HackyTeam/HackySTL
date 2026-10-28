@@ -1,0 +1,10 @@
+Case = Construction, checked access, fill and swap
+Input =
+Output = "values: 10 20 30 40 50
+size: 5
+values[1]=25
+at(4) ok=true value=50
+at(5) ok=false
+other: 7 7 7 7 7
+values: 7 7 7 7 7
+other: 10 25 30 40 50"

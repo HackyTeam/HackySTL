@@ -1,0 +1,9 @@
+Case = Each thread keeps its own depth and every event is delivered once
+Input =
+Output = "worker 0 sum = 31375
+worker 1 sum = 62750
+worker 2 sum = 94125
+worker 3 sum = 125500
+total events: 2000
+outer events: 1000, inner events: 1000
+events at the wrong depth: 0"

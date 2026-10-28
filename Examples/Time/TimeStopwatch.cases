@@ -1,0 +1,9 @@
+Case = Timing checks print only true or false
+Input =
+Output = "first lap at least 45 ms: true
+second lap under the first: true
+work took time: true
+work result: 599994
+wall clock saw the sleep: true
+elapsed_time at least 15 ms: true
+elapsed_time under one second: true"

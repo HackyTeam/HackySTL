@@ -1,0 +1,6 @@
+Case = Tables computed at compile time are printed at run time
+Input =
+Output = "fibonacci: 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610
+squares: 0 1 4 9 16 25 36 49 64 81
+sum of squares: 285
+swapped_first: 83"

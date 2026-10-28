@@ -1,0 +1,15 @@
+Case = Sliding windows, chunking and live views
+Input =
+Output = "windows of 3:
+  start 0 sum 27 max 15
+  start 1 sum 39 max 16
+  start 2 sum 54 max 23
+  start 3 sum 81 max 42
+  start 4 sum 72 max 42
+  start 5 sum 52 max 42
+  start 6 sum 19 max 9
+best window starts at 3 with sum 81
+chunk 0: 4 8 15 16 (sum 43)
+chunk 1: 23 42 7 3 (sum 75)
+chunk 2: 9 (sum 9)
+first window sum after edit: 123"

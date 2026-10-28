@@ -1,0 +1,11 @@
+Case = Handlers run per event, and an unsubscribed one is skipped
+Input =
+Output = "click handler saw 2
+click ran 2 handlers
+click handler saw 3
+click ran 2 handlers
+key ran 1 handlers
+scroll ran 0 handlers
+clicks: 5 last key: 65
+after unsubscribe: ran 1 handlers
+clicks: 9"

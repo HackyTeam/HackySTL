@@ -1,0 +1,7 @@
+Case = Byte, code point and UTF-16 counts differ for non-ASCII text
+Input =
+Output = "ascii: bytes=5 code_points=5 utf16_units=5
+accent: bytes=4 code_points=3 utf16_units=3
+euro: bytes=4 code_points=2 utf16_units=2
+emoji: bytes=5 code_points=2 utf16_units=3
+empty: bytes=0 code_points=0 utf16_units=0"

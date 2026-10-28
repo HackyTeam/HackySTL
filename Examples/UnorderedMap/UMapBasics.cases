@@ -1,0 +1,12 @@
+Case = Insert, look up, and erase string keys
+Input =
+Output = "first insert: inserted, second insert: kept
+size: 3
+  alice -> 90
+  bob -> 75
+  carol -> 60
+bob has 75
+dave present: false
+after erase, size: 2
+  alice -> 90
+  carol -> 60"

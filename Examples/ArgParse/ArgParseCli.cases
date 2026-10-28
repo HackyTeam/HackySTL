@@ -1,0 +1,80 @@
+Case = No arguments uses the defaults
+Input =
+Program arguments =
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+1: hello, world!"
+
+Case = Name and times are read from the command line
+Input =
+Program arguments = -name Ada -times 2
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+1: hello, Ada!
+2: hello, Ada!"
+
+Case = A flag and a scale factor combine
+Input =
+Program arguments = -shout -times 2 -scale 1.5
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+1: HELLO, WORLD!
+2: HELLO, WORLD!
+3: HELLO, WORLD!"
+
+Case = Hexadecimal numbers are accepted
+Input =
+Program arguments = -times 0x2 -name "Grace Hopper"
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+1: hello, Grace Hopper!
+2: hello, Grace Hopper!"
+
+Case = Help lists every option
+Input =
+Program arguments = -h
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+usage: greeter [options]
+  -name WORD    who to greet (default: world)
+  -times N      how many lines (default: 1)
+  -scale X      multiply the count by X (default: 1)
+  -shout        use capitals
+  -h            show this help"
+
+Case = An unknown option is reported before parsing
+Input =
+Program arguments = -bogus
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+unknown option: -bogus"
+
+Case = A missing value is reported before parsing
+Input =
+Program arguments = -shout -times
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+missing value for -times"
+
+Case = A value that is not a number is rejected
+Input =
+Program arguments = -times abc
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+error: a value could not be read"
+
+Case = A count outside the limit is rejected
+Input =
+Program arguments = -times 50
+Output = "checker
+-pair a b
+short command line ran 0 callbacks
+error: count 50 is outside 1..20"

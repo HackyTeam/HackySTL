@@ -1,0 +1,7 @@
+Case = Four workers sum 1..1000 in chunks
+Input =
+Output = "chunk 0: 31375
+chunk 1: 93875
+chunk 2: 156375
+chunk 3: 218875
+total: 500500"

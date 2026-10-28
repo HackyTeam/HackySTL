@@ -1,0 +1,80 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: g++ build active file",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-std=c++23",
+                "-fsanitize=address,undefined",
+                "-Wall",
+                "-Wextra",
+                "-Wempty-body",
+                "-Wignored-qualifiers",
+                "-Wmissing-field-initializers",
+                "-Wstring-compare",
+                "-Wtype-limits",
+                "-Wuninitialized",
+                "-Wunused-parameter",
+                "${file}",
+                "-I${workspaceFolder}/lib",
+                "-I${workspaceFolder}/Tests",
+                "-fno-exceptions",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.out",
+                "-lpthread"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "type": "shell",
+            "label": "CMake: Configure",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}/build",
+                "-G",
+                "Ninja",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DHACKYSTL_ENABLE_SANITIZERS=ON"
+            ],
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "type": "shell",
+            "label": "CMake: Build tests",
+            "dependsOn": "CMake: Configure",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--parallel"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "type": "shell",
+            "label": "CMake: Run tests",
+            "dependsOn": "CMake: Build tests",
+            "dependsOrder": "sequence",
+            "command": "ctest",
+            "args": [
+                "--test-dir",
+                "${workspaceFolder}/build",
+                "--output-on-failure"
+            ],
+            "problemMatcher": []
+        }
+    ],
+    "version": "2.0.0"
+}

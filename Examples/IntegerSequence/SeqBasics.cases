@@ -1,0 +1,6 @@
+Case = Sequences are built by hand or generated and read back with a fold
+Input =
+Output = "handmade: 9 2 5 1
+4 values, total 17
+indices: 0 1 2 3 4 5
+for three types: 0 1 2"

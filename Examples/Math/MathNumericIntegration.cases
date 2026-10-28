@@ -1,0 +1,14 @@
+Case = Integration rules and Newton's method converge, and compile-time checks hold
+Input =
+Output = "integral of sin over [0, pi] (exact 2):
+  n=4 trapezoid=1.89612 simpson=2.00456
+  n=16 trapezoid=1.99357 simpson=2.00002
+  n=64 trapezoid=1.99960 simpson=2.00000
+integral of x^2 over [0, 3] (exact 9): 9.000000
+gaussian area is 1.772454, sqrt(pi) is 1.772454
+simpson is more accurate: true
+newton sqrt(2) after 1, 2, 5 rounds:
+  1 -> 1.50000000
+  2 -> 1.41666667
+  5 -> 1.41421356
+library sqrt(2)=1.41421356"

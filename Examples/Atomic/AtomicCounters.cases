@@ -1,0 +1,10 @@
+Case = Counters and tickets add up
+Input =
+Output = "hits: 20000
+weighted: 50000
+tickets drawn: 400
+ticket out of range: false
+worker 0 drew 100 tickets
+worker 1 drew 100 tickets
+worker 2 drew 100 tickets
+worker 3 drew 100 tickets"

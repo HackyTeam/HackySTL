@@ -1,0 +1,19 @@
+Case = Ownership moves and objects are destroyed exactly once
+Input =
+Output = "single object:
+  create 1
+first id: 1
+first empty: yes, second id: 1
+  create 2
+  destroy 1
+second now owns 2
+  destroy 2
+second empty: yes
+array:
+  create 0
+  create 0
+ids: 10 11
+  destroy 11
+  destroy 10
+plain value:
+number: 42"

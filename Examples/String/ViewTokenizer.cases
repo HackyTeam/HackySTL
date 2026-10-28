@@ -1,0 +1,22 @@
+Case = Words split on spaces, commas, semicolons and colons
+Input =
+alpha beta,gamma;delta
+key: value,  other:thing
+Output = "line 1 has 4 tokens: [alpha] [beta] [gamma] [delta]
+line 2 has 4 tokens: [key] [value] [other] [thing]
+total tokens: 8
+longest token: alpha (5 characters)"
+
+Case = A single line with repeated separators
+Input =
+,,;; wide   gaps ,,  between ;; tokens
+Output = "line 1 has 4 tokens: [wide] [gaps] [between] [tokens]
+total tokens: 4
+longest token: between (7 characters)"
+
+Case = Only separators gives no tokens
+Input =
+ ,; : 
+Output = "line 1 has 0 tokens:
+total tokens: 0
+longest token: none"

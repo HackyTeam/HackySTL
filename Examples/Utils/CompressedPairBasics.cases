@@ -1,0 +1,9 @@
+Case = A compressed pair behaves like a pair and drops empty members
+Input =
+Output = "first=3 second=4.5
+get<0>=9 get<1>=2.5
+same size as pair: true
+int with empty is just an int: true
+empty first is also free: true
+pair pays for the empty one: true
+kept values: 7 and 8"

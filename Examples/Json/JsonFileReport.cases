@@ -1,0 +1,12 @@
+Case = The inventory fixture is summarised
+Input =
+Output = "warehouse: North
+A-100 bolt qty: 250 value: 62.50
+B-200 nut qty: 400 value: 40.00
+C-300 washer qty: 0 value: 0.00
+D-400 gear qty: 12 value: 90.00
+items: 4 active: 3 out of stock: 1
+units: 662 value: 192.50
+notes:
+- count every Friday
+- gears are fragile"

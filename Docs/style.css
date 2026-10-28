@@ -1,0 +1,99 @@
+/*
+
+HackySTL documentation overrides.
+
+The theme is doxygen-awesome-css v2.5.0 (doxygen-awesome.css, MIT License,
+Copyright (c) 2021 - 2025 jothepro, https://github.com/jothepro/doxygen-awesome-css),
+kept unmodified next to this file. This file only overrides CSS variables and
+one fragment rule. Upgrading the base theme means replacing doxygen-awesome.css.
+
+Light mode keeps the upstream palette with smaller corners. Dark mode uses the
+Dracula palette, https://draculatheme.com/
+
+*/
+
+html {
+    /* Smaller corners than the base theme, which uses pill-shaped search and large radii. */
+    --border-radius-small: 2px;
+    --border-radius-medium: 3px;
+    --border-radius-large: 4px;
+
+    --searchbar-border-radius: var(--border-radius-medium);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        color-scheme: dark;
+
+        /* Dracula: current line #44475a, comment #6272a4, purple #bd93f9, pink #ff79c6, cyan #8be9fd */
+        --primary-color: #bd93f9;
+        --primary-dark-color: #ff79c6;
+        --primary-light-color: #44475a;
+        --on-primary-color: #282a36;
+
+        --link-color: #8be9fd;
+
+        /* Dracula: background #282a36, foreground #f8f8f2. Secondary text is a lighter
+           tint of the comment color, because #6272a4 alone is too faint for body text. */
+        --page-background-color: #282a36;
+        --page-foreground-color: #f8f8f2;
+        --page-secondary-foreground-color: #a9b1d0;
+
+        --separator-color: #44475a;
+        --side-nav-background: #21222c;
+
+        --box-shadow: 0 2px 6px 0 rgba(0,0,0,.4);
+        --odd-color: rgba(255,255,255,.03);
+        --menu-selected-background: rgba(255,255,255,.08);
+
+        --code-background: #21222c;
+        --section-code-background: rgba(255,255,255,.08);
+        --section-code-border: rgba(255,255,255,.18);
+
+        --tablehead-background: #343746;
+
+        --blockquote-background: #21222c;
+        --blockquote-foreground: #a9b1d0;
+
+        /* Admonition boxes: a tinted background, a Dracula accent and a readable text color. */
+        --warning-color: #3d2a35;
+        --warning-color-dark: #ff5555;
+        --warning-color-darker: #ffb8b8;
+        --note-color: #3c3b2a;
+        --note-color-dark: #f1fa8c;
+        --note-color-darker: #f8fbc4;
+        --todo-color: #1f3a44;
+        --todo-color-dark: #8be9fd;
+        --todo-color-darker: #c9f6ff;
+        --deprecated-color: #2c2f3d;
+        --deprecated-color-dark: #6272a4;
+        --deprecated-color-darker: #c3c8e0;
+        --bug-color: #33284a;
+        --bug-color-dark: #bd93f9;
+        --bug-color-darker: #e0ccff;
+        --invariant-color: #213a2c;
+        --invariant-color-dark: #50fa7b;
+        --invariant-color-darker: #c4fbd2;
+
+        /* Source listings. Strings are yellow, keywords pink, types cyan and preprocessor orange,
+           as in the Dracula editor theme. Comments and line numbers use a lighter comment tint. */
+        --fragment-background: #21222c;
+        --fragment-foreground: #f8f8f2;
+        --fragment-keyword: #ff79c6;
+        --fragment-keywordtype: #8be9fd;
+        --fragment-keywordflow: #ff79c6;
+        --fragment-token: #f1fa8c;
+        --fragment-comment: #8f9bc8;
+        --fragment-link: #8be9fd;
+        --fragment-preprocessor: #ffb86c;
+        --fragment-linenumber-color: #8f9bc8;
+        --fragment-linenumber-background: #282a36;
+        --fragment-linenumber-border: #44475a;
+    }
+
+    /* Doxygen 1.16 marks functions in code links with the hl_function class. Dracula shows
+       functions in green, so keep them distinct from types. The base theme needs !important here. */
+    div.fragment a.code.hl_function {
+        color: #50fa7b !important;
+    }
+}

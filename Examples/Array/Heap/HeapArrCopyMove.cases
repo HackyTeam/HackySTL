@@ -1,0 +1,11 @@
+Case = Copies are independent and moves transfer storage
+Input =
+Output = "original: 100 2 3 4
+copy: 1 2 3 4
+same storage after copy assignment: true
+assigned: 100 2 3 4
+assigned from C array: 9 8 7 6
+moved took the storage: true
+moved: 100 2 3 4
+assigned after move: 100 2 3 4
+moved after move assignment: 9 8 7 6"

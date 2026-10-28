@@ -1,0 +1,17 @@
+Case = Generic algorithms over spans of vectors and arrays
+Input =
+Output = "vector: 2 7 7 9 1 3 4 8 0
+  sorted: false
+  max at index: 3
+  longest ascending run: 4
+stack_array: 1 3 5 7
+  sorted: true
+  max at index: 3
+  longest ascending run: 4
+const stack_array: 6 4 2
+  sorted: false
+  max at index: 0
+  longest ascending run: 1
+merged: 0 1 2 3 4 5 6 7 8
+prefix of 4 sorted: true
+compile time run: 4"

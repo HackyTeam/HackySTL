@@ -1,0 +1,15 @@
+Case = Vector grows, shrinks and reports checked access
+Input =
+Output = "start (size 3): 10 20 30
+grown (size 5): 10 20 30 40 50
+ends: 10 and 50
+at(1)=20
+at(99) is an error
+after pop_back and erase (size 3): 10 30 40
+resized up (size 6): 10 30 40 0 0 0
+resized down (size 2): 10 30
+capacity >= 100: true
+size still 2
+cleared, size 0
+empty reverse steps: 0
+reversed: 3 2 1"

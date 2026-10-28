@@ -1,0 +1,12 @@
+Case = Format tags change how integers and floats print
+Input =
+Output = "integers: 42 -17 1000000
+chars and text: A C string view
+owned string: owned (length 5)
+hex: 0xff 0x1000
+default: 3.141593
+two digits: 3.14
+zero digits: 2
+scientific: 1.234568e+05
+small scientific: 4.200000e-04
+row: 1 4 9 16"

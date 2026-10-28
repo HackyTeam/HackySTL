@@ -1,0 +1,13 @@
+Case = Typed lookups, defaults and overwriting
+Input =
+Output = "properties: 5
+width x height: 1280 x 720
+scale: 1.50
+title: demo window
+depth (missing): 24
+scale as int (wrong type): -1
+check width/i32: ok
+check width/f64: wrong type
+check depth/i32: missing
+width now f64: ok (count 5)
+fullscreen: on"

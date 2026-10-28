@@ -1,0 +1,6 @@
+Case = A value and an error travel through promises
+Input =
+Output = "is_ok: true
+value: 42
+is_ok: false
+error: the worker gave up"

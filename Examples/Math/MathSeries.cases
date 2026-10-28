@@ -1,0 +1,14 @@
+Case = Series approach the library values as terms are added
+Input =
+Output = "terms  series        library
+2  exp(1.5)=2.500000  4.481689
+4  exp(1.5)=4.187500  4.481689
+8  exp(1.5)=4.480929  4.481689
+12  exp(1.5)=4.481689  4.481689
+sin(1.2): series=0.93203909 library=0.93203909
+more terms are closer: true
+leibniz(10) = 3.0418
+leibniz(1000) = 3.1406
+leibniz(100000) = 3.1416
+5!=120 10!=3628800
+stirling(10) is within 1 percent of 10!: true"

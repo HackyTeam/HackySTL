@@ -1,0 +1,17 @@
+Case = Overflow is detected before it happens
+Input =
+Output = "i8 100 + 27: fits
+i8 100 + 28: overflow
+i8 -100 + -29: overflow
+u8 200 + 55: fits
+u8 200 + 56: overflow
+i32 2147483000 + 647: fits
+i32 2147483000 + 648: overflow
+i32 65536 * 32767: fits
+i32 65536 * 32768: overflow
+i32 -65536 * 32768: fits
+i32 -65536 * 32769: overflow
+u8 max + 1 wraps to 0
+largest factorial in u32: 12! = 479001600
+largest factorial in u64: 20! = 2432902008176640000
+digits of u32 max: 10, of u64 max: 20"

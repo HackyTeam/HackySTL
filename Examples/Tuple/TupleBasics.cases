@@ -1,0 +1,10 @@
+Case = Create, read, join and tie tuples
+Input =
+Output = "record: 7 x 2.5
+changed first: 8
+made: -1 100
+joined: 8 x 2.5 -1 100
+variable after tie: 10
+original 8 copy 99
+tied: 10 20
+copied: 7 3"

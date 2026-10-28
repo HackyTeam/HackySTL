@@ -1,0 +1,9 @@
+Case = A five row staircase of letters is generated and run
+Input =
+Output = "program length: 109
+A
+AB
+ABC
+ABCD
+ABCDE
+output length: 20"

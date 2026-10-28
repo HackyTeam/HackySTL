@@ -1,0 +1,8 @@
+Case = A GET request is parsed and a bare LF request is rejected
+Input =
+Output = "method: GET
+path: /index.html
+http 1.1: true
+host: example.test
+user-agent present: false
+bare LF accepted: false"

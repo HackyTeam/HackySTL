@@ -1,0 +1,13 @@
+Case = Both ends, indexing and erase
+Input =
+Output = "values: 0 1 2 3 4
+size: 5 front: 0 back: 4
+values[2]=2
+at(9) ok: false
+after pops: 1 2 3
+erase ok: true
+after erase: 2 3
+resized: 7 8 9 0 0
+reversed: 0 0 9 8 7
+empty reverse is empty: true
+size after clear: 0"

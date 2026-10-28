@@ -1,0 +1,6 @@
+Case = Default order is ascending, and a predicate can reverse it
+Input =
+Output = "ascending: 1 2 5 7 9
+descending: 9 7 5 2 1
+words: apple fig pear
+records by key: 1 2 3"

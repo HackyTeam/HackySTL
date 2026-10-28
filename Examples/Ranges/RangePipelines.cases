@@ -1,0 +1,57 @@
+Case = A dead start and a negative in the middle
+Input =
+0
+-3
+4
+7
+-2
+5
+8
+999
+Output = "read 7 values
+positive: 4 7 5 8
+positive squared: 16 49 25 64
+first three after the dead start: 4 7 -2
+before first negative, reversed: 0
+after clamping negatives to zero, sum is 24"
+
+Case = Values that start positive
+Input =
+3
+1
+4
+1
+-5
+9
+2
+6
+999
+Output = "read 8 values
+positive: 3 1 4 1 9 2 6
+positive squared: 9 1 16 1 81 4 36
+first three after the dead start: 3 1 4
+before first negative, reversed: 1 4 1 3
+after clamping negatives to zero, sum is 26"
+
+Case = A single reading
+Input =
+5
+999
+Output = "read 1 values
+positive: 5
+positive squared: 25
+first three after the dead start: 5
+before first negative, reversed: 5
+after clamping negatives to zero, sum is 5"
+
+Case = Only negatives leaves every view empty
+Input =
+-1
+-2
+999
+Output = "read 2 values
+positive: (none)
+positive squared: (none)
+first three after the dead start: (none)
+before first negative, reversed: (none)
+after clamping negatives to zero, sum is 0"

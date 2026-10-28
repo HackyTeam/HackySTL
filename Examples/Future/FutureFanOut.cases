@@ -1,0 +1,8 @@
+Case = Five tasks each sum a range of squares
+Input =
+Output = "squares up to 10: 385
+squares up to 20: 2870
+squares up to 30: 9455
+squares up to 40: 22140
+squares up to 50: 42925
+total: 77775"

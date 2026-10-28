@@ -1,0 +1,12 @@
+Case = Any argument position can fall back while the others are given
+Input =
+Output = "all defaults: 1200
+discount 200: 960
+zero tax: 1000
+base 500, tax and discount default: 600
+nothing default: 495
+volume: 24
+taller volume: 80
+2^8: 256
+3^8: 6561
+2^10: 1024"

@@ -1,0 +1,10 @@
+Case = Fields of a small object are read back with their types
+Input =
+Output = "name: pumpkin
+count: 12
+price: 2.50
+fresh: true
+tags: 2
+first tag: orange
+name as number ok: false
+color found: false"

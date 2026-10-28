@@ -1,0 +1,13 @@
+Case = Four workers count their chunks and main merges the results
+Input =
+Output = "chunk 0: 10 words, 8 distinct
+chunk 1: 12 words, 10 distinct
+chunk 2: 9 words, 7 distinct
+chunk 3: 10 words, 9 distinct
+total words: 41
+distinct words: 18
+most common:
+  the x9
+  and x4
+  cat x4
+  dog x3"

@@ -1,0 +1,8 @@
+Case = Timeouts and notifications
+Input =
+Output = "timed out: true
+waited at least 40 ms: true
+predicate satisfied: false
+wait_until timed out: true
+woken by notify: true
+finished before the deadline: true"

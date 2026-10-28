@@ -1,0 +1,5 @@
+Case = Two consumers drain everything the producer pushes
+Input =
+Output = "produced: 50
+consumed: 50
+sum: 1275"

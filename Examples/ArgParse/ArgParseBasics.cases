@@ -1,0 +1,6 @@
+Case = Options set variables, in any order, and absent ones keep their value
+Input =
+Output = "number: 42, text: hello
+number: -7, text: hello
+number: 42, text: hello
+number: 42, text: hello"

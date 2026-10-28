@@ -1,0 +1,6 @@
+Case = A UTF-8 string becomes UTF-32 code points and UTF-16 units
+Input =
+Output = "code points: 0x61 0xe9 0x20ac 0x1f600
+utf-16 units: 0x61 0xe9 0x20ac 0xd83d 0xde00
+exact fit: true
+one unit short: false"

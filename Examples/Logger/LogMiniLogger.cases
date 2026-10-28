@@ -1,0 +1,10 @@
+Case = Messages below the threshold are dropped and call sites are tagged
+Input =
+Output = "everything (4 lines)
+  INFO #0 main: starting
+  INFO #1 connect: connecting
+  WARN #2 connect: slow handshake
+  ERROR #3 main: gave up
+quiet (2 lines)
+  WARN #0 connect: slow handshake
+  ERROR #1 main: gave up"

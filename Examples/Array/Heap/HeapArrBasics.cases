@@ -1,0 +1,9 @@
+Case = Construction, element access and a failed at()
+Input =
+Output = "size: 5
+values: 1 2 3 4 5
+values[2]=30
+at(4) ok=true value=5
+at(5) ok=false
+error: Tried to access elements out of bounds
+zeros: 0 0 0"

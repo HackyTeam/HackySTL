@@ -1,0 +1,7 @@
+Case = A vector uses a stack buffer and the allocator reports misuse
+Input =
+Output = "squares: 1 4 9 16 25 36 49 64
+huge request ok: false
+reason: Insufficient memory
+block reused: true
+foreign pointer rejected: true"

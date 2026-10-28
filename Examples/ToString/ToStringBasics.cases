@@ -1,0 +1,9 @@
+Case = Integers and floats convert to text
+Input =
+Output = "42 -7 2.500000
+lengths: 2 2 8
+decimal 255 -> 255 (size 3)
+negative -> -1024 (size 5)
+hex 255 -> 0xff (size 4)
+zero -> 0 (size 1)
+wide length: 4"

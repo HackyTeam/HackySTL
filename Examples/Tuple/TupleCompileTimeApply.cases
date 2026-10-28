@@ -1,0 +1,8 @@
+Case = Compile-time tuples and apply
+Input =
+Output = "volume of box: 24
+sum of box: 9
+total volume: 29
+six elements: 2 3 4 1 1 1
+running total: 26
+accumulate_pairs: 33"

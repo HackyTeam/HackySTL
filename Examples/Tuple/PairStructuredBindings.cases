@@ -1,0 +1,11 @@
+Case = Structured bindings on pairs
+Input =
+Output = "min: -2 max: 9
+widened: -3 to 10
+made: 1 a
+ada: 90
+bob: 72
+cy: 85
+sum: 247
+tuple: -2 9 range
+pairs equal: true, different: false"

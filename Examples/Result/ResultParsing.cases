@@ -1,0 +1,11 @@
+Case = Errors travel up the call chain and unwrap_or_else supplies a fallback
+Input =
+Output = "'1 2' = 3
+'-5 10' = 5
+'abc 4' -> not a number
+'12' -> expected two numbers
+'3 ' -> missing number
+'40 -2' = 38
+'7 99999x' -> not a number
+total: 46 failures: 4
+fallback: -1"

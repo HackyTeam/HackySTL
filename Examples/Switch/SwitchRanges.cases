@@ -1,0 +1,14 @@
+Case = Ordered less and greater cases form ranges
+Input =
+Output = "-10 C is freezing
+0 C is cold
+14 C is cold
+15 C is mild
+24 C is mild
+30 C is warm
+35 C is hot
+41 C is hot
+score 87 earns 2 stars
+guess 3: too low
+guess 8: too high
+guess 5: correct"

@@ -1,0 +1,9 @@
+Case = Ready tasks run by priority, and bad graphs are rejected
+Input =
+Output = "build pipeline:
+  order: fetch docs configure compile test package
+  critical path: 13
+cyclic tasks:
+  error: dependency cycle detected
+missing dependency:
+  error: task depends on an unknown task"

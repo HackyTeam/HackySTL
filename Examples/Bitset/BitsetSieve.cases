@@ -1,0 +1,29 @@
+Case = Counting primes for a few limits
+Input =
+30
+100
+1000
+0
+Output = "primes up to 30: 10
+first: 2 3 5 7 11 13 17 19
+twin prime pairs: 4
+primes up to 100: 25
+first: 2 3 5 7 11 13 17 19
+twin prime pairs: 8
+primes up to 1000: 168
+first: 2 3 5 7 11 13 17 19
+twin prime pairs: 35"
+
+Case = Small and out-of-range limits
+Input =
+2
+99999
+10000
+0
+Output = "primes up to 2: 1
+first: 2
+twin prime pairs: 0
+limit 99999 is out of range
+primes up to 10000: 1229
+first: 2 3 5 7 11 13 17 19
+twin prime pairs: 205"

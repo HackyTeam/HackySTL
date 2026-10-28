@@ -1,0 +1,16 @@
+Case = Each operation on its own
+Input =
+Output = "load: 5
+after store: 10
+exchange returned 10, now 20
+fetch_add returned 20
+fetch_sub returned 25
+value: 22
+swap with wrong guess: false, expected is now 22
+swap with right guess: true, value is now 1
+after and: 2
+after or: 10
+after xor: 9
+counter: 5
+test_and_set: false then true
+after clear: false"

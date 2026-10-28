@@ -1,0 +1,8 @@
+Case = The two threads alternate strictly
+Input =
+Output = "ping
+pong
+ping
+pong
+ping
+pong"

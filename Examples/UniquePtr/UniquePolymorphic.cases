@@ -1,0 +1,14 @@
+Case = Factory, shared base pointer and ownership transfer
+Input =
+Output = "no animal for 'x'
+dog has 4 legs
+bird has 2 legs
+snake has 0 legs
+total legs: 6
+zoo slot 1 empty: yes
+vet has a bird
+releasing the vet
+  bird destroyed
+end of main
+  snake destroyed
+  dog destroyed"

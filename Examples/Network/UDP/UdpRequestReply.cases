@@ -1,0 +1,12 @@
+Case = A key-value store answers set, get and delete commands
+Input =
+Output = "SET color blue -> OK
+SET size large -> OK
+GET color -> VALUE blue
+GET weight -> MISSING
+DEL size -> OK
+GET size -> MISSING
+DEL size -> MISSING
+PING -> ERROR missing key
+QUIT -> BYE
+requests served: 9"

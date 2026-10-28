@@ -1,0 +1,9 @@
+Case = Valid lines are summarized, malformed ones are counted and skipped
+Input =
+Output = "parsed 8 lines, skipped 2
+severities: INFO=4 WARN=2 ERROR=2
+services by average latency:
+  api: avg=100.0ms requests=4 errors=1
+  db: avg=60.0ms requests=2 errors=1
+  auth: avg=11.5ms requests=2 errors=0
+slow requests (>=100ms): #102 #105"

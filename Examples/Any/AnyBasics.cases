@@ -1,0 +1,10 @@
+Case = Store, cast, copy and reset an any
+Input =
+Output = "empty: has_value=no int=no
+stored: has_value=yes int=yes f64=no
+cast_if<i32>: 42
+cast_if<f64> is null: yes
+cast_to<i32> ok=yes cast_to<f64> ok=no
+copies differ: 42 vs 7
+now f64=yes value=2.5
+after reset: has_value=no"

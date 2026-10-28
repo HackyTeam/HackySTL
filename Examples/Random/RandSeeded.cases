@@ -1,0 +1,8 @@
+Case = The same seed reproduces the same numbers and ranges are checked
+Input =
+Output = "raw words: 1608637542 3421126067 4083286876
+dice: 3 5 5 2 4 2 6 4 3 5
+empty range ok: false
+reason: Invalid interval
+unit in range: true
+same seed, same sequence: true"

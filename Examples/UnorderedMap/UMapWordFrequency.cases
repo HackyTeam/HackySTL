@@ -1,0 +1,26 @@
+Case = Repeated words are ranked by count, then alphabetically
+Input =
+The cat and the dog.
+The dog saw the cat; AND the bird!
+end
+Output = "words: 13 distinct: 6
+the 5
+and 2
+cat 2"
+
+Case = Punctuation separates words and case is ignored
+Input =
+Go, go, GO... stop
+end
+Output = "words: 4 distinct: 2
+go 3
+stop 1"
+
+Case = A single line of unique words
+Input =
+pear apple fig
+end
+Output = "words: 3 distinct: 3
+apple 1
+fig 1
+pear 1"

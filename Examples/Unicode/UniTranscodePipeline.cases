@@ -1,0 +1,10 @@
+Case = Text survives every conversion and a small buffer gives an error
+Input =
+Output = "utf-32: 0x6e 0x61 0xef 0x76 0x65 0x20 0x20ac 0x20 0x1f680
+utf-8 round trip: true
+utf-16 round trip: true
+long round trip: true
+utf-8 bytes needed: 15
+tiny buffer ok: false
+reason: Destination too small for conversion
+roomy buffer ok: true"

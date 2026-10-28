@@ -1,0 +1,12 @@
+Case = Shared packages stay alive until the last owner goes
+Input =
+Output = "owners: core 3 gfx 2 ui 2 net 2 app 1
+build order:
+  build core
+  build gfx
+  build ui
+  build net
+  build app
+packages alive: 5
+after dropping locals: alive 5 app owners 1
+after dropping app: alive 0"

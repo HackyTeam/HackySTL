@@ -1,0 +1,11 @@
+Case = Success, failure and the recovery calls
+Input =
+Output = "84 / 2 = 42
+1 / 0 failed: division by zero
+unwrap_or: -1
+unwrap_or_else: 99
+unwrap_or_default: 0
+negative in mixed: -3
+negative in positive: none
+6 -> even
+7 -> value is odd"

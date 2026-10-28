@@ -1,0 +1,24 @@
+Case = A line is trimmed, collapsed, replaced and reversed
+Input =
+the  cat   sat on the cat mat  
+Output = "line 1: 'the cat sat on the cat mat'
+  replaced: 'the dog sat on the dog mat'
+  reversed: 'tam tac eht no tas tac eht'
+  upper:    'THE CAT SAT ON THE CAT MAT'
+erase_for: 'keep keep'
+lines processed: 1"
+
+Case = Several lines, with leading blanks and no match
+Input =
+one cat
+    two     words  
+Output = "line 1: 'one cat'
+  replaced: 'one dog'
+  reversed: 'tac eno'
+  upper:    'ONE CAT'
+line 2: 'two words'
+  replaced: 'two words'
+  reversed: 'sdrow owt'
+  upper:    'TWO WORDS'
+erase_for: 'keep keep'
+lines processed: 2"

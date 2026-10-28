@@ -1,0 +1,13 @@
+Case = Areas and names through visit
+Input =
+Output = "shape 0: area 3.142
+shape 1: area 12.000
+shape 2: area 7.500
+shape 3: area 0.785
+total area: 23.427
+shape 0 is a circle
+shape 1 is a rectangle
+shape 2 is a triangle
+shape 3 is a circle
+doubled circle: 12.566
+circles 2 rectangles 1 triangles 1"

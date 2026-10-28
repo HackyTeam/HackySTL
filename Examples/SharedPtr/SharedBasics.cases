@@ -1,0 +1,22 @@
+Case = Counts follow copies and the object dies with its last owner
+Input =
+Output = "unsafe:
+  create 1
+single owner: count 1 unique yes
+with a copy: count 2 unique no
+same object: yes
+copy gone: count 1
+  destroy 1
+safe:
+  create 2
+single owner: count 1 unique yes
+with a copy: count 2 unique no
+same object: yes
+copy gone: count 1
+  destroy 2
+last owner wins:
+  create 3
+keep is empty: yes, other count: 1
+  destroy 3
+done
+labeled: box (3 characters)"

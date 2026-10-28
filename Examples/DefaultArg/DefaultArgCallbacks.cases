@@ -1,0 +1,9 @@
+Case = Each stage uses its stored defaults and a wrapper can still override them
+Input =
+Output = "-10 -> 0
+4 -> 2
+20 -> 26
+60 -> 50
+clamp 250 to default max: 100
+clamp 250 to max 200: 200
+constexpr result: 18"

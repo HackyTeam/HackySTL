@@ -1,0 +1,8 @@
+Case = Four threads increment under a mutex
+Input =
+Output = "counter: 4000
+first try_lock: true
+second try_lock: false
+owns lock: true
+owns lock after unlock: false
+second unlock ok: false"

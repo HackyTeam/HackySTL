@@ -1,0 +1,6 @@
+Case = An index pack spreads an array into arguments or selects elements
+Input =
+Output = "volume=24
+ranged 2..5: 30 40 50
+inverse 5: 50 40 30 20 10
+inverse ranged 7..3: 70 60 50 40"

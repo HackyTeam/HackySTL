@@ -1,0 +1,11 @@
+Case = Every lock type gives the same count
+Input =
+Output = "mutex: 8000
+futex: 8000
+spin: 8000
+mutex try_lock: true
+mutex try_lock again: false
+spin try_lock: true
+spin try_lock again: false
+deferred owns: false
+deferred protects mutex: true"

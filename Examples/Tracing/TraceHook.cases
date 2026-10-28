@@ -1,0 +1,6 @@
+Case = Scopes report innermost first, with their nesting depth
+Input =
+Output = "leaf depth 1
+middle depth 0
+inside the block
+main depth 0"

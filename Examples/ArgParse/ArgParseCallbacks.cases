@@ -1,0 +1,8 @@
+Case = Flags, repeated and multi-token options run in command-line order
+Input =
+Output = "plain: value 13.0, operations 3, errors 0
+  add 1.500000 -> 1.500000
+  mul 4.000000 -> 6.000000
+traced: value 6.0, operations 2, errors 0
+clamped: value 50.0, operations 1, errors 0
+broken: value 4.0, operations 1, errors 1"

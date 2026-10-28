@@ -1,0 +1,20 @@
+Case = Build, search and slice a string
+Input =
+Output = "length=5 size=6
+Hello, world!
+Hello, world! / Hello, world! Again!
+ends: H and !
+greeting[4]=o
+comma at 5
+'xyz' found: false
+rfind 'o' at 8
+starts with Hello: true
+ends with '?': false
+contains 'wor': true
+word: 'world'
+sub_string(100, 2) is an error
+equal: true
+number as text: 2024 (4 characters)
+padded: abcde (5 characters)
+empty + word: 'word'
+word + empty: 'word'"

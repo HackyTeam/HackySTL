@@ -1,0 +1,12 @@
+Case = A file is created, read back and parsed, and its lines are read
+Input =
+Output = "wrote two rows
+missing file opened: false
+bytes read: 18
+first row sum: 60
+second row sum: 150
+[alpha]
+[]
+[beta]
+lines: 3
+long row length: 1502"

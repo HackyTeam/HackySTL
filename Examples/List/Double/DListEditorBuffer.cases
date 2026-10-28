@@ -1,0 +1,36 @@
+Case = Typing, moving the cursor and deleting
+Input =
+type helo
+show
+left 1
+type l
+show
+right 5
+type !
+show
+back
+back
+show
+end
+Output = "[helo] cursor at 4
+[hello] cursor at 4
+[hello!] cursor at 6
+[hell] cursor at 4"
+
+Case = Deleting forward and moving past the ends
+Input =
+type abcdef
+left 100
+show
+del
+del
+show
+right 2
+type X
+show
+jump
+end
+Output = "[abcdef] cursor at 0
+[cdef] cursor at 0
+[cdXef] cursor at 3
+unknown command: jump"

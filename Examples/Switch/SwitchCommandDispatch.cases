@@ -1,0 +1,21 @@
+Case = A stack machine runs a program through switch_cases
+Input =
+Output = "wed=3 fri=5 sun=0
+push
+push
+add
+push
+mul
+print
+  top = 35
+dup
+mul
+print
+  top = 1225
+jump
+  error: unknown command
+pop
+pop
+  error: stack needs 1 values
+halt
+machine stopped: true"

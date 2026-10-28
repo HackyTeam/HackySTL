@@ -1,0 +1,15 @@
+Case = Ring buffer overwrites the oldest value and drains in order
+Input =
+Output = "static_vector size=2 capacity=4
+push 10
+push 20
+push 30
+push 40
+push 50 (dropped oldest)
+push 60 (dropped oldest)
+holds 4: 30 40 50 60
+popped 30
+holds 4: 40 50 60 70
+drained 4 values, last 70
+pop on empty: false
+compile-time sum of last three: 27"

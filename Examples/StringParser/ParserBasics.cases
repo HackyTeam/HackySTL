@@ -1,0 +1,7 @@
+Case = Matching text is split into typed fields and a mismatch fails
+Input =
+Output = "x=12 y=-7 sum=5
+year: 2024, month: 3, day: 15
+ratio is 0.75
+name length: 5
+broken line parsed: false"

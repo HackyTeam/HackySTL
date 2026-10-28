@@ -1,0 +1,33 @@
+Case = Factorials around the 64-bit limit
+Input =
+5
+20
+21
+0
+Output = "5! = 120
+  digits 3 digit sum 3 trailing zeros 1
+  64-bit product is correct: true
+20! = 2432902008176640000
+  digits 19 digit sum 54 trailing zeros 4
+  64-bit product is correct: true
+21! = 51090942171709440000
+  digits 20 digit sum 63 trailing zeros 4
+  64-bit product is correct: false"
+
+Case = The largest supported value and a refused one
+Input =
+80
+81
+0
+Output = "80! = 71569457046263802294811533723186532165584657342365752577109445058227039255480148842668944867280814080000000000000000000
+  digits 119 digit sum 450 trailing zeros 19
+  64-bit product is correct: false
+81 is too large (limit 80)"
+
+Case = One small request
+Input =
+1
+0
+Output = "1! = 1
+  digits 1 digit sum 1 trailing zeros 0
+  64-bit product is correct: true"

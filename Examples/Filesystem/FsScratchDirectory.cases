@@ -1,0 +1,15 @@
+Case = Files are created, listed, copied and read back
+Input =
+Output = "scratch (3 entries)
+  ./scratch/data.csv 24 bytes
+  ./scratch/empty.log 0 bytes
+  ./scratch/todo.txt 24 bytes
+backup (0 entries)
+copy succeeded: true
+backup (1 entries)
+  ./backup/todo.txt 24 bytes
+copy holds 24 characters
+data.csv in backup: no
+renamed: true
+backup after rename (1 entries)
+  ./backup/notes.txt 24 bytes"

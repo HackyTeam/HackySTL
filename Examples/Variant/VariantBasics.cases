@@ -1,0 +1,14 @@
+Case = Alternatives, checked access and copies
+Input =
+Output = "default: index 0 holds i32 yes value 0
+int: index 0
+double: index 1 holds f64 yes
+string: index 2 holds string yes
+get<i32> ok: no
+get<string> ok: yes
+get_if<string>: text
+get_if<i32> is null: yes
+after += 5: 15
+copy equals: yes
+changed copy equals: no
+lvalue stored as index 0"

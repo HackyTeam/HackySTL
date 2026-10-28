@@ -1,0 +1,21 @@
+Case = Valid expressions are evaluated
+Input =
+3 4 +
+5 1 2 + 4 * + 3 -
+2 3 4 * *
+end
+Output = "3 4 + = 7
+5 1 2 + 4 * + 3 - = 14
+2 3 4 * * = 24"
+
+Case = Bad expressions are reported without stopping
+Input =
+1 +
+4 0 /
+1 2
+7 x
+end
+Output = "1 + -> error: not enough operands
+4 0 / -> error: division by zero
+1 2 -> error: expression must leave one value
+7 x -> error: unknown token"

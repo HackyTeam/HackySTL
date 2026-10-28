@@ -1,0 +1,22 @@
+Case = A generated project tree is reported with totals and an extension tally
+Input =
+Output = "project/
+  Makefile 40
+  README.md 120
+  docs/ (2 files, 325 bytes)
+    guide.md 250
+    notes.txt 75
+  empty/ (0 files, 0 bytes)
+  src/ (4 files, 1040 bytes)
+    detail/ (1 files, 500 bytes)
+      impl.cpp 500
+    main.cpp 300
+    util.cpp 180
+    util.hpp 60
+total: 8 files, 4 directories, 1525 bytes
+by extension:
+  (none) 1 files 40 bytes
+  .cpp 3 files 980 bytes
+  .hpp 1 files 60 bytes
+  .md 2 files 370 bytes
+  .txt 1 files 75 bytes"

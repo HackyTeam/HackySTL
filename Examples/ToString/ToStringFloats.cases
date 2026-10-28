@@ -1,0 +1,17 @@
+Case = Fixed, scientific and hex float text with rounding to even
+Input =
+Output = "default: 3.141593
+precision 2: 3.14
+precision 0: 8
+0.5 -> 0: 0
+2.5 -> 2: 2
+3.5 -> 4: 4
+carry: 10.000000
+exp: 1.234568e+04
+exp small: -1.234568e-04
+exp prec 2: 6.02e+23
+hex 1.0: 0x1p0
+hex 0.375: 0x1.8p-2
+hex -2.5: -0x1.4p1
+infinity: inf
+-infinity: -inf"

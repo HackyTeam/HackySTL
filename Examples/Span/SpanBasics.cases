@@ -1,0 +1,14 @@
+Case = Views, slicing with take and drop, and editing through a span
+Input =
+Output = "size: 5
+view: 10 20 30 40 50
+take 2: 10 20
+drop 3: 40 50
+drop 1, take 3: 20 30 40
+drop 6 ok: false
+numbers[4]=5
+index 0 holds 1
+index 1 holds 2
+index 2 holds 3
+index 3 holds 4
+index 4 holds 5"

@@ -1,0 +1,17 @@
+Case = A document lexed in fragments is walked, and bad inputs are rejected
+Input =
+Output = "root: object(5)
+  city: "Lyon"
+  pop: 516
+  ratio: 0.500
+  tags: array(3)
+    [0] "a"
+    [1] null
+    [2] true
+  geo: object(2)
+    lat: 45.750
+    lon: 4.850
+valid array: true
+trailing comma: false
+missing colon: false
+bad character: false"

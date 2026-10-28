@@ -1,0 +1,15 @@
+Case = Searching and slicing a view
+Input =
+Output = "path='docs/guide/intro.txt' length=20
+first slash at 4, last slash at 10
+find '#' is npos: true
+starts with docs: true
+ends with .md: false
+contains guide: true
+dir: 'docs/guide' file: 'intro.txt'
+sub_string(50, 1) is an error
+first of '._' at 16
+equal to the literal: true
+same address: false
+view now reads 'Docs/guide/intro.txt'
+[] rfind on empty: npos"

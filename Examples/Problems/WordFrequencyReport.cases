@@ -1,0 +1,11 @@
+Case = The report ranks words by count, then alphabetically
+Input =
+Output = "total words: 26
+distinct words: 15
+top words:
+1. the x4
+2. dog x3
+3. lazy x3
+4. a x2
+5. fox x2
+longest word length: 6"

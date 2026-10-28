@@ -1,0 +1,14 @@
+Case = Literals, arithmetic and unit conversion
+Input =
+Output = "quarter: 250000000 ns, 250000 us, 250 ms, 0.250 s
+three quarters: 750000000 ns, 750000 us, 750 ms, 0.750 s
+together: 1000000000 ns, 1000000 us, 1000 ms, 1.000 s
+difference: 1750000000 ns, 1750000 us, 1750 ms, 1.750 s
+microseconds literal: 2000000 ns, 2000 us, 2 ms, 0.002 s
+nanoseconds literal: 42 ns, 0 us, 0 ms, 0.000 s
+quarter < three quarters: true
+parts add up to one second: true
+difference >= 1750 ms: true
+1001 ms literal: 1001 ms, 1001000 us
+249 us literal: 249 us
+clock seconds: 1.0"

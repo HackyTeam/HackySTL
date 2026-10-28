@@ -1,0 +1,35 @@
+Case = Quoted cells, doubled quotes and column lookup
+Input =
+id,name,qty,price
+1,Widget,4,2.50
+2,"Gadget, large",1,19.99
+3,"The ""Best"" Bolt",10,0.25
+Output = "columns: 4
+Widget costs: 10.00
+Gadget, large costs: 19.99
+The "Best" Bolt costs: 2.50
+rows: 3 good, 0 skipped
+total: 32.49"
+
+Case = Bad rows are reported and skipped
+Input =
+name,price,qty
+Nut,0.10,100
+Short,5
+"Open quote,1,1
+Washer,x,3
+Bolt,1.5,2
+Output = "columns: 3
+Nut costs: 10.00
+line 3: expected 3 cells, found 2
+line 4: malformed quoting, skipped
+line 5: bad number, skipped
+Bolt costs: 3.00
+rows: 2 good, 3 skipped
+total: 13.00"
+
+Case = Missing columns in the header
+Input =
+id,label
+1,x
+Output = "header needs name, qty and price columns"

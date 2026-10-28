@@ -1,0 +1,10 @@
+Case = Workers share one dataset and the count returns to one
+Input =
+Output = "owners before start: 1
+worker 0 sum: 31375
+worker 1 sum: 93875
+worker 2 sum: 156375
+worker 3 sum: 218875
+total: 500500
+workers that were the only owner: 0
+owners after join: 1 unique yes"

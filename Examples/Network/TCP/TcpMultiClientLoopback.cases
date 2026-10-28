@@ -1,0 +1,7 @@
+Case = Three concurrent clients each get their own replies
+Input =
+Output = "client 0: 0:RED (3) | 0:APPLE (5) | 0:bye
+client 1: 1:GREEN (5) | 1:PEAR (4) | 1:bye
+client 2: 2:YELLOW (6) | 2:BANANA (6) | 2:bye
+requests per client: 2 2 2
+clients finished: 3"

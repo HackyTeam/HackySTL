@@ -1,0 +1,14 @@
+Case = Wrapping arithmetic, wide values and division
+Input =
+Output = "8 bit: 250 + 10 = 4
+8 bit: 10 - 250 = 16
+8 bit: 250 * 10 = 196
+8 bit: 250 / 10 = 25
+0 - 1 in 64 bits: 18446744073709551615 (0xffffffffffffffff)
+and back up: 0
+2^100 = 1267650600228229401496703205376
+cube: 1000000021000000147000000343
+cube / 12345 = 81004456946132049169704 remainder 4463
+division by zero ok: false
+77 < cube: true
+widened: 77"

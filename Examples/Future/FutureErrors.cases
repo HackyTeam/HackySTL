@@ -1,0 +1,11 @@
+Case = Successes, failures and timed waits
+Input =
+Output = "100 / 5 = 20
+7 / 0 failed: division by zero
+81 / 9 = 9
+8 is even: true
+9 is even: false
+ready after 30 ms: false
+starting state: Promise is in an uninitialized state
+ready after set_value: true
+value: 5"

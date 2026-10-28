@@ -1,0 +1,14 @@
+Case = Integer and floating point limits are listed
+Input =
+Output = "i8: min=-128 max=127 signed=yes digits=7
+u8: min=0 max=255 signed=no digits=8
+i16: min=-32768 max=32767 signed=yes digits=15
+u16: min=0 max=65535 signed=no digits=16
+i32: min=-2147483648 max=2147483647 signed=yes digits=31
+u32: min=0 max=4294967295 signed=no digits=32
+i64: min=-9223372036854775808 max=9223372036854775807 signed=yes digits=63
+u64: min=0 max=18446744073709551615 signed=no digits=64
+f32: max=3.402823e+38 min=1.175494e-38 epsilon=1.192093e-07
+f64: max=1.797693e+308 min=2.225074e-308 epsilon=2.220446e-16
+f32 mantissa bits=24 f64 mantissa bits=53
+infinity above f64 max: true"

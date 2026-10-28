@@ -1,0 +1,7 @@
+Case = Lines are tallied by level and malformed lines are skipped
+Input =
+Output = "error from net at 9:16: timeout after 30s
+skipped: garbage without a timestamp
+error from disk at 9:17: write failed
+counts: info 2, warn 2, error 2, skipped 1
+last entry at minute 602 of the day"

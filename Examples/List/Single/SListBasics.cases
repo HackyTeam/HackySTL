@@ -1,0 +1,10 @@
+Case = Push, pop, erase and iterate a forward list
+Input =
+Output = "values: 10 20 30 40
+size 4 front 10 back 40
+after pop_front: 20 30 40
+erased 30, next is 40
+after erase: 20 40
+sum 60
+size after clear 0
+after tail erase: 1 2 9"

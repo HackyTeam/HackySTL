@@ -1,0 +1,5 @@
+Case = Each datagram is received whole and answered
+Input =
+Output = "alpha -> server saw 'alpha' -> client got 'got 5 bytes'
+beta -> server saw 'beta' -> client got 'got 4 bytes'
+gamma -> server saw 'gamma' -> client got 'got 5 bytes'"

@@ -1,0 +1,9 @@
+Case = Start, join and move a thread
+Input =
+Output = "joinable before join: true
+joinable after join: false
+worker wrote: 42
+second join ok: false
+source joinable after move: false
+lambda wrote: 7
+ids differ: true"

@@ -1,0 +1,19 @@
+Case = Transpose, identity product, square and whole-matrix swap
+Input =
+Output = "matrix:
+  1 2 3
+  4 5 6
+  7 8 9
+transposed:
+  1 4 7
+  2 5 8
+  3 6 9
+times identity:
+  1 2 3
+  4 5 6
+  7 8 9
+squared:
+  30 36 42
+  66 81 96
+  102 126 150
+after swap, first row of matrix: 1 4 7"

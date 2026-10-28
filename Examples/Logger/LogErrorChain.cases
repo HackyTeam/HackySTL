@@ -1,0 +1,7 @@
+Case = Errors stop the chain at the first failing check
+Input =
+Output = "value 42: validate check_range check_even -> ok
+value 7: validate check_range check_even -> failed
+The stack was unwind up there
+value 250: validate check_range -> failed
+The stack was unwind up there"

@@ -1,0 +1,9 @@
+Case = Types with pretty_fmt and pretty_args print through {ovr}
+Input =
+Output = "point: (-3, 7)
+segment (0, 0) -> (-3, 7) in green
+reading #4 is voltage: 3.300, flag Y
+from (0, 0) to (-3, 7) (size 22)
+  segment (0, 0) -> (1, 0) in red
+  segment (1, 0) -> (1, 1) in blue
+  segment (1, 1) -> (0, 0) in green"

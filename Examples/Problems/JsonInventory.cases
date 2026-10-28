@@ -1,0 +1,11 @@
+Case = The inventory is totalled, with a missing field and a broken document handled
+Input =
+Output = "warehouse: north
+reorder below: 5
+bolt: qty=120 value=18.00 tags=2
+gear: qty=4 value=35.96 REORDER tags=1
+belt: qty=0 value=0.00 REORDER tags=0
+washer: qty=5 value=0.40 tags=3
+total value: 54.36
+total tags: 6
+truncated document parsed: false"

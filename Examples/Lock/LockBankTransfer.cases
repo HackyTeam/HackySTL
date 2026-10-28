@@ -1,0 +1,8 @@
+Case = Fixed transfer schedule gives fixed balances
+Input =
+Output = "account 0: 99991
+account 1: 99995
+account 2: 100005
+account 3: 100009
+total: 400000
+money conserved: true"

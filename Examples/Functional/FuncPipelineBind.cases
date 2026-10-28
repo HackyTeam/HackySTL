@@ -1,0 +1,14 @@
+Case = Factories, composition, currying and a pipeline
+Input =
+Output = "add_five(10) = 15
+times_three(10) = 30
+(10 + 5) * 3 = 45
+(10 * 3) + 5 = 35
+empty then add_five on 1 = 6
+10 - 3 = 7
+10 - 25 = -15
+pipeline(0) = -99
+pipeline(1) = -101
+pipeline(2) = -103
+pipeline(3) = -105
+stateful stage ran 4 times"

@@ -1,5 +1,5 @@
 <p align = 'left'>
-  <img src='https://gitlab.com/HackyTeam/HackySTL/-/raw/dev/Docs/Logo.png'>
+  <img src='https://github.com/HackyTeam/HackySTL/blob/main/Docs/Logo.png?raw=true'>
 </p>
 
 This is a project which discards any backwards compatibility

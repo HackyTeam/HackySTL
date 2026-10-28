@@ -92,6 +92,11 @@ namespace hsd
     template <typename T>
     concept IsPointer = is_pointer<T>::value;
 
+    /// @brief Matches class types, meaning structs and classes (not unions or enums).
+    /// @tparam T Type tested.
+    template <typename T>
+    concept IsClass = is_class<T>::value;
+
     /// @brief Matches types whose destructor does nothing.
     /// @tparam T Type tested.
     template <typename T>
@@ -184,6 +189,11 @@ namespace hsd
     /// @tparam T Type tested.
     template <typename T>
     concept PointerType = IsPointer<T>;
+
+    /// @brief Alias of `IsClass`.
+    /// @tparam T Type tested.
+    template <typename T>
+    concept ClassType = IsClass<T>;
 
     /// @brief Alias of `IsTriviallyDestructible`.
     /// @tparam T Type tested.

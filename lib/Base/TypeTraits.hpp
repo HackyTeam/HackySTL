@@ -1257,6 +1257,16 @@ namespace hsd
     template <typename T>
     using is_pointer = helper::is_pointer< typename remove_cv<T>::type >;
 
+    /// @brief Predicate: detects class types, meaning structs and classes.
+    /// @tparam T Type queried.
+    /// @details `value` is `true` iff `T` is a class or struct type. Unions, enums
+    /// and scalars are not classes, matching `std::is_class`. Backed by the
+    /// compiler's intrinsic, so no standard library header is needed.
+    template <typename T>
+    struct is_class
+        : public literal_constant< bool, __is_class(T) >
+    {};
+
     /// @brief Predicate: detects types the compiler treats as trivially copyable.
     /// @tparam T Type queried.
     /// @details `value` is `true` iff copies of `T` may be made by copying its

@@ -5,6 +5,7 @@
 /// @details Keeps empty element types size-efficient while retaining pair-like
 /// first/second and indexed access for ordinary and empty values.
 
+#include "../Base/Concepts.hpp"
 #include "../Base/Utility.hpp"
 
 namespace hsd
@@ -21,7 +22,7 @@ namespace hsd
 
         /// @brief Selects direct class storage or a value wrapper.
         template <typename _Ty>
-        using _wrap_type = conditional_t<__is_class(_Ty), _Ty, _wrapper_for<_Ty>>;
+        using _wrap_type = conditional_t<IsClass<_Ty>, _Ty, _wrapper_for<_Ty>>;
 
         /// @brief Probe that stores `_Ty` as a base next to an `i32`, so its size shows
         /// whether the base took up space.

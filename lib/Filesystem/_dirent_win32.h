@@ -35,6 +35,17 @@ SOFTWARE.
 #else /* _WIN32 */
 
 #ifdef __cplusplus
+#define HSD_DIRENT_UNUSED [[maybe_unused]]
+#else
+/* MSVC has no __attribute__. GCC and MinGW need it to silence unused-function warnings. */
+#ifdef _MSC_VER
+#define HSD_DIRENT_UNUSED
+#else
+#define HSD_DIRENT_UNUSED HSD_DIRENT_UNUSED
+#endif /* _MSC_VER */
+#endif /* __cplusplus */
+
+#ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
@@ -43,6 +54,9 @@ extern "C" {
 #include <errno.h>
 
 #define _WINSOCKAPI_
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 
 #include <shlwapi.h>
@@ -526,7 +540,7 @@ static DIR* opendir(const char* name)
 /// `ENOMEM` on allocation failure, or unset (stale) if `name` exceeds
 /// `NTFS_MAX_PATH` characters.
 ///
-static DIR* _wopendir(const wchar_t* name) __attribute__((unused));
+static DIR* _wopendir(const wchar_t* name) HSD_DIRENT_UNUSED;
 static DIR* _wopendir(const wchar_t* name)
 {
 	DIR* dirp = NULL;
@@ -563,7 +577,7 @@ static DIR* _wopendir(const wchar_t* name)
 /// `ENOMEM` on allocation failure or `ENOTDIR` if the path could not be
 /// resolved from `fd`.
 ///
-static DIR* fdopendir(intptr_t fd) __attribute__((unused));
+static DIR* fdopendir(intptr_t fd) HSD_DIRENT_UNUSED;
 static DIR* fdopendir(intptr_t fd)
 {
 	DIR* dirp = NULL;
@@ -630,7 +644,7 @@ static struct dirent* readdir(DIR* dirp)
 /// @return int - 0 on success (including end-of-stream), or `EBADF` if
 /// `dirp` is `NULL`.
 ///
-static int readdir_r(DIR* dirp, struct dirent* entry, struct dirent** result) __attribute__((unused));
+static int readdir_r(DIR* dirp, struct dirent* entry, struct dirent** result) HSD_DIRENT_UNUSED;
 static int readdir_r(DIR* dirp, struct dirent* entry, struct dirent** result)
 {
 	struct __dir* data = (struct __dir*) dirp;
@@ -682,7 +696,7 @@ static void seekdir(DIR* dirp, long int offset)
 /// 
 /// @param dirp - The directory stream to rewind.
 ///
-static void rewinddir(DIR* dirp) __attribute__((unused));
+static void rewinddir(DIR* dirp) HSD_DIRENT_UNUSED;
 static void rewinddir(DIR* dirp)
 {
 	seekdir(dirp, 0);
@@ -700,7 +714,7 @@ static void rewinddir(DIR* dirp)
 /// @return long int - The (incorrect) position value described above, or
 /// -1 with `errno` set to `EBADF` if `dirp` is `NULL`.
 ///
-static long int telldir(DIR* dirp) __attribute__((unused));
+static long int telldir(DIR* dirp) HSD_DIRENT_UNUSED;
 static long int telldir(DIR* dirp)
 {
 	if (dirp == NULL)
@@ -719,7 +733,7 @@ static long int telldir(DIR* dirp)
 /// @return intptr_t - The native handle, or -1 with `errno` set to
 /// `EINVAL` if `dirp` is `NULL`.
 ///
-static intptr_t dirfd(DIR * dirp) __attribute__((unused));
+static intptr_t dirfd(DIR * dirp) HSD_DIRENT_UNUSED;
 static intptr_t dirfd(DIR * dirp)
 {
 	if (dirp == NULL)
@@ -757,7 +771,7 @@ static intptr_t dirfd(DIR * dirp)
 ///
 static int scandir(const char* dirp, struct dirent*** namelist,
 	int (*filter)(const struct dirent*),
-	int (*compar)(const struct dirent**, const struct dirent**)) __attribute__((unused));
+	int (*compar)(const struct dirent**, const struct dirent**)) HSD_DIRENT_UNUSED;
 static int scandir(const char* dirp, struct dirent*** namelist,
 	int (*filter)(const struct dirent*),
 	int (*compar)(const struct dirent**, const struct dirent**))
@@ -854,7 +868,7 @@ static int scandir(const char* dirp, struct dirent*** namelist,
 /// @return int - Negative, zero, or positive per `strcoll()`, or 0 if
 /// either argument is `NULL`.
 ///
-static int alphasort(const void* a, const void* b) __attribute__((unused));
+static int alphasort(const void* a, const void* b) HSD_DIRENT_UNUSED;
 static int alphasort(const void* a, const void* b)
 {
 	struct dirent** dira = (struct dirent**)a, **dirb = (struct dirent**)b;
@@ -882,7 +896,7 @@ static int alphasort(const void* a, const void* b)
 /// @param s2 - Second string (misinterpreted internally, see bug note).
 /// @return int - The (unreliable) result of the miscast `alphasort()` call.
 ///
-static int __strverscmp(const char* s1, const char* s2) __attribute__((unused));
+static int __strverscmp(const char* s1, const char* s2) HSD_DIRENT_UNUSED;
 static int __strverscmp(const char* s1, const char* s2)
 {
 	return alphasort(s1, s2);
@@ -901,7 +915,7 @@ static int __strverscmp(const char* s1, const char* s2)
 /// @return int - The (unreliable) result of the underlying `__strverscmp()`
 /// call, or 0 if either argument is `NULL`.
 ///
-static int versionsort(const void* a, const void* b) __attribute__((unused));
+static int versionsort(const void* a, const void* b) HSD_DIRENT_UNUSED;
 static int versionsort(const void* a, const void* b)
 {
 	struct dirent** dira = (struct dirent**)a, ** dirb = (struct dirent**)b;

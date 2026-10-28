@@ -10,17 +10,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(HSD_COMPILER_MSVC)
+#include <intrin.h>
+#endif
+
 namespace hsd
 {
     /// @brief Memory-order constraints accepted by atomic operations.
     enum class memory_order : i32
     {
-        relaxed = __ATOMIC_RELAXED,
-        consume = __ATOMIC_CONSUME,
-        acquire = __ATOMIC_ACQUIRE,
-        release = __ATOMIC_RELEASE,
-        acq_rel = __ATOMIC_ACQ_REL,
-        seq_cst = __ATOMIC_SEQ_CST
+        relaxed = 0,
+        consume = 1,
+        acquire = 2,
+        release = 3,
+        acq_rel = 4,
+        seq_cst = 5
     };
 
     /// @brief Relaxed ordering constant.
@@ -40,7 +44,7 @@ namespace hsd
     {
         template <typename T>
         concept valid_atomic_type =
-            std::is_trivially_copyable_v<T> &&
+            is_trivially_copyable<T>::value &&
             CopyConstructible<T>            && 
             MoveConstructible<T>            &&
             CopyAssignable<T> 	            && 
@@ -83,6 +87,357 @@ namespace hsd
             >;
         };
 
+        /// @brief Compiler primitives behind `atomic_impl` and `atomic_flag`.
+        /// @details GCC and Clang forward each primitive to the `__atomic` builtins.
+        /// MSVC has no such builtins, so it works on the unsigned integer with the same
+        /// size as the value, through the `_Interlocked` intrinsics. Those are full
+        /// barriers, so the memory order argument is not used on MSVC. Each primitive
+        /// keeps the argument shape of the builtin it replaces.
+#if defined(HSD_COMPILER_MSVC)
+        /// @brief Unsigned integer with the same size as `T`, used by the intrinsics.
+        template <typename T>
+        using atomic_bits = conditional_t<sizeof(T) == 1, u8,
+            conditional_t<sizeof(T) == 2, u16,
+            conditional_t<sizeof(T) == 4, u32, u64>>>;
+
+        /// @brief Replaces `*target` with `value` and returns the previous value.
+        template <typename U>
+        U msvc_exchange(volatile U* target, U value)
+        {
+            if constexpr (sizeof(U) == 1)
+            {
+                return static_cast<U>(_InterlockedExchange8(
+                    reinterpret_cast<volatile char*>(target), static_cast<char>(value)));
+            }
+            else if constexpr (sizeof(U) == 2)
+            {
+                return static_cast<U>(_InterlockedExchange16(
+                    reinterpret_cast<volatile short*>(target), static_cast<short>(value)));
+            }
+            else if constexpr (sizeof(U) == 4)
+            {
+                return static_cast<U>(_InterlockedExchange(
+                    reinterpret_cast<volatile long*>(target), static_cast<long>(value)));
+            }
+            else
+            {
+                static_assert(sizeof(U) == 8, "MSVC atomics support 1, 2, 4, and 8 byte values");
+                return static_cast<U>(_InterlockedExchange64(
+                    reinterpret_cast<volatile __int64*>(target), static_cast<__int64>(value)));
+            }
+        }
+
+        /// @brief Stores `desired` when `*target` equals `expected`.
+        /// @return The value found in `*target` before the call.
+        template <typename U>
+        U msvc_compare_exchange(volatile U* target, U expected, U desired)
+        {
+            if constexpr (sizeof(U) == 1)
+            {
+                return static_cast<U>(_InterlockedCompareExchange8(
+                    reinterpret_cast<volatile char*>(target),
+                    static_cast<char>(desired), static_cast<char>(expected)));
+            }
+            else if constexpr (sizeof(U) == 2)
+            {
+                return static_cast<U>(_InterlockedCompareExchange16(
+                    reinterpret_cast<volatile short*>(target),
+                    static_cast<short>(desired), static_cast<short>(expected)));
+            }
+            else if constexpr (sizeof(U) == 4)
+            {
+                return static_cast<U>(_InterlockedCompareExchange(
+                    reinterpret_cast<volatile long*>(target),
+                    static_cast<long>(desired), static_cast<long>(expected)));
+            }
+            else
+            {
+                static_assert(sizeof(U) == 8, "MSVC atomics support 1, 2, 4, and 8 byte values");
+                return static_cast<U>(_InterlockedCompareExchange64(
+                    reinterpret_cast<volatile __int64*>(target),
+                    static_cast<__int64>(desired), static_cast<__int64>(expected)));
+            }
+        }
+
+        /// @brief Applies `combine` to `*target` with a compare/exchange loop.
+        /// @return The value found in `*target` before the update.
+        template <typename U, typename Combine>
+        U msvc_update(volatile U* target, Combine combine)
+        {
+            U _seen = *target;
+            U _old;
+
+            do
+            {
+                _old = _seen;
+                _seen = msvc_compare_exchange(target, _old, combine(_old));
+            } while (_seen != _old);
+
+            return _old;
+        }
+
+        /// @brief Atomically adds `value` and returns the previous value.
+        template <typename U>
+        U msvc_fetch_add(volatile U* target, U value)
+        {
+            return msvc_update(target, [value](U _old) { return static_cast<U>(_old + value); });
+        }
+
+        /// @brief Atomically subtracts `value` and returns the previous value.
+        template <typename U>
+        U msvc_fetch_sub(volatile U* target, U value)
+        {
+            return msvc_update(target, [value](U _old) { return static_cast<U>(_old - value); });
+        }
+
+        /// @brief Atomically ANDs `value` and returns the previous value.
+        template <typename U>
+        U msvc_fetch_and(volatile U* target, U value)
+        {
+            return msvc_update(target, [value](U _old) { return static_cast<U>(_old & value); });
+        }
+
+        /// @brief Atomically ORs `value` and returns the previous value.
+        template <typename U>
+        U msvc_fetch_or(volatile U* target, U value)
+        {
+            return msvc_update(target, [value](U _old) { return static_cast<U>(_old | value); });
+        }
+
+        /// @brief Atomically XORs `value` and returns the previous value.
+        template <typename U>
+        U msvc_fetch_xor(volatile U* target, U value)
+        {
+            return msvc_update(target, [value](U _old) { return static_cast<U>(_old ^ value); });
+        }
+
+        /// @brief Tells whether the primitives work on values of `T`'s size.
+        template <typename T>
+        constexpr bool atomic_op_always_lock_free()
+        {
+            return sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8;
+        }
+
+        template <typename T>
+        bool atomic_op_is_lock_free(const T*)
+        {
+            return atomic_op_always_lock_free<T>();
+        }
+
+        template <typename T>
+        void atomic_op_store(T* ptr, T* val, i32)
+        {
+            using _bits = atomic_bits<T>;
+            msvc_exchange<_bits>(reinterpret_cast<volatile _bits*>(ptr), __builtin_bit_cast(_bits, *val));
+        }
+
+        template <typename T>
+        void atomic_op_load(const T* ptr, T* out, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_or<_bits>(
+                reinterpret_cast<volatile _bits*>(const_cast<T*>(ptr)), _bits{});
+            *out = __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T>
+        void atomic_op_exchange(T* ptr, T* val, T* out, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_exchange<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), __builtin_bit_cast(_bits, *val));
+            *out = __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T>
+        bool atomic_op_compare_exchange(T* ptr, T* expected, T* desired, bool, i32, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _expected = __builtin_bit_cast(_bits, *expected);
+            const auto _observed = msvc_compare_exchange<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr),
+                _expected, __builtin_bit_cast(_bits, *desired));
+
+            if (_observed == _expected)
+            {
+                return true;
+            }
+
+            *expected = __builtin_bit_cast(T, _observed);
+            return false;
+        }
+
+        template <typename T, typename V>
+        T atomic_op_fetch_add(T* ptr, V arg, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_add<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
+            return __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T, typename V>
+        T atomic_op_fetch_sub(T* ptr, V arg, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_sub<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
+            return __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T, typename V>
+        T atomic_op_fetch_and(T* ptr, V arg, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_and<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
+            return __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T, typename V>
+        T atomic_op_fetch_or(T* ptr, V arg, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_or<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
+            return __builtin_bit_cast(T, _old);
+        }
+
+        template <typename T, typename V>
+        T atomic_op_fetch_xor(T* ptr, V arg, i32)
+        {
+            using _bits = atomic_bits<T>;
+            const auto _old = msvc_fetch_xor<_bits>(
+                reinterpret_cast<volatile _bits*>(ptr), static_cast<_bits>(arg));
+            return __builtin_bit_cast(T, _old);
+        }
+
+        template <typename P>
+        bool atomic_op_test_and_set(P* ptr, i32)
+        {
+            return msvc_exchange<u8>(reinterpret_cast<volatile u8*>(ptr), 1) != 0;
+        }
+
+        template <typename P>
+        void atomic_op_clear(P* ptr, i32)
+        {
+            msvc_exchange<u8>(reinterpret_cast<volatile u8*>(ptr), 0);
+        }
+
+        template <typename P>
+        u8 atomic_op_load_n(const P* ptr, i32)
+        {
+            return msvc_fetch_or<u8>(reinterpret_cast<volatile u8*>(const_cast<P*>(ptr)), 0);
+        }
+
+        inline void atomic_op_thread_fence(i32)
+        {
+            // A locked read-modify-write is a full barrier on MSVC.
+            static volatile long _fence_word = 0;
+            _InterlockedOr(&_fence_word, 0);
+        }
+
+        inline void atomic_op_signal_fence(i32)
+        {
+            _ReadWriteBarrier();
+        }
+#else
+        template <typename T>
+        constexpr bool atomic_op_always_lock_free()
+        {
+            return __atomic_always_lock_free(sizeof(T), nullptr);
+        }
+
+        template <typename T>
+        constexpr bool atomic_op_is_lock_free(const T* ptr)
+        {
+            return __atomic_is_lock_free(sizeof(T), ptr);
+        }
+
+        template <typename T>
+        constexpr void atomic_op_store(T* ptr, T* val, i32 order)
+        {
+            __atomic_store(ptr, val, order);
+        }
+
+        template <typename T>
+        constexpr void atomic_op_load(const T* ptr, T* out, i32 order)
+        {
+            __atomic_load(ptr, out, order);
+        }
+
+        template <typename T>
+        constexpr void atomic_op_exchange(T* ptr, T* val, T* out, i32 order)
+        {
+            __atomic_exchange(ptr, val, out, order);
+        }
+
+        template <typename T>
+        constexpr bool atomic_op_compare_exchange(
+            T* ptr, T* expected, T* desired, bool weak, i32 success, i32 failure)
+        {
+            return __atomic_compare_exchange(ptr, expected, desired, weak, success, failure);
+        }
+
+        template <typename T, typename V>
+        constexpr T atomic_op_fetch_add(T* ptr, V arg, i32 order)
+        {
+            return __atomic_fetch_add(ptr, arg, order);
+        }
+
+        template <typename T, typename V>
+        constexpr T atomic_op_fetch_sub(T* ptr, V arg, i32 order)
+        {
+            return __atomic_fetch_sub(ptr, arg, order);
+        }
+
+        template <typename T, typename V>
+        constexpr T atomic_op_fetch_and(T* ptr, V arg, i32 order)
+        {
+            return __atomic_fetch_and(ptr, arg, order);
+        }
+
+        template <typename T, typename V>
+        constexpr T atomic_op_fetch_or(T* ptr, V arg, i32 order)
+        {
+            return __atomic_fetch_or(ptr, arg, order);
+        }
+
+        template <typename T, typename V>
+        constexpr T atomic_op_fetch_xor(T* ptr, V arg, i32 order)
+        {
+            return __atomic_fetch_xor(ptr, arg, order);
+        }
+
+        template <typename P>
+        constexpr bool atomic_op_test_and_set(P* ptr, i32 order)
+        {
+            return __atomic_test_and_set(ptr, order);
+        }
+
+        template <typename P>
+        constexpr void atomic_op_clear(P* ptr, i32 order)
+        {
+            __atomic_clear(ptr, order);
+        }
+
+        template <typename P>
+        constexpr u8 atomic_op_load_n(const P* ptr, i32 order)
+        {
+            return __atomic_load_n(ptr, order);
+        }
+
+        inline void atomic_op_thread_fence(i32 order)
+        {
+            __atomic_thread_fence(order);
+        }
+
+        inline void atomic_op_signal_fence(i32 order)
+        {
+            __atomic_signal_fence(order);
+        }
+#endif
+
         /// @brief Common implementation for owning atomics and atomic references.
         /// @details The implementation delegates synchronization to GCC atomic
         /// builtins. An owning instance stores `T` inline; a reference instance
@@ -95,7 +450,7 @@ namespace hsd
         {
             /// @brief Compile-time lock-free guarantee for this value size.
             static constexpr bool is_always_lock_free =
-                __atomic_always_lock_free(sizeof(T), nullptr);
+                atomic_detail::atomic_op_always_lock_free<T>();
 
             /// @brief Value type manipulated by this atomic.
             using value_type = T;
@@ -150,14 +505,14 @@ namespace hsd
             /// @return Whether the object is lock-free.
             constexpr bool is_lock_free() const
             {
-                return __atomic_is_lock_free(sizeof(T), _data_ptr());
+                return atomic_detail::atomic_op_is_lock_free(_data_ptr());
             }
 
             /// @brief Volatile lock-free query for the addressed object.
             /// @return Whether the object is lock-free.
             constexpr bool is_lock_free() const volatile
             {
-                return __atomic_is_lock_free(sizeof(T), _data_ptr());
+                return atomic_detail::atomic_op_is_lock_free(_data_ptr());
             }
 
             /// @brief Atomically stores a value with the selected memory order.
@@ -166,7 +521,7 @@ namespace hsd
             constexpr void store(
                 T desired, memory_order order = memory_order_seq_cst)
             {
-                __atomic_store(_data_ptr(), &desired, static_cast<i32>(order));
+                atomic_detail::atomic_op_store(_data_ptr(), &desired, static_cast<i32>(order));
             }
 
             /// @brief Volatile atomic store with the selected memory order.
@@ -175,7 +530,7 @@ namespace hsd
             constexpr void store(
                 T desired, memory_order order = memory_order_seq_cst) volatile
             {
-                __atomic_store(_data_ptr(), &desired, static_cast<i32>(order));
+                atomic_detail::atomic_op_store(_data_ptr(), &desired, static_cast<i32>(order));
             }
 
             /// @brief Atomically loads a value with the selected memory order.
@@ -185,7 +540,7 @@ namespace hsd
                 memory_order order = memory_order_seq_cst) const
             {
                 T _tmp;
-                __atomic_load(_data_ptr(), &_tmp, static_cast<i32>(order));
+                atomic_detail::atomic_op_load(_data_ptr(), &_tmp, static_cast<i32>(order));
                 return _tmp;
             }
 
@@ -196,7 +551,7 @@ namespace hsd
                 memory_order order = memory_order_seq_cst) const volatile
             {
                 T _tmp;
-                __atomic_load(_data_ptr(), &_tmp, static_cast<i32>(order));
+                atomic_detail::atomic_op_load(_data_ptr(), &_tmp, static_cast<i32>(order));
                 return _tmp;
             }
 
@@ -221,7 +576,7 @@ namespace hsd
             constexpr T exchange(T desired, memory_order order = memory_order_seq_cst)
             {
                 T _ret;
-                __atomic_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
+                atomic_detail::atomic_op_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
                 return _ret;
             }
 
@@ -232,7 +587,7 @@ namespace hsd
             constexpr T exchange(T desired, memory_order order = memory_order_seq_cst) volatile
             {
                 T _ret;
-                __atomic_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
+                atomic_detail::atomic_op_exchange(_data_ptr(), &desired, &_ret, static_cast<i32>(order));
                 return _ret;
             }
 
@@ -247,7 +602,7 @@ namespace hsd
                 memory_order success, 
                 memory_order failure)
             {
-                return __atomic_compare_exchange(
+                return atomic_detail::atomic_op_compare_exchange(
                     _data_ptr(), &expected, &desired, true,
                     static_cast<i32>(success), static_cast<i32>(failure)
                 );
@@ -277,7 +632,7 @@ namespace hsd
                 memory_order success, 
                 memory_order failure) volatile
             {
-                return __atomic_compare_exchange(
+                return atomic_detail::atomic_op_compare_exchange(
                     _data_ptr(), &expected, &desired, true,
                     static_cast<i32>(success), static_cast<i32>(failure)
                 );
@@ -306,7 +661,7 @@ namespace hsd
                 memory_order success, 
                 memory_order failure)
             {
-                return __atomic_compare_exchange(
+                return atomic_detail::atomic_op_compare_exchange(
                     _data_ptr(), &expected, &desired, false,
                     static_cast<i32>(success), static_cast<i32>(failure)
                 );
@@ -336,7 +691,7 @@ namespace hsd
                 memory_order success, 
                 memory_order failure) volatile
             {
-                return __atomic_compare_exchange(
+                return atomic_detail::atomic_op_compare_exchange(
                     _data_ptr(), &expected, &desired, false,
                     static_cast<i32>(success), static_cast<i32>(failure)
                 );
@@ -362,7 +717,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst)
             requires (is_number<T>::value)
             {
-                return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Volatile arithmetic fetch-add returning the old value.
@@ -373,7 +728,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_number<T>::value)
             {
-                return __atomic_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_add(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Pointer fetch-add using element distances.
@@ -384,7 +739,7 @@ namespace hsd
                 pdiff arg, memory_order order = memory_order_seq_cst)
             requires (is_pointer<T>::value)
             {
-                return __atomic_fetch_add(_data_ptr(),
+                return atomic_detail::atomic_op_fetch_add(_data_ptr(),
                     arg * sizeof(remove_pointer_t<T>),
                     static_cast<i32>(order)
                 );
@@ -398,7 +753,7 @@ namespace hsd
                 pdiff arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_pointer<T>::value)
             {
-                return __atomic_fetch_add(_data_ptr(),
+                return atomic_detail::atomic_op_fetch_add(_data_ptr(),
                     arg * sizeof(remove_pointer_t<T>),
                     static_cast<i32>(order)
                 );
@@ -412,7 +767,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst)
             requires (is_number<T>::value)
             {
-                return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Volatile arithmetic fetch-sub returning the old value.
@@ -423,7 +778,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_number<T>::value)
             {
-                return __atomic_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_sub(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Pointer fetch-sub using element distances.
@@ -434,7 +789,7 @@ namespace hsd
                 pdiff arg, memory_order order = memory_order_seq_cst)
             requires (is_pointer<T>::value)
             {
-                return __atomic_fetch_sub(_data_ptr(),
+                return atomic_detail::atomic_op_fetch_sub(_data_ptr(),
                     arg * sizeof(remove_pointer_t<T>),
                     static_cast<i32>(order)
                 );
@@ -448,7 +803,7 @@ namespace hsd
                 pdiff arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_pointer<T>::value)
             {
-                return __atomic_fetch_sub(_data_ptr(),
+                return atomic_detail::atomic_op_fetch_sub(_data_ptr(),
                     arg * sizeof(remove_pointer_t<T>),
                     static_cast<i32>(order)
                 );
@@ -462,7 +817,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst)
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Volatile atomic bitwise AND returning the old value.
@@ -473,7 +828,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_and(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Atomically applies bitwise OR and returns the old value.
@@ -484,7 +839,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst)
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Volatile atomic bitwise OR returning the old value.
@@ -495,7 +850,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_or(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Atomically applies bitwise XOR and returns the old value.
@@ -506,7 +861,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst)
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Volatile atomic bitwise XOR returning the old value.
@@ -517,7 +872,7 @@ namespace hsd
                 T arg, memory_order order = memory_order_seq_cst) volatile
             requires (is_integral<T>::value)
             {
-                return __atomic_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
+                return atomic_detail::atomic_op_fetch_xor(_data_ptr(), arg, static_cast<i32>(order));
             }
 
             /// @brief Atomically increments and returns the new value.
@@ -751,14 +1106,14 @@ namespace hsd
     {
         inline void atomic_thread_fence(memory_order order)
         {
-            __atomic_thread_fence(static_cast<i32>(order));
+            atomic_detail::atomic_op_thread_fence(static_cast<i32>(order));
         }
 
         /// @brief Emits a compiler-only signal fence with `order` semantics.
         /// @param order Memory ordering imposed by the fence.
         inline void atomic_signal_fence(memory_order order)
         {
-            __atomic_signal_fence(static_cast<i32>(order));
+            atomic_detail::atomic_op_signal_fence(static_cast<i32>(order));
         }
     }
 
@@ -1312,14 +1667,14 @@ namespace hsd
         /// @param order Ordering applied to the clear.
         inline void clear(memory_order order = memory_order_seq_cst)
         {
-            __atomic_clear(&_flag, static_cast<i32>(order));
+            atomic_detail::atomic_op_clear(&_flag, static_cast<i32>(order));
         }
 
         /// @brief Volatile flag clear with the selected memory order.
         /// @param order Ordering applied to the clear.
         inline void clear(memory_order order = memory_order_seq_cst) volatile
         {
-            __atomic_clear(&_flag, static_cast<i32>(order));
+            atomic_detail::atomic_op_clear(&_flag, static_cast<i32>(order));
         }
 
         /// @brief Sets the flag and returns its previous state.
@@ -1327,7 +1682,7 @@ namespace hsd
         /// @return Previous flag state.
         inline bool test_and_set(memory_order order = memory_order_seq_cst)
         {
-            return __atomic_test_and_set(&_flag, static_cast<i32>(order));
+            return atomic_detail::atomic_op_test_and_set(&_flag, static_cast<i32>(order));
         }
 
         /// @brief Volatile flag test-and-set with the selected memory order.
@@ -1335,7 +1690,7 @@ namespace hsd
         /// @return Previous flag state.
         inline bool test_and_set(memory_order order = memory_order_seq_cst) volatile
         {
-            return __atomic_test_and_set(&_flag, static_cast<i32>(order));
+            return atomic_detail::atomic_op_test_and_set(&_flag, static_cast<i32>(order));
         }
 
         /// @brief Reads the flag with the selected memory order.
@@ -1343,7 +1698,7 @@ namespace hsd
         /// @return Current flag state.
         inline bool test(memory_order order = memory_order_seq_cst) const
         {
-            return __atomic_load_n(&_flag, static_cast<i32>(order));
+            return atomic_detail::atomic_op_load_n(&_flag, static_cast<i32>(order));
         }
 
         /// @brief Volatile flag read with the selected memory order.
@@ -1351,7 +1706,7 @@ namespace hsd
         /// @return Current flag state.
         inline bool test(memory_order order = memory_order_seq_cst) const volatile
         {
-            return __atomic_load_n(&_flag, static_cast<i32>(order));
+            return atomic_detail::atomic_op_load_n(&_flag, static_cast<i32>(order));
         }
 
     private:

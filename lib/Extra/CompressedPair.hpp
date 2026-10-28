@@ -21,16 +21,23 @@ namespace hsd
 
         /// @brief Selects direct class storage or a value wrapper.
         template <typename _Ty>
-        using _wrap_type = conditional_t<std::is_class_v<_Ty>, _Ty, _wrapper_for<_Ty>>;
+        using _wrap_type = conditional_t<__is_class(_Ty), _Ty, _wrapper_for<_Ty>>;
 
-        /// @brief Detects whether empty-base storage saves the expected space.
+        /// @brief Probe that stores `_Ty` as a base next to an `i32`, so its size shows
+        /// whether the base took up space.
         template <typename _Ty>
-        struct _is_empty : private _wrap_type<_Ty>
+        struct _empty_probe : private _wrap_type<_Ty>
         {
             /// @brief Padding probe used to compare storage sizes.
             i32 a;
+        };
+
+        /// @brief Detects whether empty-base storage saves the expected space.
+        template <typename _Ty>
+        struct _is_empty
+        {
             /// @brief True when `_Ty` can be stored without an extra word.
-            static constexpr bool value = sizeof(i32) == sizeof(_is_empty);
+            static constexpr bool value = sizeof(i32) == sizeof(_empty_probe<_Ty>);
         };
 
         /// @brief Boolean constant exposing empty-storage detection.

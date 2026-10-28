@@ -54,10 +54,11 @@ namespace hsd
                 file_type _to_file = nullptr;
 
                 // The source is opened first, so a missing source creates no destination.
+                // Binary mode keeps the bytes as they are, with no newline translation.
                 #ifdef HSD_PLATFORM_WINDOWS
-                fopen_s(&_from_file, from, "r");
+                fopen_s(&_from_file, from, "rb");
                 #else
-                _from_file = fopen(from, "r");
+                _from_file = fopen(from, "rb");
                 #endif
 
                 if (_from_file == nullptr)
@@ -66,9 +67,9 @@ namespace hsd
                 }
 
                 #ifdef HSD_PLATFORM_WINDOWS
-                fopen_s(&_to_file, to, "w");
+                fopen_s(&_to_file, to, "wb");
                 #else
-                _to_file = fopen(to, "w");
+                _to_file = fopen(to, "wb");
                 #endif
 
                 if (_to_file == nullptr)

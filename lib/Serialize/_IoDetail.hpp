@@ -252,11 +252,11 @@ namespace hsd
             }
 
             
-            /// @brief Opens (or creates) the file at `path` for overlapped I/O.
+            /// @brief Opens the file at `path` for overlapped I/O.
             /// @param path Null-terminated path to the file.
-            /// @param mode Access mode; `io_options::rw_create` always (re)creates
-            /// the file, other modes open an existing file and fall back to
-            /// creating it if not found.
+            /// @param mode Access mode. Write modes create the file, and `write` and
+            /// `rw_create` also empty an existing one. Read modes need the file to exist.
+            /// These match the POSIX open flags.
             /// @return A `file_handler` owning the resulting handle. The caller
             /// must check `is_open()`, since `CreateFileA` failures are not
             /// otherwise reported here.
@@ -265,35 +265,23 @@ namespace hsd
             {
                 file_handler _file;
 
-                if (mode == io_options::rw_create)
-                {
-                    _file._handle = CreateFileA(
-                        path,
-                        static_cast<DWORD>(mode),
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        nullptr, CREATE_ALWAYS,
-                        FILE_FLAG_OVERLAPPED, nullptr
-                    );
-                }
-                else
-                {
-                    _file._handle = CreateFileA(
-                        path, static_cast<DWORD>(mode), 
-                        FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                        nullptr, OPEN_EXISTING, 
-                        FILE_FLAG_OVERLAPPED, nullptr
-                    );
+                DWORD _disposition = OPEN_EXISTING;
 
-                    if (file_error_code() == ERROR_FILE_NOT_FOUND)
-                    {
-                        _file._handle = CreateFileA(
-                            path, static_cast<DWORD>(mode), 
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                            nullptr, CREATE_ALWAYS, 
-                            FILE_FLAG_OVERLAPPED, nullptr
-                        );
-                    }
+                if (mode == io_options::write || mode == io_options::rw_create)
+                {
+                    _disposition = CREATE_ALWAYS;
                 }
+                else if (mode == io_options::append || mode == io_options::rw_append)
+                {
+                    _disposition = OPEN_ALWAYS;
+                }
+
+                _file._handle = CreateFileA(
+                    path, static_cast<DWORD>(mode),
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    nullptr, _disposition,
+                    FILE_FLAG_OVERLAPPED, nullptr
+                );
 
                 // A failed CreateFileA returns INVALID_HANDLE_VALUE, which must not
                 // look like an open handle.

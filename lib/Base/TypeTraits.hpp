@@ -1251,6 +1251,16 @@ namespace hsd
         : public literal_constant< bool, __is_trivially_copyable(T) >
     {};
 
+    /// @brief Predicate: detects types whose destructor does nothing.
+    /// @tparam T Type queried.
+    /// @details `value` is `true` iff destroying a `T` needs no call to its
+    /// destructor, matching `std::is_trivially_destructible`. Backed by the
+    /// compiler's intrinsic, so no standard library header is needed.
+    template <typename T>
+    struct is_trivially_destructible
+        : public literal_constant< bool, __is_trivially_destructible(T) >
+    {};
+
     /// @brief Predicate: detects whether `T` can be constructed from `Args...` without throwing.
     /// @tparam T Type constructed.
     /// @tparam Args Argument types passed to the constructor.

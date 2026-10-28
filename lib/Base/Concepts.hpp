@@ -92,6 +92,11 @@ namespace hsd
     template <typename T>
     concept IsPointer = is_pointer<T>::value;
 
+    /// @brief Matches types whose destructor does nothing.
+    /// @tparam T Type tested.
+    template <typename T>
+    concept IsTriviallyDestructible = is_trivially_destructible<T>::value;
+
     /// @brief Matches the character types the library supports.
     /// @tparam T Type tested.
     /// @details The set is `char`, `uchar`, `char16`, `char32`, `wchar` and `schar`.
@@ -179,6 +184,11 @@ namespace hsd
     /// @tparam T Type tested.
     template <typename T>
     concept PointerType = IsPointer<T>;
+
+    /// @brief Alias of `IsTriviallyDestructible`.
+    /// @tparam T Type tested.
+    template <typename T>
+    concept TriviallyDestructibleType = IsTriviallyDestructible<T>;
 
     /// @brief Alias of `IsChar`.
     /// @tparam T Type tested.

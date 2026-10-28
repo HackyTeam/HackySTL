@@ -1,0 +1,58 @@
+# Builds and tests HackySTL on Linux and Windows with each supported compiler.
+# Adapted from GitHub's "CMake on multiple platforms" starter workflow.
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Keep every combination running so one failing leg does not hide the others.
+      fail-fast: false
+
+      # Linux builds with GCC and Clang. Windows builds with MSVC (cl), which
+      # does not use the GCC/Clang flags in CMakeLists.txt.
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug]
+        cpp_compiler: [g++, clang++, cl]
+        exclude:
+          - os: windows-latest
+            cpp_compiler: g++
+          - os: windows-latest
+            cpp_compiler: clang++
+          - os: ubuntu-latest
+            cpp_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      # The example checks run cmake/RunCases.py through CTest. Without a Python 3
+      # interpreter, CMake skips registering them and the run still passes.
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Configure CMake
+      # Debug matches the verification commands in AGENTS.md. Sanitizers are on by
+      # default and are only applied to GCC and Clang.
+      run: >
+        cmake -S . -B build
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      # --config is needed on Windows, where the default generator is multi-config.
+      run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+    - name: Test
+      # --build-config picks the configuration to test for multi-config generators.
+      # --output-on-failure prints the output of each failing test in the log.
+      run: ctest --test-dir build --build-config ${{ matrix.build_type }} --output-on-failure

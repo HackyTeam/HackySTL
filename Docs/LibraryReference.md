@@ -18,6 +18,7 @@ owners preserve the allocator together with their storage. See
 - [Base/Concepts.hpp](../../lib/Base/Concepts.hpp) - Project concepts describing constructibility, invocability, numeric types, iterators, and container capabilities.
 - [Base/CString.hpp](../../lib/Base/CString.hpp) - Character-type-independent string operations, comparisons, parsing, copying, and whitespace helpers.
 - [Base/_Define.hpp](../../lib/Base/_Define.hpp) - Compiler and platform feature macros used internally by the library.
+- [Base/_Int128.hpp](../../lib/Base/_Int128.hpp) - Portable 128-bit integer used as `u128` and `i128` on MSVC, and on other compilers when `HSD_LIBRARY_INT128` is defined.
 - [Base/Hash.hpp](../../lib/Base/Hash.hpp) - Hash primitives and hash specializations used by associative containers and string-like keys.
 - [Base/IntegerSequence.hpp](../../lib/Base/IntegerSequence.hpp) - Compile-time integer, index, ranged, and inverse sequence generators.
 - [Base/Limits.hpp](../../lib/Base/Limits.hpp) - Numeric limit constants used by project numeric implementations.

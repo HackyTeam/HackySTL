@@ -7,12 +7,12 @@
 
 #include "_Define.hpp"
 
+#if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+#include "_Int128.hpp"
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
-
-#if defined(HSD_COMPILER_MSVC)
-#include <__msvc_int128.hpp>
-#endif
 
 namespace hsd
 {
@@ -122,13 +122,23 @@ namespace hsd
             using type = unsigned char;
         };
 
-    #if defined(HSD_COMPILER_GCC)
+    #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
         /// @brief Maps __int128 to unsigned __int128; `i128` is this type.
         template <>
         struct add_unsigned<__int128>
         {
             /// @brief Unsigned counterpart of __int128.
             using type = unsigned __int128;
+        };
+    #endif
+
+    #if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+        /// @brief Maps the library's signed 128-bit type to its unsigned counterpart.
+        template <>
+        struct add_unsigned<int128_detail::basic_int128<true>>
+        {
+            /// @brief Unsigned counterpart of `i128`.
+            using type = int128_detail::basic_int128<false>;
         };
     #endif
     } // namespace type_detail
@@ -138,14 +148,16 @@ namespace hsd
     /// @brief Signed platform size type.
     using isize = type_detail::remove_unsigned<usize>::type;
 
-    #if defined(HSD_COMPILER_GCC)
+    #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
     /// @brief Unsigned 128-bit integer.
     using u128 = __uint128_t;
     /// @brief Signed 128-bit integer.
     using i128 = __int128_t;
-    #elif defined(HSD_COMPILER_MSVC)
-    using u128 = std::_Unsigned128;
-    using i128 = std::_Signed128;
+    #else
+    /// @brief Unsigned 128-bit integer, implemented by the library (see `_Int128.hpp`).
+    using u128 = int128_detail::basic_int128<false>;
+    /// @brief Signed 128-bit integer, implemented by the library (see `_Int128.hpp`).
+    using i128 = int128_detail::basic_int128<true>;
     #endif
 
     /// @brief Unsigned long integer.

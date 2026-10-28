@@ -2,7 +2,7 @@
 
 CTest discovers each test executable from a `.cpp` file under `Tests/`. The
 target name is `hackystl_test_` followed by the source path relative to `Tests/`,
-with `/` replaced by `_` and `.cpp` removed. The current suite has 129 test targets and 156 example targets. `DefaultArg/extern_impl.cpp` is linked into `DefaultArg/defaultarg.cpp`
+with `/` replaced by `_` and `.cpp` removed. The current suite has 130 test targets and 156 example targets. `DefaultArg/extern_impl.cpp` is linked into `DefaultArg/defaultarg.cpp`
 as support code and is not a separate test target.
 
 ## Build and Run
@@ -120,6 +120,7 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_Utils_ConceptsTest` | [Utils/ConceptsTest.cpp](Utils/ConceptsTest.cpp) | Every concept in `Concepts.hpp` checked at compile time against types it accepts and rejects, including the container and iterator concepts. |
 | `hackystl_test_Utils_RawStorageTest` | [Utils/RawStorageTest.cpp](Utils/RawStorageTest.cpp) | `construct_at` in constant evaluation, and `new_allocate`/`delete_deallocate` alignment from 8 through 4096 bytes. |
 | `hackystl_test_Utils_BitScanTest` | [Utils/BitScanTest.cpp](Utils/BitScanTest.cpp) | `countl_zero` and `countr_zero` against `std::countl_zero`/`std::countr_zero` for every width from 8 to 64 bits, at powers of two, their neighbours, zero, all ones, and pseudo-random values; constant-evaluation checks. |
+| `hackystl_test_Utils_Int128Test` | [Utils/Int128Test.cpp](Utils/Int128Test.cpp) | The library's 128-bit integer (`_Int128.hpp`): wrap-around, carries and borrows, multiplication, division by words and by larger divisors, shifts, signed division and shifts, float conversions, and formatting where it is the `u128` alias. |
 
 ### Values, Parsing, and Formatting
 

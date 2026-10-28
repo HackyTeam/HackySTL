@@ -30,8 +30,8 @@ namespace hsd
 
             for (; val != 0; val /= 10)
             {
-                const auto _res = (_negative) ? -(val % 10) : (val % 10);
-                buf.push('0' + _res);
+                const i32 _digit = static_cast<i32>((_negative) ? -(val % 10) : (val % 10));
+                buf.push('0' + _digit);
             }
 
             if (_negative) buf.push('-');
@@ -57,7 +57,7 @@ namespace hsd
 
             for (; _copy != 0; _copy >>= 4)
             {
-                buf.push(_hex_table[_copy & 15]);
+                buf.push(_hex_table[static_cast<usize>(_copy & 15)]);
             }
         }
     } // namespace to_string_detail

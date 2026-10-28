@@ -334,15 +334,23 @@ namespace hsd
             : public true_type
         {};
 
-        #if defined(HSD_COMPILER_GCC)
-        
+        #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
+
         /// @brief Specialization matching the signed 128-bit integer type `i128` (GCC extension).
         template <>
         struct is_integral<i128>
             : public true_type
         {};
-        
+
         #endif
+
+    #if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+        /// @brief Specialization matching the library's signed 128-bit integer type.
+        template <>
+        struct is_integral<int128_detail::basic_int128<true>>
+            : public true_type
+        {};
+    #endif
 
         /// @brief Specialization matching `long`.
         template <>
@@ -374,7 +382,7 @@ namespace hsd
             : public true_type
         {};
 
-        #if defined(HSD_COMPILER_GCC)
+        #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
 
         /// @brief Specialization matching the unsigned 128-bit integer type `u128` (GCC extension).
         template <>
@@ -383,6 +391,14 @@ namespace hsd
         {};
 
         #endif
+
+    #if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+        /// @brief Specialization matching the library's unsigned 128-bit integer type.
+        template <>
+        struct is_integral<int128_detail::basic_int128<false>>
+            : public true_type
+        {};
+    #endif
 
         /// @brief Specialization matching `unsigned long`.
         template <>

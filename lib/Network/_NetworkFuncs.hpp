@@ -7,6 +7,7 @@
 
 #include "_NetworkDetail.hpp"
 #include "../Containers/String.hpp"
+#include "../Base/Result.hpp"
 
 #include <errno.h>
 
@@ -65,10 +66,8 @@ namespace hsd::network_detail
 
         if (_ws_result != 0)
         {
-            printf(
-                "Can't start Winsock, here's"
-                " the error message %s\n",
-                sock_error_msg()
+            result_detail::write_error(
+                "Can't start Winsock, here's the error message ", sock_error_msg(), "\n"
             );
             
             return;
@@ -112,9 +111,8 @@ namespace hsd::network_detail
 
         if (_error_code != 0) 
         {
-            fprintf(
-                stderr, "Error for getaddrinfo, code"
-                ": %s\n", gai_strerror(_error_code)
+            result_detail::write_error(
+                "Error for getaddrinfo, code: ", gai_strerror(_error_code), "\n"
             );
 
             return false;

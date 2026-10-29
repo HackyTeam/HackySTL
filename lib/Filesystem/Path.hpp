@@ -6,6 +6,7 @@
 /// reports status, copies, renames, creates directories, and enumerates parents.
 
 #include "../Containers/Vector.hpp"
+#include "../Serialize/_IoDetail.hpp"
 #include "FStatus.hpp"
 #include "_FSDetail.hpp"
 
@@ -16,6 +17,8 @@
 #else
 #include <dirent.h>
 #include <utime.h>
+// POSIX declares rename() only in <stdio.h>, so this is the one stdio include left.
+#include <stdio.h>
 #endif
 
 #include <fcntl.h>
@@ -33,64 +36,69 @@ namespace hsd
         namespace fs_detail
         {
             ///
-            /// @brief Copies the byte contents of one file to another using
-            /// buffered `fgetc`/`fputc` reads and writes. Overwrites `to` if
-            /// it already exists (opened with mode "w"). Does not preserve
+            /// @brief Copies the byte contents of one file to another in chunks,
+            /// using `io_detail::file_handler`. Overwrites `to` if it already
+            /// exists, since it is truncated when opened. Does not preserve
             /// permissions or timestamps.
-            /// 
+            ///
             /// @param from - Path of the source file to read.
             /// @param to - Path of the destination file to (over)write.
             /// @return option_err<runtime_error> - Empty on success, or a
-            /// `runtime_error` if either file could not be opened or a write
-            /// failed partway through (in which case `to` may be left
-            /// truncated/partially written).
+            /// `runtime_error` if the source cannot be opened, the destination
+            /// cannot be created, or a read or write fails partway through (in
+            /// which case `to` may be left truncated/partially written).
             ///
             inline auto copy_file(const char* from, const char* to)
                 -> option_err<runtime_error>
             {
-                i32 _value;
-                using file_type = FILE*;
-                file_type _from_file = nullptr;
-                file_type _to_file = nullptr;
-
                 // The source is opened first, so a missing source creates no destination.
-                // Binary mode keeps the bytes as they are, with no newline translation.
-                #ifdef HSD_PLATFORM_WINDOWS
-                fopen_s(&_from_file, from, "rb");
-                #else
-                _from_file = fopen(from, "rb");
-                #endif
+                // Binary handles keep the bytes as they are, with no newline translation.
+                auto _from_file = io_detail::file_handler::open(from, io_options::read);
 
-                if (_from_file == nullptr)
+                if (_from_file.is_open() == false)
                 {
                     return runtime_error{"File not found"};
                 }
 
-                #ifdef HSD_PLATFORM_WINDOWS
-                fopen_s(&_to_file, to, "wb");
-                #else
-                _to_file = fopen(to, "wb");
-                #endif
+                auto _to_file = io_detail::file_handler::open(to, io_options::write);
 
-                if (_to_file == nullptr)
+                if (_to_file.is_open() == false)
                 {
-                    fclose(_from_file);
                     return runtime_error{"Couldn't create the destination file"};
                 }
 
-                for (_value = fgetc(_from_file); _value != EOF; _value = fgetc(_from_file)) 
+                char _buffer[4096]{};
+
+                while (true)
                 {
-                    if (fputc(_value, _to_file) == EOF)
+                    auto _count = _from_file.read(_buffer, sizeof(_buffer));
+
+                    if (_count == static_cast<decltype(_count)>(-1))
                     {
-                        fclose(_to_file);
-                        fclose(_from_file);
-                        return runtime_error{"Couldn't write into the file"};
+                        return runtime_error{"Couldn't read the file"};
+                    }
+                    else if (_count == 0)
+                    {
+                        return {};
+                    }
+
+                    // A write can stop early, so keep writing what is left of this chunk.
+                    usize _done = 0;
+
+                    while (_done < static_cast<usize>(_count))
+                    {
+                        auto _written = _to_file.write(
+                            _buffer + _done, static_cast<usize>(_count) - _done
+                        );
+
+                        if (_written == static_cast<decltype(_written)>(-1) || _written == 0)
+                        {
+                            return runtime_error{"Couldn't write into the file"};
+                        }
+
+                        _done += static_cast<usize>(_written);
                     }
                 }
-
-                fclose(_to_file);
-                fclose(_from_file);
-                return {};
             }
         } // namespace fs_detail
         
@@ -596,15 +604,8 @@ namespace hsd
                         }
                         else
                         {
-                            FILE* _dummy_file = nullptr;
-
-                            #ifdef HSD_PLATFORM_WINDOWS
-                            fopen_s(&_dummy_file, _new_to.absolute_name().c_str(), "w+");
-                            #else
-                            _dummy_file = fopen(_new_to.absolute_name().c_str(), "w+");
-                            #endif
-
-                            fclose(_dummy_file);
+                            // copy_file() needs an existing destination, so create an empty one first.
+                            io_detail::file_handler::open(_new_to.absolute_name().c_str(), io_options::rw_create);
                         }
 
                         _item.copy(_new_to).unwrap();

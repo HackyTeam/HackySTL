@@ -7,6 +7,7 @@
 
 #include "_SocketDetail.hpp"
 #include "../Containers/UnorderedMap.hpp"
+#include "../Base/Result.hpp"
 
 namespace hsd
 {
@@ -64,7 +65,7 @@ namespace hsd
 
             if (_result < 0)
             {
-                fputs("poll error", stderr);
+                result_detail::write_error("poll error");
                 abort();
             }
 
@@ -166,7 +167,7 @@ namespace hsd
 
             if (_socket.create_socket(addr, false) == false)
             {
-                fputs("Error in initializing socket", stderr);
+                result_detail::write_error("Error in initializing socket");
             }
         }
 
@@ -300,9 +301,8 @@ namespace hsd
                 if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)
                 #endif
                 {
-                    fprintf(
-                        stderr, "udp_server: error in receive"
-                        ", error: %s", error_message()
+                    result_detail::write_error(
+                        "udp_server: error in receive, error: ", error_message()
                     );
                     
                     abort();
@@ -384,7 +384,7 @@ namespace hsd
 
             if (_socket.create_socket(addr, false) == false)
             {
-                fputs("Error in initializing socket", stderr);
+                result_detail::write_error("Error in initializing socket");
             }
         }
 

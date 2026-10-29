@@ -9,34 +9,187 @@
 #include "SourceLocation.hpp"
 #include "Concepts.hpp"
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#if defined(HSD_PLATFORM_WINDOWS)
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace hsd
 {
     namespace result_detail
     {
-        template <typename T>
-        /// @brief Extracts a readable type name from the current function signature.
-        /// @return Pointer and length of the extracted type name.
-        static consteval pair<const char*, i32> get_type()
+        /// @brief Counts the characters before the terminating zero.
+        /// @param text Null-terminated text.
+        /// @return Number of characters in `text`.
+        static consteval usize text_length(const char* text)
         {
-            // Use source_location::current().function_name() for extracting the type name
-            
-            const char* _type_name = source_location::current().function_name();
-            const char* _ptr = _type_name;
+            usize _length = 0;
 
-            for (; *_type_name != '\0'; ++_type_name)
+            while (text[_length] != '\0')
             {
-                // Find the first =
+                ++_length;
+            }
 
-                if (*_type_name == '=')
+            return _length;
+        }
+
+        /// @brief Reports whether `prefix` occurs in `text` at position `pos`.
+        /// @param text Null-terminated text to search.
+        /// @param pos Position in `text` where the match must start.
+        /// @param prefix Null-terminated text to match.
+        /// @return True when every character of `prefix` matches.
+        static consteval bool matches_at(const char* text, usize pos, const char* prefix)
+        {
+            for (usize _index = 0; prefix[_index] != '\0'; ++_index)
+            {
+                if (text[pos + _index] != prefix[_index])
                 {
-                    _ptr = _type_name + 2;
+                    return false;
                 }
             }
 
-            return {_ptr, static_cast<i32>(_type_name - _ptr - 1)};
+            return true;
+        }
+
+        /// @brief Finds the type name in a GCC or Clang signature.
+        /// @details GCC prints `[with T = int]` and Clang prints `[T = int]`. The name
+        /// starts after the first `= ` inside the first `[`, and ends before the final `]`.
+        /// @param signature Pretty function name of a `get_type` instance.
+        /// @return Pointer into `signature` and the length of the name.
+        static consteval pair<const char*, i32> bracket_name(const char* signature)
+        {
+            const usize _size = text_length(signature);
+            usize _begin = 0;
+
+            while (_begin < _size && signature[_begin] != '[')
+            {
+                ++_begin;
+            }
+
+            while (_begin < _size && signature[_begin] != '=')
+            {
+                ++_begin;
+            }
+
+            // Skip the "= " that comes before the name.
+            _begin += 2;
+
+            return {signature + _begin, static_cast<i32>(_size - 1 - _begin)};
+        }
+
+        /// @brief Finds the type name in an MSVC signature.
+        /// @details MSVC prints `get_type<int>(void)`, so the name lies between
+        /// `get_type<` and the last `>` of the signature.
+        /// @param signature Function signature of a `get_type` instance.
+        /// @return Pointer into `signature` and the length of the name.
+        static consteval pair<const char*, i32> angle_name(const char* signature)
+        {
+            const usize _size = text_length(signature);
+            const usize _marker_size = text_length("get_type<");
+            usize _begin = 0;
+
+            while (_begin < _size && matches_at(signature, _begin, "get_type<") == false)
+            {
+                ++_begin;
+            }
+
+            _begin += _marker_size;
+
+            usize _end = _size;
+
+            while (_end > _begin && signature[_end - 1] != '>')
+            {
+                --_end;
+            }
+
+            return {signature + _begin, static_cast<i32>(_end - 1 - _begin)};
+        }
+
+        template <typename T>
+        /// @brief Extracts a readable name of `T` from the compiler's signature for this function.
+        /// @return Pointer and length of the extracted type name.
+        static consteval pair<const char*, i32> get_type()
+        {
+            #if defined(HSD_COMPILER_MSVC)
+            return angle_name(__FUNCSIG__);
+            #else
+            return bracket_name(__PRETTY_FUNCTION__);
+            #endif
+        }
+
+        /// @brief Writes raw bytes to the standard error descriptor.
+        /// @details Writes to the descriptor rather than through `stdio`, so the
+        /// error paths in this header do not depend on `<stdio.h>`. A failed write
+        /// stops quietly, because the caller aborts right after.
+        /// @param text Bytes to write.
+        /// @param size Number of bytes in `text`.
+        static inline void write_error_bytes(const char* text, usize size)
+        {
+            while (size > 0)
+            {
+                #if defined(HSD_PLATFORM_WINDOWS)
+                // The C runtime's descriptor writer. Text mode turns "\n" into "\r\n", as stderr did.
+                const isize _written = _write(2, text, static_cast<unsigned int>(size));
+                #else
+                const isize _written = ::write(2, text, size);
+                #endif
+
+                if (_written <= 0)
+                {
+                    return;
+                }
+
+                text += _written;
+                size -= static_cast<usize>(_written);
+            }
+        }
+
+        /// @brief Writes a null-terminated string to the standard error descriptor.
+        /// @param text Text to write; a null pointer writes nothing.
+        static inline void write_error_piece(const char* text)
+        {
+            if (text != nullptr)
+            {
+                write_error_bytes(text, strlen(text));
+            }
+        }
+
+        /// @brief Writes a string of another character type through its bytes.
+        /// @details Stops at the first zero byte, as the `%s` conversion did before.
+        /// @param text Null-terminated text of any character type.
+        template <typename CharT>
+        static inline void write_error_piece(const CharT* text)
+        {
+            write_error_piece(reinterpret_cast<const char*>(text));
+        }
+
+        /// @brief Writes an unsigned decimal number to the standard error descriptor.
+        /// @param value Number to write.
+        static inline void write_error_piece(u64 value)
+        {
+            // A u64 has at most 20 decimal digits.
+            char _digits[20]{};
+            usize _pos = sizeof(_digits);
+
+            do
+            {
+                _digits[--_pos] = static_cast<char>('0' + value % 10);
+                value /= 10;
+            } while (value != 0);
+
+            write_error_bytes(_digits + _pos, sizeof(_digits) - _pos);
+        }
+
+        /// @brief Writes each piece, in order, to the standard error descriptor.
+        /// @param pieces Null-terminated strings and unsigned integers.
+        template <typename... Pieces>
+        static inline void write_error(const Pieces&... pieces)
+        {
+            (write_error_piece(pieces), ...);
         }
     } // namespace result_detail
 
@@ -46,11 +199,10 @@ namespace hsd
     [[noreturn]] static inline void panic(
         const char* message, source_location loc = source_location::current())
     {
-        fprintf(
-            stderr, "Got an error in file:"
-            "\n%s\nInvoked from: %s at line:"
-            " %u\nWith the message: %s\n", 
-            loc.file_name(), loc.function_name(), loc.line(), message
+        result_detail::write_error(
+            "Got an error in file:\n", loc.file_name(), "\nInvoked from: ",
+            loc.function_name(), " at line: ", static_cast<u64>(loc.line()),
+            "\nWith the message: ", message, "\n"
         );
 
         abort();
@@ -67,14 +219,15 @@ namespace hsd
         constexpr auto _ok_type = result_detail::get_type<Ok>();
         constexpr auto _err_type = result_detail::get_type<Err>();
 
-        fprintf(
-            stderr, "Got an error in file:"
-            "\n%s\nInvoked from: %s at line:"
-            " %u\nWith the message: Expected "
-            "%.*s, got %.*s\n", loc.file_name(), loc.function_name(), 
-            loc.line(), _ok_type.second, _ok_type.first,
-            _err_type.second, _err_type.first
+        result_detail::write_error(
+            "Got an error in file:\n", loc.file_name(), "\nInvoked from: ",
+            loc.function_name(), " at line: ", static_cast<u64>(loc.line()),
+            "\nWith the message: Expected "
         );
+        result_detail::write_error_bytes(_ok_type.first, static_cast<usize>(_ok_type.second));
+        result_detail::write_error(", got ");
+        result_detail::write_error_bytes(_err_type.first, static_cast<usize>(_err_type.second));
+        result_detail::write_error("\n");
 
         abort();
     }

@@ -18,6 +18,26 @@ namespace hsd
 {
     namespace time_detail
     {
+        /// @brief Nanoseconds in one second.
+        static constexpr int ns_per_second = 1'000'000'000;
+        /// @brief Nanoseconds in one millisecond.
+        static constexpr int ns_per_ms = 1'000'000;
+        /// @brief Nanoseconds in one microsecond.
+        static constexpr int ns_per_us = 1'000;
+        /// @brief Microseconds in one second.
+        static constexpr int us_per_second = 1'000'000;
+        /// @brief Microseconds in one millisecond.
+        static constexpr int us_per_ms = 1'000;
+        /// @brief Milliseconds in one second.
+        static constexpr int ms_per_second = 1'000;
+        /// @brief Nanoseconds in one 100 ns interval, the unit of Windows file times.
+        static constexpr int ns_per_hns = 100;
+        /// @brief 100 ns intervals in one second.
+        static constexpr i64 hns_per_second = 10'000'000;
+        /// @brief 100 ns intervals from 1601-01-01 to 1970-01-01, the Windows file-time epoch.
+        static constexpr i64 hns_from_1601_to_1970 = 116'444'736'000'000'000;
+        /// @brief Buffer size used for the platform asctime text.
+        static constexpr usize asctime_buffer_size = 128;
         /// @brief Fills `spec` with the current wall-clock time.
         /// @details Matches `clock_gettime(CLOCK_REALTIME)` on POSIX. Windows
         /// has no such function in its runtime, so the value comes from the
@@ -29,9 +49,9 @@ namespace hsd
             i64 _ticks = 0;
             GetSystemTimeAsFileTime(reinterpret_cast<FILETIME*>(&_ticks));
 
-            _ticks -= 116'444'736'000'000'000ll;
-            spec.tv_sec = _ticks / 10'000'000ll;
-            spec.tv_nsec = (_ticks % 10'000'000ll) * 100;
+            _ticks -= hns_from_1601_to_1970;
+            spec.tv_sec = _ticks / hns_per_second;
+            spec.tv_nsec = (_ticks % hns_per_second) * ns_per_hns;
             #else
             clock_gettime(CLOCK_REALTIME, &spec);
             #endif
@@ -50,6 +70,53 @@ namespace hsd
         static constexpr u8 _month_table[] = {
             31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
         };
+
+        /// @brief Seconds in one minute, which is also the number of `tm_sec` values before the next minute.
+        static constexpr int seconds_per_minute = 60;
+        /// @brief Minutes in one hour, and the number of `tm_min` values before the next hour.
+        static constexpr int minutes_per_hour = 60;
+        /// @brief Hours in one day, and the number of `tm_hour` values before the next day.
+        static constexpr int hours_per_day = 24;
+        /// @brief Months in one year.
+        static constexpr int months_per_year = 12;
+        /// @brief Zero-based index of February in `_month_table`.
+        static constexpr int february_index = 1;
+        /// @brief Days in February of a leap year.
+        static constexpr int days_in_leap_february = 29;
+        /// @brief Offset between the `tm_year` field and the absolute year.
+        static constexpr int tm_year_base = 1900;
+        /// @brief Radix of the day-of-month part of the chronology key; days run 1 through 31.
+        static constexpr i64 day_key_radix = 32;
+        /// @brief Radix of the second part of the chronology key; `tm_sec` runs 0 through 60.
+        static constexpr i64 second_key_radix = seconds_per_minute + 1;
+        /// @brief Calendar month number of March, which starts the year in the day formula.
+        static constexpr i64 march_month = 3;
+        /// @brief Last month before March; January and February belong to the previous year.
+        static constexpr i64 last_month_before_march = 2;
+        /// @brief Years in a 400-year Gregorian cycle, which is also the number of years in an era.
+        static constexpr i64 years_per_era = 400;
+        /// @brief Days in a 400-year Gregorian cycle: 400 * 365 plus 97 leap days.
+        static constexpr i64 days_per_400_years = 146097;
+        /// @brief Days in a common year.
+        static constexpr i64 days_per_common_year = 365;
+        /// @brief Years between leap years, outside century years.
+        static constexpr i64 leap_year_interval = 4;
+        /// @brief Years between century years; a century is a leap year only when divisible by 400.
+        static constexpr i64 century_year_interval = 100;
+        /// @brief Amount subtracted from a negative year so its division by 400 rounds down.
+        static constexpr i64 negative_era_adjust = 399;
+        /// @brief Days from 0000-03-01 to 1970-01-01.
+        static constexpr i64 unix_epoch_day_offset = 719468;
+        /// @brief Slope of the cumulative day count per month in the day formula.
+        static constexpr i64 days_before_month_slope = 153;
+        /// @brief Rounding bias of the cumulative day count per month in the day formula.
+        static constexpr i64 days_before_month_bias = 2;
+        /// @brief Divisor of the cumulative day count per month in the day formula.
+        static constexpr i64 days_before_month_divisor = 5;
+        /// @brief Days in a week.
+        static constexpr i64 days_per_week = 7;
+        /// @brief Weekday of 1970-01-01, which was a Thursday, with Sunday as 0.
+        static constexpr i64 weekday_of_unix_epoch = 4;
 
     protected:
         /// @brief Replaces calendar fields from a C library time structure.
@@ -105,24 +172,32 @@ namespace hsd
         /// @return Absolute calendar year.
         constexpr usize get_year() const
         {
-            return static_cast<usize>(_time.tm_year) + 1900;
+            return static_cast<usize>(_time.tm_year) + tm_year_base;
         }
 
-        /// @brief Formats the calendar fields using the platform asctime format.
-        /// @return Text representation of the calendar value.
         /// @brief Days from 1970-01-01 to the given proleptic Gregorian date.
+        /// @details Counts whole 400-year eras first, then the years and months inside
+        /// the era. Each year starts in March, so January and February count as the last
+        /// two months of the previous year.
         /// @param year Full year, such as 2024.
         /// @param month One-based month.
         /// @param day One-based day.
         /// @return Signed day count; negative before the epoch.
         static constexpr i64 _days_from_civil(i64 year, i64 month, i64 day)
         {
-            year -= month <= 2;
-            const i64 _era = (year >= 0 ? year : year - 399) / 400;
-            const i64 _year_of_era = year - _era * 400;
-            const i64 _day_of_year = (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5 + day - 1;
-            const i64 _day_of_era = _year_of_era * 365 + _year_of_era / 4 - _year_of_era / 100 + _day_of_year;
-            return _era * 146097 + _day_of_era - 719468;
+            year -= month <= last_month_before_march;
+            const i64 _era = (year >= 0 ? year : year - negative_era_adjust) / years_per_era;
+            const i64 _year_of_era = year - _era * years_per_era;
+            // Months counted from March, so March is 0 and February is 11.
+            const i64 _month_index = (month > last_month_before_march)
+                ? month - march_month
+                : month + months_per_year - march_month;
+            const i64 _day_of_year = (days_before_month_slope * _month_index + days_before_month_bias)
+                / days_before_month_divisor + day - 1;
+            const i64 _day_of_era = _year_of_era * days_per_common_year
+                + _year_of_era / leap_year_interval - _year_of_era / century_year_interval
+                + _day_of_year;
+            return _era * days_per_400_years + _day_of_era - unix_epoch_day_offset;
         }
 
         /// @brief Recomputes the weekday and day-of-year fields from the date fields.
@@ -130,13 +205,13 @@ namespace hsd
         /// in `tm_wday` and `tm_yday` before they are read.
         constexpr void _update_calendar()
         {
-            const i64 _year = static_cast<i64>(_time.tm_year) + 1900;
+            const i64 _year = static_cast<i64>(_time.tm_year) + tm_year_base;
             const i64 _days = _days_from_civil(_year, _time.tm_mon + 1, _time.tm_mday);
-            const i64 _weekday = (_days + 4) % 7;
+            const i64 _weekday = (_days + weekday_of_unix_epoch) % days_per_week;
 
             using WeekType = decltype(_time.tm_wday);
             using YearDayType = decltype(_time.tm_yday);
-            _time.tm_wday = static_cast<WeekType>(_weekday < 0 ? _weekday + 7 : _weekday);
+            _time.tm_wday = static_cast<WeekType>(_weekday < 0 ? _weekday + days_per_week : _weekday);
             _time.tm_yday = static_cast<YearDayType>(_days - _days_from_civil(_year, 1, 1));
         }
 
@@ -145,19 +220,21 @@ namespace hsd
         constexpr i64 _chronology_key() const
         {
             i64 _key = _time.tm_year;
-            _key = _key * 12 + _time.tm_mon;
-            _key = _key * 32 + _time.tm_mday;
-            _key = _key * 24 + _time.tm_hour;
-            _key = _key * 60 + _time.tm_min;
-            _key = _key * 62 + _time.tm_sec;
+            _key = _key * months_per_year + _time.tm_mon;
+            _key = _key * day_key_radix + _time.tm_mday;
+            _key = _key * hours_per_day + _time.tm_hour;
+            _key = _key * minutes_per_hour + _time.tm_min;
+            _key = _key * second_key_radix + _time.tm_sec;
             return _key;
         }
 
+        /// @brief Formats the calendar fields using the platform asctime format.
+        /// @return Text representation of the calendar value.
         inline string to_text() const
         {
             #if defined(HSD_PLATFORM_WINDOWS)
-            char _new_buf[128]{};
-            asctime_s(_new_buf, 127, &_time);
+            char _new_buf[time_detail::asctime_buffer_size]{};
+            asctime_s(_new_buf, time_detail::asctime_buffer_size - 1, &_time);
             return {_new_buf};
             #else
             return asctime(&_time);
@@ -168,10 +245,10 @@ namespace hsd
         /// @param seconds New seconds field.
         constexpr void set_seconds(u16 seconds)
         {
-            if (seconds < 60)
+            if (seconds < seconds_per_minute)
             {
                 using CastToType = decltype(_time.tm_sec);
-                _time.tm_sec = static_cast<CastToType>(seconds % 60);
+                _time.tm_sec = static_cast<CastToType>(seconds % seconds_per_minute);
             }
         }
 
@@ -179,10 +256,10 @@ namespace hsd
         /// @param minutes New minutes field.
         constexpr void set_minutes(u16 minutes)
         {
-            if (minutes < 60)
+            if (minutes < minutes_per_hour)
             {
                 using CastToType = decltype(_time.tm_min);
-                _time.tm_min = static_cast<CastToType>(minutes % 60);
+                _time.tm_min = static_cast<CastToType>(minutes % minutes_per_hour);
             }
         }
 
@@ -190,10 +267,10 @@ namespace hsd
         /// @param hour New hour field.
         constexpr void set_hour(u64 hour)
         {
-            if (hour < 24)
+            if (hour < hours_per_day)
             {
                 using CastToType = decltype(_time.tm_hour);
-                _time.tm_hour = static_cast<CastToType>(hour % 24);
+                _time.tm_hour = static_cast<CastToType>(hour % hours_per_day);
             }
         }
 
@@ -202,7 +279,7 @@ namespace hsd
         constexpr void set_month_day(u16 month_day)
         {
             // February may hold day 29; its leap-year check happens when the year is known.
-            const u16 _days = (get_month() == 1) ? 29 : _month_table[get_month()];
+            const u16 _days = (get_month() == february_index) ? days_in_leap_february : _month_table[get_month()];
             if (month_day >= 1 && month_day <= _days)
             {
                 using CastToType = decltype(_time.tm_mday);
@@ -214,7 +291,7 @@ namespace hsd
         /// @param month One-based month number.
         constexpr void set_month(u16 month)
         {
-            if (month >= 1 && month <= 12)
+            if (month >= 1 && month <= months_per_year)
             {
                 using CastToType = decltype(_time.tm_mon);
                 _time.tm_mon = static_cast<CastToType>(month - 1);
@@ -226,7 +303,7 @@ namespace hsd
         constexpr void set_year(usize year)
         {
             using CastToType = decltype(_time.tm_year);
-            _time.tm_year = static_cast<CastToType>(year) - 1900;
+            _time.tm_year = static_cast<CastToType>(year) - tm_year_base;
         }
 
         /// @brief Compares all calendar fields for equality.
@@ -440,14 +517,14 @@ namespace hsd
         /// @return Elapsed process CPU time in microseconds.
         constexpr i64 to_microseconds() const
         {
-            return static_cast<i64>(_clk) * 1'000'000 / CLOCKS_PER_SEC;
+            return static_cast<i64>(_clk) * time_detail::us_per_second / CLOCKS_PER_SEC;
         }
 
         /// @brief Converts native ticks to milliseconds.
         /// @return Elapsed process CPU time in milliseconds.
         constexpr i32 to_miliseconds() const
         {
-            return static_cast<i32>(static_cast<i64>(_clk) * 1'000 / CLOCKS_PER_SEC);
+            return static_cast<i32>(static_cast<i64>(_clk) * time_detail::ms_per_second / CLOCKS_PER_SEC);
         }
 
         /// @brief Converts native ticks to seconds.
@@ -539,7 +616,7 @@ namespace hsd
             {
                 timespec _spec{
                     lhs._clk.tv_sec - rhs._clk.tv_sec - 1,
-                    lhs._clk.tv_nsec - rhs._clk.tv_nsec + 1'000'000'000  
+                    lhs._clk.tv_nsec - rhs._clk.tv_nsec + time_detail::ns_per_second
                 };
 
                 return precise_clock{_spec};
@@ -562,11 +639,11 @@ namespace hsd
         constexpr friend precise_clock operator+(
             const precise_clock& lhs, const precise_clock& rhs)
         {
-            if (lhs._clk.tv_nsec + rhs._clk.tv_nsec >= 1'000'000'000)
+            if (lhs._clk.tv_nsec + rhs._clk.tv_nsec >= time_detail::ns_per_second)
             {
                 timespec _spec{
                     lhs._clk.tv_sec + rhs._clk.tv_sec + 1,
-                    lhs._clk.tv_nsec + rhs._clk.tv_nsec - 1'000'000'000  
+                    lhs._clk.tv_nsec + rhs._clk.tv_nsec - time_detail::ns_per_second
                 };
 
                 return precise_clock{_spec};
@@ -664,7 +741,8 @@ namespace hsd
         {
             if (_clk.tv_sec != 0)
             {
-                return static_cast<u64>(_clk.tv_sec) * 1'000'000'000ull + static_cast<u64>(_clk.tv_nsec);
+                return static_cast<u64>(_clk.tv_sec) * static_cast<u64>(time_detail::ns_per_second)
+                    + static_cast<u64>(_clk.tv_nsec);
             }
             else
             {
@@ -676,14 +754,14 @@ namespace hsd
         /// @return Elapsed duration in microseconds.
         constexpr i64 to_microseconds() const
         {
-            return static_cast<i64>(to_nanoseconds() / 1000);
+            return static_cast<i64>(to_nanoseconds() / time_detail::ns_per_us);
         }
 
         /// @brief Converts the timespec value to milliseconds.
         /// @return Elapsed duration in milliseconds.
         constexpr i32 to_miliseconds() const
         {
-            return static_cast<i32>(to_nanoseconds() / 1'000'000);
+            return static_cast<i32>(to_nanoseconds() / time_detail::ns_per_ms);
         }
 
         /// @brief Converts the timespec value to seconds.
@@ -691,7 +769,7 @@ namespace hsd
         constexpr f64 to_seconds() const
         {
             return static_cast<f64>(_clk.tv_nsec) / 
-                1'000'000'000.0 + static_cast<f64>(_clk.tv_sec);
+                static_cast<f64>(time_detail::ns_per_second) + static_cast<f64>(_clk.tv_sec);
         }
 
         /// @brief Returns the native timespec value.
@@ -752,11 +830,11 @@ namespace hsd
         /// @return Normalized seconds/nanoseconds duration.
         static consteval precise_clock operator""_ns(u64 nanoseconds)
         {
-            if (nanoseconds >= 1'000'000'000)
+            if (nanoseconds >= time_detail::ns_per_second)
             {
                 timespec _spec{
-                    .tv_sec = static_cast<time_t>(nanoseconds / 1'000'000'000),
-                    .tv_nsec = static_cast<long>(nanoseconds % 1'000'000'000)
+                    .tv_sec = static_cast<time_t>(nanoseconds / time_detail::ns_per_second),
+                    .tv_nsec = static_cast<long>(nanoseconds % time_detail::ns_per_second)
                 };
 
                 return precise_clock{_spec};
@@ -777,13 +855,13 @@ namespace hsd
         /// @return Normalized seconds/nanoseconds duration.
         static consteval precise_clock operator""_us(u64 microseconds)
         {
-            if (microseconds >= 1'000)
+            if (microseconds >= time_detail::us_per_ms)
             {
-                if (microseconds >= 1'000'000)
+                if (microseconds >= time_detail::us_per_second)
                 {
                     timespec _spec{
-                        .tv_sec = static_cast<time_t>(microseconds / 1'000'000),
-                        .tv_nsec = static_cast<long>(microseconds % 1'000'000) * 1'000
+                        .tv_sec = static_cast<time_t>(microseconds / time_detail::us_per_second),
+                        .tv_nsec = static_cast<long>(microseconds % time_detail::us_per_second) * time_detail::ns_per_us
                     };
 
                     return precise_clock{_spec};
@@ -792,7 +870,7 @@ namespace hsd
                 {
                     timespec _spec{
                         .tv_sec = 0,
-                        .tv_nsec = static_cast<long>(microseconds % 1'000'000) * 1'000
+                        .tv_nsec = static_cast<long>(microseconds % time_detail::us_per_second) * time_detail::ns_per_us
                     };
 
                     return precise_clock{_spec};
@@ -802,7 +880,7 @@ namespace hsd
             {
                 timespec _spec{
                     .tv_sec = 0,
-                    .tv_nsec = static_cast<long>(microseconds) * 1'000
+                    .tv_nsec = static_cast<long>(microseconds) * time_detail::ns_per_us
                 };
 
                 return precise_clock{_spec};
@@ -814,11 +892,11 @@ namespace hsd
         /// @return Normalized seconds/nanoseconds duration.
         static consteval precise_clock operator""_ms(u64 miliseconds)
         {
-            if (miliseconds >= 1'000)
+            if (miliseconds >= time_detail::ms_per_second)
             {
                 timespec _spec{
-                    .tv_sec = static_cast<time_t>(miliseconds / 1'000),
-                    .tv_nsec = static_cast<long>(miliseconds % 1'000) * 1'000'000
+                    .tv_sec = static_cast<time_t>(miliseconds / time_detail::ms_per_second),
+                    .tv_nsec = static_cast<long>(miliseconds % time_detail::ms_per_second) * time_detail::ns_per_ms
                 };
 
                 return precise_clock{_spec};
@@ -827,7 +905,7 @@ namespace hsd
             {
                 timespec _spec{
                     .tv_sec = 0,
-                    .tv_nsec = static_cast<long>(miliseconds) * 1'000'000
+                    .tv_nsec = static_cast<long>(miliseconds) * time_detail::ns_per_ms
                 };
 
                 return precise_clock{_spec};

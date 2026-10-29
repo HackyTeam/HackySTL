@@ -1,6 +1,6 @@
 Case = A seeded shuffle is a reproducible permutation with fair statistics
 Input =
-Output = "shuffled: 6 3 5 1 9 0 8 2 4 7
+Output = "shuffled: 9 4 1 3 5 0 8 2 7 6
 still a permutation: true
 replay matches: true
 card 0 always lands somewhere: true

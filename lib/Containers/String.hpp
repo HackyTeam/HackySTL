@@ -5,6 +5,7 @@
 /// @details Covers ownership, mutation, search, substrings, Unicode conversion,
 /// formatting, and explicit storage-size/terminator invariants.
 
+#include "../Base/Result.hpp"
 #include "../Base/CString.hpp"
 #include "StringView.hpp"
 #include "../Serialize/ToString.hpp"
@@ -1263,9 +1264,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%zu)"
-                    ": size is too big\n", size
+                result_detail::write_error(
+                    "Error at static_basic_string(", size, "): size is too big\n"
                 );
 
                 abort();
@@ -1293,9 +1293,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%s)"
-                    ": cstr is too big to be contained\n", cstr
+                result_detail::write_error(
+                    "Error at static_basic_string(", cstr, "): cstr is too big to be contained\n"
                 );
 
                 abort();
@@ -1324,9 +1323,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%s, %zu)"
-                    ": size is too big\n", cstr, size
+                result_detail::write_error(
+                    "Error at static_basic_string(", cstr, ", ", size, "): size is too big\n"
                 );
 
                 abort();
@@ -1359,9 +1357,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%s)"
-                    ": other is too big to be contained\n", other._data
+                result_detail::write_error(
+                    "Error at static_basic_string(", other._data, "): other is too big to be contained\n"
                 );
 
                 abort();
@@ -1383,9 +1380,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%s, %zu)"
-                    ": cstr is too big to be contained\n", other._data, other._size
+                result_detail::write_error(
+                    "Error at static_basic_string(", other._data, ", ", other._size, "): cstr is too big to be contained\n"
                 );
 
                 abort();
@@ -1412,9 +1408,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string(%s, %zu)"
-                    ": other is too big to be contained\n", other._data
+                result_detail::write_error(
+                    "Error at static_basic_string(", other._data, ", ", other._size, "): other is too big to be contained\n"
                 );
             }
         }
@@ -1432,9 +1427,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at operator=(%s): rhs"
-                    " is too big to be contained\n", rhs
+                result_detail::write_error(
+                    "Error at operator=(", rhs, "): rhs is too big to be contained\n"
                 );
 
                 abort();
@@ -1455,9 +1449,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string::operator"
-                    "=(%s): rhs is too big to be contained\n", rhs
+                result_detail::write_error(
+                    "Error at static_basic_string::operator=(", rhs, "): rhs is too big to be contained\n"
                 );
 
                 abort();
@@ -1495,9 +1488,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string::operator"
-                    "=(%s): rhs is too big to be contained\n", rhs
+                result_detail::write_error(
+                    "Error at static_basic_string::operator=(", rhs, "): rhs is too big to be contained\n"
                 );
 
                 abort();
@@ -1907,9 +1899,8 @@ namespace hsd
             }
             else
             {
-                fprintf(
-                    stderr, "Error at static_basic_string"
-                    ":: emplace_back: String is full\n"
+                result_detail::write_error(
+                    "Error at static_basic_string:: emplace_back: String is full\n"
                 );
 
                 abort();
@@ -1943,9 +1934,8 @@ namespace hsd
         {
             if (size > _capacity)
             {
-                fprintf(
-                    stderr, "Error at static_basic_string::resize"
-                    "(%zu): size is bigger than capacity\n", size
+                result_detail::write_error(
+                    "Error at static_basic_string::resize(", size, "): size is bigger than capacity\n"
                 );
 
                 abort();

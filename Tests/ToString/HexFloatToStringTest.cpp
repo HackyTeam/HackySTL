@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <random>
 
 // Copies a conversion buffer into a null-terminated array for the C parsers.
@@ -45,8 +46,36 @@ static void expect_round_trip(T value)
     assert(_parsed == value);
 }
 
+// Removes the zeros after the last digit of the fraction, and the point too when
+// the fraction is all zeros. The text stays unchanged when there is no fraction.
+static void trim_fraction_zeros(char* text)
+{
+    char* _point = std::strchr(text, '.');
+    char* _exponent = std::strchr(text, 'p');
+
+    if (_point == nullptr || _exponent == nullptr)
+    {
+        return;
+    }
+
+    char* _end = _exponent;
+
+    while (_end > _point + 1 && *(_end - 1) == '0')
+    {
+        --_end;
+    }
+
+    if (_end == _point + 1)
+    {
+        --_end;
+    }
+
+    std::memmove(_end, _exponent, std::strlen(_exponent) + 1);
+}
+
 // C's `%a` writes a `+` before a non-negative exponent, and this project omits it.
-// The reference drops that sign before the comparison.
+// MSVC's `%a` also pads the fraction with zeros (0x1.0000000000000p+0), which glibc
+// does not. The reference drops both differences before the comparison.
 static void expect_matches_printf_double(double value)
 {
     char _reference[128] = {};
@@ -63,6 +92,7 @@ static void expect_matches_printf_double(double value)
         }
     }
 
+    trim_fraction_zeros(_without_plus);
     assert(equals(hsd::to_pseudo_string_hex(value), _without_plus));
 }
 

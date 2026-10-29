@@ -224,32 +224,32 @@ namespace hsd
 
             while (true)
             {
-                const char* _data = get_stream().data();
-                const usize _size = get_stream().size();
+                const char* _chars = get_stream().data();
+                const usize _available = get_stream().size();
 
                 usize _start = 0;
-                while (_start < _size && _is_space(_data[_start]))
+                while (_start < _available && _is_space(_chars[_start]))
                 {
                     ++_start;
                 }
 
                 usize _end = _start;
-                while (_end < _size && !_is_space(_data[_end]))
+                while (_end < _available && !_is_space(_chars[_end]))
                 {
                     ++_end;
                 }
 
-                if (_start == _size && _is_eof)
+                if (_start == _available && _is_eof)
                 {
                     return runtime_error{"Reached end of file"};
                 }
 
-                if (_end < _size || _is_eof)
+                if (_end < _available || _is_eof)
                 {
                     T _value{};
                     using sstream_detail::_parse_from;
                     auto _res = _parse_from(
-                        string_view{_data + _start, _end - _start}, _value);
+                        string_view{_chars + _start, _end - _start}, _value);
 
                     get_stream().drop_front(_end);
 
@@ -279,20 +279,20 @@ namespace hsd
 
             while (true)
             {
-                const char* _data = get_stream().data();
-                const usize _size = get_stream().size();
+                const char* _chars = get_stream().data();
+                const usize _available = get_stream().size();
 
-                for (; _scanned < _size; ++_scanned)
+                for (; _scanned < _available; ++_scanned)
                 {
-                    if (_data[_scanned] == '\n')
+                    if (_chars[_scanned] == '\n')
                     {
                         usize _length = _scanned;
-                        if (_length != 0 && _data[_length - 1] == '\r')
+                        if (_length != 0 && _chars[_length - 1] == '\r')
                         {
                             --_length;
                         }
 
-                        string _line{string_view{_data, _length}};
+                        string _line{string_view{_chars, _length}};
                         get_stream().drop_front(_scanned + 1);
                         return _line;
                     }
@@ -300,18 +300,18 @@ namespace hsd
 
                 if (_is_eof)
                 {
-                    if (_size == 0)
+                    if (_available == 0)
                     {
                         return runtime_error{"Reached end of file"};
                     }
 
-                    usize _length = _size;
-                    if (_data[_length - 1] == '\r')
+                    usize _length = _available;
+                    if (_chars[_length - 1] == '\r')
                     {
                         --_length;
                     }
 
-                    string _line{string_view{_data, _length}};
+                    string _line{string_view{_chars, _length}};
                     get_stream().clear();
                     return _line;
                 }

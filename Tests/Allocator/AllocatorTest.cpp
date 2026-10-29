@@ -13,6 +13,8 @@
 struct alignas(64) aligned_value
 {
     int value = 0;
+    // Explicit padding fills the alignment, so the compiler adds none (MSVC C4324).
+    char padding[60]{};
 
     aligned_value(int initial_value = 0)
         : value{initial_value}

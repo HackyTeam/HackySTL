@@ -536,7 +536,7 @@ namespace hsd
         /// @brief Sentinel index() value: no alternative is currently active
         /// (only possible when the variant was default-constructed and no
         /// `Ts` is default-constructible).
-        static constexpr usize npos = -1;
+        static constexpr usize npos = static_cast<usize>(-1);
 
     private:
         /// @brief Recursive alternative storage for the full type list `Ts...`.

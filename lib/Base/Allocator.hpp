@@ -293,7 +293,7 @@ namespace hsd
         ///
         /// @return The first block header.
         ///
-        constexpr auto* _first_block() const
+        auto* _first_block() const
         {
             return reinterpret_cast<block_type*>(_buf);
         }

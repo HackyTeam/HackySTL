@@ -53,17 +53,29 @@ namespace hsd
                 file_type _from_file = nullptr;
                 file_type _to_file = nullptr;
 
+                // The source is opened first, so a missing source creates no destination.
+                // Binary mode keeps the bytes as they are, with no newline translation.
                 #ifdef HSD_PLATFORM_WINDOWS
-                fopen_s(&_from_file, from, "r");
-                fopen_s(&_to_file, to, "w");
+                fopen_s(&_from_file, from, "rb");
                 #else
-                _from_file = fopen(from, "r");
-                _to_file = fopen(to, "w");
+                _from_file = fopen(from, "rb");
                 #endif
-                
-                if (_from_file == nullptr || _to_file == nullptr)
+
+                if (_from_file == nullptr)
                 {
                     return runtime_error{"File not found"};
+                }
+
+                #ifdef HSD_PLATFORM_WINDOWS
+                fopen_s(&_to_file, to, "wb");
+                #else
+                _to_file = fopen(to, "wb");
+                #endif
+
+                if (_to_file == nullptr)
+                {
+                    fclose(_from_file);
+                    return runtime_error{"Couldn't create the destination file"};
                 }
 
                 for (_value = fgetc(_from_file); _value != EOF; _value = fgetc(_from_file)) 
@@ -466,21 +478,28 @@ namespace hsd
 
                 // The target does not exist yet, so its handle is opened after the rename.
                 path _target{_target_name.c_str()};
+
+                #ifdef HSD_PLATFORM_WINDOWS
+                // rename() fails on Windows when the target exists, so MoveFileEx
+                // replaces it, as rename(2) does on POSIX.
+                if (MoveFileExA(
+                    absolute_name().c_str(),
+                    _target.absolute_name().c_str(),
+                    MOVEFILE_REPLACE_EXISTING) == 0)
+                {
+                    return runtime_error{"Couldn't rename the entry"};
+                }
+                #else
                 const int _res = ::rename(
-                    absolute_name().c_str(), 
+                    absolute_name().c_str(),
                     _target.absolute_name().c_str()
                 );
 
                 if (_res == -1)
                 {
-                    #ifdef HSD_PLATFORM_WINDOWS
-                    char _buf[1024]{};
-                    strerror_s(_buf, 1024, errno);
-                    return runtime_error{_buf};
-                    #else
                     return runtime_error{strerror(errno)};
-                    #endif
                 }
+                #endif
 
                 // Reopen the handle at the new name, so listing a renamed directory works.
                 *this = path{_target.absolute_name().c_str()};

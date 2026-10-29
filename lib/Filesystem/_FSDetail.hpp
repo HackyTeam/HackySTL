@@ -157,6 +157,16 @@ namespace hsd
                         _cur_ptr = _skip_separators(_cur_end);
                     }
 
+                    #if defined(HSD_PLATFORM_WINDOWS)
+                    // Another drive has no relative form, since ".." cannot climb to it.
+                    // The working-directory cursor only moves past a shared component.
+                    if (_cur_ptr == _skip_separators(_cwd))
+                    {
+                        _relative = _absolute;
+                        return;
+                    }
+                    #endif
+
                     // One ".." for each working-directory component that is not shared.
                     _relative = "." PATH_SEPARATOR_STR;
 

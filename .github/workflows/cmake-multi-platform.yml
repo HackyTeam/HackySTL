@@ -1,0 +1,73 @@
+# Builds and tests HackySTL on Linux and Windows with each supported compiler.
+# Adapted from GitHub's "CMake on multiple platforms" starter workflow.
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Keep every combination running so one failing leg does not hide the others.
+      fail-fast: false
+
+      # Linux builds with GCC and Clang. Windows builds with MSVC (cl), which
+      # does not use the GCC/Clang flags in CMakeLists.txt.
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug]
+        cpp_compiler: [g++-16, clang++-22, cl]
+        exclude:
+          - os: windows-latest
+            cpp_compiler: g++-16
+          - os: windows-latest
+            cpp_compiler: clang++-22
+          - os: ubuntu-latest
+            cpp_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      # The example checks run cmake/RunCases.py through CTest. Without a Python 3
+      # interpreter, CMake skips registering them and the run still passes.
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install GCC 16 and Clang 22
+      # The tests include <print> and <expected>, which need a recent standard
+      # library. Ubuntu 24.04's default g++ is GCC 13. Clang 22 comes from the
+      # LLVM apt repository, and it uses the libstdc++ from g++-16.
+      if: runner.os == 'Linux'
+      run: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y g++-16
+        wget -O llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 22
+
+    - name: Configure CMake
+      # Debug matches the verification commands in AGENTS.md. Sanitizers are on by
+      # default and are only applied to GCC and Clang.
+      run: >
+        cmake -S . -B build
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      # --config is needed on Windows, where the default generator is multi-config.
+      # The runners have 4 vCPUs. An unlimited job count started about 290 compiles at once
+      # in the GCC run, and the runner was shut down before the build finished.
+      run: cmake --build build --config ${{ matrix.build_type }} --parallel 4
+
+    - name: Test
+      # --build-config picks the configuration to test for multi-config generators.
+      # --output-on-failure prints the output of each failing test in the log.
+      run: ctest --test-dir build --build-config ${{ matrix.build_type }} --output-on-failure

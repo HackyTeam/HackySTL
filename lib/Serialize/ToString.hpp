@@ -30,8 +30,9 @@ namespace hsd
 
             for (; val != 0; val /= 10)
             {
-                const auto _res = (_negative) ? -(val % 10) : (val % 10);
-                buf.push('0' + _res);
+                const i32 _rem = static_cast<i32>(val % 10);
+                const i32 _digit = (_negative) ? -_rem : _rem;
+                buf.push(static_cast<CharT>('0' + _digit));
             }
 
             if (_negative) buf.push('-');
@@ -57,7 +58,7 @@ namespace hsd
 
             for (; _copy != 0; _copy >>= 4)
             {
-                buf.push(_hex_table[_copy & 15]);
+                buf.push(_hex_table[static_cast<usize>(_copy & 15)]);
             }
         }
     } // namespace to_string_detail
@@ -71,7 +72,7 @@ namespace hsd
     static constexpr auto to_pseudo_string(IsIntegral auto val)
     {
         to_string_detail::to_string_value_rev<CharT, 41> _string = {};
-        to_string_detail::to_pseudo_string_int_impl(_string, val);
+        to_string_detail::to_pseudo_string_int_impl<CharT>(_string, val);
 
         return _string;
     }
@@ -213,7 +214,7 @@ namespace hsd
             --_fraction_digit_count;
         }
 
-        to_string_detail::to_pseudo_string_int_impl(_str, _exponent);
+        to_string_detail::to_pseudo_string_int_impl<CharT>(_str, _exponent);
         _str.push('p');
 
         if (_fraction != 0)

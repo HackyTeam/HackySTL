@@ -334,15 +334,23 @@ namespace hsd
             : public true_type
         {};
 
-        #if defined(HSD_COMPILER_GCC)
-        
+        #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
+
         /// @brief Specialization matching the signed 128-bit integer type `i128` (GCC extension).
         template <>
         struct is_integral<i128>
             : public true_type
         {};
-        
+
         #endif
+
+    #if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+        /// @brief Specialization matching the library's signed 128-bit integer type.
+        template <>
+        struct is_integral<int128_detail::basic_int128<true>>
+            : public true_type
+        {};
+    #endif
 
         /// @brief Specialization matching `long`.
         template <>
@@ -374,7 +382,7 @@ namespace hsd
             : public true_type
         {};
 
-        #if defined(HSD_COMPILER_GCC)
+        #if defined(HSD_COMPILER_GCC) && !defined(HSD_LIBRARY_INT128)
 
         /// @brief Specialization matching the unsigned 128-bit integer type `u128` (GCC extension).
         template <>
@@ -383,6 +391,14 @@ namespace hsd
         {};
 
         #endif
+
+    #if !defined(HSD_COMPILER_GCC) || defined(HSD_LIBRARY_INT128)
+        /// @brief Specialization matching the library's unsigned 128-bit integer type.
+        template <>
+        struct is_integral<int128_detail::basic_int128<false>>
+            : public true_type
+        {};
+    #endif
 
         /// @brief Specialization matching `unsigned long`.
         template <>
@@ -1241,6 +1257,16 @@ namespace hsd
     template <typename T>
     using is_pointer = helper::is_pointer< typename remove_cv<T>::type >;
 
+    /// @brief Predicate: detects class types, meaning structs and classes.
+    /// @tparam T Type queried.
+    /// @details `value` is `true` iff `T` is a class or struct type. Unions, enums
+    /// and scalars are not classes, matching `std::is_class`. Backed by the
+    /// compiler's intrinsic, so no standard library header is needed.
+    template <typename T>
+    struct is_class
+        : public literal_constant< bool, __is_class(T) >
+    {};
+
     /// @brief Predicate: detects types the compiler treats as trivially copyable.
     /// @tparam T Type queried.
     /// @details `value` is `true` iff copies of `T` may be made by copying its
@@ -1250,6 +1276,31 @@ namespace hsd
     struct is_trivially_copyable
         : public literal_constant< bool, __is_trivially_copyable(T) >
     {};
+
+    #if defined(__has_builtin)
+        #if __has_builtin(__is_trivially_destructible)
+            /// @brief Compiler intrinsic behind `is_trivially_destructible`.
+            #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __is_trivially_destructible(T)
+        #else
+            /// @brief GCC 15 and older have no `__is_trivially_destructible`; the older
+            /// builtin gives the same answer there.
+            #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __has_trivial_destructor(T)
+        #endif
+    #else
+        #define HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) __is_trivially_destructible(T)
+    #endif
+
+    /// @brief Predicate: detects types whose destructor does nothing.
+    /// @tparam T Type queried.
+    /// @details `value` is `true` iff destroying a `T` needs no call to its
+    /// destructor, matching `std::is_trivially_destructible`. Backed by the
+    /// compiler's intrinsic, so no standard library header is needed.
+    template <typename T>
+    struct is_trivially_destructible
+        : public literal_constant< bool, HSD_IS_TRIVIALLY_DESTRUCTIBLE(T) >
+    {};
+
+    #undef HSD_IS_TRIVIALLY_DESTRUCTIBLE
 
     /// @brief Predicate: detects whether `T` can be constructed from `Args...` without throwing.
     /// @tparam T Type constructed.

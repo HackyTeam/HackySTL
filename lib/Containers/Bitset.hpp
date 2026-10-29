@@ -28,7 +28,7 @@ namespace hsd
         static constexpr internal_type _one = 1;
         
         /// @brief Word with every bit set.
-        static constexpr internal_type _set_val = -1;
+        static constexpr internal_type _set_val = static_cast<internal_type>(-1);
         /// @brief Number of valid bits in the leading storage word.
         static constexpr internal_type _len_mod = (N & _mod_val);
         /// @brief Number of storage words required for `N` bits.
@@ -257,7 +257,15 @@ namespace hsd
 
             for (auto _val : _arr)
             {
+                #if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
                 _cnt += __builtin_popcount(_val);
+                #else
+                // Kernighan's loop: each pass clears the lowest set bit.
+                for (auto _bits = _val; _bits != 0; _bits &= _bits - 1)
+                {
+                    ++_cnt;
+                }
+                #endif
             }
             
             return _cnt;

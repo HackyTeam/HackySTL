@@ -67,7 +67,7 @@ namespace hsd
         static_assert(_fmt_style_attr.size() - 1 == cstring_type::length(_fmt_style_attr.data));
         static_assert(_fmt_reset_attr.size() - 1 == cstring_type::length(_fmt_reset_attr.data));
 
-        return format_output{
+        return format_output<char_type, lit.format.size(), _fmt_style_attr.size(), _fmt_reset_attr.size()>{
             .format = lit.format,
             .style = _fmt_style_attr,
             .reset = _fmt_reset_attr,
@@ -96,7 +96,7 @@ namespace hsd
         static_assert(_fmt_style_attr.size() - 1 == cstring_type::length(_fmt_style_attr.data));
         static_assert(_fmt_reset_attr.size() - 1 == cstring_type::length(_fmt_reset_attr.data));
 
-        return format_output{
+        return format_output<char_type, lit.format.size(), _fmt_style_attr.size(), _fmt_reset_attr.size()>{
             .format = lit.format,
             .style = _fmt_style_attr,
             .reset = _fmt_reset_attr,

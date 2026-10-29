@@ -322,7 +322,7 @@ namespace hsd::sstream_detail
     static constexpr option_err<runtime_error> _parse_from_hex(const basic_string_view<CharT>& from, T& to)
     {
         bool _has_point = false;
-        usize _exp_pos = -1;
+        usize _exp_pos = static_cast<usize>(-1);
         isize _exp = 0;
 
         T _div = 0.0625;
@@ -337,7 +337,7 @@ namespace hsd::sstream_detail
             if (_chr != '.' && _chr != 'p' && _chr != 'P')
             {
                 to *= (_has_point == false) ? 16 : 1;
-                _div *= (_has_point == true) ? 0.0625 : 1;
+                _div *= (_has_point == true) ? static_cast<T>(0.0625) : static_cast<T>(1);
             }
 
             if (_chr >= '0' && _chr <= '9')

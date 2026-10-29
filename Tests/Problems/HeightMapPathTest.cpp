@@ -1,5 +1,6 @@
 #include <cassert>
 #include <queue>
+#include <string>
 #include <vector>
 
 #include <Containers/Vector.hpp>

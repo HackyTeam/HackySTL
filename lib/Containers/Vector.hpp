@@ -915,11 +915,23 @@ namespace hsd
         /// @brief Const reverse iterator over the elements.
         using const_reverse_iterator = contiguous_reverse_iterator<const_iterator>;
 
+        /// @brief Ends the lifetime of one element.
+        /// @details Trivially destructible elements need no call. An explicit call still
+        /// ends their lifetime during constant evaluation, and MSVC then rejects later
+        /// reads of the same storage.
+        static constexpr void _destroy_element(T& element)
+        {
+            if constexpr (!TriviallyDestructibleType<T>)
+            {
+                element.~T();
+            }
+        }
+
         /// @brief Destroys all live elements; inline storage requires no deallocation.
         constexpr ~static_vector()
         {
             for (usize _index = _size; _index > 0; --_index)
-                at_unchecked(_index - 1).~T();
+                _destroy_element(at_unchecked(_index - 1));
         }
 
         /// @brief Constructs an empty static_vector.
@@ -978,7 +990,7 @@ namespace hsd
             if (_size > rhs._size)
             {
                 for (_index = _size; _index > rhs._size; --_index)
-                    at_unchecked(_index - 1).~T();
+                    _destroy_element(at_unchecked(_index - 1));
             }
             else if (rhs._size > _size)
             {
@@ -1074,7 +1086,7 @@ namespace hsd
             if (to == end())
             {
                 for (; from != end(); from++)
-                    from->~T();
+                    _destroy_element(*from);
     
                 return end();
             }
@@ -1178,7 +1190,7 @@ namespace hsd
             else if (new_size < _size)
             {
                 for (usize _index = _size; _index > new_size; --_index)
-                    at_unchecked(_index - 1).~T();
+                    _destroy_element(at_unchecked(_index - 1));
                 
                 _size = new_size;
             }
@@ -1227,7 +1239,7 @@ namespace hsd
         {
             if(_size > 0)
             {
-                at_unchecked(_size - 1).~T();
+                _destroy_element(at_unchecked(_size - 1));
                 _size--;
             }
         }

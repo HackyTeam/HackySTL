@@ -121,7 +121,8 @@ namespace hsd::to_string_detail
     /// @return `binary_parts` for `val`, following the contract of `binary_parts`.
     /// @details Run-time only. The layout is a 64-bit significand with an explicit
     /// integer bit, then a 15-bit exponent and a sign, so the value needs no scaling.
-    static inline binary_parts decompose_x87_layout(long double val)
+    template <typename T>
+    static inline binary_parts decompose_x87_layout(T val)
     {
         struct x87_layout
         {

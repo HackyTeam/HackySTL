@@ -83,7 +83,7 @@ namespace hsd
         static inline option_err<runtime_error> sleep_for(f32 seconds)
         {
             #if defined(HSD_PLATFORM_WINDOWS)
-                Sleep(seconds * 1000); // milliseconds
+                Sleep(static_cast<DWORD>(seconds * 1000)); // milliseconds
             #else /* posix */
             auto frac = seconds - static_cast<i32>(seconds);
             timespec ts {

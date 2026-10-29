@@ -52,7 +52,7 @@ namespace hsd
             auto _result = ::WSAPoll(
                 reinterpret_cast<pollfd*>(
                     _sockets.data()
-                ), _sockets.size(), timeout
+                ), static_cast<ULONG>(_sockets.size()), timeout
             );
             #else
             auto _result = ::poll(

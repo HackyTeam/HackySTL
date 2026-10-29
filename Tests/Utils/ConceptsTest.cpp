@@ -34,6 +34,7 @@ static_assert(hsd::IsArray<int[3]> && !hsd::IsArray<int*>);
 static_assert(hsd::IsFunction<void()> && !hsd::IsFunction<void (*)()>);
 static_assert(hsd::IsSame<int, int> && !hsd::IsSame<int, unsigned>);
 static_assert(hsd::IsPointer<int*> && !hsd::IsPointer<int>);
+static_assert(hsd::IsClass<point> && !hsd::IsClass<int> && !hsd::IsClass<int*>);
 static_assert(hsd::IsChar<char> && hsd::IsChar<hsd::wchar> && hsd::IsChar<hsd::char16>);
 static_assert(!hsd::IsChar<int>);
 
@@ -43,6 +44,7 @@ static_assert(hsd::ObjectType<point> && hsd::VoidType<void> && hsd::ReferenceTyp
 static_assert(hsd::RvalueReferenceType<int&&> && hsd::LvalueReferenceType<int&>);
 static_assert(hsd::ConstType<const int> && hsd::ArrayType<int[2]> && hsd::FunctionType<void()>);
 static_assert(hsd::PointerType<int*> && hsd::CharacterType<char>);
+static_assert(hsd::ClassType<point> && !hsd::ClassType<int>);
 
 static_assert(hsd::Invocable<void (*)(int), int>);
 static_assert(!hsd::Invocable<void (*)(int), const char*>);

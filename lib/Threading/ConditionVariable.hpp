@@ -63,10 +63,12 @@ namespace hsd
         /// @param cv Condition variable to wait on.
         /// @param lock Mutex currently held by the caller; released while
         /// waiting and reacquired before returning.
+        /// @details The mutex is an SRW lock held in exclusive mode, so the
+        /// wait takes flags `0`.
         static inline void wait(
             native_handle_type& cv, mutex& lock)
         {
-            SleepConditionVariableCS(&cv, lock.native_handle(), -1);
+            SleepConditionVariableSRW(&cv, lock.native_handle(), INFINITE, 0);
         }
 
         /// @brief Atomically releases `lock` and blocks until woken or
@@ -78,9 +80,9 @@ namespace hsd
         static inline void wait_until(
             native_handle_type& cv, mutex& lock, const precise_clock& abs_time)
         {
-            SleepConditionVariableCS(
+            SleepConditionVariableSRW(
                 &cv, lock.native_handle(),
-                timeout_ms(abs_time, precise_clock::now())
+                timeout_ms(abs_time, precise_clock::now()), 0
             );
         }
         

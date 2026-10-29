@@ -595,13 +595,13 @@ namespace hsd
                     {
                         const auto [_new_val, _reminder] = _copy.divide_with_reminder(_div_constant).unwrap();
 
-                        constexpr auto _arr_sz = _reminder.get_underlying_array_size();
+                        constexpr auto _rem_arr_sz = _reminder.get_underlying_array_size();
                         const auto& _internal_arr = _reminder.get_underlying_array();
 
-                        u64 _chunk = _internal_arr[_arr_sz - 2];
+                        u64 _chunk = _internal_arr[_rem_arr_sz - 2];
                         
                         _chunk <<= 32;
-                        _chunk |= _internal_arr[_arr_sz - 1];
+                        _chunk |= _internal_arr[_rem_arr_sz - 1];
                         _copy = hsd::move(_new_val);
 
                         for (usize _idx = 0; _idx < 19; ++_idx)

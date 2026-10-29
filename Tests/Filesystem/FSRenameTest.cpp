@@ -59,7 +59,7 @@ int main()
     assert(file.rename("b.txt").is_ok());
     assert(!exists(root + "/a.txt"));
     assert(exists(root + "/b.txt"));
-    assert(text(file.absolute_name()) == root + "/b.txt");
+    assert(std_fs::path{text(file.absolute_name())} == std_fs::path{root + "/b.txt"});
 
     // A renamed directory keeps listing its contents through the same path object.
     std_fs::create_directories(base / "dir");
@@ -80,7 +80,7 @@ int main()
     assert(list_contains(watched, "missing.txt") == false);
     write_text_file(root + "/watched/first.txt");
     assert(list_contains(watched, "first.txt"));
-    assert(text(watched.absolute_name()) == root + "/watched");
+    assert(std_fs::path{text(watched.absolute_name())} == std_fs::path{root + "/watched"});
     fs::path first{(root + "/watched/first.txt").c_str()};
     assert(first.rename("second.txt").is_ok());
     assert(list_contains(watched, "second.txt"));

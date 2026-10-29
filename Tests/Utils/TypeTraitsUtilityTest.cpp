@@ -27,6 +27,24 @@ struct Holder
     int value;
 };
 
+// is_class matches std::is_class: structs and classes qualify, unions and enums do not.
+union union_type
+{
+    int value;
+};
+
+enum class enum_type
+{
+    value
+};
+
+static_assert(hsd::is_class<Holder>::value);
+static_assert(hsd::is_class<const Holder>::value);
+static_assert(!hsd::is_class<union_type>::value);
+static_assert(!hsd::is_class<enum_type>::value);
+static_assert(!hsd::is_class<int>::value);
+static_assert(!hsd::is_class<int*>::value);
+
 // launder can be used in constant evaluation on GCC and Clang.
 constexpr int read_through_launder()
 {

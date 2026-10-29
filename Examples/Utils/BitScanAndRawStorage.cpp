@@ -55,6 +55,8 @@ struct tracked
 struct alignas(64) cache_line
 {
     hsd::i32 value;
+    // Explicit padding fills the 64-byte line, so the compiler adds none (MSVC C4324).
+    hsd::u8 padding[60];
 };
 
 int main()

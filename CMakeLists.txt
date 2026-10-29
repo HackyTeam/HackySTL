@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.23)
 
+# CMake 4.0 moves the MSVC runtime checks into the MSVC_RUNTIME_CHECKS property
+# (CMP0184). The profiling targets clear that property, see below.
+if(POLICY CMP0184)
+    cmake_policy(SET CMP0184 NEW)
+endif()
+
 project(HackySTL LANGUAGES CXX)
+
+if(MSVC)
+    # CMake's default flags turn exceptions on with /EHsc. The library is built
+    # without them, so the default is replaced here. Overriding it per target
+    # instead makes MSVC report warning D9025 for every file.
+    string(REPLACE "/EHsc" "/EHs-c-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()
 
 include(CTest)
 find_package(Threads REQUIRED)
@@ -43,7 +56,11 @@ endif()
 
 if(MSVC)
     # The tests check their results with assert, so it stays active in every build type.
-    target_compile_options(hackystl_test_config INTERFACE /W4 /EHs-c /UNDEBUG)
+    # /utf-8 reads sources as UTF-8, so literals such as u8"€" mean the same as on GCC and Clang.
+    # C4530 flags the try/catch blocks in standard headers, which this build does not use.
+    target_compile_options(hackystl_test_config INTERFACE /utf-8 /W4 /wd4530 /UNDEBUG)
+    # The tests build fixtures with the C stdio functions, which MSVC reports as unsafe.
+    target_compile_definitions(hackystl_test_config INTERFACE _CRT_SECURE_NO_WARNINGS)
 else()
     target_compile_options(
         hackystl_test_config
@@ -91,7 +108,7 @@ target_include_directories(
 )
 target_link_libraries(hackystl_profile_config INTERFACE Threads::Threads)
 if(MSVC)
-    target_compile_options(hackystl_profile_config INTERFACE /W4 /EHs-c /O2)
+    target_compile_options(hackystl_profile_config INTERFACE /utf-8 /W4 /wd4530 /O2)
 else()
     target_compile_options(
         hackystl_profile_config
@@ -146,6 +163,10 @@ if(BUILD_TESTING)
         if(relative_test_source MATCHES "^Profiling/")
             target_link_libraries(
                 "${test_target}" PRIVATE hackystl_profile_config
+            )
+            # MSVC rejects /O2 together with the /RTC1 checks that Debug enables.
+            set_target_properties(
+                "${test_target}" PROPERTIES MSVC_RUNTIME_CHECKS ""
             )
         else()
             target_link_libraries("${test_target}" PRIVATE hackystl_test_config)

@@ -56,10 +56,20 @@ struct totals
     hsd::usize bytes = 0;
 };
 
+// Windows paths use '\' between their parts, and some use '/' too, so both count.
 static hsd::string_view base_name(const hsd::string& full)
 {
-    auto slash = full.rfind('/');
-    return hsd::string_view{full.c_str() + (slash == hsd::string::npos ? 0 : slash + 1)};
+    hsd::usize _start = 0;
+
+    for (hsd::usize _idx = 0; _idx < full.length(); ++_idx)
+    {
+        if (full[_idx] == '/' || full[_idx] == '\\')
+        {
+            _start = _idx + 1;
+        }
+    }
+
+    return hsd::string_view{full.c_str() + _start};
 }
 
 static void tally(hsd::vector<extension_count>& counts, const hsd::string& extension, hsd::usize bytes)

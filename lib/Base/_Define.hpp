@@ -32,6 +32,14 @@
 #endif
 
 ///
+/// @brief Keeps `<windows.h>` from defining the `min` and `max` macros, which
+/// break calls such as `min(a, b)` in the library.
+///
+#if defined(HSD_COMPILER_MSVC) && !defined(NOMINMAX)
+    #define NOMINMAX
+#endif
+
+///
 /// @brief Definitions for PRETTY_FUNCTION depending on compiler.
 ///
 #if defined(HSD_COMPILER_MSVC)

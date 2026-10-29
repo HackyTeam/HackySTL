@@ -316,11 +316,11 @@ namespace hsd
             {
                 string_view _chunk = _stream.read_chunk().unwrap().get().get_stream_data();
                 
-                auto _res = lex(_chunk);
+                auto _lex_res = lex(_chunk);
                 
-                if (_res.is_ok() == false)
+                if (_lex_res.is_ok() == false)
                 {
-                    return _res.unwrap_err();
+                    return _lex_res.unwrap_err();
                 }
             }
 

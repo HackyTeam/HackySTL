@@ -8,17 +8,17 @@
 
 using namespace hsd::format_literals;
 
-constexpr hsd::usize count = 12;
-using numbers = hsd::stack_array<hsd::u32, count>;
+constexpr hsd::usize element_count = 12;
+using numbers = hsd::stack_array<hsd::u32, element_count>;
 
 // Builds a scrambled array. Multiplying by 7 modulo 12 visits every value once.
 constexpr numbers make_input()
 {
     numbers values;
 
-    for (hsd::u32 index = 0; index < count; index++)
+    for (hsd::u32 index = 0; index < element_count; index++)
     {
-        values[index] = (index * 7 + 3) % count;
+        values[index] = (index * 7 + 3) % element_count;
     }
 
     return values;
@@ -26,7 +26,7 @@ constexpr numbers make_input()
 
 constexpr bool is_ascending(const numbers& values)
 {
-    for (hsd::usize index = 1; index < count; index++)
+    for (hsd::usize index = 1; index < element_count; index++)
     {
         if (values[index - 1] > values[index])
         {
@@ -86,7 +86,7 @@ template <typename Vec>
 void print_all(const char* label, const Vec& values)
 {
     hsd::print("{}:"_fmt, label);
-    for (hsd::usize index = 0; index < count; index++)
+    for (hsd::usize index = 0; index < element_count; index++)
     {
         hsd::print(" {}"_fmt, values[index]);
     }

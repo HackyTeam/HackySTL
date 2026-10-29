@@ -4,12 +4,13 @@
 /// @brief Internal platform-specific file and standard-stream handlers.
 /// @details Encapsulates POSIX descriptors and Windows handles behind the
 /// common read, write, seek, and ownership operations used by Io.
-
-#include "../Base/CString.hpp"
+#include "../Base/Types.hpp"
 
 #if defined(HSD_PLATFORM_WINDOWS)
 #define _WINSOCKAPI_
 #include <windows.h>
+#include "../Base/CString.hpp"
+#include "../Base/Limits.hpp"
 #else
 #include <unistd.h>
 #include <sys/stat.h>
@@ -77,12 +78,11 @@ namespace hsd
             /// @brief Underlying file, pipe, or console handle; `nullptr` when closed.
             HANDLE _handle = nullptr;
             /// @brief Overlapped-I/O state shared by `read`/`write`/`read_line`.
+            /// @details `Offset`/`OffsetHigh` hold the position of the next transfer.
             OVERLAPPED _overlapped = {};
-            /// @brief Whether `_handle` was opened for overlapped (asynchronous) I/O.
-            bool _is_overlapped = false;
             /// @brief Whether `_handle` is a borrowed standard-stream handle.
-            /// @details External handles use `CancelIoEx` instead of `CloseHandle`
-            /// on destruction, and are never actually owned by this instance.
+            /// @details The process owns external handles, so they are never closed
+            /// here. Every other handle is closed on destruction.
             bool _is_external = false;
             /// @brief Access mode the handle was opened with.
             io_options _mode = io_options::none;
@@ -100,7 +100,6 @@ namespace hsd
             {
                 hsd::swap(other._handle, _handle);
                 hsd::swap(other._overlapped, _overlapped);
-                hsd::swap(other._is_overlapped, _is_overlapped);
                 hsd::swap(other._is_external, _is_external);
                 hsd::swap(other._mode, _mode);
             }
@@ -112,7 +111,6 @@ namespace hsd
             {
                 hsd::swap(other._handle, _handle);
                 hsd::swap(other._overlapped, _overlapped);
-                hsd::swap(other._is_overlapped, _is_overlapped);
                 hsd::swap(other._is_external, _is_external);
                 hsd::swap(other._mode, _mode);
 
@@ -125,26 +123,16 @@ namespace hsd
                 close();
             }
 
-            /// @brief Releases the handle (or cancels the pending overlapped operation).
-            /// @details Panics if the underlying `CloseHandle`/`CancelIoEx` call fails.
+            /// @brief Releases the handle. A borrowed standard handle is only forgotten.
+            /// @details Panics if the underlying `CloseHandle` call fails.
             /// Safe to call multiple times; a no-op once already closed.
             inline void close()
             {
                 if (_handle != nullptr)
                 {
-                    if (_is_overlapped == false)
+                    if (_is_external == false && CloseHandle(_handle) == 0)
                     {
-                        if (CloseHandle(_handle) == 0)
-                        {
-                            panic(file_error_msg());
-                        }
-                    }
-                    else if (_is_external == false)
-                    {
-                        if (CancelIoEx(_handle, &_overlapped) == 0)
-                        {
-                            panic(file_error_msg());
-                        }
+                        panic(file_error_msg());
                     }
 
                     _handle = nullptr;
@@ -174,14 +162,21 @@ namespace hsd
 
             /// @brief Writes `size` bytes from `data` to the handle.
             /// @param data Pointer to the bytes to write.
-            /// @param size Number of bytes to write.
+            /// @param size Number of bytes to write; at most `limits<DWORD>::max`.
             /// @return Number of bytes written, or `static_cast<DWORD>(-1)` on failure.
             /// @details Waits for completion of overlapped writes via `GetOverlappedResult`.
+            /// A larger request fails instead of writing a truncated count.
             inline auto write(const void* data, u64 size)
             {
                 DWORD _written = 0;
 
-                if (WriteFile(_handle, data, size, &_written, &_overlapped) == 0)
+                if (size > limits<DWORD>::max)
+                {
+                    SetLastError(ERROR_FILE_TOO_LARGE);
+                    return static_cast<DWORD>(-1);
+                }
+
+                if (WriteFile(_handle, data, static_cast<DWORD>(size), &_written, &_overlapped) == 0)
                 {
                     if (file_error_code() != ERROR_IO_PENDING)
                     {
@@ -194,20 +189,33 @@ namespace hsd
                     }
                 }
 
+                advance(_written);
                 return _written;
             }
 
             /// @brief Reads up to `size` bytes from the handle into `data`.
             /// @param data Destination buffer for the read bytes.
-            /// @param size Capacity of `data` in bytes.
-            /// @return Number of bytes read, or `static_cast<DWORD>(-1)` on failure.
+            /// @param size Capacity of `data` in bytes. At most `limits<DWORD>::max`
+            /// bytes are read per call; callers already accept short reads.
+            /// @return Number of bytes read, `0` at end of file, or
+            /// `static_cast<DWORD>(-1)` on failure.
             /// @details Waits for completion of overlapped reads via `GetOverlappedResult`.
             inline auto read(void* data, u64 size)
             {
                 DWORD _read = 0;
+                const DWORD _count = (size > limits<DWORD>::max)
+                    ? limits<DWORD>::max
+                    : static_cast<DWORD>(size);
 
-                if (ReadFile(_handle, data, size, &_read, &_overlapped) == 0)
+                if (ReadFile(_handle, data, _count, &_read, &_overlapped) == 0)
                 {
+                    // An overlapped read that starts at or past the end fails with
+                    // ERROR_HANDLE_EOF, and that is an empty read, not an error.
+                    if (file_error_code() == ERROR_HANDLE_EOF)
+                    {
+                        return static_cast<DWORD>(0);
+                    }
+
                     if (file_error_code() != ERROR_IO_PENDING)
                     {
                         return static_cast<DWORD>(-1);
@@ -215,19 +223,40 @@ namespace hsd
 
                     if (GetOverlappedResult(_handle, &_overlapped, &_read, true) == 0)
                     {
+                        if (file_error_code() == ERROR_HANDLE_EOF)
+                        {
+                            return static_cast<DWORD>(0);
+                        }
+
                         return static_cast<DWORD>(-1);
                     }
                 }
 
+                advance(_read);
                 return _read;
             }
 
+            /// @brief Moves the file position past `count` bytes that were transferred.
+            /// @param count Number of bytes the last transfer moved.
+            /// @details The system does not move the position of an overlapped file,
+            /// so the next transfer starts where this one stopped. Borrowed standard
+            /// handles are left as they are.
+            inline void advance(DWORD count)
+            {
+                if (_is_external == false)
+                {
+                    const u64 _next = ((static_cast<u64>(_overlapped.OffsetHigh) << 32) | _overlapped.Offset) + count;
+                    _overlapped.Offset = static_cast<DWORD>(_next);
+                    _overlapped.OffsetHigh = static_cast<DWORD>(_next >> 32);
+                }
+            }
+
             
-            /// @brief Opens (or creates) the file at `path` for overlapped I/O.
+            /// @brief Opens the file at `path` for overlapped I/O.
             /// @param path Null-terminated path to the file.
-            /// @param mode Access mode; `io_options::rw_create` always (re)creates
-            /// the file, other modes open an existing file and fall back to
-            /// creating it if not found.
+            /// @param mode Access mode. Write modes create the file, and `write` and
+            /// `rw_create` also empty an existing one. Read modes need the file to exist.
+            /// These match the POSIX open flags.
             /// @return A `file_handler` owning the resulting handle. The caller
             /// must check `is_open()`, since `CreateFileA` failures are not
             /// otherwise reported here.
@@ -236,39 +265,33 @@ namespace hsd
             {
                 file_handler _file;
 
-                if (mode == io_options::rw_create)
-                {
-                    _file._handle = CreateFileA(
-                        path,
-                        static_cast<DWORD>(mode),
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        nullptr, CREATE_ALWAYS,
-                        FILE_FLAG_OVERLAPPED, nullptr
-                    );
-                }
-                else
-                {
-                    _file._handle = CreateFileA(
-                        path, static_cast<DWORD>(mode), 
-                        FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                        nullptr, OPEN_EXISTING, 
-                        FILE_FLAG_OVERLAPPED, nullptr
-                    );
+                DWORD _disposition = OPEN_EXISTING;
 
-                    if (file_error_code() == ERROR_FILE_NOT_FOUND)
-                    {
-                        _file._handle = CreateFileA(
-                            path, static_cast<DWORD>(mode), 
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                            nullptr, CREATE_ALWAYS, 
-                            FILE_FLAG_OVERLAPPED, nullptr
-                        );
-                    }
+                if (mode == io_options::write || mode == io_options::rw_create)
+                {
+                    _disposition = CREATE_ALWAYS;
+                }
+                else if (mode == io_options::append || mode == io_options::rw_append)
+                {
+                    _disposition = OPEN_ALWAYS;
+                }
+
+                _file._handle = CreateFileA(
+                    path, static_cast<DWORD>(mode),
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    nullptr, _disposition,
+                    FILE_FLAG_OVERLAPPED, nullptr
+                );
+
+                // A failed CreateFileA returns INVALID_HANDLE_VALUE, which must not
+                // look like an open handle.
+                if (_file._handle == INVALID_HANDLE_VALUE)
+                {
+                    _file._handle = nullptr;
                 }
 
                 _file._mode = mode;
-                _file._is_overlapped = true;
-                _file._is_external = true;
+                _file._is_external = false;
 
                 return _file;
             }
@@ -281,7 +304,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_INPUT_HANDLE);
                 _file._mode = io_options::read;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;
@@ -295,7 +317,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_OUTPUT_HANDLE);
                 _file._mode = io_options::write;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;
@@ -309,7 +330,6 @@ namespace hsd
 
                 _file._handle = GetStdHandle(STD_ERROR_HANDLE);
                 _file._mode = io_options::write;
-                _file._is_overlapped = true;
                 _file._is_external = true;
 
                 return _file;

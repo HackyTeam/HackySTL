@@ -79,6 +79,15 @@ static void test_stack_is_per_thread()
     assert(worker_saw_own_entry.load());
 }
 
+// Makes the compiler keep `value` in memory, so the conversion is not optimized away.
+// A volatile pointer works on every compiler, unlike inline asm on MSVC.
+template <typename T>
+static void keep_in_memory(T& value)
+{
+    T* volatile _escaped = &value;
+    (void)_escaped;
+}
+
 static void test_timed_to_str()
 {
     hsd::trace_scope _scope;
@@ -89,8 +98,8 @@ static void test_timed_to_str()
         for (auto idx = hsd::limits<FpType>::denorm_min; idx != hsd::limits<FpType>::infinity; idx *= 10)
         {
             auto v = hsd::to_pseudo_string_hex(-idx);
-            asm volatile("" : "+m"(idx) : : "memory");
-            asm volatile("" : "+m"(v) : : "memory");
+            keep_in_memory(idx);
+            keep_in_memory(v);
         }
     }
 }
@@ -105,8 +114,8 @@ static void test_timed_to_snpr()
         for (auto idx = hsd::limits<FpType>::denorm_min; idx != hsd::limits<FpType>::infinity; idx *= 10)
         {
             auto buf = std::format("{:a}", -idx);
-            asm volatile("" : "+m"(buf) : : "memory");
-            asm volatile("" : "+m"(idx) : : "memory");
+            keep_in_memory(buf);
+            keep_in_memory(idx);
         }
     }
 }

@@ -5,6 +5,55 @@
 This is a project which discards any backwards compatibility
 thus, it's written using the latest version of the C++ standard.
 
+HackySTL is a header-only C++23 library. It provides containers, algorithms,
+text and number formatting, I/O, threading, networking and filesystem utilities
+in one toolkit under the `hsd` namespace. Public headers under `lib/` can be
+included directly, and the library ships no `.cpp` files to compile. Threading
+and networking need the platform's thread and socket libraries at link time.
+
+# What it contains
+
+- **Base:** fixed-width aliases such as `i32`, `u64`, `usize`, `f64` and `u128`,
+  concepts and type traits, numeric `limits`, `result`/`option` error types,
+  sorting algorithms, allocators, and Unicode conversion.
+- **Containers:** `vector`, `static_vector`, `string` and `string_view`, `deque`,
+  singly and doubly linked lists, `unordered_map`, `bitset`, `span`, fixed-size
+  arrays, ranges, and `integer<N>` for big integers.
+- **Wrappers:** `pair`, `tuple`, `variant`, `any`, `unique_ptr`, atomic and
+  non-atomic `shared_ptr`, `function`, and `reference`.
+- **Serialize:** `println` and `print` with format literals checked at compile
+  time, colour and style tags, string streams, file and standard-stream `io`,
+  number and string conversion, format-driven parsing, `ArgParse`, logging, and
+  scope tracing.
+- **Threading:** threads, mutexes, condition variables, atomics, futures, and
+  monotonic clocks.
+- **Network and Filesystem:** TCP and UDP sockets, and paths with status queries
+  and directory listing.
+- **Extra:** a JSON lexer and tree, `CompressedPair`, `DefaultArg`, an HTTP
+  request and response layer, and the Gorbitsa mini-language, which is parsed and
+  rendered at compile time.
+
+# Design
+
+- **No exceptions.** The library is built with `-fno-exceptions`. Failures are
+  returned as `result`, `option` or `option_err`.
+- **Compile-time checks.** Format literals are parsed at compile time, so a bad
+  format string, or a tag the value does not support, fails the build.
+- **Allocator-aware containers.** Each owner keeps its allocator together with
+  its storage.
+- **Light dependencies.** The headers use the C runtime, operating-system
+  headers and a few core C++ headers such as `<new>`. They do not use the
+  standard containers, strings or streams.
+- **Latest standard only.** Older compilers and older language versions are not
+  supported.
+
+Continuous integration builds and tests the project with GCC 16 and Clang 22 on
+Linux, and with MSVC on Windows. The default build runs the test suite under
+AddressSanitizer and UndefinedBehaviorSanitizer on GCC and Clang. The full header
+list is in [Docs/LibraryReference.md](Docs/LibraryReference.md), and the test and
+example catalogues are in [Tests/README.md](Tests/README.md) and
+[Examples/README.md](Examples/README.md).
+
 # Contributors:
 - DeKrain (Implementations)
 - qookie (Mostly debugging and some implementations)

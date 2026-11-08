@@ -8,6 +8,7 @@
 #include "_NetworkFuncs.hpp"
 #include "../Containers/List.hpp"
 #include "../Containers/Vector.hpp"
+#include "../Base/Result.hpp"
 
 namespace hsd::network_detail
 {
@@ -175,11 +176,9 @@ namespace hsd::network_detail
 
             if (create_socket(addr, is_server) == false)
             {
-                fprintf(
-                    stderr, "hsd::network_detail::"
-                    "tcp_socket::create_socket()"
-                    " failed. with error: %s\n",
-                    sock_error_msg()
+                result_detail::write_error(
+                    "hsd::network_detail::tcp_socket::create_socket()"
+                    " failed. with error: ", sock_error_msg(), "\n"
                 );
                 close();
             }
@@ -271,7 +270,7 @@ namespace hsd::network_detail
         {
             if (is_valid() == false)
             {
-                fputs("tcp_socket::handle() called on invalid socket\n", stderr);
+                result_detail::write_error("tcp_socket::handle() called on invalid socket\n");
                 return false;
             } 
             
@@ -654,11 +653,9 @@ namespace hsd::network_detail
 
             if (create_socket(addr, is_server) == false)
             {
-                fprintf(
-                    stderr, "hsd::network_detail::"
-                    "udp_socket::create_socket() "
-                    "failed. With error: %s\n", 
-                    sock_error_msg()
+                result_detail::write_error(
+                    "hsd::network_detail::udp_socket::create_socket() "
+                    "failed. With error: ", sock_error_msg(), "\n"
                 );
                 
                 close();
@@ -785,7 +782,7 @@ namespace hsd::network_detail
         {
             if (is_valid() == false)
             {
-                fputs("udp_socket::handle() called on invalid socket\n", stderr);
+                result_detail::write_error("udp_socket::handle() called on invalid socket\n");
                 return false;
             }
             else if (is_server == true)

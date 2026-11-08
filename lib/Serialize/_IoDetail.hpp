@@ -488,7 +488,8 @@ namespace hsd
                 // Files created here get rw-r--r-- before the umask, like `creat`.
                 fd._fd = ::open(path, static_cast<i32>(mode), 0666);
                 fd._mode = mode;
-                fd._is_external = true;
+                // The descriptor belongs to this handler, so close() must release it.
+                fd._is_external = false;
 
                 return fd;
             }

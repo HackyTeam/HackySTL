@@ -19,20 +19,20 @@ namespace hsd
     /// @tparam m State shift used by the twist recurrence.
     /// @tparam r Number of upper-mask bits.
     /// @tparam a Twist xor mask.
-    /// @tparam u First tempering shift.
-    /// @tparam d First tempering mask.
-    /// @tparam s Second tempering shift.
-    /// @tparam b Second tempering mask.
-    /// @tparam t Third tempering shift.
-    /// @tparam c Third tempering mask.
-    /// @tparam l Final tempering shift.
+    /// @tparam first_right_shift Right shift of the first tempering step.
+    /// @tparam first_mask Mask applied to the first tempering step.
+    /// @tparam second_left_shift Left shift of the second tempering step.
+    /// @tparam second_mask Mask applied to the second tempering step.
+    /// @tparam third_left_shift Left shift of the third tempering step.
+    /// @tparam third_mask Mask applied to the third tempering step.
+    /// @tparam final_right_shift Right shift of the final tempering step.
     /// @tparam f State initialization multiplier.
-    template < 
-        typename UType, UType n, 
-        UType m, UType r, UType a, 
-        UType u, UType d, UType s, 
-        UType b, UType t, UType c, 
-        UType l, UType f >
+    template <
+        typename UType, UType n,
+        UType m, UType r, UType a,
+        UType first_right_shift, UType first_mask, UType second_left_shift,
+        UType second_mask, UType third_left_shift, UType third_mask,
+        UType final_right_shift, UType f >
     requires (is_unsigned<UType>::value)
     class mersenne_twister
     {
@@ -48,19 +48,19 @@ namespace hsd
         /// @brief Twist recurrence xor mask.
         static constexpr UType xor_mask = a;
         /// @brief First tempering shift.
-        static constexpr UType tempering_u = u;
+        static constexpr UType tempering_u = first_right_shift;
         /// @brief First tempering mask.
-        static constexpr UType tempering_d = d;
+        static constexpr UType tempering_d = first_mask;
         /// @brief Second tempering shift.
-        static constexpr UType tempering_s = s;
+        static constexpr UType tempering_s = second_left_shift;
         /// @brief Second tempering mask.
-        static constexpr UType tempering_b = b;
+        static constexpr UType tempering_b = second_mask;
         /// @brief Third tempering shift.
-        static constexpr UType tempering_t = t;
+        static constexpr UType tempering_t = third_left_shift;
         /// @brief Third tempering mask.
-        static constexpr UType tempering_c = c;
+        static constexpr UType tempering_c = third_mask;
         /// @brief Final tempering shift.
-        static constexpr UType tempering_l = l;
+        static constexpr UType tempering_l = final_right_shift;
         /// @brief Initialization recurrence multiplier.
         static constexpr UType init_multiplier = f;
         /// @brief Seed used when no seed is supplied.
@@ -158,8 +158,8 @@ namespace hsd
 
             UType _result = _mt_states[_index++];
             _result ^= (_result >> tempering_u) & tempering_d;
-            _result ^= (_result >> tempering_s) & tempering_b;
-            _result ^= (_result >> tempering_t) & tempering_c;
+            _result ^= (_result << tempering_s) & tempering_b;
+            _result ^= (_result << tempering_t) & tempering_c;
             _result ^= (_result >> tempering_l);
 
             // Scale by one past the largest raw value, so the multiplier stays below

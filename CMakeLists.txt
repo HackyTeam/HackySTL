@@ -115,12 +115,36 @@ if(HACKYSTL_ENABLE_COVERAGE)
     )
     target_link_options(hackystl_test_config INTERFACE --coverage)
 
-    # gcov must match the compiler version, so prefer gcov-<major> such as gcov-16.
+    # gcov must be the same major version as the compiler, because gcov rejects data
+    # written by another version. CMake sets the full compiler version, not a major one.
+    string(REGEX MATCH "^[0-9]+" _compiler_major "${CMAKE_CXX_COMPILER_VERSION}")
+
+    # Debian and Ubuntu install gcov-<major> beside each GCC version, so try that name first.
+    # Otherwise use the gcov that the compiler names for itself.
+    execute_process(
+        COMMAND "${CMAKE_CXX_COMPILER}" -print-prog-name=gcov
+        OUTPUT_VARIABLE _gcov_from_compiler
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    unset(GCOV_EXECUTABLE CACHE)
     find_program(
         GCOV_EXECUTABLE
-        NAMES "gcov-${CMAKE_CXX_COMPILER_VERSION_MAJOR}" gcov
+        NAMES "gcov-${_compiler_major}" "${_gcov_from_compiler}"
         REQUIRED
     )
+
+    execute_process(
+        COMMAND "${GCOV_EXECUTABLE}" --version
+        OUTPUT_VARIABLE _gcov_version_text
+    )
+    string(REGEX MATCH "\\) ([0-9]+)\\." _gcov_version_match "${_gcov_version_text}")
+    if(NOT CMAKE_MATCH_1 STREQUAL _compiler_major)
+        message(
+            FATAL_ERROR
+            "gcov ${GCOV_EXECUTABLE} is major version ${CMAKE_MATCH_1}, but the compiler is "
+            "major version ${_compiler_major}. Coverage data would not be read."
+        )
+    endif()
 
     # gcovr collects the gcov data into one HTML report. Without it there is no coverage target.
     find_program(GCOVR_EXECUTABLE gcovr)

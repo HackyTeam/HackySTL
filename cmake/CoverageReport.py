@@ -4,15 +4,18 @@
 The numbers match CoverageSites.py: each source line, branch and function counts once,
 and is covered when any template instance runs it. Lines excluded with GCOVR_EXCL
 markers are left out. The report has a summary page with a table per file, and one
-page per source file with the source colored by coverage. A button switches between
-light and dark themes; the theme follows the system setting until the button is used,
-and the choice is remembered in the browser.
+page per source file with the source highlighted as C++ and colored by coverage.
+
+The colors are the Dracula palette for the dark theme and Alucard, Dracula's official
+light theme, for the light one. The theme follows the system setting until the button
+is used, and the choice is remembered in the browser.
 
 Usage: CoverageReport.py COVERAGE.json SOURCE_DIR OUTPUT_DIR
 """
 
 import html
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime
@@ -25,259 +28,273 @@ from CoverageSites import percent, read_sites  # noqa: E402
 
 THEME_KEY = "hsd-coverage-theme"
 
-LIGHT_TOKENS = """
-    --bg: #f5f6f8;
-    --surface: #ffffff;
-    --surface-alt: #f0f2f5;
-    --text: #1b2430;
-    --muted: #5d6878;
-    --border: #d8dee7;
-    --accent: #4338ca;
-    --good: #15803d;
-    --good-bg: #dcfce7;
-    --warn: #b45309;
-    --warn-bg: #fef3c7;
-    --bad: #b91c1c;
-    --bad-bg: #fee2e2;
-    --excluded: #7b8492;
-    --track: #e4e8ee;
-    --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.06);
-    color-scheme: light;
-"""
+# Palettes from https://draculatheme.com/spec: Dracula Classic and Alucard Classic.
+DRACULA = {
+    "bg": "#282A36", "fg": "#F8F8F2", "comment": "#6272A4", "selection": "#44475A",
+    "cyan": "#8BE9FD", "green": "#50FA7B", "orange": "#FFB86C", "pink": "#FF79C6",
+    "purple": "#BD93F9", "red": "#FF5555", "yellow": "#F1FA8C",
+}
+ALUCARD = {
+    "bg": "#FFFBEB", "fg": "#1F1F1F", "comment": "#6C664B", "selection": "#CFCFDE",
+    "cyan": "#036A96", "green": "#14710A", "orange": "#A34D14", "pink": "#A3144D",
+    "purple": "#644AC9", "red": "#CB3A2A", "yellow": "#846E15",
+}
 
-DARK_TOKENS = """
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface-alt: #1c2330;
-    --text: #e6edf3;
-    --muted: #9aa6b2;
-    --border: #2d3644;
-    --accent: #8b9dff;
-    --good: #4ade80;
-    --good-bg: rgba(74, 222, 128, 0.14);
-    --warn: #fbbf24;
-    --warn-bg: rgba(251, 191, 36, 0.16);
-    --bad: #f87171;
-    --bad-bg: rgba(248, 113, 113, 0.16);
-    --excluded: #7d8896;
-    --track: #2a3340;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
-    color-scheme: dark;
-"""
+CPP_KEYWORDS = frozenset("""
+    alignas alignof and and_eq asm auto bitand bitor bool break case catch char char8_t
+    char16_t char32_t class compl concept const consteval constexpr constinit const_cast
+    continue co_await co_return co_yield decltype default delete do double dynamic_cast else
+    enum explicit export extern false final float for friend goto if inline int long mutable
+    namespace new noexcept not not_eq nullptr operator or or_eq override private protected
+    public register reinterpret_cast requires return short signed sizeof static static_assert
+    static_cast struct switch template this thread_local throw true try typedef typeid
+    typename union unsigned using virtual void volatile wchar_t while xor xor_eq
+""".split())
+CONSTANTS = frozenset({"true", "false", "nullptr"})
+TYPE_INTRO = frozenset({"class", "struct", "union", "enum", "typename", "namespace", "using"})
 
-STYLE = f"""
-:root {{
-{LIGHT_TOKENS}
-}}
-@media (prefers-color-scheme: dark) {{
-  :root:not([data-theme="light"]) {{
-{DARK_TOKENS}
-  }}
-}}
-:root[data-theme="dark"] {{
-{DARK_TOKENS}
-}}
+TOKEN_RE = re.compile(
+    r"(?P<comment>//.*|/\*.*?\*/|/\*.*)"
+    r"|(?P<string>\"(?:\\.|[^\"\\])*\"?)"
+    r"|(?P<char>'(?:\\.|[^'\\])*'?)"
+    r"|(?P<number>(?:0[xX][0-9A-Fa-f'.]+(?:[pP][+-]?\d+)?|\d[\d']*(?:\.\d*)?(?:[eE][+-]?\d+)?)[uUlLfF]*)"
+    r"|(?P<word>[A-Za-z_]\w*)"
+    r"|(?P<space>\s+)"
+    r"|(?P<other>.)"
+)
 
-* {{ box-sizing: border-box; }}
-html, body {{ margin: 0; padding: 0; }}
-body {{
+STYLE = r"""
+:root {
+%%LIGHT%%
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+%%DARK%%
+  }
+}
+:root[data-theme="dark"] {
+%%DARK%%
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-}}
-a {{ color: var(--accent); text-decoration: none; }}
-a:hover {{ text-decoration: underline; }}
-code, .mono {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }}
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.mono, code {
+  font-family: "JetBrains Mono", "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
 
-header.top {{
+header.top {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 14px clamp(16px, 4vw, 40px);
+  padding: 16px clamp(16px, 4vw, 40px);
   background: var(--surface);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: saturate(1.4) blur(10px);
   border-bottom: 1px solid var(--border);
-}}
-header.top h1 {{ font-size: 17px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }}
-header.top .meta {{ color: var(--muted); font-size: 13px; }}
-.crumb {{ color: var(--muted); font-size: 13px; }}
+}
+header.top h1 { font-size: 20px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+header.top .meta { color: var(--muted); font-size: 15px; }
+.crumb { color: var(--muted); font-size: 15px; margin-top: 2px; }
 
-button.theme {{
+button.theme {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 7px 12px; border-radius: 999px;
+  padding: 8px 14px; border-radius: 999px;
   border: 1px solid var(--border); background: var(--surface); color: var(--text);
-  font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+  font: inherit; font-size: 15px; cursor: pointer; white-space: nowrap;
   box-shadow: var(--shadow);
-}}
-button.theme:hover {{ border-color: var(--accent); }}
-button.theme:focus-visible, input.filter:focus-visible, th[role="button"]:focus-visible, a:focus-visible {{
+}
+button.theme:hover { border-color: var(--accent); }
+button.theme:focus-visible, input.filter:focus-visible, th[role="button"]:focus-visible, a:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px;
-}}
-button.theme .glyph {{ font-size: 15px; line-height: 1; }}
+}
+button.theme .glyph { font-size: 16px; line-height: 1; }
 
-main {{ max-width: 1180px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 40px) 56px; }}
-h2 {{ font-size: 15px; font-weight: 650; margin: 32px 0 12px; }}
-p.note {{ color: var(--muted); font-size: 13px; margin: 8px 0 0; max-width: 78ch; }}
+main { max-width: 1320px; margin: 0 auto; padding: 30px clamp(16px, 4vw, 40px) 60px; }
+h2 { font-size: 18px; font-weight: 650; margin: 34px 0 12px; }
+p.note { color: var(--muted); font-size: 15px; margin: 10px 0 0; max-width: 84ch; }
 
-.cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }}
-.card {{
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-  padding: 18px 20px; box-shadow: var(--shadow);
-}}
-.card .label {{ color: var(--muted); font-size: 13px; }}
-.card .figure {{ display: flex; align-items: baseline; gap: 10px; margin-top: 4px; }}
-.card .percent {{ font-size: 32px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }}
-.card .counts {{ color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }}
+  padding: 20px 22px; box-shadow: var(--shadow);
+}
+.card .label { color: var(--muted); font-size: 15px; }
+.card .figure { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.card .percent { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.card .counts { color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
 
-.bar {{ height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin-top: 12px; }}
-.bar > span {{ display: block; height: 100%; border-radius: inherit; background: var(--accent); }}
-.bar.good > span {{ background: var(--good); }}
-.bar.warn > span {{ background: var(--warn); }}
-.bar.bad > span {{ background: var(--bad); }}
+.bar { height: 9px; border-radius: 999px; background: var(--track); overflow: hidden; margin-top: 14px; }
+.bar > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.bar.good > span { background: var(--good); }
+.bar.warn > span { background: var(--warn); }
+.bar.bad > span { background: var(--bad); }
 
-.pill {{
-  display: inline-block; min-width: 3.8em; padding: 1px 8px; border-radius: 999px;
-  font-size: 12.5px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums;
-}}
-.pill.good {{ color: var(--good); background: var(--good-bg); }}
-.pill.warn {{ color: var(--warn); background: var(--warn-bg); }}
-.pill.bad {{ color: var(--bad); background: var(--bad-bg); }}
-.pill.none {{ color: var(--muted); background: var(--surface-alt); }}
+.pill {
+  display: inline-block; min-width: 4.2em; padding: 2px 10px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums;
+}
+.pill.good { color: var(--good); background: var(--good-bg); }
+.pill.warn { color: var(--warn); background: var(--warn-bg); }
+.pill.bad { color: var(--bad); background: var(--bad-bg); }
+.pill.none { color: var(--muted); background: var(--surface-alt); }
 
-.toolbar {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 32px; }}
-.toolbar h2 {{ margin: 0; }}
-input.filter {{
-  width: min(320px, 100%); padding: 8px 12px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 14px;
-}}
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
+.toolbar h2 { margin: 0; }
+input.filter {
+  width: min(340px, 100%); padding: 9px 13px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 15px;
+}
 
-.table-wrap {{
+.table-wrap {
   margin-top: 12px; background: var(--surface); border: 1px solid var(--border);
   border-radius: 14px; box-shadow: var(--shadow); overflow-x: auto;
-}}
-table {{ border-collapse: collapse; width: 100%; }}
-th, td {{ padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }}
-tr:last-child > td {{ border-bottom: 0; }}
-th {{
-  font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em;
+}
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child > td { border-bottom: 0; }
+th {
+  font-size: 13.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
   background: var(--surface-alt); white-space: nowrap; user-select: none;
-}}
-th[role="button"] {{ cursor: pointer; }}
-th[role="button"]::after {{ content: " \\2195"; opacity: 0.45; }}
-th[aria-sort="ascending"]::after {{ content: " \\2191"; opacity: 1; }}
-th[aria-sort="descending"]::after {{ content: " \\2193"; opacity: 1; }}
-td.num {{ text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }}
-td.file a {{ font-weight: 550; }}
-td.bar-cell {{ width: 28%; min-width: 140px; }}
-td.bar-cell .bar {{ margin-top: 0; }}
-tbody tr:hover {{ background: var(--surface-alt); }}
+}
+th[role="button"] { cursor: pointer; }
+th[role="button"]::after { content: " \2195"; opacity: 0.45; }
+th[aria-sort="ascending"]::after { content: " \2191"; opacity: 1; }
+th[aria-sort="descending"]::after { content: " \2193"; opacity: 1; }
+td { font-size: 15px; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.file a { font-weight: 550; }
+td.bar-cell { width: 26%; min-width: 150px; }
+td.bar-cell .bar { margin-top: 0; }
+tbody tr:hover { background: var(--surface-alt); }
 
-.source-meta {{ display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 8px; }}
-.source-meta .chip {{
-  padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
-  font-size: 13px; color: var(--muted);
-}}
-.legend {{ display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 8px 0 14px; }}
-.legend span::before {{
-  content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px;
+.source-meta { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0 10px; }
+.source-meta .chip {
+  padding: 5px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border);
+  font-size: 15px; color: var(--muted);
+}
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 15px; color: var(--muted); margin: 8px 0 14px; }
+.legend span::before {
+  content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 7px; vertical-align: -1px;
   background: var(--c);
-}}
-.uncovered-list {{ margin: 8px 0 0; padding-left: 18px; font-size: 13.5px; }}
-.uncovered-list li {{ margin: 3px 0; }}
+}
+.uncovered-list { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+.uncovered-list li { margin: 4px 0; }
 
-.source {{ font-size: 13px; }}
-.source table {{ table-layout: fixed; }}
-.source td {{ padding: 0 12px; border: 0; line-height: 20px; vertical-align: top; }}
-.source td.ln {{
-  width: 64px; text-align: right; color: var(--muted); user-select: none; font-variant-numeric: tabular-nums;
-  border-right: 1px solid var(--border);
-}}
-.source td.hits {{ width: 88px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }}
-.source td.code {{ white-space: pre; overflow-x: visible; }}
-.source tr.cov td.hits {{ color: var(--good); }}
-.source tr.cov {{ background: var(--good-bg); }}
-.source tr.part {{ background: var(--warn-bg); }}
-.source tr.part td.hits {{ color: var(--warn); }}
-.source tr.miss {{ background: var(--bad-bg); }}
-.source tr.miss td.hits {{ color: var(--bad); font-weight: 600; }}
-.source tr.excl td.code, .source tr.excl td.hits {{ color: var(--excluded); font-style: italic; }}
-.source tr.cov td.ln, .source tr.part td.ln, .source tr.miss td.ln {{ border-right-color: transparent; }}
+/* Source listing: a fixed column layout keeps line numbers, counts and code aligned. */
+.source table { font-family: var(--mono-stack); font-size: 15px; table-layout: fixed; }
+.source col.c-ln { width: 4.4em; }
+.source col.c-hits { width: 7.2em; }
+.source td {
+  padding: 0 0.9em; border: 0; vertical-align: top; line-height: 1.7;
+  font-family: var(--mono-stack); font-size: 15px;
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+}
+.source td.ln {
+  text-align: right; color: var(--muted); user-select: none; white-space: nowrap;
+  font-variant-numeric: tabular-nums; border-right: 1px solid var(--border);
+}
+.source td.hits { text-align: right; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.source td.code { white-space: pre; tab-size: 4; padding-left: 1.3em; color: var(--text); }
+.source tr.cov { background: var(--good-bg); }
+.source tr.cov td.hits { color: var(--good); }
+.source tr.part { background: var(--warn-bg); }
+.source tr.part td.hits { color: var(--warn); }
+.source tr.miss { background: var(--bad-bg); }
+.source tr.miss td.hits { color: var(--bad); font-weight: 600; }
+.source tr.excl td.code, .source tr.excl td.hits { color: var(--excluded); font-style: italic; }
+.source tr.cov td.ln, .source tr.part td.ln, .source tr.miss td.ln { border-right-color: transparent; }
+.source tr:hover td { background-color: color-mix(in srgb, var(--text) 6%, transparent); }
 
-footer {{ color: var(--muted); font-size: 12.5px; margin-top: 40px; }}
+/* Syntax colors: Dracula and Alucard roles. */
+.tk-kw { color: var(--tk-kw); }
+.tk-ty { color: var(--tk-type); }
+.tk-st { color: var(--tk-str); }
+.tk-nu, .tk-cn { color: var(--tk-num); }
+.tk-cm { color: var(--tk-com); }
+.tk-fn { color: var(--tk-fn); }
+.tk-pp { color: var(--tk-pre); }
 
-@media (max-width: 640px) {{
-  header.top .meta {{ display: none; }}
-  th, td {{ padding: 9px 10px; }}
-  .card .percent {{ font-size: 28px; }}
-  .source td.hits {{ width: 56px; }}
-  .source td.ln {{ width: 48px; }}
-}}
+footer { color: var(--muted); font-size: 14px; margin-top: 44px; }
+
+@media (max-width: 640px) {
+  header.top .meta { display: none; }
+  th, td { padding: 10px 11px; }
+  .card .percent { font-size: 34px; }
+  .source table, .source td { font-size: 14px; }
+  .source col.c-ln { width: 3.6em; }
+  .source col.c-hits { width: 5.6em; }
+}
 """
 
-SCRIPT = f"""
-(function () {{
-  var key = "{THEME_KEY}";
+SCRIPT = r"""
+(function () {
+  var key = "__THEME_KEY__";
   var root = document.documentElement;
 
-  function systemTheme() {{
+  function systemTheme() {
     return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }}
+  }
 
-  function currentTheme() {{
+  function currentTheme() {
     return root.getAttribute("data-theme") || systemTheme();
-  }}
+  }
 
-  function paintButton() {{
+  function paintButton() {
     var button = document.getElementById("theme-toggle");
     if (!button) return;
     var dark = currentTheme() === "dark";
     button.setAttribute("aria-pressed", dark ? "true" : "false");
-    button.querySelector(".label").textContent = dark ? "Light mode" : "Dark mode";
-    button.querySelector(".glyph").textContent = dark ? "\\u2600" : "\\u263E";
-  }}
+    button.querySelector(".label").textContent = dark ? "Switch to Alucard" : "Switch to Dracula";
+    button.querySelector(".glyph").textContent = dark ? "\u2600" : "\u263E";
+  }
 
-  function setTheme(theme) {{
+  function setTheme(theme) {
     root.setAttribute("data-theme", theme);
-    try {{ localStorage.setItem(key, theme); }} catch (error) {{ /* storage may be blocked */ }}
+    try { localStorage.setItem(key, theme); } catch (error) { /* storage may be blocked */ }
     paintButton();
-  }}
+  }
 
-  document.addEventListener("DOMContentLoaded", function () {{
+  document.addEventListener("DOMContentLoaded", function () {
     var button = document.getElementById("theme-toggle");
-    if (button) {{
-      button.addEventListener("click", function () {{
+    if (button) {
+      button.addEventListener("click", function () {
         setTheme(currentTheme() === "dark" ? "light" : "dark");
-      }});
-    }}
+      });
+    }
     paintButton();
 
     var filter = document.getElementById("file-filter");
-    if (filter) {{
-      filter.addEventListener("input", function () {{
+    if (filter) {
+      filter.addEventListener("input", function () {
         var needle = filter.value.trim().toLowerCase();
         var rows = document.querySelectorAll("tbody.files tr");
-        for (var i = 0; i < rows.length; i++) {{
+        for (var i = 0; i < rows.length; i++) {
           var name = rows[i].getAttribute("data-name");
           rows[i].hidden = needle !== "" && name.indexOf(needle) === -1;
-        }}
-      }});
-    }}
+        }
+      });
+    }
 
     var headers = document.querySelectorAll("th[role='button']");
-    for (var h = 0; h < headers.length; h++) {{
+    for (var h = 0; h < headers.length; h++) {
       headers[h].addEventListener("click", sortBy(headers[h]));
-      headers[h].addEventListener("keydown", function (event) {{
-        if (event.key === "Enter" || event.key === " ") {{
+      headers[h].addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           this.click();
-        }}
-      }});
-    }}
-  }});
+        }
+      });
+    }
+  });
 
-  function sortBy(header) {{
-    return function () {{
+  function sortBy(header) {
+    return function () {
       var table = header.closest("table");
       var body = table.tBodies[0];
       var index = Array.prototype.indexOf.call(header.parentNode.children, header);
@@ -288,17 +305,17 @@ SCRIPT = f"""
       header.setAttribute("aria-sort", descending ? "descending" : "ascending");
 
       var rows = Array.prototype.slice.call(body.rows);
-      rows.sort(function (a, b) {{
+      rows.sort(function (a, b) {
         var left = a.cells[index].getAttribute("data-value");
         var right = b.cells[index].getAttribute("data-value");
         var numeric = !isNaN(parseFloat(left)) && !isNaN(parseFloat(right));
         var result = numeric ? parseFloat(left) - parseFloat(right) : left.localeCompare(right);
         return descending ? -result : result;
-      }});
+      });
       for (var r = 0; r < rows.length; r++) body.appendChild(rows[r]);
-    }};
-  }}
-}})();
+    };
+  }
+})();
 """
 
 HEAD_SCRIPT = (
@@ -309,8 +326,56 @@ HEAD_SCRIPT = (
 
 TOGGLE = (
     '<button type="button" class="theme" id="theme-toggle" aria-pressed="false">'
-    '<span class="glyph" aria-hidden="true"></span><span class="label">Dark mode</span></button>'
+    '<span class="glyph" aria-hidden="true"></span><span class="label">Switch theme</span></button>'
 )
+
+
+def rgba(hex_color, alpha):
+    value = hex_color.lstrip("#")
+    red, green, blue = int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
+    return f"rgba({red}, {green}, {blue}, {alpha})"
+
+
+def theme_tokens(palette, dark):
+    """Returns the CSS custom properties for one theme, derived from its palette."""
+    shadow = (
+        "0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.30)" if dark
+        else "0 1px 2px rgba(31, 31, 31, 0.06), 0 6px 18px rgba(31, 31, 31, 0.06)"
+    )
+    surface = "#21222C" if dark else "#FFFFFF"
+    return f"""
+    --bg: {palette['bg']};
+    --surface: {surface};
+    --surface-alt: {rgba(palette['selection'], 0.45)};
+    --text: {palette['fg']};
+    --muted: {rgba(palette['fg'], 0.72)};
+    --border: {palette['selection']};
+    --accent: {palette['purple']};
+    --good: {palette['green']};
+    --good-bg: {rgba(palette['green'], 0.16)};
+    --warn: {palette['yellow']};
+    --warn-bg: {rgba(palette['yellow'], 0.20)};
+    --bad: {palette['red']};
+    --bad-bg: {rgba(palette['red'], 0.18)};
+    --excluded: {palette['comment']};
+    --track: {palette['selection']};
+    --shadow: {shadow};
+    --mono-stack: "JetBrains Mono", "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --tk-kw: {palette['pink']};
+    --tk-type: {palette['cyan']};
+    --tk-str: {palette['yellow']};
+    --tk-num: {palette['purple']};
+    --tk-com: {palette['comment']};
+    --tk-fn: {palette['green']};
+    --tk-pre: {palette['orange']};
+    color-scheme: {'dark' if dark else 'light'};
+"""
+
+
+def style_sheet():
+    return STYLE.replace("%%LIGHT%%", theme_tokens(ALUCARD, False)).replace(
+        "%%DARK%%", theme_tokens(DRACULA, True)
+    )
 
 
 def level(value):
@@ -338,36 +403,69 @@ def meter(covered, total):
     )
 
 
-def page(title, body, crumb=None, base=""):
-    crumb_html = f'<div class="crumb">{crumb}</div>' if crumb else ""
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
-<title>{html.escape(title)}</title>
-{HEAD_SCRIPT}
-<style>{STYLE}</style>
-</head>
-<body>
-<header class="top">
-  <div>
-    <h1>HackySTL coverage</h1>
-    {crumb_html}
-  </div>
-  <div style="display:flex;align-items:center;gap:14px">
-    <span class="meta">{html.escape(base)}</span>
-    {TOGGLE}
-  </div>
-</header>
-<main>
-{body}
-</main>
-<script>{SCRIPT}</script>
-</body>
-</html>
-"""
+def span(css_class, text):
+    escaped = html.escape(text)
+    return f'<span class="tk-{css_class}">{escaped}</span>' if css_class else escaped
+
+
+def highlight_lines(lines):
+    """Returns the HTML of each source line, with C++ tokens wrapped in classes.
+
+    Block comments carry over from one line to the next. A preprocessor line is colored
+    as a whole. Types are words after a class-like keyword or starting with a capital,
+    and functions are words followed by a parenthesis. The highlighting is a light
+    approximation, not a parser.
+    """
+    rendered = []
+    in_block = False
+    for line in lines:
+        pieces = []
+        pos = 0
+
+        if in_block:
+            end = line.find("*/")
+            if end == -1:
+                rendered.append(span("cm", line))
+                continue
+            pieces.append(span("cm", line[:end + 2]))
+            pos = end + 2
+            in_block = False
+
+        if pos == 0 and line.lstrip().startswith("#"):
+            rendered.append(span("pp", line))
+            continue
+
+        previous = ""
+        while pos < len(line):
+            match = TOKEN_RE.match(line, pos)
+            kind, text = match.lastgroup, match.group(0)
+            pos = match.end()
+            css_class = None
+
+            if kind == "comment":
+                css_class = "cm"
+                if text.startswith("/*") and (len(text) < 4 or not text.endswith("*/")):
+                    in_block = True
+            elif kind in ("string", "char"):
+                css_class = "st"
+            elif kind == "number":
+                css_class = "nu"
+            elif kind == "word":
+                if text in CONSTANTS:
+                    css_class = "cn"
+                elif text in CPP_KEYWORDS:
+                    css_class = "kw"
+                elif previous in TYPE_INTRO or text[0].isupper():
+                    css_class = "ty"
+                elif line[pos:].lstrip().startswith("("):
+                    css_class = "fn"
+
+            if kind != "space":
+                previous = text
+            pieces.append(span(css_class, text))
+
+        rendered.append("".join(pieces))
+    return rendered
 
 
 class Data:
@@ -419,6 +517,39 @@ class Data:
         if key in self.excluded:
             return "excl"
         return ""
+
+
+def page(title, body, crumb=None, meta=""):
+    crumb_html = f'<div class="crumb">{crumb}</div>' if crumb else ""
+    meta_html = f'<span class="meta">{html.escape(meta)}</span>' if meta else ""
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{html.escape(title)}</title>
+{HEAD_SCRIPT}
+<style>{style_sheet()}</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>HackySTL coverage</h1>
+    {crumb_html}
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    {meta_html}
+    {TOGGLE}
+  </div>
+</header>
+<main>
+{body}
+</main>
+<script>{SCRIPT.replace("__THEME_KEY__", THEME_KEY)}</script>
+</body>
+</html>
+"""
 
 
 def file_page_name(file_name):
@@ -483,11 +614,11 @@ when any template instance runs it. Lines excluded with GCOVR markers are left o
   </tbody>
 </table>
 </div>
-<footer>Click a column heading to sort. Files and lines use the same thresholds as the badges:
-90% and above is good, 75% and above is fair, and below 75% needs attention.</footer>
+<footer>Click a column heading to sort. Percentages of 90% and above are good, 75% and above are fair,
+and anything lower needs attention.</footer>
 """
     (out_dir / "index.html").write_text(
-        page("HackySTL coverage", body, base=f"{generated}"), encoding="utf-8"
+        page("HackySTL coverage", body, meta=generated), encoding="utf-8"
     )
 
 
@@ -525,9 +656,10 @@ def write_file_page(data, out_dir, file_name, source_dir):
         source_lines = source_path.read_text(encoding="utf-8", errors="replace").splitlines()
     else:
         source_lines = [f"(source not found: {file_name})"]
+    highlighted = highlight_lines(source_lines)
 
     rows = []
-    for number, text in enumerate(source_lines, start=1):
+    for number, code_html in enumerate(highlighted, start=1):
         status = data.line_status(file_name, number)
         css = f' class="{status}"' if status else ""
         hits = ""
@@ -541,7 +673,7 @@ def write_file_page(data, out_dir, file_name, source_dir):
                 title = f' title="branch {", ".join(str(i) for i in missed)} not taken"'
         rows.append(
             f'<tr id="L{number}"{css}{title}><td class="ln">{number}</td>'
-            f'<td class="hits">{hits}</td><td class="code">{html.escape(text)}</td></tr>'
+            f'<td class="hits">{hits}</td><td class="code">{code_html}</td></tr>'
         )
 
     legend = (
@@ -560,6 +692,7 @@ def write_file_page(data, out_dir, file_name, source_dir):
 {legend}
 <div class="table-wrap source">
 <table>
+  <colgroup><col class="c-ln"><col class="c-hits"><col class="c-code"></colgroup>
   <tbody>
     {''.join(rows)}
   </tbody>
@@ -568,7 +701,7 @@ def write_file_page(data, out_dir, file_name, source_dir):
 """
     crumb = f'<a href="../index.html">Summary</a> &rsaquo; <span class="mono">{html.escape(file_name)}</span>'
     (out_dir / file_page_name(file_name)).write_text(
-        page(f"{file_name} - HackySTL coverage", body, crumb=crumb, base=file_name), encoding="utf-8"
+        page(f"{file_name} - HackySTL coverage", body, crumb=crumb), encoding="utf-8"
     )
 
 

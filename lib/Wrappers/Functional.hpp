@@ -467,7 +467,7 @@ namespace hsd
     /// @return A callable adapter that forwards the bound invocation and unwraps
     ///         project result values when necessary.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, T&& value, Args&&... args)
     {
         return [=, value{hsd::move(value)}]() mutable {
@@ -502,7 +502,7 @@ namespace hsd
     /// @param args Tuple whose elements are expanded for each invocation.
     /// @return A callable adapter for the bound member invocation.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, T&& value, hsd::tuple<Args...>&& args)
     {
         return [=, value{hsd::move(value)}]() mutable {
@@ -548,7 +548,7 @@ namespace hsd
     /// @param args Arguments captured for each invocation.
     /// @return A callable adapter that retains the caller's object reference.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, T& value, Args&&... args)
     {
         return [=, &value]{
@@ -583,7 +583,7 @@ namespace hsd
     /// @param args Tuple whose elements are expanded for each invocation.
     /// @return A callable adapter for the bound member invocation.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, T& value, hsd::tuple<Args...>&& args)
     {
         return [=, &value]{
@@ -628,7 +628,7 @@ namespace hsd
     /// @param args Arguments captured for each invocation.
     /// @return A callable adapter that unwraps project result values when needed.
     template < typename Func, typename... Args >
-    requires (!std::is_member_function_pointer_v<Func>)
+    requires (!hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, Args&&... args)
     {
         return [=]{
@@ -648,7 +648,7 @@ namespace hsd
     /// @param args Tuple whose elements are expanded for each invocation.
     /// @return A callable adapter for the bound call.
     template < typename Func, typename... Args >
-    requires (!std::is_member_function_pointer_v<Func>)
+    requires (!hsd::is_member_function_pointer<Func>::value)
     static inline auto bind(Func func, hsd::tuple<Args...>&& args)
     {
         return [=]{

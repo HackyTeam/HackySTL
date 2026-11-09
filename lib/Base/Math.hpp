@@ -24,6 +24,15 @@ namespace hsd
         {
             /// @brief The ratio of a circle's circumference to its diameter, π.
             static constexpr f128 pi = 3.14159265358979323846264338327950288l;
+            /// @brief pi split into three parts for range reduction. The first two parts have 33
+            /// bits, so a count below 2^19 times either one is exact in a double, and the three
+            /// parts sum to pi to about 1e-37. A narrow `f128`, such as a 64-bit `long double`,
+            /// keeps the reduction accurate this way, where a single rounded pi would not.
+            static constexpr f128 pi_head = 0x1.921fb54400000p+1;
+            /// @copydoc pi_head
+            static constexpr f128 pi_middle = 0x1.0b4611a600000p-33;
+            /// @copydoc pi_head
+            static constexpr f128 pi_tail = 0x1.3198a2e037073p-68;
             /// @brief Euler's number, the base of the natural logarithm.
             static constexpr f128 euler = 2.71828182845904523536028747135266249l;
             /// @brief Precomputed value of ln(sqrt(π)), used by the Lanczos-style lgamma approximation.
@@ -543,10 +552,16 @@ namespace hsd
                     if (math::abs(value) > static_cast<T>(pi))
                     {
                         // The working type depends on T, so the floor call is resolved when it is used.
-                        using _wide_t = hsd::common_type_t<T, f128>;
-                        const _wide_t _wide = static_cast<_wide_t>(value);
-                        const _wide_t _reduced = _wide - static_cast<_wide_t>(pi) *
-                            floor(_wide / static_cast<_wide_t>(pi));
+                        using WideType = hsd::common_type_t<T, f128>;
+                        const WideType _wide = static_cast<WideType>(value);
+                        const WideType _count = floor(_wide / static_cast<WideType>(pi));
+
+                        // Cody-Waite reduction: each part of pi is multiplied by the count exactly,
+                        // so the reduced value keeps the precision of T even when f128 is narrow.
+                        const WideType _reduced =
+                            ((_wide - _count * static_cast<WideType>(constants::pi_head))
+                                - _count * static_cast<WideType>(constants::pi_middle))
+                            - _count * static_cast<WideType>(constants::pi_tail);
                         value = static_cast<T>(_reduced);
 
                         // An infinite argument reduces to NaN. Finite arguments reduce into [0, π].

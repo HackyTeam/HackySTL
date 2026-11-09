@@ -182,6 +182,12 @@ namespace hsd::network_detail
     static inline bool create_socket(
         SocketType& new_socket, const char* ip_addr, bool is_server)
     {
+        #if defined(HSD_PLATFORM_WINDOWS)
+        // The servers and clients start Winsock in their constructors, but a socket object used on
+        // its own does not. Starting it here covers every socket, and repeated calls are cheap.
+        init_winsock();
+        #endif
+
         addrinfo* _result = nullptr;
         addrinfo* _rp = nullptr;
 

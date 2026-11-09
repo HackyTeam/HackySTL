@@ -35,7 +35,7 @@ namespace hsd
             template <typename Base, typename Derived>
             concept ConvertibleDerived = (
                 Convertible<Derived, Base> || 
-                std::is_base_of_v<Base, Derived>
+                hsd::is_base_of<Base, Derived>::value
             );
 
             /// @brief Allocator-backed object or array storage shared by owners.
@@ -860,7 +860,7 @@ namespace hsd
             template <typename Base, typename Derived>
             concept ConvertibleDerived = (
                 Convertible<Derived, Base> || 
-                std::is_base_of_v<Base, Derived>
+                hsd::is_base_of<Base, Derived>::value
             );
 
             /// @brief Allocator-backed object or array storage shared by owners.

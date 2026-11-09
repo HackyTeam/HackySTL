@@ -1037,6 +1037,29 @@ namespace hsd
             va_args::is_va_args_function<T> >
     {};
 
+    namespace helper
+    {
+        /// @brief Primary template: `T` is not a pointer to a member function.
+        template <typename T>
+        struct is_member_function_pointer
+            : public false_type {};
+
+        /// @brief Specialization for any pointer to a member `T C::*`.
+        /// @details Only a function pointee counts, so pointers to data members are `false`. Deriving from
+        /// #is_function checks the pointee with every qualifier, including `&`, `&&` and `noexcept`.
+        template <typename T, typename C>
+        struct is_member_function_pointer<T C::*>
+            : public is_function<T> {};
+    } // namespace helper
+
+    /// @brief Predicate: detects pointers to non-static member functions, with any qualifiers.
+    /// @tparam T Type queried.
+    /// @details `value` is `true` iff `T`, ignoring top-level cv-qualification, is a pointer to a member
+    /// function such as `void (C::*)() const &`. Pointers to data members and plain function pointers are
+    /// `false`, matching `std::is_member_function_pointer`.
+    template <typename T>
+    using is_member_function_pointer = helper::is_member_function_pointer< typename remove_cv<T>::type >;
+
     /// @brief Predicate: detects object types (not `void`, a reference, or a function).
     /// @tparam T Type queried.
     /// @details `value` is `true` unless `T` is a function type, a reference type, or
@@ -1373,6 +1396,17 @@ namespace hsd
     template <typename T>
     struct is_class
         : public literal_constant< bool, __is_class(T) >
+    {};
+
+    /// @brief Predicate: detects whether `Base` is `Derived` itself or one of its base classes.
+    /// @tparam Base Candidate base type.
+    /// @tparam Derived Candidate derived type.
+    /// @details `value` is `true` when both are the same class type, or `Derived` inherits from `Base` by
+    /// any access, public, protected or private. Non-class types give `false`. Backed by the compiler's
+    /// intrinsic, matching `std::is_base_of`.
+    template <typename Base, typename Derived>
+    struct is_base_of
+        : public literal_constant< bool, __is_base_of(Base, Derived) >
     {};
 
     /// @brief Predicate: detects types the compiler treats as trivially copyable.

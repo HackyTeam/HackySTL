@@ -171,9 +171,10 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: now
 th.num { text-align: right; }
 /* Each metric is a fixed pill column followed by a fixed count column, so the rows line up. */
 .metric {
-  display: inline-grid; grid-template-columns: auto 7.2em; column-gap: 0.6em; align-items: center;
+  display: inline-grid; grid-template-columns: 4.9em 7.2em; column-gap: 0.6em; align-items: center;
 }
-.metric .pill { min-width: 0; }
+/* Every pill has the same width, which fits "100.0%", so the text sits centered in a steady box. */
+.metric .pill { width: 100%; min-width: 0; padding: 2px 0; text-align: center; white-space: nowrap; }
 .metric .counts { color: var(--muted); text-align: right; }
 td.file a { font-weight: 550; }
 td.bar-cell { width: 26%; min-width: 150px; }

@@ -56,7 +56,7 @@ int main()
     assert(child->second.receive(buffer, 1023) == -1);
     const hsd::isize received = child->second.receive(buffer, sizeof(buffer));
     assert(received == static_cast<hsd::isize>(request.size()));
-    assert(std::string_view{buffer, static_cast<hsd::usize>(received)} == request);
+    assert((std::string_view{buffer, static_cast<hsd::usize>(received)} == request));
 
     // The child answers the sender, and the client reads the answer.
     const std::string_view reply = "SHIPPED 42";
@@ -65,7 +65,7 @@ int main()
     char answer[128]{};
     const hsd::isize answered = client.receive(answer, sizeof(answer));
     assert(answered == static_cast<hsd::isize>(reply.size()));
-    assert(std::string_view{answer, static_cast<hsd::usize>(answered)} == reply);
+    assert((std::string_view{answer, static_cast<hsd::usize>(answered)} == reply));
 
     // A second datagram from the same address is buffered for the same child.
     assert(client.send("A", 1) == 1);

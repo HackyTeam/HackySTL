@@ -357,6 +357,21 @@ if(HACKYSTL_BUILD_EXAMPLES)
         endif()
     endif()
 
+    # assert() takes one argument in some C libraries, so a comma outside parentheses
+    # breaks the build there. This check finds those calls on every platform.
+    if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+        add_test(
+            NAME hackystl_assert_calls_lint
+            COMMAND
+                "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckAssertCalls.py"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Examples"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Problems"
+                "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+        )
+    endif()
+
     foreach(example_source IN LISTS HACKYSTL_EXAMPLE_SOURCES)
         file(
             RELATIVE_PATH relative_example_source

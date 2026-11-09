@@ -39,8 +39,8 @@ namespace
         assert((_positive << lib_i128{0}) == _positive);
 
         // Left shifts by 64 to 127 move bits into the high word, and by 128 or more give zero.
-        assert((lib_u128{5u} << lib_u128{64u}) == lib_u128{0, 5});
-        assert((lib_u128{5u} << lib_u128{100u}) == lib_u128{0, 5ull << 36});
+        assert(((lib_u128{5u} << lib_u128{64u}) == lib_u128{0, 5}));
+        assert(((lib_u128{5u} << lib_u128{100u}) == lib_u128{0, 5ull << 36}));
         assert((lib_u128{runtime_value(5u)} << lib_u128{runtime_value(128u)}) == lib_u128{});
     }
 
@@ -55,15 +55,15 @@ namespace
     void check_signed_compare_edges()
     {
         // Equal high words compare by the low words, for non-negative and negative values.
-        assert(lib_i128{1ull, 0ull} < lib_i128{2ull, 0ull});
-        assert(lib_i128{2ull, 0ull} <= lib_i128{2ull, 0ull});
-        assert(lib_i128{1ull, ~0ull} < lib_i128{2ull, ~0ull});
+        assert((lib_i128{1ull, 0ull} < lib_i128{2ull, 0ull}));
+        assert((lib_i128{2ull, 0ull} <= lib_i128{2ull, 0ull}));
+        assert((lib_i128{1ull, ~0ull} < lib_i128{2ull, ~0ull}));
         assert(!(lib_i128{2ull, ~0ull} < lib_i128{1ull, ~0ull}));
 
         // Values with different high words compare by the high words, as signed numbers.
-        assert(lib_i128{0ull, 1ull} < lib_i128{0ull, 2ull});
-        assert(lib_i128{0ull, ~0ull} < lib_i128{0ull, 1ull});
-        assert(lib_i128{7ull, ~0ull} < lib_i128{0ull, 1ull});
+        assert((lib_i128{0ull, 1ull} < lib_i128{0ull, 2ull}));
+        assert((lib_i128{0ull, ~0ull} < lib_i128{0ull, 1ull}));
+        assert((lib_i128{7ull, ~0ull} < lib_i128{0ull, 1ull}));
     }
 
 #if defined(__SIZEOF_INT128__)

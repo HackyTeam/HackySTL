@@ -57,7 +57,7 @@ int main()
     char buffer[128]{};
     hsd::isize received = child->receive(buffer, sizeof(buffer));
     assert(received == static_cast<hsd::isize>(request.size()));
-    assert(std::string_view{buffer, static_cast<hsd::usize>(received)} == request);
+    assert((std::string_view{buffer, static_cast<hsd::usize>(received)} == request));
 
     const std::string_view reply = "HTTP/1.1 200 OK";
     assert(child->send(reply.data(), reply.size()) == static_cast<hsd::isize>(reply.size()));
@@ -65,7 +65,7 @@ int main()
     char answer[128]{};
     const hsd::isize answered = client.receive(answer, sizeof(answer));
     assert(answered == static_cast<hsd::isize>(reply.size()));
-    assert(std::string_view{answer, static_cast<hsd::usize>(answered)} == reply);
+    assert((std::string_view{answer, static_cast<hsd::usize>(answered)} == reply));
 
     // The error helpers report the last socket error as text and as a code.
     assert(hsd::tcp_server_v4::error_message() != nullptr);

@@ -200,7 +200,7 @@ int main()
         assert(child6 != server6.end());
         char reply6[8]{};
         assert(child6->receive(reply6, sizeof(reply6)) == 2);
-        assert(std::string_view{reply6, 2} == "hi");
+        assert((std::string_view{reply6, 2} == "hi"));
     }
 
     // The error helpers report a message and a code with no socket involved.

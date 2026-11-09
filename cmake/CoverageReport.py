@@ -168,6 +168,13 @@ th[aria-sort="ascending"]::after { content: " \2191"; opacity: 1; }
 th[aria-sort="descending"]::after { content: " \2193"; opacity: 1; }
 td { font-size: 15px; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+th.num { text-align: right; }
+/* Each metric is a fixed pill column followed by a fixed count column, so the rows line up. */
+.metric {
+  display: inline-grid; grid-template-columns: 6.6em 7.2em; column-gap: 0.8em; align-items: center;
+}
+.metric .pill { min-width: 0; width: 100%; }
+.metric .counts { color: var(--muted); text-align: right; }
 td.file a { font-weight: 550; }
 td.bar-cell { width: 26%; min-width: 150px; }
 td.bar-cell .bar { margin-top: 0; }
@@ -186,21 +193,25 @@ tbody tr:hover { background: var(--surface-alt); }
 .uncovered-list { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
 .uncovered-list li { margin: 4px 0; }
 
-/* Source listing: a fixed column layout keeps line numbers, counts and code aligned. */
-.source table { font-family: var(--mono-stack); font-size: 15px; table-layout: fixed; }
-.source col.c-ln { width: 4.4em; }
-.source col.c-hits { width: 7.2em; }
+/* Source listing: line number, code, then the hit count at the right edge of the line. */
+.source table { font-family: var(--mono-stack); font-size: 15px; width: 100%; }
+.source col.c-ln { width: 3.8em; }
+.source col.c-hits { width: 6.4em; }
 .source td {
-  padding: 0 0.9em; border: 0; vertical-align: top; line-height: 1.7;
+  padding: 0 0.8em; border: 0; vertical-align: top; line-height: 1.7;
   font-family: var(--mono-stack); font-size: 15px;
   font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
 }
 .source td.ln {
   text-align: right; color: var(--muted); user-select: none; white-space: nowrap;
   font-variant-numeric: tabular-nums; border-right: 1px solid var(--border);
+  padding-right: 0.9em;
 }
-.source td.hits { text-align: right; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.source td.code { white-space: pre; tab-size: 4; padding-left: 1.3em; color: var(--text); }
+.source td.code { white-space: pre; tab-size: 4; padding-left: 1em; color: var(--text); }
+.source td.hits {
+  text-align: right; color: var(--muted); white-space: nowrap;
+  font-variant-numeric: tabular-nums; padding-right: 1.2em;
+}
 .source tr.cov { background: var(--good-bg); }
 .source tr.cov td.hits { color: var(--good); }
 .source tr.part { background: var(--warn-bg); }
@@ -574,8 +585,9 @@ def write_index(data, out_dir, generated):
         for covered, total in ((line_cov, line_total), (branch_cov, branch_total), (func_cov, func_total)):
             value = percent(covered, total)
             cells.append(
-                f'<td class="num" data-value="{value:.4f}">{meter(covered, total)[0]}'
-                f'<span class="counts"> &nbsp;{covered:,}/{total:,}</span></td>'
+                f'<td class="num" data-value="{value:.4f}">'
+                f'<span class="metric">{meter(covered, total)[0]}'
+                f'<span class="counts">{covered:,}/{total:,}</span></span></td>'
             )
         bar_value = percent(line_cov, line_total)
         rows.append(
@@ -590,9 +602,9 @@ def write_index(data, out_dir, generated):
 
     header_cells = (
         '<th role="button" tabindex="0">File</th>'
-        '<th role="button" tabindex="0">Lines</th>'
-        '<th role="button" tabindex="0">Branches</th>'
-        '<th role="button" tabindex="0">Functions</th>'
+        '<th class="num" role="button" tabindex="0">Lines</th>'
+        '<th class="num" role="button" tabindex="0">Branches</th>'
+        '<th class="num" role="button" tabindex="0">Functions</th>'
         '<th>Lines bar</th>'
     )
 
@@ -673,7 +685,7 @@ def write_file_page(data, out_dir, file_name, source_dir):
                 title = f' title="branch {", ".join(str(i) for i in missed)} not taken"'
         rows.append(
             f'<tr id="L{number}"{css}{title}><td class="ln">{number}</td>'
-            f'<td class="hits">{hits}</td><td class="code">{code_html}</td></tr>'
+            f'<td class="code">{code_html}</td><td class="hits">{hits}</td></tr>'
         )
 
     legend = (
@@ -692,7 +704,7 @@ def write_file_page(data, out_dir, file_name, source_dir):
 {legend}
 <div class="table-wrap source">
 <table>
-  <colgroup><col class="c-ln"><col class="c-hits"><col class="c-code"></colgroup>
+  <colgroup><col class="c-ln"><col class="c-code"><col class="c-hits"></colgroup>
   <tbody>
     {''.join(rows)}
   </tbody>

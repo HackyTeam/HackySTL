@@ -28,14 +28,14 @@ namespace hsd
     namespace any_detail
     {
         /// @brief Bytes of inline storage inside every `any`.
-        inline constexpr usize buffer_size = 3 * sizeof(void*);
+        static constexpr usize buffer_size = 3 * sizeof(void*);
 
         /// @brief Tells whether a value of type `T` is stored inside the `any`.
         /// @details The value must fit, be no more aligned than a pointer and
         ///          relocate without throwing, because moving an `any` moves
         ///          its inline value.
         template <typename T>
-        inline constexpr bool stored_inline = (
+        static constexpr bool stored_inline = (
             sizeof(T) <= buffer_size
             && alignof(T) <= alignof(void*)
             && hsd::is_nothrow_constructible<T, T&&>::value
@@ -151,7 +151,7 @@ namespace hsd
 
         /// @brief The operation table, and identity, of `T`.
         template <typename T>
-        inline constexpr vtable vtable_of = {
+        static constexpr vtable vtable_of = {
             &destroy_in<T>, &copy_in<T>, &move_in<T>
         };
     } // namespace any_detail

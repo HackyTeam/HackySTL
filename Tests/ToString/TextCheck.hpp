@@ -6,7 +6,7 @@
 #include <Base/Types.hpp>
 
 /// @brief Largest text the tests format, sized for the widest fixed-point long double.
-inline constexpr hsd::usize max_text_length = 5200;
+static constexpr hsd::usize max_text_length = 5200;
 
 // Compares every character of a conversion buffer with a null-terminated expected
 // text. Usable in constant expressions, so one check serves compile time and run time.

@@ -97,6 +97,57 @@ if(HACKYSTL_ENABLE_SANITIZERS)
     endif()
 endif()
 
+option(
+    HACKYSTL_ENABLE_COVERAGE
+    "Instrument the tests and examples with gcov and add a coverage target that writes an HTML report"
+    OFF
+)
+
+if(HACKYSTL_ENABLE_COVERAGE)
+    # gcov is GCC's coverage tool. Clang's coverage output needs llvm-cov, which this build does not use.
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        message(FATAL_ERROR "HACKYSTL_ENABLE_COVERAGE needs GCC, because it uses gcov")
+    endif()
+
+    target_compile_options(
+        hackystl_test_config
+        INTERFACE --coverage -fprofile-update=atomic
+    )
+    target_link_options(hackystl_test_config INTERFACE --coverage)
+
+    # gcov must match the compiler version, so prefer gcov-<major> such as gcov-16.
+    find_program(
+        GCOV_EXECUTABLE
+        NAMES "gcov-${CMAKE_CXX_COMPILER_VERSION_MAJOR}" gcov
+        REQUIRED
+    )
+
+    # gcovr collects the gcov data into one HTML report. Without it there is no coverage target.
+    find_program(GCOVR_EXECUTABLE gcovr)
+    if(GCOVR_EXECUTABLE)
+        add_custom_target(
+            coverage
+            COMMAND
+                "${CMAKE_COMMAND}"
+                "-DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
+                "-DGCOVR=${GCOVR_EXECUTABLE}"
+                "-DGCOV=${GCOV_EXECUTABLE}"
+                "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                "-DBINARY_DIR=${CMAKE_BINARY_DIR}"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunCoverage.cmake"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            VERBATIM
+            USES_TERMINAL
+            COMMENT "Running the tests and writing the coverage report"
+        )
+    else()
+        message(
+            WARNING
+            "gcovr was not found, so the coverage target is not available"
+        )
+    endif()
+endif()
+
 # Profiling measurements use an optimized, unsanitized build regardless of
 # the main build type so debug instrumentation does not distort timings.
 add_library(hackystl_profile_config INTERFACE)

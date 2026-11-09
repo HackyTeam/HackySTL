@@ -166,13 +166,13 @@ namespace hsd
 
     /// @brief Tells whether `T` is one of the reverse iterators in this header.
     template <typename T>
-    inline constexpr bool is_reverse_iterator_v = false;
+    static constexpr bool is_reverse_iterator_v = false;
 
     /// @brief Specialization matching `contiguous_reverse_iterator`.
     template <typename Pointer>
-    inline constexpr bool is_reverse_iterator_v<contiguous_reverse_iterator<Pointer>> = true;
+    static constexpr bool is_reverse_iterator_v<contiguous_reverse_iterator<Pointer>> = true;
 
     /// @brief Specialization matching `reverse_bidirectional_iterator`.
     template <typename Iter>
-    inline constexpr bool is_reverse_iterator_v<reverse_bidirectional_iterator<Iter>> = true;
+    static constexpr bool is_reverse_iterator_v<reverse_bidirectional_iterator<Iter>> = true;
 } // namespace hsd

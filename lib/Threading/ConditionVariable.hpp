@@ -13,7 +13,7 @@ namespace hsd
     namespace cv_detail
     {
         /// @brief Largest relative timeout, in milliseconds, a native wait accepts.
-        inline constexpr u32 max_timeout_ms = 0xFFFF'FFFEu;
+        static constexpr u32 max_timeout_ms = 0xFFFF'FFFEu;
 
         /// @brief Converts the time left until `abs_time` into a relative timeout.
         /// @details Native Windows waits take a relative timeout in milliseconds.

@@ -11,6 +11,18 @@ in one toolkit under the `hsd` namespace. Public headers under `lib/` can be
 included directly, and the library ships no `.cpp` files to compile. Threading
 and networking need the platform's thread and socket libraries at link time.
 
+# Build status
+
+[![build](https://github.com/HackyTeam/HackySTL/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=main)](https://github.com/HackyTeam/HackySTL/actions/workflows/cmake-multi-platform.yml)
+[![tests](https://github.com/HackyTeam/HackySTL/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/HackyTeam/HackySTL/actions/workflows/tests.yml)
+[![asan](https://github.com/HackyTeam/HackySTL/actions/workflows/asan.yml/badge.svg?branch=main)](https://github.com/HackyTeam/HackySTL/actions/workflows/asan.yml)
+[![coverage](https://github.com/HackyTeam/HackySTL/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/HackyTeam/HackySTL/actions/workflows/coverage.yml)
+
+- **build:** Linux with GCC 16 and Clang 22, and Windows with MSVC, all in Debug.
+- **tests:** the whole CTest suite on Linux with GCC 16 and Clang 22. Each run attaches a JUnit report.
+- **asan:** the same suite under AddressSanitizer and UndefinedBehaviorSanitizer.
+- **coverage:** gcov line, function and branch coverage of `lib/`. Each run attaches the HTML report.
+
 # What it contains
 
 - **Base:** fixed-width aliases such as `i32`, `u64`, `usize`, `f64` and `u128`,
@@ -130,6 +142,22 @@ ctest --test-dir build-clang --output-on-failure
 
 The Clang build uses the same sanitizer flags as the GCC build, so this run is
 also sanitized. The `build` and `build-clang` directories are ignored by git.
+
+## Code coverage
+
+GCC's gcov instruments the test suite, and gcovr turns its counters into an HTML report.
+Install gcovr (`pip install gcovr`), then configure with GCC:
+
+```sh
+cmake -S . -B build-coverage -G Ninja -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DHACKYSTL_ENABLE_SANITIZERS=OFF -DHACKYSTL_ENABLE_COVERAGE=ON
+cmake --build build-coverage --parallel
+cmake --build build-coverage --target coverage
+```
+
+The `coverage` target runs the whole test suite, prints the line, function and branch
+totals for `lib/`, and writes `build-coverage/coverage/index.html`. If a test fails, no
+report is written. Coverage needs GCC, because gcov is GCC's tool, so it is not available
+with Clang or MSVC.
 
 ## Profiling the library
 

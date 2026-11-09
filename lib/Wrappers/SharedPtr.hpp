@@ -23,13 +23,13 @@ namespace hsd
 
             /// @brief Words in front of the object in a fused block.
             /// @details Word 0 is the owner count, word 1 the block length.
-            inline constexpr usize fused_header_words = 2;
+            static constexpr usize fused_header_words = 2;
 
             /// @brief Tells whether make_shared can place `T` behind the header.
             /// @details Only the alignment of the count words is guaranteed
             ///          for the block, so over-aligned types keep two blocks.
             template <typename T>
-            inline constexpr bool can_fuse = alignof(T) <= alignof(usize);
+            static constexpr bool can_fuse = alignof(T) <= alignof(usize);
 
             /// @brief Accepts conversions from a derived shared owner to its base.
             template <typename Base, typename Derived>
@@ -848,13 +848,13 @@ namespace hsd
 
             /// @brief Words in front of the object in a fused block.
             /// @details Word 0 is the owner count, word 1 the block length.
-            inline constexpr usize fused_header_words = 2;
+            static constexpr usize fused_header_words = 2;
 
             /// @brief Tells whether make_shared can place `T` behind the header.
             /// @details Only the alignment of the count words is guaranteed
             ///          for the block, so over-aligned types keep two blocks.
             template <typename T>
-            inline constexpr bool can_fuse = alignof(T) <= alignof(atomic_usize);
+            static constexpr bool can_fuse = alignof(T) <= alignof(atomic_usize);
 
             /// @brief Accepts conversions from a derived shared owner to its base.
             template <typename Base, typename Derived>

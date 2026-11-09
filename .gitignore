@@ -45,3 +45,5 @@ Docs/latex
 # Cmake build files
 build
 build-clang
+build-clang-nosan
+build-coverage

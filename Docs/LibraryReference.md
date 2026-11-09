@@ -70,7 +70,7 @@ owners preserve the allocator together with their storage. See
 
 ## Network
 
-- [Network/Network.hpp](../../lib/Network/Network.hpp) - Public TCP and UDP client/server wrappers with polling, send, receive, and peer management.
+- [Network/Network.hpp](../../lib/Network/Network.hpp) - Public TCP and UDP client/server wrappers with polling, send, receive, and peer management. Child and peer iterators, pointers and references are invalidated by `poll()` (and by `erase()` on TCP servers); see the header documentation.
 - [Network/_NetworkDetail.hpp](../../lib/Network/_NetworkDetail.hpp) - Internal protocol, native handle, address, and platform definitions.
 - [Network/_NetworkFuncs.hpp](../../lib/Network/_NetworkFuncs.hpp) - Internal socket creation, address resolution, error, and address formatting helpers.
 - [Network/_SocketDetail.hpp](../../lib/Network/_SocketDetail.hpp) - Internal TCP/UDP socket ownership, polling, accept, send, receive, and child-socket implementations.

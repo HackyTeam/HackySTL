@@ -126,6 +126,11 @@ int main()
         }
     }
 
+    // The second poll may have accepted a child, and the children are stored in a growing list
+    // that moves them, so the first child is looked up again before the socket uses it.
+    child = server.begin();
+    server_http.set_current_sock(*child);
+
     // A response with a header field writes the field before the body.
     server_http.get_response().set_header_field("Content-Type"_sv, "text/plain"_sv);
     assert(server_http.send_response("x"_sv).is_ok());
@@ -144,7 +149,7 @@ int main()
     assert(!absent.receive_request().is_ok());
 
     // A response that has no method separator is refused with the parser's message.
-    assert(second_child->send("NOPE\r\n\r\n", 10) == 10);
+    assert(second_child->send("NOPE\r\n\r\n", 8) == 8);
     hsd::http::socket<hsd::tcp_client_v4> reader;
     reader.reserve_buffer(1024);
     reader.set_current_sock(second_client);

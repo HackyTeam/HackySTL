@@ -1041,7 +1041,7 @@ namespace hsd
     /// @tparam T Type queried.
     /// @details `value` is `true` unless `T` is a function type, a reference type, or
     /// (after removing cv-qualification) `void`.
-    template<typename T>
+    template <typename T>
     struct is_object
         : public negation< 
             disjunction< is_function<T>, is_reference<T>,

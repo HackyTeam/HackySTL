@@ -40,6 +40,7 @@ int main()
 
     // Pairs with the same second element but a different first element are not equal.
     assert(!(hsd::pair<int, int>{1, 2} == hsd::pair<int, int>{3, 2}));
-    assert(hsd::pair<int, int>{1, 2} == hsd::pair<int, int>{1, 2});
+    // The braces hide the comma from the macro only inside the parentheses.
+    assert((hsd::pair<int, int>{1, 2} == hsd::pair<int, int>{1, 2}));
     return 0;
 }

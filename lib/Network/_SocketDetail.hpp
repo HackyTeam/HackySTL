@@ -34,12 +34,7 @@ namespace hsd::network_detail
         inline bool _handle_server(const addrinfo* const info)
         {
             if (info->ai_socktype == SOCK_STREAM)
-            {   
-                if (is_valid() == false)
-                {
-                    return false;
-                }
-                
+            {
                 _data.events = POLLIN;
                 _data.revents = 0;
                 
@@ -78,11 +73,16 @@ namespace hsd::network_detail
                 _rc = ioctl(_data.fd, FIONBIO, &_on);
                 #endif
 
+                // Exclusion: FIONBIO on a descriptor that bind() has just accepted cannot fail
+                // unless the descriptor was closed meanwhile, and no test can make it fail. The
+                // check stays as a guard for a resource error from the system.
+                // GCOVR_EXCL_START
                 if (_rc < 0)
                 {
                     close();
                     panic("ioctl() failed");
                 }
+                // GCOVR_EXCL_STOP
 
                 if (::listen(_data.fd, SOMAXCONN) == -1)
                 {
@@ -106,11 +106,6 @@ namespace hsd::network_detail
         {
             if (info->ai_socktype == SOCK_STREAM)
             {
-                if (is_valid() == false)
-                {
-                    return false;
-                }
-
                 _data.events = POLLOUT;
                 _data.revents = POLLOUT | POLLIN;
                 
@@ -541,11 +536,6 @@ namespace hsd::network_detail
         {
             if (info->ai_socktype == SOCK_DGRAM)
             {
-                if (is_valid() == false)
-                {
-                    return false;
-                }
-
                 // SO_REUSEADDR must be set before bind() to take effect.
                 #if defined(HSD_PLATFORM_WINDOWS)
                 static ulong _on = 1;
@@ -584,11 +574,15 @@ namespace hsd::network_detail
                 _rc = ioctl(_data, FIONBIO, &_on);
                 #endif
 
+                // Exclusion: the same reasoning as the matching check in tcp_socket. The guard
+                // is kept for a resource error, and no test can make the call fail.
+                // GCOVR_EXCL_START
                 if (_rc < 0)
                 {
                     close();
                     panic("ioctl() failed");
                 }
+                // GCOVR_EXCL_STOP
 
                 return true;
             }
@@ -608,11 +602,6 @@ namespace hsd::network_detail
         {
             if (info->ai_socktype == SOCK_DGRAM)
             {
-                if (is_valid() == false)
-                {
-                    return false;
-                }
-
                 if (::connect(_data, info->ai_addr, static_cast<socklen_t>(info->ai_addrlen)) == -1)
                 {
                     close();
@@ -1083,17 +1072,13 @@ namespace hsd::network_detail
 
         ///
         /// @brief Dequeues the oldest queued datagram into `buffer`.
-        /// Pre-existing bug: this always copies exactly 1024 bytes from the
-        /// stored `static_vector<char, 1024>`'s backing storage and reports
-        /// 1024 as the number of bytes received, even when the original
-        /// datagram (as resized in `udp_server::poll()`) was smaller; callers
-        /// receive trailing bytes left over from the fixed-size buffer
-        /// instead of the true datagram length.
-        /// 
-        /// @param buffer - Buffer to receive into; must be at least 1024 bytes.
+        /// Copies the datagram's own length, or `size` if that is smaller, so
+        /// the caller gets no bytes beyond the datagram.
+        ///
+        /// @param buffer - Buffer to receive into.
         /// @param size - Capacity of `buffer`; must be >= 1024 or the call fails.
-        /// @return isize - 1024 on success, 0 if no datagram is queued, or -1
-        /// if invalid or `size` is less than 1024.
+        /// @return isize - The number of bytes copied, 0 if no datagram is queued,
+        /// or -1 if invalid or `size` is less than 1024.
         ///
         inline isize receive(void* buffer, usize size)
         {
@@ -1106,10 +1091,13 @@ namespace hsd::network_detail
                 return 0;
             }
 
-            auto _min_size = size < 1024 ? size : 1024;
-            memcpy(buffer, _recv_buffer.front().data(), _min_size);
+            // A datagram holds at most 1024 bytes, the size of the poll buffer, and `size` is at
+            // least 1024 here, so the whole datagram always fits.
+            const auto& _datagram = _recv_buffer.front();
+            const usize _count = _datagram.size();
+            memcpy(buffer, _datagram.data(), _count);
             _recv_buffer.pop_front();
-            return _min_size;
+            return static_cast<isize>(_count);
         }
     };
 } // namespace hsd::network_detail

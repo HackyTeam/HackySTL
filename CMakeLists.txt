@@ -114,6 +114,8 @@ if(HACKYSTL_ENABLE_COVERAGE)
         INTERFACE --coverage -fprofile-update=atomic
     )
     target_link_options(hackystl_test_config INTERFACE --coverage)
+    # Tests that check abort() paths dump the counters in the child process, see Tests/Support/AbortSupport.hpp.
+    target_compile_definitions(hackystl_test_config INTERFACE HACKYSTL_COVERAGE=1)
 
     # gcov must be the same major version as the compiler, because gcov rejects data
     # written by another version. CMake sets the full compiler version, not a major one.
@@ -149,6 +151,13 @@ if(HACKYSTL_ENABLE_COVERAGE)
     # gcovr collects the gcov data into one HTML report. Without it there is no coverage target.
     find_program(GCOVR_EXECUTABLE gcovr)
     if(GCOVR_EXECUTABLE)
+        # Python runs the per-site summary. Without it the coverage target still writes the report.
+        find_package(Python3 COMPONENTS Interpreter)
+        set(_coverage_python "")
+        if(Python3_Interpreter_FOUND)
+            set(_coverage_python "${Python3_EXECUTABLE}")
+        endif()
+
         add_custom_target(
             coverage
             COMMAND
@@ -158,6 +167,7 @@ if(HACKYSTL_ENABLE_COVERAGE)
                 "-DGCOV=${GCOV_EXECUTABLE}"
                 "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
                 "-DBINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DPYTHON=${_coverage_python}"
                 -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunCoverage.cmake"
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
             VERBATIM

@@ -269,7 +269,7 @@ namespace hsd
             else
             {
                 usize _index;
-                usize min_size = _size > N ? _size : N;
+                usize min_size = _size < N ? _size : N;
                 
                 for (_index = 0; _index < min_size; ++_index)
                 {
@@ -327,7 +327,7 @@ namespace hsd
             else
             {
                 usize _index;
-                usize min_size = _size > N ? _size : N;
+                usize min_size = _size < N ? _size : N;
                 
                 for (_index = 0; _index < min_size; ++_index)
                 {

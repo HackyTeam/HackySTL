@@ -319,45 +319,46 @@ namespace hsd
         /// @brief Moves the active alternative and its initialized state.
         /// @param other Result whose active alternative is moved.
         constexpr result(result&& other)
+            : _initialized{other._initialized}
         {
-            hsd::swap(_initialized, other._initialized);
-
             if(_initialized)
             {
-                std::construct_at(&_ok_data, hsd::move(other._ok_data));
+                hsd::construct_at(&_ok_data, hsd::move(other._ok_data));
             }
             else
             {
-                std::construct_at(&_err_data, hsd::move(other._err_data));
+                hsd::construct_at(&_err_data, hsd::move(other._err_data));
             }
         }
 
         /// @brief Replaces this result with a moved result state.
+        /// @details The current alternative is destroyed first. `rhs` keeps its state and
+        /// holds a moved-from value, which its own destructor then cleans up.
         /// @param rhs Result whose active value is moved.
         /// @return `*this` after replacement.
         constexpr result& operator=(result&& rhs)
         {
-            result _tmp{hsd::move(rhs)};
-            hsd::swap(_initialized, rhs._initialized);
+            if (this != &rhs)
+            {
+                if (_initialized)
+                {
+                    hsd::destroy_at(&_ok_data);
+                }
+                else
+                {
+                    hsd::destroy_at(&_err_data);
+                }
 
-            if (rhs._initialized)
-            {
-                std::construct_at(&rhs._ok_data, hsd::move(_ok_data));
-            }
-            else
-            {
-                std::construct_at(&rhs._err_data, hsd::move(_err_data));
-            }
+                _initialized = rhs._initialized;
 
-            hsd::swap(_initialized, _tmp._initialized);
-
-            if (_initialized)
-            {
-                std::construct_at(&_ok_data, hsd::move(_tmp._ok_data));
-            }
-            else
-            {
-                std::construct_at(&_err_data, hsd::move(_tmp._err_data));
+                if (_initialized)
+                {
+                    hsd::construct_at(&_ok_data, hsd::move(rhs._ok_data));
+                }
+                else
+                {
+                    hsd::construct_at(&_err_data, hsd::move(rhs._err_data));
+                }
             }
 
             return *this;
@@ -556,7 +557,7 @@ namespace hsd
         {
             if(_initialized)
             {
-                std::construct_at(&_ok_data, hsd::move(other._ok_data));
+                hsd::construct_at(&_ok_data, hsd::move(other._ok_data));
             }
         }
 
@@ -568,19 +569,19 @@ namespace hsd
         /// @return `*this` after replacement.
         constexpr option& operator=(option&& rhs)
         {
-            option _tmp = hsd::move(rhs);
-            hsd::swap(_initialized, rhs._initialized);
-
-            if (rhs._initialized)
+            if (this != &rhs)
             {
-                std::construct_at(&rhs._ok_data, hsd::move(_ok_data));
-            }
+                if (_initialized)
+                {
+                    hsd::destroy_at(&_ok_data);
+                }
 
-            hsd::swap(_initialized, _tmp._initialized);
+                _initialized = rhs._initialized;
 
-            if (_initialized)
-            {
-                std::construct_at(&_ok_data, hsd::move(_tmp._ok_data));
+                if (_initialized)
+                {
+                    hsd::construct_at(&_ok_data, hsd::move(rhs._ok_data));
+                }
             }
 
             return *this;
@@ -761,32 +762,31 @@ namespace hsd
         {
             if(!_initialized)
             {
-                std::construct_at(&_err_data, hsd::move(other._err_data));
+                hsd::construct_at(&_err_data, hsd::move(other._err_data));
             }
         }
 
         constexpr option_err(const option_err&) = delete;
         constexpr option_err& operator=(const option_err&) = delete;
 
-        /// @brief Replaces this state with a moved option_err.
         /// @brief Replaces this option_err with a moved state.
         /// @param rhs Option whose state is moved.
         /// @return `*this` after replacement.
         constexpr option_err& operator=(option_err&& rhs)
         {
-            option_err _tmp = hsd::move(rhs);
-            hsd::swap(_initialized, rhs._initialized);
-
-            if (!rhs._initialized)
+            if (this != &rhs)
             {
-                std::construct_at(&rhs._err_data, hsd::move(_err_data));
-            }
+                if (!_initialized)
+                {
+                    hsd::destroy_at(&_err_data);
+                }
 
-            hsd::swap(_initialized, _tmp._initialized);
+                _initialized = rhs._initialized;
 
-            if (!_initialized)
-            {
-                std::construct_at(&_err_data, hsd::move(_tmp._err_data));
+                if (!_initialized)
+                {
+                    hsd::construct_at(&_err_data, hsd::move(rhs._err_data));
+                }
             }
 
             return *this;

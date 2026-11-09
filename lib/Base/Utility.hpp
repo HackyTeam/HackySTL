@@ -587,6 +587,22 @@ namespace hsd
     }
 
     ///
+    /// @brief Ends the lifetime of the object at `ptr` by calling its destructor.
+    ///
+    /// @details Works like `std::destroy_at`. For an array, each element is destroyed in
+    /// reverse order. For a type with a trivial destructor, nothing is done. The storage is
+    /// not released, so it can be reused with `construct_at`.
+    ///
+    /// @tparam T - Type of the object to destroy.
+    /// @param ptr - Pointer to a live object of type `T`.
+    ///
+    template<typename T>
+    static constexpr void destroy_at(T* ptr)
+    {
+        std::destroy_at(ptr);
+    }
+
+    ///
     /// @brief Copies `n` trivially copyable objects from `first` into `dest`.
     ///
     /// @details Copies the object representation with `__builtin_memcpy` on

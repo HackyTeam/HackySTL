@@ -298,7 +298,10 @@ namespace hsd
                 #if defined(HSD_PLATFORM_WINDOWS)
                 if (error_code() != WSAEWOULDBLOCK)
                 #else
-                if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)
+                // Exclusion: on Linux EAGAIN and EWOULDBLOCK are one value, so when the first
+                // comparison holds the second always holds too, and the false outcome of the
+                // branch cannot occur there. POSIX allows the two values to differ, so both stay.
+                if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)  // GCOVR_EXCL_BR_LINE
                 #endif
                 {
                     result_detail::write_error(
@@ -319,17 +322,6 @@ namespace hsd
                 _buffer.resize(_result);
                 _find_result.add(_buffer);
             }
-        }
-
-        ///
-        /// @brief Removes a tracked peer.
-        /// 
-        /// @param it - Iterator to the peer entry to erase.
-        /// @return auto - Iterator following the removed element.
-        ///
-        inline auto erase(socket_type* it)
-        {
-            return _sockets.erase(it);
         }
 
         ///

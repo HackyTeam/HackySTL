@@ -1180,6 +1180,114 @@ namespace hsd
     {};
     #endif
 
+    /// @brief Forward declaration of the common-type trait, used by its helpers.
+    template <typename... Types>
+    struct common_type;
+
+    namespace common_type_detail
+    {
+        /// @brief Maps any list of types to `void`, so a partial specialization can test that its types are well-formed.
+        /// @tparam Types Ignored.
+        template <typename...>
+        struct make_void
+        {
+            using type = void; ///< Always `void`.
+        };
+
+        /// @brief Primary template: no `type` unless the conditional operator applies to the two types.
+        /// @tparam D1 First decayed type.
+        /// @tparam D2 Second decayed type.
+        template <typename D1, typename D2, typename = void>
+        struct conditional_common
+        {};
+
+        /// @brief Gives the decayed type of `false ? declval<D1>() : declval<D2>()` when that expression is well-formed.
+        /// @tparam D1 First decayed type.
+        /// @tparam D2 Second decayed type.
+        template <typename D1, typename D2>
+        struct conditional_common<D1, D2,
+            typename make_void<decltype(false ? declval<D1>() : declval<D2>())>::type>
+        {
+            using type = typename decay<decltype(false ? declval<D1>() : declval<D2>())>::type; ///< The decayed result of the conditional operator.
+        };
+
+        /// @brief Common type of two types. Types that are not yet decayed are decayed first and the
+        /// trait is applied again; decayed types use the conditional operator.
+        /// @tparam T1 First type.
+        /// @tparam T2 Second type.
+        /// @tparam Decayed `true` when both types are already decayed.
+        template <typename T1, typename T2,
+            bool Decayed = is_same<T1, typename decay<T1>::type>::value &&
+                is_same<T2, typename decay<T2>::type>::value>
+        struct pair_common
+            : public common_type<typename decay<T1>::type, typename decay<T2>::type>
+        {};
+
+        /// @brief Both types are decayed, so the conditional operator decides the common type.
+        /// @tparam T1 First decayed type.
+        /// @tparam T2 Second decayed type.
+        template <typename T1, typename T2>
+        struct pair_common<T1, T2, true>
+            : public conditional_common<T1, T2>
+        {};
+
+        /// @brief Primary template: the previous step has no common type, so neither does this one.
+        /// @tparam Previous Common-type trait of the first pair of types.
+        /// @tparam Rest Types still to fold in.
+        template <typename Previous, typename... Rest>
+        struct fold
+        {};
+
+        /// @brief Folds the remaining types into the common type found so far.
+        /// @tparam Previous Common-type trait whose `type` is the common type so far.
+        /// @tparam Rest Types still to fold in.
+        template <typename Previous, typename... Rest>
+            requires requires { typename Previous::type; }
+        struct fold<Previous, Rest...>
+            : public common_type<typename Previous::type, Rest...>
+        {};
+    } // namespace common_type_detail
+
+    /// @brief Common type of a list of types, mirroring `std::common_type`.
+    /// @tparam Types The types to combine. Without types, or when no common type exists, the trait has no `type` member.
+    /// @details One type gives its decayed form. Two types that are not both decayed are decayed
+    /// first; decayed types take the type of the conditional operator `false ? a : b`, decayed.
+    /// More than two types fold pairwise from the left. Each step checks its types, so a list
+    /// without a common type has no `type` member and nothing is reported as a hard error.
+    template <typename... Types>
+    struct common_type
+    {};
+
+    /// @brief One type: its decayed form, as `common_type<T, T>`.
+    /// @tparam T The type.
+    template <typename T>
+    struct common_type<T>
+        : public common_type<T, T>
+    {};
+
+    /// @brief Two types: the common type of the pair, following the rules on the primary template.
+    /// @tparam T1 First type.
+    /// @tparam T2 Second type.
+    template <typename T1, typename T2>
+    struct common_type<T1, T2>
+        : public common_type_detail::pair_common<T1, T2>
+    {};
+
+    /// @brief Three or more types: the common type of the first two, combined with the rest.
+    /// @tparam T1 First type.
+    /// @tparam T2 Second type.
+    /// @tparam T3 Third type.
+    /// @tparam Rest Remaining types.
+    template <typename T1, typename T2, typename T3, typename... Rest>
+    struct common_type<T1, T2, T3, Rest...>
+        : public common_type_detail::fold<common_type<T1, T2>, T3, Rest...>
+    {};
+
+    /// @brief Convenience alias for `common_type<Types...>::type`.
+    /// @tparam Types The types to combine.
+    template <typename... Types>
+    using common_type_t = typename common_type<Types...>::type;
+
     /// @brief Alias yielding \p Value only when \p Condition::value is `true`.
     /// @tparam Condition Trait type exposing a static boolean `value`.
     /// @tparam Value Type produced when the condition holds.

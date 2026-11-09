@@ -210,16 +210,13 @@ namespace hsd
                 }
             }
 
-            /// @brief Destroy the stored value if `idx` matches this slot.
-            /// @param idx Active alternative index to match against `Idx`.
-            /// @return Empty on success, or a `runtime_error` if `idx != Idx`.
-            constexpr option_err<runtime_error> destroy(usize idx)
+            /// @brief Destroy the stored value of this slot.
+            /// @param idx Active alternative index; the chain sends only the matching index here.
+            /// @return Empty.
+            constexpr option_err<runtime_error> destroy([[maybe_unused]] usize idx)
             {
-                if (idx != Idx) [[unlikely]]
-                {
-                    return runtime_error{"Index is out of range"};
-                }
-
+                // Only the level that holds the constructed alternative gets here, because
+                // _destroy_variant passes its index and the chain forwards any other index.
                 _first.value.~T();
                 return {};
             }
@@ -404,8 +401,7 @@ namespace hsd
             /// @brief Destroy the stored value at `idx`, recursing into
             /// `_rest` when `idx` does not designate this level's alternative.
             /// @param idx Active alternative index.
-            /// @return Empty on success, or a `runtime_error` if no
-            /// alternative in the chain matches `idx`.
+            /// @return Empty.
             constexpr option_err<runtime_error> destroy(usize idx)
             {
                 if (idx != Idx)

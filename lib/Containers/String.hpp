@@ -632,11 +632,7 @@ namespace hsd
         /// @return Index of the last match, or `npos` when not found.
         constexpr usize rfind(const CharT* str, usize pos = npos) const
         {
-            if (pos >= _size && pos != npos)
-            {
-                return npos;
-            }
-            else if (pos == npos)
+            if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
                     _data, str, length()
@@ -654,7 +650,7 @@ namespace hsd
             else
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length() - pos
+                    _data, str, (pos < length() ? pos + 1 : length())
                 );
 
                 if (_find_addr == nullptr)
@@ -674,11 +670,7 @@ namespace hsd
         /// @return Index of the last match, or `npos` when not found.
         constexpr usize rfind(CharT str, usize pos = npos) const
         {
-            if (pos >= _size && pos != npos)
-            {
-                return npos;
-            }
-            else if (pos == npos)
+            if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
                     _data, str, length()
@@ -696,7 +688,7 @@ namespace hsd
             else
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length() - pos
+                    _data, str, (pos < length() ? pos + 1 : length())
                 );
 
                 if (_find_addr == nullptr)
@@ -781,11 +773,7 @@ namespace hsd
         /// @return `true` when the string is non-empty and its last character equals `letter`.
         constexpr bool ends_with(CharT letter) const
         {
-            // a
-            if (_data != nullptr)
-                return _data[length() - 1] == letter;
-
-            return false;
+            return _data != nullptr && length() != 0 && _data[length() - 1] == letter;
         }
 
         /// @brief Tests whether the logical string ends with a sequence.
@@ -793,12 +781,14 @@ namespace hsd
         /// @return `true` when the string ends with `str`.
         constexpr bool ends_with(const CharT* str) const
         {
-            usize _len = cstring::length(str);
+            // Every string ends with the empty string. A longer needle cannot be a suffix,
+            // and checking that first keeps length() - needle from wrapping around.
+            const usize _len = cstring::length(str);
 
-            if (_data != nullptr)
-                return rfind(str) == (length() - _len);
+            if (_len == 0)
+                return true;
 
-            return false;
+            return _data != nullptr && _len <= length() && rfind(str) == (length() - _len);
         }
 
         /// @brief Tests whether the logical string ends with another string's contents.
@@ -806,10 +796,11 @@ namespace hsd
         /// @return `true` when the string ends with `str`'s contents.
         constexpr bool ends_with(const basic_string& str) const
         {
-            if (_data != nullptr)
-                return rfind(str) == (length() - str.length());
+            if (str.length() == 0)
+                return true;
 
-            return false;
+            return _data != nullptr && str.length() <= length() &&
+                rfind(str) == (length() - str.length());
         }
 
         /// @brief Copies a bounded logical substring into a new string.
@@ -1671,14 +1662,10 @@ namespace hsd
         /// @return Last matching index, or `npos`.
         constexpr usize rfind(const CharT* str, usize pos = npos) const
         {
-            if (pos >= _size && pos != npos)
-            {
-                return npos;
-            }
-            else if (pos == npos)
+            if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length()
+                    _data, str, length()
                 );
 
                 if (_find_addr == nullptr)
@@ -1693,7 +1680,7 @@ namespace hsd
             else
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length() - pos
+                    _data, str, (pos < length() ? pos + 1 : length())
                 );
 
                 if (_find_addr == nullptr)
@@ -1713,14 +1700,10 @@ namespace hsd
         /// @return Last matching index, or `npos`.
         constexpr usize rfind(CharT str, usize pos = npos) const
         {
-            if (pos >= _size && pos != npos)
-            {
-                return npos;
-            }
-            else if (pos == npos)
+            if (pos == npos)
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length()
+                    _data, str, length()
                 );
 
                 if (_find_addr == nullptr)
@@ -1735,7 +1718,7 @@ namespace hsd
             else
             {
                 const CharT* _find_addr = _str_utils::find_rev(
-                    &_data[pos], str, length() - pos
+                    _data, str, (pos < length() ? pos + 1 : length())
                 );
 
                 if (_find_addr == nullptr)
@@ -1824,10 +1807,7 @@ namespace hsd
         /// @return True when the string ends with `letter`.
         constexpr bool ends_with(CharT letter) const
         {
-            if (_size != 0)
-                return _data[length() - 1] == letter;
-
-            return false;
+            return _size != 0 && _data[length() - 1] == letter;
         }
 
         /// @brief Tests whether the logical string ends with a sequence.
@@ -1835,12 +1815,13 @@ namespace hsd
         /// @return True when the string ends with `str`.
         constexpr bool ends_with(const CharT* str) const
         {
-            usize _len = cstring::length(str);
+            // Every string ends with the empty string. A longer needle cannot be a suffix.
+            const usize _len = cstring::length(str);
 
-            if (_size != 0)
-                return rfind(str) == (_size - _len);
+            if (_len == 0)
+                return true;
 
-            return false;
+            return _size != 0 && _len <= _size && rfind(str) == (_size - _len);
         }
 
         /// @brief Tests whether the logical string ends with another string's contents.
@@ -1850,10 +1831,10 @@ namespace hsd
         constexpr bool ends_with(
             const static_basic_string<CharT, N2>& str) const
         {
-            if (_size != 0)
-                return rfind(str) == (_size - str._size);
+            if (str._size == 0)
+                return true;
 
-            return false;
+            return _size != 0 && str._size <= _size && rfind(str) == (_size - str._size);
         }
 
         /// @brief Erases one character and returns the following iterator.
@@ -1884,7 +1865,7 @@ namespace hsd
                     hsd::move(this->_data[_last_pos + _index]);
             }
 
-            _size -= static_cast<usize>(to - from) + 1;
+            _size -= static_cast<usize>(to - from);
             return begin() + _last_pos;
         }
 
@@ -1940,9 +1921,18 @@ namespace hsd
 
                 abort();
             }
-            else if (size < _capacity)
+
+            // Slots that join the string are zero-filled, and the last slot holds the terminator.
+            for (usize _index = _size; _index < size; ++_index)
             {
-                _size = size;
+                _data[_index] = '\0';
+            }
+
+            _size = size;
+
+            if (size != 0)
+            {
+                _data[size - 1] = '\0';
             }
         }
 

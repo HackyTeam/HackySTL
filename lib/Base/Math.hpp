@@ -465,16 +465,19 @@ namespace hsd
                 }
 
                 /// @brief Handles `tan` evaluation near the π/2 singularity.
+                /// @details Within epsilon of π/2 the tangent is a pole. The sign of the infinity
+                /// follows the side of π/2 that `value` is on, as it does for `std::tan`.
                 /// @param value The argument, close to π/2.
-                /// @return π/2 if `value` is within epsilon of π/2, otherwise the series
-                /// approximation from `tan_series_exp_long`.
+                /// @return `-infinity` above π/2, `+infinity` at or below it, within epsilon of π/2;
+                /// otherwise the series approximation from `tan_series_exp_long`.
                 template <NumericType T>
                 static constexpr auto tan_series_exp(const T& value)
                 {
                     using constants::pi;
                     if (limits<T>::epsilon > math::abs(value - static_cast<T>(pi / 2)))
                     {
-                        return static_cast<T>(pi / 2);
+                        return static_cast<f128>(value) > pi / 2 ?
+                            -limits<T>::infinity : limits<T>::infinity;
                     }
                     else 
                     {
@@ -528,6 +531,8 @@ namespace hsd
                 }
 
                 /// @brief Reduces `value` modulo π, then evaluates the tangent approximation.
+                /// @details The reduction runs in `f128`, so that a large argument keeps enough
+                /// precision for the reduced value to be accurate in a narrower type such as `f32`.
                 /// @param value The argument, in radians.
                 /// @return An approximation of `tan(value)`, or NaN if range reduction fails.
                 template <NumericType T>
@@ -535,18 +540,24 @@ namespace hsd
                 {
                     using constants::pi;
 
-                    if (value > static_cast<T>(pi))
+                    if (math::abs(value) > static_cast<T>(pi))
                     {
-                        value -= static_cast<T>(pi) * floor(value / static_cast<T>(pi));
+                        // The working type depends on T, so the floor call is resolved when it is used.
+                        using _wide_t = hsd::common_type_t<T, f128>;
+                        const _wide_t _wide = static_cast<_wide_t>(value);
+                        const _wide_t _reduced = _wide - static_cast<_wide_t>(pi) *
+                            floor(_wide / static_cast<_wide_t>(pi));
+                        value = static_cast<T>(_reduced);
 
-                        if (value > static_cast<T>(pi))
+                        // An infinite argument reduces to NaN. Finite arguments reduce into [0, π].
+                        if (is_nan(value) == true)
                         {
-                            return limits<T>::nan;     
+                            return limits<T>::nan;
                         }
                         else
                         {
                             return tan_cf_main(value);
-                        }        
+                        }
                     }
                     else
                     {
@@ -683,18 +694,34 @@ namespace hsd
                 template <NumericType T1, FloatingPointType T2>
                 static constexpr auto pow_type_check(const T1& base, const T2& exp_term)
                 {
-                    using ReturnType = std::common_type_t<T1, T2>;
+                    using ReturnType = hsd::common_type_t<T1, T2>;
 
-                    if (base < static_cast<T1>(0))
+                    const auto _base = static_cast<ReturnType>(base);
+                    const auto _exp = static_cast<ReturnType>(exp_term);
+                    const bool _is_integer = floor(_exp) == _exp;
+
+                    if (_exp == static_cast<ReturnType>(0))
                     {
+                        return static_cast<ReturnType>(1);
+                    }
+                    else if (_base >= static_cast<ReturnType>(0))
+                    {
+                        return pow_dbl(_base, _exp);
+                    }
+                    else if (!_is_integer && math::abs(_base) != limits<ReturnType>::infinity)
+                    {
+                        // A negative finite base has no real power with a fractional exponent.
                         return limits<ReturnType>::nan;
                     }
                     else
                     {
-                        return pow_dbl(
-                            static_cast<ReturnType>(base), 
-                            static_cast<ReturnType>(exp_term)
-                        );
+                        // A negative base with an integer exponent has the sign of an odd power, and
+                        // -infinity raised to a positive non-integer gives +infinity.
+                        const auto _magnitude = pow_dbl(-_base, _exp);
+                        // An integer exponent is odd when halving it and doubling the floor changes it.
+                        const bool _is_odd = _is_integer && floor(_exp / 2) * 2 != _exp;
+
+                        return _is_odd ? -_magnitude : _magnitude;
                     }
                 }
 
@@ -706,7 +733,7 @@ namespace hsd
                 /// @return `base^exp_term`.
                 template <NumericType T1, IntegralType T2>
                 static constexpr auto pow_type_check(const T1& base, const T2& exp_term)
-                    -> std::common_type_t<T1, T2>
+                    -> hsd::common_type_t<T1, T2>
                 {
                     return pow_integral(base, exp_term);
                 }
@@ -928,7 +955,7 @@ namespace hsd
                 /// @brief Handles the sign of `value` before delegating to `acos_compute`.
                 /// @param value The argument.
                 /// @return `value` if NaN; `acos_compute(value)` for positive arguments; otherwise
-                /// `π/2 - acos_compute(-value)`.
+                /// `π - acos_compute(-value)`, because acos(-x) = π - acos(x).
                 template <FloatingPointType T>
                 static constexpr auto acos_check(const T& value)
                 {
@@ -944,7 +971,7 @@ namespace hsd
                     }
                     else
                     {
-                        return static_cast<T>(pi / 2) - 
+                        return static_cast<T>(pi) -
                             acos_compute(-value);
                     }
                 }
@@ -968,24 +995,15 @@ namespace hsd
                     {
                         if (limits<T>::epsilon > abs(y))
                         {
-                            if (y == static_cast<T>(0) && sign_bit(y))
+                            // Both arguments are zero. The result takes the sign of y, and a
+                            // negative x (including -0) gives +-pi, as in IEEE-754 and C.
+                            if (sign_bit(x))
                             {
-                                if (x == static_cast<T>(0) && sign_bit(x))
-                                {
-                                    return -static_cast<T>(pi / 2);
-                                }
-                                else
-                                {
-                                    return -static_cast<T>(0);
-                                }
-                            }
-                            else if (x == static_cast<T>(0) && sign_bit(x))
-                            {
-                                return static_cast<T>(pi / 2);
+                                return sign_bit(y) ? -static_cast<T>(pi) : static_cast<T>(pi);
                             }
                             else
                             {
-                                return static_cast<T>(0);
+                                return sign_bit(y) ? -static_cast<T>(0) : static_cast<T>(0);
                             }
                         }
                         else if (y > static_cast<T>(0))
@@ -999,7 +1017,8 @@ namespace hsd
                     }
                     else if (x < static_cast<T>(0))
                     {
-                        if (y < static_cast<T>(0))
+                        // The sign bit, not `y < 0`, decides the side, so -0 gives -pi.
+                        if (sign_bit(y))
                         {
                             return atan(y / x) - static_cast<T>(pi);
                         }
@@ -1024,7 +1043,7 @@ namespace hsd
                 template <FloatingPointType T1, FloatingPointType T2>
                 static constexpr auto atan2_type_check(const T1& y, const T2& x)
                 {
-                    using RetType = std::common_type_t<T1, T2>;
+                    using RetType = hsd::common_type_t<T1, T2>;
 
                     return atan2_compute(
                         static_cast<RetType>(y), 
@@ -1114,6 +1133,12 @@ namespace hsd
                     {
                         return static_cast<T>(0);
                     }
+                    else if (abs(value) > static_cast<T>(20))
+                    {
+                        // tanh(20) rounds to 1 in every supported type, and the continued fraction
+                        // is not accurate this far out.
+                        return value < static_cast<T>(0) ? static_cast<T>(-1) : static_cast<T>(1);
+                    }
                     else if (value < static_cast<T>(0))
                     {
                         return -tanh_begin(-value);
@@ -1125,6 +1150,8 @@ namespace hsd
                 }
 
                 /// @brief Computes `asinh(value) = ln(value + sqrt(value^2 + 1))`.
+                /// @details asinh is odd, so the magnitude is used and the sign is restored at the end.
+                /// Above 1e8, `ln(2|value|)` is used instead, because `value^2` would overflow for `f32`.
                 /// @param value The argument.
                 /// @return `value` if NaN; 0 if within epsilon of 0; otherwise `asinh(value)`.
                 template <FloatingPointType T>
@@ -1140,7 +1167,12 @@ namespace hsd
                     }
                     else
                     {
-                        return log(value + sqrt(value * value + static_cast<T>(1)));
+                        const T _magnitude = abs(value);
+                        const T _result = _magnitude > static_cast<T>(1e8)
+                            ? log(static_cast<T>(2) * _magnitude)
+                            : log(_magnitude + sqrt(_magnitude * _magnitude + static_cast<T>(1)));
+
+                        return value < static_cast<T>(0) ? -_result : _result;
                     }
                 }
 
@@ -1269,10 +1301,13 @@ namespace hsd
                     return lgamma_term_1(value) + lgamma_term_2(value);
                 }
                 
-                /// @brief Handles NaN/near-1/near-0 special cases before delegating to `lgamma_begin`.
+                /// @brief Handles special cases before delegating to `lgamma_begin`.
+                /// @details Negative non-integers use the reflection formula
+                /// `ln(pi) - ln|sin(pi x)| - ln(Γ(1 - x))`; the non-positive integers are poles.
                 /// @param value The argument.
-                /// @return `value` if NaN; 0 if within epsilon of 1; +infinity if within epsilon
-                /// of 0; otherwise `lgamma_begin(value - 1)`.
+                /// @return `value` if NaN; 0 if within epsilon of 1; +infinity for ±infinity and
+                /// at the non-positive integers; the reflection result for other negative values;
+                /// otherwise `lgamma_begin(value - 1)`.
                 template <FloatingPointType T>
                 static constexpr auto lgamma_check(const T& value)
                 {
@@ -1284,9 +1319,22 @@ namespace hsd
                     {
                         return static_cast<T>(0);
                     }
-                    else if (limits<T>::epsilon > value)
+                    else if (abs(value) == limits<T>::infinity)
                     {
                         return limits<T>::infinity;
+                    }
+                    else if (value <= static_cast<T>(0))
+                    {
+                        if (limits<T>::epsilon > abs(value - find_whole(value)))
+                        {
+                            return limits<T>::infinity;
+                        }
+
+                        return static_cast<T>(
+                            log(static_cast<T>(math::constants::pi)) -
+                            log(abs(sin(static_cast<T>(math::constants::pi) * value))) -
+                            lgamma_begin(-value)
+                        );
                     }
                     else
                     {
@@ -1295,12 +1343,15 @@ namespace hsd
                 }
 
                 /// @brief Computes `tgamma(value)` (the gamma function), handling NaN, poles,
-                /// negative arguments (via the reflection/recurrence relation), and factorial
-                /// fast paths for positive integers.
+                /// infinities, negative arguments, and factorial fast paths for small integers.
+                /// @details Negative arguments use the reflection formula
+                /// `Γ(x) = π / (sin(πx) Γ(1 - x))`, so the recursion is a single step. Integers
+                /// up to 200 use the factorial, which keeps the loop bounded.
                 /// @param value The argument.
-                /// @return `value` if NaN; 1 if within epsilon of 1; +infinity if within epsilon
-                /// of 0; NaN at negative integer poles; `(value)!` for positive integers;
-                /// otherwise `exp(lgamma(value))`.
+                /// @return `value` if NaN; 1 if within epsilon of 1; ±infinity for ±0 (following
+                /// the sign); +infinity for +infinity and NaN for -infinity; NaN at negative
+                /// integer poles; `(value - 1)!` for integers up to 200; otherwise
+                /// `exp(lgamma(value))` for positive values and the reflection for negative ones.
                 template <FloatingPointType T>
                 static constexpr auto tgamma_check(const T& value)
                 {
@@ -1314,33 +1365,33 @@ namespace hsd
                     }
                     else if (limits<T>::epsilon > abs(value))
                     {
-                        return limits<T>::infinity;
+                        return sign_bit(value) ? -limits<T>::infinity : limits<T>::infinity;
+                    }
+                    else if (abs(value) == limits<T>::infinity)
+                    {
+                        return value > static_cast<T>(0) ? limits<T>::infinity : limits<T>::nan;
                     }
                     else if (value < static_cast<T>(0))
-                    { 
-                        if(limits<T>::epsilon > abs(value - find_whole(value)))
+                    {
+                        if (limits<T>::epsilon > abs(value - find_whole(value)))
                         {
                             return limits<T>::nan;
                         }
-                        else
-                        {
-                            return tgamma_check(
-                                value + static_cast<T>(1)
-                            ) / value;
-                        }
+
+                        return static_cast<T>(
+                            static_cast<T>(math::constants::pi) / (
+                                sin(static_cast<T>(math::constants::pi) * value) *
+                                tgamma_check(static_cast<T>(1) - value)
+                            )
+                        );
+                    }
+                    else if (value <= static_cast<T>(200) && value == static_cast<T>(find_whole(value)))
+                    {
+                        return factorial<T>(static_cast<usize>(value) - 1);
                     }
                     else
                     {
-                        if (static_cast<u64>(value) == value)
-                        {
-                            return factorial<T>(
-                                static_cast<usize>(value) - 1
-                            );
-                        }
-                        else
-                        {
-                            return exp(lgamma(value));
-                        }
+                        return exp(lgamma(value));
                     }
                 }
 
@@ -1431,13 +1482,18 @@ namespace hsd
             /// @tparam T A floating-point type.
             /// @param value The dividend.
             /// @param factor The divisor.
-            /// @return `value` unchanged for NaN/±infinity, otherwise `value - trunc(value/factor) * factor`.
+            /// @return NaN for ±infinity, `value` for NaN, otherwise `value - trunc(value/factor) * factor`.
+            /// This matches `std::fmod`, which the run-time `math::mod` uses.
             template <FloatingPointType T>
             static constexpr auto mod(const T& value, const T& factor)
             {
-                if (ctmath_detail::invalid_case(value))
+                if (is_nan(value) == true)
                 {
                     return value;
+                }
+                else if (math::abs(value) == limits<T>::infinity)
+                {
+                    return limits<T>::nan;
                 }
                 else
                 {
@@ -1492,15 +1548,15 @@ namespace hsd
                 {
                     return value;
                 }
+                else if (value < 0)
+                {
+                    // Halves round away from zero, so the negative side mirrors the positive side.
+                    const T _magnitude = -value;
+                    return -(floor(_magnitude) + (constexpr_math::mod(_magnitude, static_cast<T>(1)) >= 0.5));
+                }
                 else
                 {
-                    return (
-                        floor(value) + (value > 0 && constexpr_math::mod(value, static_cast<T>(1)) >= 0.5) + 
-                        (
-                            value < 0 && constexpr_math::mod(1 + 
-                                constexpr_math::mod(value, static_cast<T>(1)), static_cast<T>(1)) >= 0.5
-                        )
-                    );
+                    return floor(value) + (constexpr_math::mod(value, static_cast<T>(1)) >= 0.5);
                 }
             }
 
@@ -1736,25 +1792,46 @@ namespace hsd
             }
 
             /// @brief Computes the square root of `value` via 10 iterations of Newton's method.
+            /// @details The input is first scaled by a power of 4 into [1/4, 4], where the
+            /// iteration converges, and the result is scaled back by the matching power of 2.
             /// @tparam T A floating-point type.
             /// @param value The input value.
             /// @return The non-negative square root of `value`, or NaN if `value` is negative.
             template <FloatingPointType T>
             static constexpr auto sqrt(const T& value)
             {
-                auto _mid_val = static_cast<T>(1.0);
-
-                if (value <= static_cast<T>(-0.0))
+                if (is_nan(value) == true || value < static_cast<T>(0))
                 {
                     return limits<T>::nan;
                 }
+                else if (value == static_cast<T>(0) || ctmath_detail::invalid_case(value))
+                {
+                    return value;
+                }
+
+                auto _scaled = value;
+                auto _scale = static_cast<T>(1);
+
+                while (_scaled > static_cast<T>(4))
+                {
+                    _scaled /= 4;
+                    _scale *= 2;
+                }
+                while (_scaled < static_cast<T>(0.25))
+                {
+                    _scaled *= 4;
+                    _scale /= 2;
+                }
+
+                auto _mid_val = static_cast<T>(1.0);
+
                 for (usize _count = 0; _count < 10; ++_count)
                 {
-                    const auto _euler = value / _mid_val;
+                    const auto _euler = _scaled / _mid_val;
                     _mid_val = midpoint(_mid_val, _euler);
                 }
 
-                return _mid_val;
+                return _mid_val * _scale;
             }
 
             /// @brief Computes the arctangent of `value`, in radians.
@@ -1885,7 +1962,7 @@ namespace hsd
             template <NumericType T1, NumericType T2>
             static constexpr auto lbeta(const T1& a, const T2& b)
             {
-                using RetType = std::common_type_t<T1, T2>;
+                using RetType = hsd::common_type_t<T1, T2>;
                 return static_cast<RetType>(
                     (lgamma(a) + lgamma(b)) - lgamma(a + b)
                 );
@@ -1973,9 +2050,9 @@ namespace hsd
         template <FloatingPointType T>
         static constexpr auto mod(const T& value, const T& factor)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::mod(value, factor);
+                return constexpr_math::mod(value, factor);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -1991,9 +2068,9 @@ namespace hsd
         template <FloatingPointType T>
         static constexpr auto trunc(const T& value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::trunc(value);
+                return constexpr_math::trunc(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2009,9 +2086,9 @@ namespace hsd
         template <FloatingPointType T>
         static constexpr auto floor(const T& value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::floor(value);
+                return constexpr_math::floor(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2027,9 +2104,9 @@ namespace hsd
         template <FloatingPointType T>
         static constexpr auto ceil(const T& value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::ceil(value);
+                return constexpr_math::ceil(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2043,9 +2120,9 @@ namespace hsd
         template <FloatingPointType T>
         static constexpr auto round(const T& value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::round(value);
+                return constexpr_math::round(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2059,9 +2136,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto tan(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::tan(value);
+                return constexpr_math::tan(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2075,9 +2152,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto sin(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::sin(value);
+                return constexpr_math::sin(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2091,9 +2168,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto cos(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::cos(value);
+                return constexpr_math::cos(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2104,9 +2181,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto atan(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::atan(value);
+                return constexpr_math::atan(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2120,9 +2197,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto asin(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::asin(value);
+                return constexpr_math::asin(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2136,9 +2213,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto acos(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::acos(value);
+                return constexpr_math::acos(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2153,9 +2230,9 @@ namespace hsd
         template <NumericType T1, NumericType T2>
         static constexpr auto atan2(const T1 y, const T2 x)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::atan2(y, x);
+                return constexpr_math::atan2(y, x);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2169,9 +2246,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto log(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::log(value);
+                return constexpr_math::log(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2185,9 +2262,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto log2(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::log2(value);
+                return constexpr_math::log2(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2201,9 +2278,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto log10(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::log10(value);
+                return constexpr_math::log10(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2214,9 +2291,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto sqrt(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::sqrt(value);
+                return constexpr_math::sqrt(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2230,9 +2307,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto exp(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::exp(value);
+                return constexpr_math::exp(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2247,9 +2324,13 @@ namespace hsd
         template <NumericType T1, NumericType T2>
         static constexpr auto pow(T1 base, T2 exp_term)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::pow(base, exp_term);
+                // std::pow promotes mixed arguments, for example (float, int) gives double. Both
+                // branches must return that type, or `auto` cannot be deduced.
+                return static_cast<decltype(std::pow(base, exp_term))>(  // GCOVR_EXCL_LINE
+                    constexpr_math::pow(base, exp_term)  // GCOVR_EXCL_LINE
+                );  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2263,9 +2344,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto sinh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::sinh(value);
+                return constexpr_math::sinh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2279,9 +2360,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto cosh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::cosh(value);
+                return constexpr_math::cosh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2295,9 +2376,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto tanh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::tanh(value);
+                return constexpr_math::tanh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2311,9 +2392,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto asinh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::asinh(value);
+                return constexpr_math::asinh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2327,9 +2408,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto acosh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::acosh(value);
+                return constexpr_math::acosh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2343,9 +2424,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto atanh(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::atanh(value);
+                return constexpr_math::atanh(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2359,9 +2440,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto lgamma(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::lgamma(value);
+                return constexpr_math::lgamma(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2375,9 +2456,9 @@ namespace hsd
         template <NumericType T>
         static constexpr auto tgamma(T value)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::tgamma(value);
+                return constexpr_math::tgamma(value);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2392,9 +2473,9 @@ namespace hsd
         template <NumericType T1, NumericType T2>
         static constexpr auto lbeta(const T1& a, const T2& b)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::lbeta(a, b);
+                return constexpr_math::lbeta(a, b);  // GCOVR_EXCL_LINE
             }
             else
             {
@@ -2409,9 +2490,9 @@ namespace hsd
         template <NumericType T1, NumericType T2>
         static constexpr auto beta(const T1& a, const T2& b)
         {
-            if (is_constant_evaluated())
+            if (is_constant_evaluated())  // GCOVR_EXCL_BR_LINE
             {
-                return constexpr_math::beta(a, b);
+                return constexpr_math::beta(a, b);  // GCOVR_EXCL_LINE
             }
             else
             {

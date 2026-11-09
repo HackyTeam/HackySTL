@@ -496,6 +496,12 @@ namespace hsd
         {
             const usize _index = static_cast<usize>(pos - _data.cbegin());
 
+            // A position outside the records is reported, before any record is touched.
+            if (_index >= _data.size())
+            {
+                return umap_detail::bad_access{};
+            }
+
             auto _new_iter = _data
                 .erase(pos)
                 .unwrap();

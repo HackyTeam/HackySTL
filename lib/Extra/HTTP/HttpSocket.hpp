@@ -116,6 +116,10 @@ namespace hsd::http
                 {
                     return "PATCH"_sv;
                 }
+                default:
+                {
+                    panic("Unknown Method");
+                }
             }
         }
 

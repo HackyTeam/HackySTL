@@ -159,6 +159,11 @@ totals for `lib/`, and writes `build-coverage/coverage/index.html`. If a test fa
 report is written. Coverage needs GCC, because gcov is GCC's tool, so it is not available
 with Clang or MSVC.
 
+gcovr counts every template instance of a line separately, so the totals above can be
+lower than the coverage of the source itself. The target also prints a summary per source
+site, which counts each line, branch and function once: `cmake/CoverageSites.py` reads the
+JSON report and lists the uncovered sites with `--list`.
+
 ## Profiling the library
 
 The library benchmark is the `hackystl_test_Profiling_LibraryProfile` target.

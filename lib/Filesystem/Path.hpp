@@ -433,12 +433,17 @@ namespace hsd
                     i32 _res = chmod(absolute_name().c_str(), static_cast<u32>(mask));
                     #endif
 
+                    // chmod() fails only for an entry the caller does not own (EPERM), or on a path
+                    // that vanished after the check above. Neither can be set up reliably in a test
+                    // that runs as the owner or as root, so this failure is excluded from coverage.
+                    // GCOVR_EXCL_START
                     if (_res == -1)
                     {
                         return runtime_error{
                             "Couldn't change permissions of the file"
                         };
-                    }   
+                    }
+                    // GCOVR_EXCL_STOP
                 }
 
                 return {};
@@ -475,14 +480,12 @@ namespace hsd
                 }
 
                 // Keep the directory part of this path and replace the final name.
+                // The relative name always holds a separator, since it starts with "./" or "../".
+                // With no separator, the prefix would be empty and the target would be new_name.
                 usize _slash_pos = relative_name().rfind(PATH_SEPARATOR_STR);
-                string _target_name = new_name;
-                if (_slash_pos != string::npos)
-                {
-                    // The sized constructor counts its terminator, so a view gives the exact length.
-                    string _prefix{basic_string_view<char>{relative_name().c_str(), _slash_pos + 1}};
-                    _target_name = _prefix + new_name;
-                }
+                // The sized constructor counts its terminator, so a view gives the exact length.
+                string _prefix{basic_string_view<char>{relative_name().c_str(), _slash_pos + 1}};
+                string _target_name = _prefix + new_name;
 
                 // The target does not exist yet, so its handle is opened after the rename.
                 path _target{_target_name.c_str()};
@@ -498,6 +501,23 @@ namespace hsd
                     return runtime_error{"Couldn't rename the entry"};
                 }
                 #else
+                // realpath() stops at the first missing directory of the target and keeps only
+                // the part before it, so the rename would go to a different name. Check first
+                // that the directory the target names exists.
+                const usize _dir_end = _target_name.rfind(PATH_SEPARATOR);
+
+                if (_dir_end != string::npos)
+                {
+                    const usize _dir_len = (_dir_end == 0) ? 1 : _dir_end;
+                    const string _dir_name{basic_string_view<char>{_target_name.c_str(), _dir_len}};
+                    struct stat _dir_info{};
+
+                    if (stat(_dir_name.c_str(), &_dir_info) != 0 || !S_ISDIR(_dir_info.st_mode))
+                    {
+                        return runtime_error{"Couldn't rename the entry: no such directory"};
+                    }
+                }
+
                 const int _res = ::rename(
                     absolute_name().c_str(),
                     _target.absolute_name().c_str()

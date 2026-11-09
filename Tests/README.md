@@ -2,7 +2,7 @@
 
 CTest discovers each test executable from a `.cpp` file under `Tests/`. The
 target name is `hackystl_test_` followed by the source path relative to `Tests/`,
-with `/` replaced by `_` and `.cpp` removed. The current suite has 130 test targets and 156 example targets. `DefaultArg/extern_impl.cpp` is linked into `DefaultArg/defaultarg.cpp`
+with `/` replaced by `_` and `.cpp` removed. The current suite has 140 test targets and 156 example targets. `DefaultArg/extern_impl.cpp` is linked into `DefaultArg/defaultarg.cpp`
 as support code and is not a separate test target.
 
 ## Build and Run
@@ -91,6 +91,11 @@ excluded from CTest and are run directly as shown above. Start a matching
 server before running a client example manually. `Problems/UdpLoopbackTest.cpp`
 is a self-contained localhost exchange and runs automatically.
 
+`Support/AbortSupport.hpp` checks code that ends with `abort()`, such as
+`hsd::panic`. `test_support::expect_abort` runs the action in a forked child and
+checks that the child ended with `SIGABRT`. In coverage builds the child also dumps
+its gcov counters first. On Windows, which has no `fork`, the check does nothing.
+
 ## Test Inventory
 
 ### Allocation and Containers
@@ -98,6 +103,7 @@ is a self-contained localhost exchange and runs automatically.
 | CTest target | Source | Coverage |
 | --- | --- | --- |
 | `hackystl_test_Allocator_AllocatorTest` | [Allocator/AllocatorTest.cpp](Allocator/AllocatorTest.cpp) | Allocation alignment and failure paths, buffered allocation/coalescing, stateful allocator propagation, and construction/destruction accounting. |
+| `hackystl_test_Allocator_AllocatorPathTest` | [Allocator/AllocatorPathTest.cpp](Allocator/AllocatorPathTest.cpp) | Heap length and memory-exhaustion errors, buffered allocation that merges free blocks in each order, out-of-bounds and foreign pointers, over-aligned blocks, `allocator_traits` for both allocators, and the abort on a null or too-small buffer (child process). |
 | `hackystl_test_Any_AnyTest` | [Any/AnyTest.cpp](Any/AnyTest.cpp) | Empty and populated type-erased values compared with `std::any`, including type checks, emplace, copy/move independence, and reset. |
 | `hackystl_test_Any_AnyCastTest` | [Any/AnyCastTest.cpp](Any/AnyCastTest.cpp) | Mutable casts on a non-const `any`, and read-only casts on a const `any`, checked by their return types and by reads and writes. |
 | `hackystl_test_Any_AnyStorageTest` | [Any/AnyStorageTest.cpp](Any/AnyStorageTest.cpp) | Inline and heap-held values: destruction counts, address stability when a heap value moves, copies that are independent objects, swap across storage kinds, and `emplace` built from the old value. |
@@ -105,8 +111,11 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_Array_Heap_HeapArrTest` | [Array/Heap/HeapArrTest.cpp](Array/Heap/HeapArrTest.cpp) | Fixed-size heap array access, bounds errors, mutation, deep copies, and moves. |
 | `hackystl_test_Array_Stack_StackArrTest` | [Array/Stack/StackArrTest.cpp](Array/Stack/StackArrTest.cpp) | Fixed-size stack array sequence, fill, checked access, assignment, and swap. |
 | `hackystl_test_Bitset_TestBitset` | [Bitset/TestBitset.cpp](Bitset/TestBitset.cpp) | Whole-set and indexed bit operations compared with `std::bitset`, bounds errors, shifts, counting, and constexpr behavior. |
+| `hackystl_test_Bitset_BitsetEdgeTest` | [Bitset/BitsetEdgeTest.cpp](Bitset/BitsetEdgeTest.cpp) | Multi-word bitsets: out-of-range access, `all()` with a clear bit in a later word, `flip`, equality that differs only in a later word, and shifts that are whole words or not, including shifts by the size or more. |
 | `hackystl_test_Deque_TestDeque` | [Deque/TestDeque.cpp](Deque/TestDeque.cpp) | Front/back insertion and removal, resize, erase, and special members compared with `std::deque`. |
 | `hackystl_test_Deque_DequeGrowthTest` | [Deque/DequeGrowthTest.cpp](Deque/DequeGrowthTest.cpp) | Capacity growth with wrapped ring contents for trivially copyable and owning elements, plus reserve, resize, and copies, compared with `std::deque`. |
+| `hackystl_test_Containers_ContainerEdgeTest` | [Containers/ContainerEdgeTest.cpp](Containers/ContainerEdgeTest.cpp) | Deque: out-of-bounds message, reversed and middle erase ranges, growth of a wrapped ring and of non-trivial elements. Forward list: array assignment, erase of the first, middle, last and only element, and of a foreign or null iterator (which used to crash). List: array assignment and a null-iterator erase. Span `take` past the end, and self move of a heap array. |
+| `hackystl_test_Containers_ContainerErrorEdgeTest` | [Containers/ContainerErrorEdgeTest.cpp](Containers/ContainerErrorEdgeTest.cpp) | Integer division by zero and its message, big-integer multiplication across words, the missing-key and out-of-bounds messages of the unordered map (erase at a bad position now reports `bad_access` instead of panicking), and pair equality. |
 | `hackystl_test_Filesystem_FSTest` | [Filesystem/FSTest.cpp](Filesystem/FSTest.cpp) | Path status, directory listing/reuse, parent traversal, extension lookup, and path copy/move behavior. |
 | `hackystl_test_Filesystem_FSCopyTest` | [Filesystem/FSCopyTest.cpp](Filesystem/FSCopyTest.cpp) | File copies with byte-exact contents, including CR/LF and NUL bytes, overwriting a longer file, copying into a directory, missing-source and missing-directory errors, unreadable sources, and directory copies (POSIX only). |
 | `hackystl_test_List_Double_DListTest` | [List/Double/DListTest.cpp](List/Double/DListTest.cpp) | Doubly linked list mutations and edge cases compared with `std::list`, including copy, move, erase, and clear. |
@@ -116,12 +125,15 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_Vector_VecTest` | [Vector/VecTest.cpp](Vector/VecTest.cpp) | Repeated vector operations compared with `std::vector`, object lifetimes, bounds errors, special members, and constexpr storage. |
 | `hackystl_test_Vector_VecGrowthTest` | [Vector/VecGrowthTest.cpp](Vector/VecGrowthTest.cpp) | Randomized growth, resize, shrink, clear, and copy sequences compared with `std::vector` for trivially copyable and owning elements, with live-object accounting. |
 | `hackystl_test_Vector_VecCapacityGrowthTest` | [Vector/VecCapacityGrowthTest.cpp](Vector/VecCapacityGrowthTest.cpp) | Capacity doubles on push, and `reserve` and `resize` round up to the first power of two large enough. |
+| `hackystl_test_Vector_VecEdgeTest` | [Vector/VecEdgeTest.cpp](Vector/VecEdgeTest.cpp) | Out-of-bounds message, a reversed erase range, growth from zero capacity, self move, array assignment in each capacity case (checked with a counting type, which found a wrong-size bug), and `static_vector` resize and emplace panics in child processes. |
 | `hackystl_test_Utils_CompressedPair` | [Utils/CompressedPair.cpp](Utils/CompressedPair.cpp) | Compressed-pair element access, mutation, and empty-type storage layout. |
 | `hackystl_test_Utils_TypeTraitsUtilityTest` | [Utils/TypeTraitsUtilityTest.cpp](Utils/TypeTraitsUtilityTest.cpp) | `is_nothrow_constructible` against `noexcept` and throwing constructors, `is_class` against structs, unions, enums and scalars, and `launder` in constant evaluation and after a replaced object. |
+| `hackystl_test_Utils_CommonTypeTest` | [Utils/CommonTypeTest.cpp](Utils/CommonTypeTest.cpp) | `common_type` and `common_type_t` checked against `std::common_type` for one, two and three or more types: references, cv-qualifiers, arrays, pointers, `nullptr_t`, `void`, class hierarchies, and lists with no common type, which are removed from overload resolution rather than failing to compile. |
 | `hackystl_test_Utils_ConceptsTest` | [Utils/ConceptsTest.cpp](Utils/ConceptsTest.cpp) | Every concept in `Concepts.hpp` checked at compile time against types it accepts and rejects, including the container and iterator concepts. |
-| `hackystl_test_Utils_RawStorageTest` | [Utils/RawStorageTest.cpp](Utils/RawStorageTest.cpp) | `construct_at` in constant evaluation, and `new_allocate`/`delete_deallocate` alignment from 8 through 4096 bytes. |
+| `hackystl_test_Utils_RawStorageTest` | [Utils/RawStorageTest.cpp](Utils/RawStorageTest.cpp) | `construct_at` and `destroy_at` in constant evaluation, `destroy_at` on a scalar and on an array at run time (each element destroyed once, in reverse order), and `new_allocate`/`delete_deallocate` alignment from 8 through 4096 bytes. |
 | `hackystl_test_Utils_BitScanTest` | [Utils/BitScanTest.cpp](Utils/BitScanTest.cpp) | `countl_zero` and `countr_zero` against `std::countl_zero`/`std::countr_zero` for every width from 8 to 64 bits, at powers of two, their neighbours, zero, all ones, and pseudo-random values; constant-evaluation checks. |
 | `hackystl_test_Utils_Int128Test` | [Utils/Int128Test.cpp](Utils/Int128Test.cpp) | The library's 128-bit integer (`_Int128.hpp`): wrap-around, carries and borrows, multiplication, division by words and by larger divisors, shifts, signed division and shifts, float conversions, and formatting where it is the `u128` alias. |
+| `hackystl_test_Utils_Int128EdgeTest` | [Utils/Int128EdgeTest.cpp](Utils/Int128EdgeTest.cpp) | 128-bit shifts by zero, by whole words and by 128 or more, signed comparisons with equal high words, the word-by-word division digits, and division checked against the native `__int128` on edge and seeded random operands. |
 
 ### Values, Parsing, and Formatting
 
@@ -139,6 +151,8 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_String_StringViewAffixTest` | [String/StringViewAffixTest.cpp](String/StringViewAffixTest.cpp) | `starts_with` and `ends_with` for characters and views, including empty views, needles longer than the view, and zero-length views over longer text. |
 | `hackystl_test_String_StringNulTest` | [String/StringNulTest.cpp](String/StringNulTest.cpp) | `hsd::string` with embedded nulls: construction, copy, `+`, `+=`, `==`, `<=>`, `find`, and `rfind`, against strings and views, plus random comparisons with `std::string` that include bytes above `0x7f`. |
 | `hackystl_test_String_StringViewRfindTest` | [String/StringViewRfindTest.cpp](String/StringViewRfindTest.cpp) | `rfind` for views: empty and repeated needles, bounded searches that must not read past the view, start positions past the end, and random comparisons with `std::string_view`. |
+| `hackystl_test_String_CStringEdgeTest` | [String/CStringEdgeTest.cpp](String/CStringEdgeTest.cpp) | C-string helpers: `find_rev` with no match, floating-point parse of text without digits or with a sign, range parses that end early, length-bounded compares past one 32-character block and with embedded terminators, and copies with a null destination or a short source. |
+| `hackystl_test_String_StrEdgeTest` | [String/StrEdgeTest.cpp](String/StrEdgeTest.cpp) | `rfind` with and without positions, affix and containment checks for missing or longer needles and empty strings, static string move, erase, resize and print limits, and abort on a full static string. |
 | `hackystl_test_StringParser_StringParserTest` | [StringParser/StringParserTest.cpp](StringParser/StringParserTest.cpp) | Compile-time format matching, typed integer/float conversion, string captures, and format mismatch errors. |
 | `hackystl_test_ToString_IntegralToStringTest` | [ToString/IntegralToStringTest.cpp](ToString/IntegralToStringTest.cpp) | Decimal and hexadecimal integer text for every integral width, compared with `printf`, with literal checks for 128-bit values, wide character output, and constant evaluation. |
 | `hackystl_test_ToString_HexFloatToStringTest` | [ToString/HexFloatToStringTest.cpp](ToString/HexFloatToStringTest.cpp) | Hexadecimal float text for `float`, `double`, and `long double`: exact strings for known values, random values parsed back with the C library, and constant evaluation. |
@@ -147,6 +161,8 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_Unicode_UniTest` | [Unicode/UniTest.cpp](Unicode/UniTest.cpp) | UTF-8/UTF-16/UTF-32 conversions and insufficient-output-buffer failure. |
 | `hackystl_test_Logger_LogTest` | [Logger/LogTest.cpp](Logger/LogTest.cpp) | Stack-trace capture, default handles that own nothing, per-thread stack isolation, non-copyable handles, scope timing, and hexadecimal floating-point formatting. |
 | `hackystl_test_Result_ResTest` | [Result/ResTest.cpp](Result/ResTest.cpp) | Success/error results and optional values compared with `std::expected`/`std::optional`, plus fallback recovery and move extraction. |
+| `hackystl_test_Result_ResLifetimeTest` | [Result/ResLifetimeTest.cpp](Result/ResLifetimeTest.cpp) | Copies, moves, assignments and destruction of `result`, `option` and `option_err` in both states, with a counting value type that must be back to zero live objects at the end. |
+| `hackystl_test_Result_ResPanicTest` | [Result/ResPanicTest.cpp](Result/ResPanicTest.cpp) | Every failing unwrap-style accessor and the direct `panic`, `panic_type_err` and `unimplemented` helpers, each checked to end with `abort()` in a child process. |
 | `hackystl_test_Switch_SwitchTest` | [Switch/SwitchTest.cpp](Switch/SwitchTest.cpp) | Equality, ordering, default dispatch, and callback selection for string and numeric values. |
 | `hackystl_test_Variant_VarTest` | [Variant/VarTest.cpp](Variant/VarTest.cpp) | Variant type/index access, copy/move, and visitors compared with `std::variant`, plus checked failures, in-place construction, and const access. |
 
@@ -179,6 +195,7 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_IntegerSequence_IntegerSeqTest` | [IntegerSequence/IntegerSeqTest.cpp](IntegerSequence/IntegerSeqTest.cpp) | Compile-time integer/index sequence generation, ranges, inversion, and pack expansion. |
 | `hackystl_test_Limits_LimTest` | [Limits/LimTest.cpp](Limits/LimTest.cpp) | Integral and floating-point boundaries, signedness, epsilon, and denormal values compared with `std::numeric_limits`. |
 | `hackystl_test_Math_MathTest` | [Math/MathTest.cpp](Math/MathTest.cpp) | Elementary, trigonometric, hyperbolic, logarithmic, and gamma functions compared with the standard library. |
+| `hackystl_test_Math_ConstexprMathTest` | [Math/ConstexprMathTest.cpp](Math/ConstexprMathTest.cpp) | The `constexpr_math` reference implementation called at run time, for `float`, `double` and `long double`, against the standard library: special values, domain edges, large arguments, the pole of `tan`, `atan2` signed zeros, and the regressions for `sqrt`, `acos`, `round`, `tanh`, `asinh`, `lgamma`, `tgamma`, `pow` and `mod`. |
 | `hackystl_test_Random_RandTest` | [Random/RandTest.cpp](Random/RandTest.cpp) | Integer/floating generation bounds, invalid ranges, seeded reproducibility, and raw engine output compared with `std::mt19937`. |
 | `hackystl_test_Ranges_EnumerateTest` | [Ranges/EnumerateTest.cpp](Ranges/EnumerateTest.cpp) | Enumerated indices and mutable elements compared with `std::views::enumerate`, plus empty-range and fresh-iteration behavior. |
 | `hackystl_test_Ranges_RangeTest` | [Ranges/RangeTest.cpp](Ranges/RangeTest.cpp) | Drop/take and predicate views, filtering/transformation pipelines, reverse traversal, and filtered mutation compared with standard range views. |
@@ -210,6 +227,13 @@ is a self-contained localhost exchange and runs automatically.
 | `hackystl_test_Network_TCP_TServerTest` | [Network/TCP/TServerTest.cpp](Network/TCP/TServerTest.cpp) | Manual TCP server example; disabled in CTest because it requires a client. |
 | `hackystl_test_Network_UDP_UClientTest` | [Network/UDP/UClientTest.cpp](Network/UDP/UClientTest.cpp) | Manual UDP client example; disabled in CTest because it requires a server. |
 | `hackystl_test_Network_UDP_UServerTest` | [Network/UDP/UServerTest.cpp](Network/UDP/UServerTest.cpp) | Manual UDP server example; disabled in CTest because it requires a client. |
+| `hackystl_test_Network_HttpEdgeTest` | [Network/HttpEdgeTest.cpp](Network/HttpEdgeTest.cpp) | HTTP parser error paths, and every method, protocol version, and status code, one case at a time. |
+| `hackystl_test_Network_HttpSocketTest` | [Network/HttpSocketTest.cpp](Network/HttpSocketTest.cpp) | HTTP request and response exchange over loopback TCP with the client and server in one process; every method and version written; empty and failed reads; malformed input; unknown method and version aborts checked in a child process. |
+| `hackystl_test_Network_NetworkFuncsTest` | [Network/NetworkFuncsTest.cpp](Network/NetworkFuncsTest.cpp) | Peer keys for IPv4 and IPv6, name resolution, socket creation with and without a port, a failed `socket()` call, error helpers, and abort checks in child processes. |
+| `hackystl_test_Network_TcpFailureTest` | [Network/TcpFailureTest.cpp](Network/TcpFailureTest.cpp) | TCP failure paths: refused connection, address already in use, use after close, wrong socket type, moves, and a poll interrupted by a signal (in a child process). |
+| `hackystl_test_Network_TcpLoopbackTest` | [Network/TcpLoopbackTest.cpp](Network/TcpLoopbackTest.cpp) | TCP over loopback with the server and client in one process: connect, accept on poll, and read and write in turn. |
+| `hackystl_test_Network_UdpFailureTest` | [Network/UdpFailureTest.cpp](Network/UdpFailureTest.cpp) | UDP failure paths: unresolved addresses, closed or never-opened sockets, wrong socket type, bind already held, refused connect, a child with no socket, an unresolved client, and child equality by handle. |
+| `hackystl_test_Network_UdpLoopbackEdgeTest` | [Network/UdpLoopbackEdgeTest.cpp](Network/UdpLoopbackEdgeTest.cpp) | UDP over loopback with one child per sender address, buffered datagrams, receive lengths, and polls that return at once when nothing is waiting. |
 
 ### Problem Scenarios
 
@@ -242,10 +266,12 @@ rarely to sample.
 | CTest target | Source | Coverage |
 | --- | --- | --- |
 | `hackystl_test_Unicode_UniEdgeTest` | [Unicode/UniEdgeTest.cpp](Unicode/UniEdgeTest.cpp) | Every pair of UTF-8, UTF-16 and UTF-32 unit widths against an independent encoder, with exact, bounded and too-small destinations, empty and malformed input, and a guard region past each destination. |
+| `hackystl_test_Unicode_UniInvalidEdgeTest` | [Unicode/UniInvalidEdgeTest.cpp](Unicode/UniInvalidEdgeTest.cpp) | Decoding with no bytes left, the length of a null string, and the length of UTF-8 input that does not decode, which counts each invalid byte as one unit. |
 | `hackystl_test_String_StringConcatEdgeTest` | [String/StringConcatEdgeTest.cpp](String/StringConcatEdgeTest.cpp) | Concatenation with empty and unallocated operands, appends into reserved capacity, self-append and aliasing, and long appends compared with `std::string`. |
 | `hackystl_test_String_StringViewRfindEdgeTest` | [String/StringViewRfindEdgeTest.cpp](String/StringViewRfindEdgeTest.cpp) | Single-character reverse search in constant evaluation and on empty views. |
 | `hackystl_test_String_StringViewPrintEdgeTest` | [String/StringViewPrintEdgeTest.cpp](String/StringViewPrintEdgeTest.cpp) | An empty string view prints as nothing and does not read its null data pointer. |
 | `hackystl_test_Io_IoLineEdgeTest` | [Io/IoLineEdgeTest.cpp](Io/IoLineEdgeTest.cpp) | Line reading keeps the final line without a newline, blank lines, CRLF endings, and lines longer than the first buffer; value reading ends at end of file; created files stay readable. |
+| `hackystl_test_Io_IoErrorEdgeTest` | [Io/IoErrorEdgeTest.cpp](Io/IoErrorEdgeTest.cpp) | Error results of the file stream: flushing a file opened for reading, reading from a file opened for writing, a missing file, a value that is not a number, reading past the end, and a flush to `/dev/full` (Linux) that fails with the system message. |
 | `hackystl_test_Io_IoFileHandleCloseTest` | [Io/IoFileHandleCloseTest.cpp](Io/IoFileHandleCloseTest.cpp) | A file handle closes its POSIX descriptor when it is destroyed, so the next open reuses the same descriptor number. |
 | `hackystl_test_Filesystem_FSRenameTest` | [Filesystem/FSRenameTest.cpp](Filesystem/FSRenameTest.cpp) | Renaming files and directories, listing after a rename through the same path object, replacing a file, and `create_directory` on existing and missing parents, in a temporary directory. |
 | `hackystl_test_Filesystem_PathStdioFreeTest` | [Filesystem/PathStdioFreeTest.cpp](Filesystem/PathStdioFreeTest.cpp) | Compile-time check that the error, string and filesystem headers do not define the `stdio` macros `BUFSIZ` and `stderr`. Path.hpp is checked on Windows only, because POSIX declares `rename` in `<stdio.h>`. |
@@ -258,6 +284,7 @@ rarely to sample.
 | `hackystl_test_Algorithm_SortPredicateEdgeTest` | [Algorithm/SortPredicateEdgeTest.cpp](Algorithm/SortPredicateEdgeTest.cpp) | Predicate sorts order records that have no `operator>`. |
 | `hackystl_test_Tuple_TupleEdgeTest` | [Tuple/TupleEdgeTest.cpp](Tuple/TupleEdgeTest.cpp) | `tie` with several references writes through to the variables, `make_tuple` from a const lvalue, and pair equality. |
 | `hackystl_test_Variant_VarLvalueTest` | [Variant/VarLvalueTest.cpp](Variant/VarLvalueTest.cpp) | A variant constructed from an lvalue stores a copy of it. |
+| `hackystl_test_Variant_VarValuelessEdgeTest` | [Variant/VarValuelessEdgeTest.cpp](Variant/VarValuelessEdgeTest.cpp) | A variant left valueless by its default constructor: visiting it reports an error for value and void visitors, const and non-const, and never calls the visitor. |
 | `hackystl_test_SharedPtr_SharedFactoryEdgeTest` | [SharedPtr/SharedFactoryEdgeTest.cpp](SharedPtr/SharedFactoryEdgeTest.cpp) | The shared factories accept lvalue constructor arguments, and an allocator still selects the allocator overload. |
 | `hackystl_test_Gorbitsa_GorMemoryEdgeTest` | [Gorbitsa/GorMemoryEdgeTest.cpp](Gorbitsa/GorMemoryEdgeTest.cpp) | The memory-writing instructions `O`, `o` and `r` at compile time. |
 | `hackystl_test_Bitset_BitsetProxyEdgeTest` | [Bitset/BitsetProxyEdgeTest.cpp](Bitset/BitsetProxyEdgeTest.cpp) | Assigning one bit proxy to another writes the bit value. |
@@ -268,3 +295,6 @@ rarely to sample.
 | `hackystl_test_Io_IoPrintGrowEdgeTest` | [Io/IoPrintGrowEdgeTest.cpp](Io/IoPrintGrowEdgeTest.cpp) | Output longer than the buffer it is written into: a dynamic stream with no storage yet, appends past its capacity, and an `io` file write longer than its 1024-character buffer. |
 | `hackystl_test_Io_PrintBoundsEdgeTest` | [Io/PrintBoundsEdgeTest.cpp](Io/PrintBoundsEdgeTest.cpp) | `print_to` into a block of exactly the size it reports, for literals, numbers, floats, strings, bitsets, big integers, and styled and prefixed values. Each block is a heap allocation, so AddressSanitizer reports a write past its end. |
 | `hackystl_test_Io_PrintTagEdgeTest` | [Io/PrintTagEdgeTest.cpp](Io/PrintTagEdgeTest.cpp) | Format tags a value cannot print, such as `{hex}` on a string, are rejected at compile time, for integers, floats, text, bitsets and big integers. Supported tags still print the expected text, including the eight-digit hex of a bitset. |
+| `hackystl_test_Io_SStreamParseEdgeTest` | [Io/SStreamParseEdgeTest.cpp](Io/SStreamParseEdgeTest.cpp) | Integer and float parsing: decimal, `0x`/`0X` hexadecimal, signs, exponents, and hexadecimal floats with fraction digits in either letter case; single characters and character arrays; separator rules for values read from one line; too few tokens and failing tokens. |
+| `hackystl_test_Json_JsonEdgeTest` | [Json/JsonEdgeTest.cpp](Json/JsonEdgeTest.cpp) | Lexer and parser error paths: unexpected characters, keyword mismatches, numbers with two points or an exponent, text that ends inside an array or object, a missing or malformed file, and numbers outside the requested type's range. |
+| `hackystl_test_Filesystem_FSEdgeTest` | [Filesystem/FSEdgeTest.cpp](Filesystem/FSEdgeTest.cpp) | Missing paths for listing, permissions and status; rename into a missing directory or onto a directory; copies between directories, files and a named pipe (POSIX); `create_directory` with a separator; the extension of a file in a dotted directory; a write that the null device refuses (POSIX). |

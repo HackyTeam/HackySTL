@@ -358,12 +358,8 @@ namespace hsd
         constexpr list& operator=(const T (&arr)[N])
         {
             clear();
-            usize _index = 0;
 
-            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
-                *_it = arr[_index];
-
-            for (; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(arr[_index]);
 
             return *this;
@@ -379,12 +375,8 @@ namespace hsd
         constexpr list& operator=(T (&&arr)[N])
         {
             clear();
-            usize _index = 0;
 
-            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
-                *_it = hsd::move(arr[_index]);
-
-            for (; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(hsd::move(arr[_index]));
 
             return *this;

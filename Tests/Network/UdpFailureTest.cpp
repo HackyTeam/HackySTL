@@ -16,6 +16,7 @@
 namespace
 {
     using protocol = hsd::network_detail::ip_protocol;
+    using native_handle = hsd::network_detail::native_socket_type;
     using socket4 = hsd::network_detail::udp_socket<protocol::ipv4>;
 
     void loopback_address(char (&buffer)[64], unsigned port)
@@ -41,7 +42,7 @@ int main()
     stream_info.ai_socktype = SOCK_STREAM;
 
     // A socket built from a closed descriptor refuses to handle addresses.
-    socket4 closed{-1, sockaddr_storage{}, 0};
+    socket4 closed{static_cast<native_handle>(-1), sockaddr_storage{}, 0};
     assert(!closed.handle(&datagram_info, true));
     assert(!closed.handle(&datagram_info, false));
 
@@ -85,7 +86,7 @@ int main()
 #endif
 
     // A child without a descriptor cannot send, and has nothing to receive into.
-    hsd::network_detail::udp_child_socket<protocol::ipv4> orphan{-1, sockaddr_storage{}, 0};
+    hsd::network_detail::udp_child_socket<protocol::ipv4> orphan{static_cast<native_handle>(-1), sockaddr_storage{}, 0};
     assert(orphan.send("x", 1) == -1);
     assert(orphan.receive(scratch, 1024) == -1);
     assert(!orphan.is_valid());
@@ -96,15 +97,15 @@ int main()
 
     // Children with the same peer address are equal only when their handles are equal too.
     sockaddr_storage peer{};
-    hsd::network_detail::udp_child_socket<protocol::ipv4> first{-1, peer, 0};
-    hsd::network_detail::udp_child_socket<protocol::ipv4> second{-2, peer, 0};
+    hsd::network_detail::udp_child_socket<protocol::ipv4> first{static_cast<native_handle>(-1), peer, 0};
+    hsd::network_detail::udp_child_socket<protocol::ipv4> second{static_cast<native_handle>(-2), peer, 0};
     assert(!(first == second));
     assert(first != second);
 
     // Children with different peer addresses are never equal, whatever their handles.
     sockaddr_storage elsewhere_address{};
     elsewhere_address.ss_family = AF_INET6;
-    hsd::network_detail::udp_child_socket<protocol::ipv4> elsewhere{-1, elsewhere_address, 0};
+    hsd::network_detail::udp_child_socket<protocol::ipv4> elsewhere{static_cast<native_handle>(-1), elsewhere_address, 0};
     assert(!(first == elsewhere));
     assert(first != elsewhere);
 

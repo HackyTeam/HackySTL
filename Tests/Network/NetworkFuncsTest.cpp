@@ -19,6 +19,9 @@
 namespace
 {
     using protocol = hsd::network_detail::ip_protocol;
+    using native_handle = hsd::network_detail::native_socket_type;
+    // The handle that stands for "no socket". Windows handles are unsigned, so -1 is cast.
+    constexpr native_handle no_socket = static_cast<native_handle>(-1);
 
     sockaddr_storage make_ipv4(const char* text, unsigned short port)
     {
@@ -48,7 +51,7 @@ namespace
     // produce on the loopback address.
     struct refusing_socket
     {
-        hsd::network_detail::native_socket_type fd_value = -1;
+        native_handle fd_value = no_socket;
         int handshakes = 0;
 
         static constexpr int ip_protocol() { return AF_INET; }
@@ -61,7 +64,7 @@ namespace
             return *this;
         }
 
-        bool is_valid() const { return fd_value >= 0; }
+        bool is_valid() const { return fd_value != no_socket; }
 
         bool handle(const addrinfo*, bool)
         {
@@ -71,7 +74,7 @@ namespace
 
         void close()
         {
-            if (fd_value >= 0)
+            if (fd_value != no_socket)
             {
             #if defined(HSD_PLATFORM_WINDOWS)
                 ::closesocket(fd_value);
@@ -79,7 +82,7 @@ namespace
                 ::close(fd_value);
             #endif
             }
-            fd_value = -1;
+            fd_value = no_socket;
         }
     };
 }
@@ -90,7 +93,7 @@ namespace
     // socket() fails for every candidate; name resolution still succeeds with no protocol set.
     struct unsupported_socket
     {
-        hsd::network_detail::native_socket_type fd_value = -1;
+        native_handle fd_value = no_socket;
 
         static constexpr int ip_protocol() { return AF_INET; }
         static constexpr int sock_type() { return SOCK_STREAM; }
@@ -102,11 +105,11 @@ namespace
             return *this;
         }
 
-        bool is_valid() const { return fd_value >= 0; }
+        bool is_valid() const { return fd_value != no_socket; }
 
         bool handle(const addrinfo*, bool) { return false; }
 
-        void close() { fd_value = -1; }
+        void close() { fd_value = no_socket; }
     };
 }
 

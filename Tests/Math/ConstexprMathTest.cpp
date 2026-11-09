@@ -223,7 +223,7 @@ void check_exponential_and_power()
         expect_value<T>("factorial", cm::factorial<T>(count), expected);
     }
 
-    expect_value<T>("pow(2,3)", hsd::math::pow(static_cast<T>(2), 3), static_cast<T>(8));
+    expect_value<T>("pow(2,3)", static_cast<T>(hsd::math::pow(static_cast<T>(2), 3)), static_cast<T>(8));
     expect_value<T>("pow(2,0.5)", hsd::math::pow(static_cast<T>(2), static_cast<T>(0.5)), std::sqrt(static_cast<T>(2)));
 
     for (const T value : {static_cast<T>(-2.5), static_cast<T>(-1.0), static_cast<T>(-0.5), static_cast<T>(0.5),
@@ -394,9 +394,9 @@ void check_branch_edges()
     expect_value<T>("max(21,5)", hsd::math::max(static_cast<T>(21), static_cast<T>(5)), static_cast<T>(21));
     expect_value<T>("max(5,21)", hsd::math::max(static_cast<T>(5), static_cast<T>(21)), static_cast<T>(21));
 
-    expect_value<T>("sgn(0)", detail::sgn(zero), zero);
-    expect_value<T>("sgn(-2)", detail::sgn(static_cast<T>(-2)), static_cast<T>(-1));
-    expect_value<T>("sgn(2)", detail::sgn(static_cast<T>(2)), static_cast<T>(1));
+    expect_value<T>("sgn(0)", static_cast<T>(detail::sgn(zero)), zero);
+    expect_value<T>("sgn(-2)", static_cast<T>(detail::sgn(static_cast<T>(-2))), static_cast<T>(-1));
+    expect_value<T>("sgn(2)", static_cast<T>(detail::sgn(static_cast<T>(2))), static_cast<T>(1));
 
     expect_value<T>("pow_int_compute_rec(2,3,0)",
         detail::pow_int_compute_rec(static_cast<T>(2), static_cast<T>(3), 0), static_cast<T>(3));

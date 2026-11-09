@@ -123,9 +123,9 @@ int main()
     // A value that is too large or too small for the requested type is refused.
     {
         const std::string big = huge_number(false);
-        const std::string small = huge_number(true);
+        const std::string negative_text = huge_number(true);
         auto positive = parse_value(hsd::string_view{big.c_str(), big.length()});
-        auto negative = parse_value(hsd::string_view{small.c_str(), small.length()});
+        auto negative = parse_value(hsd::string_view{negative_text.c_str(), negative_text.length()});
         assert(!positive->as_num<hsd::f32>().is_ok());
         assert(!negative->as_num<hsd::f32>().is_ok());
     }

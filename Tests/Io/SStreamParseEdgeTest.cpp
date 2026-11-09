@@ -29,7 +29,7 @@ namespace
         return stream.set_data(first, second).is_ok();
     }
 
-    bool near(double value, double expected)
+    bool close_to(double value, double expected)
     {
         return std::fabs(value - expected) < 1e-12;
     }
@@ -58,7 +58,7 @@ int main()
     assert(parse_token("+1.5", real) && real == 1.5);
     assert(parse_token("-2.25", real) && real == -2.25);
     assert(parse_token("1e3", real) && real == 1000.0);
-    assert(parse_token("2.5E-2", real) && near(real, 0.025));
+    assert(parse_token("2.5E-2", real) && close_to(real, 0.025));
     assert(!parse_token("1..5", real));
     assert(!parse_token("1.5q", real));
     assert(!parse_token("1e", real));
@@ -67,12 +67,12 @@ int main()
 
     // Floats in hexadecimal: the mantissa digits count in sixteenths after the point, and the
     // binary exponent scales by powers of two. Both prefix letters and both digit cases work.
-    assert(parse_token("0x1.8p1", real) && near(real, 3.0));
-    assert(parse_token("0X1.8P1", real) && near(real, 3.0));
-    assert(parse_token("0x0.Cp0", real) && near(real, 0.75));
-    assert(parse_token("0x0.cp0", real) && near(real, 0.75));
-    assert(parse_token("0x1.8AP1", real) && near(real, 3.078125));
-    assert(parse_token("0x1p-2", real) && near(real, 0.25));
+    assert(parse_token("0x1.8p1", real) && close_to(real, 3.0));
+    assert(parse_token("0X1.8P1", real) && close_to(real, 3.0));
+    assert(parse_token("0x0.Cp0", real) && close_to(real, 0.75));
+    assert(parse_token("0x0.cp0", real) && close_to(real, 0.75));
+    assert(parse_token("0x1.8AP1", real) && close_to(real, 3.078125));
+    assert(parse_token("0x1p-2", real) && close_to(real, 0.25));
     assert(!parse_token("0x1.8", real));
     assert(!parse_token("0x1p", real));
     assert(!parse_token("0x1.8.8p0", real));

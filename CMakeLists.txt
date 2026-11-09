@@ -148,10 +148,10 @@ if(HACKYSTL_ENABLE_COVERAGE)
         )
     endif()
 
-    # gcovr collects the gcov data into one HTML report. Without it there is no coverage target.
+    # gcovr collects the gcov data. Without it there is no coverage target.
     find_program(GCOVR_EXECUTABLE gcovr)
     if(GCOVR_EXECUTABLE)
-        # Python runs the per-site summary. Without it the coverage target still writes the report.
+        # Python writes the per-site summary and the HTML report. Without it, gcovr writes its own report.
         find_package(Python3 COMPONENTS Interpreter)
         set(_coverage_python "")
         if(Python3_Interpreter_FOUND)

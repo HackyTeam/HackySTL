@@ -142,7 +142,7 @@ int main()
     quiet.set_current_sock(idle);
     assert(quiet.receive_request().unwrap() == ""_sv);
 
-    child_socket gone{pollfd{-1, 0, 0}};
+    child_socket gone{pollfd{static_cast<hsd::network_detail::native_socket_type>(-1), 0, 0}};
     hsd::http::socket<child_socket> absent;
     absent.reserve_buffer(64);
     absent.set_current_sock(gone);

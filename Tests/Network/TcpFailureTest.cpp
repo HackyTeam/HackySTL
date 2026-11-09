@@ -59,7 +59,7 @@ int main()
     // A socket that has been closed refuses to handle addresses.
     addrinfo stream_info{};
     stream_info.ai_socktype = SOCK_STREAM;
-    socket4 closed_socket{pollfd{-1, 0, 0}};
+    socket4 closed_socket{pollfd{static_cast<hsd::network_detail::native_socket_type>(-1), 0, 0}};
     assert(!closed_socket.handle(&stream_info, true));
     assert(closed_socket.send("x", 1) == -1);
     assert(closed_socket.receive(scratch, sizeof(scratch)) == -1);
@@ -107,8 +107,8 @@ int main()
     assert(early_child->receive(scratch, sizeof(scratch)) == 0);
     server.poll(1000);
 
-    hsd::network_detail::tcp_child_socket<protocol::ipv4> left{pollfd{-1, 0, 0}};
-    hsd::network_detail::tcp_child_socket<protocol::ipv4> right{pollfd{-1, 0, 0}};
+    hsd::network_detail::tcp_child_socket<protocol::ipv4> left{pollfd{static_cast<hsd::network_detail::native_socket_type>(-1), 0, 0}};
+    hsd::network_detail::tcp_child_socket<protocol::ipv4> right{pollfd{static_cast<hsd::network_detail::native_socket_type>(-1), 0, 0}};
     left = hsd::move(right);
     assert(!left.is_valid());
 

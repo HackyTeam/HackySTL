@@ -136,7 +136,7 @@ p.note { color: var(--muted); font-size: 15px; margin: 10px 0 0; max-width: 84ch
 .bar.bad > span { background: var(--bad); }
 
 .pill {
-  display: inline-block; min-width: 4.2em; padding: 2px 10px; border-radius: 999px;
+  display: inline-block; min-width: 4.2em; padding: 2px 6px; border-radius: 999px;
   font-size: 14px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums;
 }
 .pill.good { color: var(--good); background: var(--good-bg); }
@@ -171,9 +171,9 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: now
 th.num { text-align: right; }
 /* Each metric is a fixed pill column followed by a fixed count column, so the rows line up. */
 .metric {
-  display: inline-grid; grid-template-columns: 6.6em 7.2em; column-gap: 0.8em; align-items: center;
+  display: inline-grid; grid-template-columns: auto 7.2em; column-gap: 0.6em; align-items: center;
 }
-.metric .pill { min-width: 0; width: 100%; }
+.metric .pill { min-width: 0; }
 .metric .counts { color: var(--muted); text-align: right; }
 td.file a { font-weight: 550; }
 td.bar-cell { width: 26%; min-width: 150px; }

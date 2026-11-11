@@ -183,7 +183,9 @@ static void test_vector_edge_cases()
     assert(values.size() == 0);
 
     values = {1, 2, 3};
-    values = values;
+    // Assigning a vector to itself through a second name, which keeps its contents.
+    auto& same = values;
+    values = same;
     test_support::expect_sequence(values, std::vector<int>{1, 2, 3});
 
     hsd::static_vector<int, 2> fixed;

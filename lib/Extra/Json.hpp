@@ -237,8 +237,10 @@ namespace hsd
                             _token_str.push_back(_ch);
                         }
                     }
-                    else if (_current_token == JsonToken::Number)
+                    else
                     {
+                        // The only tokens left in progress here are strings and numbers, because
+                        // a keyword in progress always has _token_kw set.
                         if (_ch >= '0' and _ch <= '9')
                         {
                             _token_position++;

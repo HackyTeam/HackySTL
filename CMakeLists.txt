@@ -97,6 +97,91 @@ if(HACKYSTL_ENABLE_SANITIZERS)
     endif()
 endif()
 
+option(
+    HACKYSTL_ENABLE_COVERAGE
+    "Instrument the tests and examples with gcov and add a coverage target that writes an HTML report"
+    OFF
+)
+
+if(HACKYSTL_ENABLE_COVERAGE)
+    # gcov is GCC's coverage tool. Clang's coverage output needs llvm-cov, which this build does not use.
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        message(FATAL_ERROR "HACKYSTL_ENABLE_COVERAGE needs GCC, because it uses gcov")
+    endif()
+
+    target_compile_options(
+        hackystl_test_config
+        INTERFACE --coverage -fprofile-update=atomic
+    )
+    target_link_options(hackystl_test_config INTERFACE --coverage)
+    # Tests that check abort() paths dump the counters in the child process, see Tests/Support/AbortSupport.hpp.
+    target_compile_definitions(hackystl_test_config INTERFACE HACKYSTL_COVERAGE=1)
+
+    # gcov must be the same major version as the compiler, because gcov rejects data
+    # written by another version. CMake sets the full compiler version, not a major one.
+    string(REGEX MATCH "^[0-9]+" _compiler_major "${CMAKE_CXX_COMPILER_VERSION}")
+
+    # Debian and Ubuntu install gcov-<major> beside each GCC version, so try that name first.
+    # Otherwise use the gcov that the compiler names for itself.
+    execute_process(
+        COMMAND "${CMAKE_CXX_COMPILER}" -print-prog-name=gcov
+        OUTPUT_VARIABLE _gcov_from_compiler
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    unset(GCOV_EXECUTABLE CACHE)
+    find_program(
+        GCOV_EXECUTABLE
+        NAMES "gcov-${_compiler_major}" "${_gcov_from_compiler}"
+        REQUIRED
+    )
+
+    execute_process(
+        COMMAND "${GCOV_EXECUTABLE}" --version
+        OUTPUT_VARIABLE _gcov_version_text
+    )
+    string(REGEX MATCH "\\) ([0-9]+)\\." _gcov_version_match "${_gcov_version_text}")
+    if(NOT CMAKE_MATCH_1 STREQUAL _compiler_major)
+        message(
+            FATAL_ERROR
+            "gcov ${GCOV_EXECUTABLE} is major version ${CMAKE_MATCH_1}, but the compiler is "
+            "major version ${_compiler_major}. Coverage data would not be read."
+        )
+    endif()
+
+    # gcovr collects the gcov data. Without it there is no coverage target.
+    find_program(GCOVR_EXECUTABLE gcovr)
+    if(GCOVR_EXECUTABLE)
+        # Python writes the per-site summary and the HTML report. Without it, gcovr writes its own report.
+        find_package(Python3 COMPONENTS Interpreter)
+        set(_coverage_python "")
+        if(Python3_Interpreter_FOUND)
+            set(_coverage_python "${Python3_EXECUTABLE}")
+        endif()
+
+        add_custom_target(
+            coverage
+            COMMAND
+                "${CMAKE_COMMAND}"
+                "-DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
+                "-DGCOVR=${GCOVR_EXECUTABLE}"
+                "-DGCOV=${GCOV_EXECUTABLE}"
+                "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                "-DBINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DPYTHON=${_coverage_python}"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunCoverage.cmake"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            VERBATIM
+            USES_TERMINAL
+            COMMENT "Running the tests and writing the coverage report"
+        )
+    else()
+        message(
+            WARNING
+            "gcovr was not found, so the coverage target is not available"
+        )
+    endif()
+endif()
+
 # Profiling measurements use an optimized, unsanitized build regardless of
 # the main build type so debug instrumentation does not distort timings.
 add_library(hackystl_profile_config INTERFACE)
@@ -270,6 +355,21 @@ if(HACKYSTL_BUILD_EXAMPLES)
                 "Python 3 not found: example output checks are not registered with CTest"
             )
         endif()
+    endif()
+
+    # assert() takes one argument in some C libraries, so a comma outside parentheses
+    # breaks the build there. This check finds those calls on every platform.
+    if(BUILD_TESTING AND Python3_Interpreter_FOUND)
+        add_test(
+            NAME hackystl_assert_calls_lint
+            COMMAND
+                "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckAssertCalls.py"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Tests"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Examples"
+                "${CMAKE_CURRENT_SOURCE_DIR}/Problems"
+                "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+        )
     endif()
 
     foreach(example_source IN LISTS HACKYSTL_EXAMPLE_SOURCES)

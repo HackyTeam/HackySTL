@@ -219,7 +219,9 @@ static void test_minimal_custom_allocator()
         assert(selections == 1);
         assert(copy[3] == 4);
 
-        copy = copy;
+        // Assigning an object to itself through a second name, which keeps the contents.
+        auto& same = copy;
+        copy = same;
         assert(copy.size() == 2);
 
         tracking_map assigned{alloc};

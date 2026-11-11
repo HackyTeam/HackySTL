@@ -465,7 +465,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the member-function invocation.
     template < typename Func, typename T, typename... Args, usize... Is >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply_impl(
         Func&& func, T&& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
@@ -485,7 +485,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the member-function invocation.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply(Func&& func, T&& value, const tuple<Args...>& args)
     {
         return apply_impl(
@@ -500,7 +500,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the member-function invocation.
     template < typename Func, typename T, typename... Args, usize... Is >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply_impl(
         Func&& func, T& value, index_sequence<Is...>, const tuple<Args...>& args) 
     {
@@ -520,7 +520,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the member-function invocation.
     template < typename Func, typename T, typename... Args >
-    requires (std::is_member_function_pointer_v<Func>)
+    requires (hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply(Func&& func, T& value, const tuple<Args...>& args)
     {
         return apply_impl(
@@ -533,7 +533,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the callable invocation.
     template < typename Func, typename... Args, usize... Is >
-    requires (!std::is_member_function_pointer_v<Func>)
+    requires (!hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply_impl(
         Func&& func, index_sequence<Is...>, const tuple<Args...>& args) 
     {
@@ -545,7 +545,7 @@ namespace hsd
     /// @param args Tuple supplying call arguments.
     /// @return Result of the callable invocation.
     template < typename Func, typename... Args >
-    requires (!std::is_member_function_pointer_v<Func>)
+    requires (!hsd::is_member_function_pointer<Func>::value)
     static constexpr auto apply(Func&& func, const tuple<Args...>& args)
     {
         return apply_impl(

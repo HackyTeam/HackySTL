@@ -345,21 +345,20 @@ namespace hsd
         ///
         /// @brief Searches backward for a substring starting below index `pos`.
         ///
-        /// The scan visits indices `pos - 1` down to `1`; index `0` is never
-        /// inspected, so a match only at `str[0]` is not found.
+        /// The scan visits start indices `pos - 1` down to `0`.
         ///
         /// @param str - Haystack indexed by `pos`.
         /// @param substr - Null-terminated needle to find.
-        /// @param pos - One past the highest index to inspect.
+        /// @param pos - One past the highest start index to inspect.
         /// @return A pointer into `str` at the first match found scanning
         /// backward, or `nullptr` when none occurs in range.
         ///
         static constexpr const CharT* find_rev(const CharT* str, const CharT* substr, usize pos)
         {
-            for (; pos != 0; pos--)
+            for (usize _index = pos; _index != 0; _index--)
             {
-                if ((str[pos] == *substr) && _compare(&str[pos], substr))
-                    return &str[pos];
+                if ((str[_index - 1] == *substr) && _compare(&str[_index - 1], substr))
+                    return &str[_index - 1];
             }
 
             return nullptr;
@@ -368,21 +367,20 @@ namespace hsd
         ///
         /// @brief Searches backward for a character starting below index `pos`.
         ///
-        /// The scan visits indices `pos - 1` down to `1`; index `0` is never
-        /// inspected, so a match only at `str[0]` is not found.
+        /// The scan visits start indices `pos - 1` down to `0`.
         ///
         /// @param str - Haystack indexed by `pos`.
         /// @param letter - Character to find.
-        /// @param pos - One past the highest index to inspect.
+        /// @param pos - One past the highest start index to inspect.
         /// @return A pointer into `str` at the first match found scanning
         /// backward, or `nullptr` when none occurs in range.
         ///
         static constexpr const CharT* find_rev(const CharT* str, CharT letter, usize pos)
         {
-            for (; pos != 0; pos--)
+            for (usize _index = pos; _index != 0; _index--)
             {
-                if (str[pos] == letter)
-                    return &str[pos];
+                if (str[_index - 1] == letter)
+                    return &str[_index - 1];
             }
 
             return nullptr;
@@ -798,9 +796,6 @@ namespace hsd
         /// string, matching `compare(const CharT*, const CharT*)` semantics
         /// bounded to at most `len` characters.
         ///
-        /// At run time on GCC and Clang, equal ranges are confirmed with one
-        /// `__builtin_memcmp` call before the scan.
-        ///
         /// @param lhs - Left-hand string.
         /// @param rhs - Right-hand string.
         /// @param len - Maximum number of characters to compare.
@@ -809,39 +804,10 @@ namespace hsd
         ///
         static constexpr i32 compare(const CharT* lhs, const CharT* rhs, usize len)
         {
-            #if defined(HSD_COMPILER_GCC) || defined(HSD_COMPILER_CLANG)
-            // Equal bytes are equal characters, so an equal range compares as 0.
-            if (!is_constant_evaluated() && len != 0
-                && __builtin_memcmp(lhs, rhs, len * sizeof(CharT)) == 0)
-            {
-                return 0;
-            }
-            #endif
-
-            constexpr usize _block = 32;
-            usize _index = 0;
-
-            // Blocks that are equal and hold no terminator are skipped whole.
-            // The inner loop has no early exit, so the compiler can vectorize it.
-            for (; _index + _block <= len; _index += _block)
-            {
-                bool _stop = false;
-
-                for (usize _offset = 0; _offset < _block; _offset++)
-                {
-                    _stop = _stop | (lhs[_index + _offset] != rhs[_index + _offset])
-                        | (lhs[_index + _offset] == 0);
-                }
-
-                if (_stop)
-                {
-                    break;
-                }
-            }
-
-            // Exact scan of the remaining characters, or of the first block
-            // that differs or ends a string.
-            for (; _index < len; _index++)
+            // The scan stops at the first difference or terminator, so it never reads past
+            // the end of either string. A wider block scan would read up to a whole block
+            // beyond a terminator, which is out of bounds when the strings are shorter.
+            for (usize _index = 0; _index < len; _index++)
             {
                 if (lhs[_index] != rhs[_index])
                 {

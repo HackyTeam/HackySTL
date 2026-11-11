@@ -143,7 +143,7 @@ namespace hsd::http
                 ++_pos;
             }
 
-            if (resp[_pos] < '0' && resp[_pos] > '9')
+            if (resp[_pos] < '0' || resp[_pos] > '9')
             {
                 return runtime_error{
                     "HTTP responses are required to have a status code"
@@ -164,20 +164,8 @@ namespace hsd::http
                     return _res.unwrap_err();
                 }
 
-                u16 _status_num = static_cast<u16>(_status);
-
-                if (_status_num < 10)
-                {
-                    ++_pos;
-                }
-                else if (_status_num < 100)
-                {
-                    _pos += 2;
-                }
-                else
-                {
-                    _pos += 3;
-                }
+                // Only the status codes in the table reach this point, and each has three digits.
+                _pos += 3;
 
                 if (resp[_pos] == ' ') ++_pos;
 

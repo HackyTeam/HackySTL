@@ -12,6 +12,10 @@
 namespace hsd
 {
     /// @brief Nonblocking TCP listening server with child-socket iteration.
+    /// @details Accepted children are kept in one growing list. poll() appends a child when
+    /// it accepts a connection, and erase() removes one and shifts the children after it. Either
+    /// can move children in memory, so iterators, pointers and references to a child are valid
+    /// only until the next such call. Look a child up again with begin() or end() after it.
     /// @tparam Protocol - The IP protocol (ipv4/ipv6) to bind on.
     template <network_detail::ip_protocol Protocol>
     class tcp_server
@@ -43,6 +47,9 @@ namespace hsd
         ///
         /// @brief Polls the listening socket and all accepted child sockets
         /// for readiness, accepting a new connection if one is pending.
+        /// @note When this call accepts a connection, the list of children may move. Iterators,
+        /// pointers and references to children obtained before the call are then invalid, so
+        /// obtain them again from begin() afterwards.
         /// 
         /// @param timeout - Maximum time to wait in milliseconds, or -1 to
         /// block indefinitely.
@@ -104,6 +111,8 @@ namespace hsd
         /// @brief Removes an accepted child socket, closing its connection.
         /// 
         /// @param it - Iterator to the child socket to erase.
+        /// @note The children after `it` move down by one, so iterators, pointers and references
+        /// to them are invalid afterwards.
         /// @return auto - Iterator following the removed element.
         ///
         inline auto erase(socket_type* it)
@@ -116,6 +125,8 @@ namespace hsd
         /// listening socket stored at index 0.
         /// 
         /// @return auto - Iterator to the first child socket.
+        /// @note The iterator is valid until the next poll() that accepts a connection, or until
+        /// erase().
         ///
         inline auto begin()
         {
@@ -227,6 +238,10 @@ namespace hsd
     using tcp_client_v6 = tcp_client<network_detail::ip_protocol::ipv6>;
 
     /// @brief UDP server that tracks remote peers discovered by polling.
+    /// @details Peers are kept in a hash map that stores its values in a growing vector. poll()
+    /// adds a peer when a datagram arrives from a sender not seen before, and that can move the
+    /// stored peers. References, pointers and iterators to a peer are valid only until the next
+    /// poll() that sees a new sender, so look a peer up again after it.
     /// @tparam Protocol - The IP protocol (ipv4/ipv6) to bind on.
     template <network_detail::ip_protocol Protocol>
     class udp_server
@@ -283,6 +298,8 @@ namespace hsd
         /// and appends it to the buffer of the peer it came from, inserting a
         /// new peer entry on first contact. Aborts the process on any receive
         /// error other than a would-block condition.
+        /// @note A datagram from a new sender adds a peer, which can move the stored peers.
+        /// References, pointers and iterators obtained before the call are then invalid.
         ///
         inline void poll()
         {
@@ -298,7 +315,10 @@ namespace hsd
                 #if defined(HSD_PLATFORM_WINDOWS)
                 if (error_code() != WSAEWOULDBLOCK)
                 #else
-                if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)
+                // Exclusion: on Linux EAGAIN and EWOULDBLOCK are one value, so when the first
+                // comparison holds the second always holds too, and the false outcome of the
+                // branch cannot occur there. POSIX allows the two values to differ, so both stay.
+                if (error_code() != EWOULDBLOCK && error_code() != EAGAIN)  // GCOVR_EXCL_BR_LINE
                 #endif
                 {
                     result_detail::write_error(
@@ -322,20 +342,10 @@ namespace hsd
         }
 
         ///
-        /// @brief Removes a tracked peer.
-        /// 
-        /// @param it - Iterator to the peer entry to erase.
-        /// @return auto - Iterator following the removed element.
-        ///
-        inline auto erase(socket_type* it)
-        {
-            return _sockets.erase(it);
-        }
-
-        ///
         /// @brief Iterator to the first tracked peer.
         /// 
         /// @return auto - Iterator to the first peer entry.
+        /// @note The iterator is valid until the next poll() that adds a peer.
         ///
         inline auto begin()
         {

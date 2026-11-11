@@ -1,0 +1,55 @@
+# Measures line, function and branch coverage of lib/ with gcov and gcovr.
+# The coverage target runs the test suite first, so this workflow fails if a test fails.
+# The HTML report is attached to the workflow run, and the "coverage" badge in
+# README.md shows the result of this workflow.
+name: coverage
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      # gcovr is a Python package, and this interpreter is not managed by the system.
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install GCC 16 and gcovr
+      # gcov comes with GCC 16 as gcov-16, which the build uses. gcovr 8.6 is the
+      # version the coverage target was checked with.
+      run: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y g++-16
+        pip install gcovr==8.6
+
+    - name: Configure CMake
+      run: >
+        cmake -S . -B build
+        -DCMAKE_CXX_COMPILER=g++-16
+        -DCMAKE_BUILD_TYPE=Debug
+        -DHACKYSTL_ENABLE_SANITIZERS=OFF
+        -DHACKYSTL_ENABLE_COVERAGE=ON
+
+    - name: Build
+      run: cmake --build build --parallel 4
+
+    - name: Coverage report
+      # Prints the line, function and branch totals in this step's log.
+      run: cmake --build build --target coverage
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: build/coverage

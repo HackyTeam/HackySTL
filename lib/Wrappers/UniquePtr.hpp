@@ -14,7 +14,7 @@ namespace hsd
     {
         /// @brief Accepts conversions from a derived unique owner to its base.
         template <typename T, typename U>
-        concept ConvertibleDerived = Convertible<U, T> || std::is_base_of_v<T, U>;
+        concept ConvertibleDerived = Convertible<U, T> || hsd::is_base_of<T, U>::value;
 
         /// @brief Allocator-backed object or array storage owned by a unique_ptr.
         /// @tparam T Object type, possibly an unbounded array type.

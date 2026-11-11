@@ -143,7 +143,7 @@ namespace hsd::sstream_detail
             return runtime_error{"Empty input"};
         }
 
-        if (from.length() > 2 && from[0] == '0' && (from[1] == 'x' || from[1] == 'x'))
+        if (from.length() > 2 && from[0] == '0' && (from[1] == 'x' || from[1] == 'X'))
         {
             to = 0;
 
@@ -322,39 +322,37 @@ namespace hsd::sstream_detail
     static constexpr option_err<runtime_error> _parse_from_hex(const basic_string_view<CharT>& from, T& to)
     {
         bool _has_point = false;
-        usize _exp_pos = static_cast<usize>(-1);
+        usize _exp_pos = from.npos;
         isize _exp = 0;
 
-        T _div = 0.0625;
-        T _two = 2;
-        
+        // Weight of the next fraction digit. Each fraction digit divides it by sixteen.
+        T _weight = 1;
+        const T _sixteen = 16;
+        const T _two = 2;
+
         to = 0;
 
         for (usize _idx = 2; _idx < from.length(); ++_idx)
         {
             const CharT _chr = from[_idx];
-
-            if (_chr != '.' && _chr != 'p' && _chr != 'P')
-            {
-                to *= (_has_point == false) ? 16 : 1;
-                _div *= (_has_point == true) ? static_cast<T>(0.0625) : static_cast<T>(1);
-            }
+            T _digit = 0;
 
             if (_chr >= '0' && _chr <= '9')
             {
-                to += (_has_point == false) ? (_chr - '0') : (_chr - '0') * _div;
+                _digit = static_cast<T>(_chr - '0');
             }
             else if (_chr >= 'a' && _chr <= 'f')
             {
-                to += (_has_point == false) ? (10 + _chr - 'a') : (10 + _chr - 'a') * _div;
+                _digit = static_cast<T>(10 + (_chr - 'a'));
             }
             else if (_chr >= 'A' && _chr <= 'F')
             {
-                to += (_has_point == false) ? (10 + _chr - 'A') : (10 + _chr - 'F') * _div;
+                _digit = static_cast<T>(10 + (_chr - 'A'));
             }
-            else if (_chr == '.')
+            else if (_chr == '.' && _has_point == false)
             {
                 _has_point = true;
+                continue;
             }
             else if (_chr == 'p' || _chr == 'P')
             {
@@ -364,6 +362,16 @@ namespace hsd::sstream_detail
             else
             {
                 return runtime_error{"Invalid hexadecimal input"};
+            }
+
+            if (_has_point == false)
+            {
+                to = to * _sixteen + _digit;
+            }
+            else
+            {
+                _weight /= _sixteen;
+                to += _digit * _weight;
             }
         }
 
@@ -399,7 +407,7 @@ namespace hsd::sstream_detail
     {
         constexpr const CharT _arr[] = {'e', 'E', '\0'};
 
-        if (from.length() > 2 && from[0] == '0' && (from[1] == 'x' || from[1] == 'x'))
+        if (from.length() > 2 && from[0] == '0' && (from[1] == 'x' || from[1] == 'X'))
         {
             return _parse_from_hex<CharT>(from, to);
         }

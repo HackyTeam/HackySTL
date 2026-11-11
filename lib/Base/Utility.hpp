@@ -580,10 +580,34 @@ namespace hsd
     /// @param args - Arguments forwarded to `T`'s constructor.
     /// @return `ptr`, cast to the constructed object's pointer type.
     ///
-    template<typename T, typename... Args>
+    template <typename T, typename... Args>
     static constexpr auto construct_at(T* ptr, Args&&... args)
     {
         return std::construct_at(ptr, hsd::forward<Args>(args)...);
+    }
+
+    ///
+    /// @brief Ends the lifetime of the object at `ptr` by calling its destructor.
+    ///
+    /// @details Works like `std::destroy_at`. For an array, each element is destroyed in
+    /// reverse order. For a type with a trivial destructor, nothing is done. The storage is
+    /// not released, so it can be reused with `construct_at`.
+    ///
+    /// @tparam T - Type of the object to destroy.
+    /// @param ptr - Pointer to a live object of type `T`.
+    ///
+    template <typename T>
+    static constexpr void destroy_at(T* ptr)
+    {
+        if constexpr (hsd::is_array<T>::value)
+	    {
+	        for (auto& _elm : *ptr)
+	            hsd::destroy_at(hsd::addressof(_elm));
+	    }
+        else
+        {
+	        ptr->~T();
+        }
     }
 
     ///

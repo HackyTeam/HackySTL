@@ -1,0 +1,59 @@
+# Runs the whole test suite on Linux with GCC 16 and Clang 22, without sanitizers.
+# The JUnit report of each run is attached to the workflow run. The "tests" badge
+# in README.md shows the result of this workflow.
+name: tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cpp_compiler: [g++-16, clang++-22]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      # The example checks run cmake/RunCases.py through CTest.
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install GCC 16 and Clang 22
+      # The same toolchain as the build workflow. See cmake-multi-platform.yml for why.
+      run: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y g++-16
+        wget -O llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 22
+
+    - name: Configure CMake
+      run: >
+        cmake -S . -B build
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=Debug
+        -DHACKYSTL_ENABLE_SANITIZERS=OFF
+
+    - name: Build
+      run: cmake --build build --parallel 4
+
+    - name: Test
+      # A relative --output-junit path is written inside the build directory.
+      run: ctest --test-dir build --output-on-failure --output-junit junit.xml
+
+    - name: Upload test report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: junit-${{ matrix.cpp_compiler == 'g++-16' && 'gcc' || 'clang' }}
+        path: build/junit.xml

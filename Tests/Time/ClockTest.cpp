@@ -29,6 +29,22 @@ int main()
     static_assert(elapsed.to_native().tv_nsec == 200'000'000);
     static_assert(elapsed.to_native().tv_nsec == standard_elapsed.count());
 
+    // Sums are also checked at run time: a sum whose nanoseconds pass one second carries
+    // into the seconds, and one that does not carry keeps both fields. Coverage needs the
+    // code to run, which a static_assert never does, and the carry is otherwise reached
+    // only by chance through wall-clock deadlines.
+    const hsd::precise_clock carry_left{timespec{1, 900'000'000}};
+    const hsd::precise_clock carry_right{timespec{0, 200'000'000}};
+    const hsd::precise_clock carried = carry_left + carry_right;
+    assert(carried.to_native().tv_sec == 2);
+    assert(carried.to_native().tv_nsec == 100'000'000);
+
+    const hsd::precise_clock plain_left{timespec{1, 100'000'000}};
+    const hsd::precise_clock plain_right{timespec{0, 200'000'000}};
+    const hsd::precise_clock plain = plain_left + plain_right;
+    assert(plain.to_native().tv_sec == 1);
+    assert(plain.to_native().tv_nsec == 300'000'000);
+
     constexpr hsd::clock one_second{CLOCKS_PER_SEC};
     constexpr std::chrono::seconds standard_one_second{1};
     static_assert(one_second.to_seconds() == 1.0f);

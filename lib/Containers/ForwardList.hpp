@@ -335,12 +335,8 @@ namespace hsd
         constexpr forward_list& operator=(const T (&arr)[N])
         {
             clear();
-            usize _index = 0;
 
-            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
-                *_it = arr[_index];
-
-            for (; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(arr[_index]);
 
             return *this;
@@ -356,12 +352,8 @@ namespace hsd
         constexpr forward_list& operator=(T (&&arr)[N])
         {
             clear();
-            usize _index = 0;
 
-            for (auto _it = begin(); _it != end() && _index < N; _it++, _index++)
-                *_it = hsd::move(arr[_index]);
-
-            for (; _index < N; _index++)
+            for (usize _index = 0; _index < N; _index++)
                 push_back(hsd::move(arr[_index]));
 
             return *this;
@@ -406,9 +398,10 @@ namespace hsd
             iterator _next_iter, _back_iter;
             _next_iter._iterator = pos._iterator->_next;
             
+            // The end check comes first: past the last node there is no node to read _next from.
             auto _check_iter = [&]{
-                return _back_iter._iterator->_next != 
-                    pos._iterator && _back_iter != end();
+                return _back_iter != end() &&
+                    _back_iter._iterator->_next != pos._iterator;
             };
                 
             for (_back_iter = begin(); _check_iter(); _back_iter++) {}

@@ -434,14 +434,9 @@ namespace hsd
                     {
                         remainder = remainder - denominator;
 
-                        if (_bit >= 64)
-                        {
-                            quotient._hi |= 1ull << (_bit - 64);
-                        }
-                        else
-                        {
-                            quotient._lo |= 1ull << _bit;
-                        }
+                        // This path needs a denominator of at least 2^64, so the quotient is below
+                        // 2^64 and its bits all fit in the low word.
+                        quotient._lo |= 1ull << _bit;
                     }
                 }
             }

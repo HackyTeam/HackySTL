@@ -442,7 +442,7 @@ namespace hsd
         /// @param key Key copied into a new record when absent.
         /// @param args Arguments used to construct the mapped value.
         /// @return Iterator to the record and whether insertion occurred.
-        template< typename NewKey, typename... Args >
+        template < typename NewKey, typename... Args >
         constexpr pair<iterator, bool> emplace(const NewKey& key, const Args&... args)
         {
             const Key& _lookup_key = key;
@@ -466,7 +466,7 @@ namespace hsd
         /// @param key Key forwarded into a new record when absent.
         /// @param args Arguments used to construct the mapped value.
         /// @return Iterator to the record and whether insertion occurred.
-        template< typename NewKey, typename... Args >
+        template < typename NewKey, typename... Args >
         constexpr pair<iterator, bool> emplace(NewKey&& key, Args&&... args)
         {
             const Key& _lookup_key = key;
@@ -495,6 +495,12 @@ namespace hsd
             -> result<iterator, umap_detail::bad_access>
         {
             const usize _index = static_cast<usize>(pos - _data.cbegin());
+
+            // A position outside the records is reported, before any record is touched.
+            if (_index >= _data.size())
+            {
+                return umap_detail::bad_access{};
+            }
 
             auto _new_iter = _data
                 .erase(pos)
